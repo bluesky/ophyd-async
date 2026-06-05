@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -902,6 +902,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncMock</span><span class="p">,</span> <span class="n">Mock</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._command</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span><span class="p">,</span> <span class="n">CommandConnector</span><span class="p">,</span> <span class="n">MockCommandBackend</span><span class="p">,</span> <span class="n">MockExecuteCallback</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceMock</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockPutCallback</span><span class="p">,</span> <span class="n">MockSignalBackend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">,</span> <span class="n">SignalR</span>
@@ -1093,6 +1094,53 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_mock_put</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the mock associated with the put call on the signal.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">.</span><span class="n">put_mock</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_mock_command_backend</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n">Command</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MockCommandBackend</span><span class="p">:</span>
+    <span class="n">connector</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">_connector</span>  <span class="c1"># noqa: SLF001</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="p">,</span> <span class="n">CommandConnector</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Command, got </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">MockCommandBackend</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Command </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2"> not connected in mock mode&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">connector</span><span class="o">.</span><span class="n">backend</span>
+
+
+<div class="viewcode-block" id="get_mock_execute">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mock_execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n">Command</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the mock associated with the execute call on a command.</span>
+
+<span class="sd">    The command must have been connected in mock mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get_mock_command_backend</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">.</span><span class="n">execute_mock</span></div>
+
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_unset_execute_callback_cm</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">MockCommandBackend</span><span class="p">):</span>
+    <span class="k">yield</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_execute_callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="callback_on_mock_execute">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">callback_on_mock_execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n">Command</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">MockExecuteCallback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a callback to be called whenever a Command is executed in mock mode.</span>
+
+<span class="sd">    Can either be used as a context manager, with the callback cleared on exit,</span>
+<span class="sd">    or as a plain function call for a persistent override.</span>
+
+<span class="sd">    When the initial backend is a `SoftCommandBackend` the original Python</span>
+<span class="sd">    function is used by default; set a callback here to suppress it and return</span>
+<span class="sd">    something else instead.</span>
+
+<span class="sd">    :param command: A command connected in mock mode.</span>
+<span class="sd">    :param callback: The callback to call when the command is executed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_command_backend</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_execute_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_unset_execute_callback_cm</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span></div>
 
 </pre></div>
 

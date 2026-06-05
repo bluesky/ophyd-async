@@ -49,7 +49,7 @@ Bases: {py:obj}`ophyd_async.core.DeviceVector`\[{py:obj}`ophyd_async.fastcs.odin
 
 ````{py:attribute} start_writing
 :canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.start_writing
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
@@ -60,7 +60,7 @@ Bases: {py:obj}`ophyd_async.core.DeviceVector`\[{py:obj}`ophyd_async.fastcs.odin
 
 ````{py:attribute} stop_writing
 :canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.stop_writing
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
@@ -234,7 +234,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````{py:attribute} stop
 :canonical: ophyd_async.fastcs.odin._io.MetaWriterIO.stop
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 

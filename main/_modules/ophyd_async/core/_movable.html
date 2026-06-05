@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._movable &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.core._movable &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -931,11 +931,11 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MovableLogic</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimum logic needed for controlling a ``StandardMovable``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimum logic needed for controlling a `StandardMovable`.</span>
 
 <span class="sd">    Can be inherited to add specialised logic for stop, checking if a move is valid,</span>
 <span class="sd">    calculate a valid timeout for a move, and add units and precision. Sub classes can</span>
-<span class="sd">    also override the ``get_move_status`` and ``move`` methods if more control is needed</span>
+<span class="sd">    also override the `get_move_status` and `move` methods if more control is needed</span>
 <span class="sd">    to provide a custom AsyncStatus and to handle the move logic.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -984,9 +984,9 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">        ```{note}</span>
 <span class="sd">        The default implementation waits for the readback to be **exactly**</span>
-<span class="sd">        equal to ``new_position``. For floating-point positions this may never</span>
+<span class="sd">        equal to `new_position`. For floating-point positions this may never</span>
 <span class="sd">        be satisfied; override this method to use an appropriate tolerance</span>
-<span class="sd">        check (e.g. ``np.isclose``).</span>
+<span class="sd">        check (e.g. `np.isclose`).</span>
 <span class="sd">        ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
@@ -1027,7 +1027,7 @@ window.runMermaid = runMermaid;</script>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that provides standard logic for moving.</span>
 
-<span class="sd">    This class must be inherited and have a ``movable_logic`` @cached_property.</span>
+<span class="sd">    This class must be inherited and have a `movable_logic` @cached_property.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Whether set() should complete successfully or not</span>

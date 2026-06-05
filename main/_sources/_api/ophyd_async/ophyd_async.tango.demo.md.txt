@@ -63,7 +63,7 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.S
 
 ````{py:attribute} start
 :canonical: ophyd_async.tango.demo._counter.TangoCounter.start
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
@@ -74,7 +74,7 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.S
 
 ````{py:attribute} reset_
 :canonical: ophyd_async.tango.demo._counter.TangoCounter.reset_
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
@@ -146,11 +146,22 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.S
 
 ````{py:attribute} stop_
 :canonical: ophyd_async.tango.demo._mover.TangoMover.stop_
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop_
+```
+
+````
+
+````{py:attribute} move_to_position
+:canonical: ophyd_async.tango.demo._mover.TangoMover.move_to_position
+:type: ~ophyd_async.core.Command[[float], bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.move_to_position
 ```
 
 ````
@@ -168,6 +179,15 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.S
 :canonical: ophyd_async.tango.demo._mover.TangoMover.stop
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop
+```
+
+````
+
+````{py:method} move_me(value: float)
+:canonical: ophyd_async.tango.demo._mover.TangoMover.move_me
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.move_me
 ```
 
 ````

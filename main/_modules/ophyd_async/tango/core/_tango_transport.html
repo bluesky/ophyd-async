@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -902,7 +902,6 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -921,10 +920,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model.documents.event_descriptor</span><span class="w"> </span><span class="kn">import</span> <span class="n">RdsRange</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AttrDataFormat</span><span class="p">,</span>
-    <span class="n">AttributeInfo</span><span class="p">,</span>
-    <span class="n">AttributeInfoEx</span><span class="p">,</span>
     <span class="n">CmdArgType</span><span class="p">,</span>
-    <span class="n">CommandInfo</span><span class="p">,</span>
     <span class="n">DevFailed</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
     <span class="n">DeviceProxy</span><span class="p">,</span>
     <span class="n">DevState</span><span class="p">,</span>
@@ -937,7 +933,6 @@ window.runMermaid = runMermaid;</script>
     <span class="n">get_global_executor</span><span class="p">,</span>
     <span class="n">set_global_executor</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tango.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_binary</span><span class="p">,</span> <span class="n">is_bool</span><span class="p">,</span> <span class="n">is_float</span><span class="p">,</span> <span class="n">is_int</span><span class="p">,</span> <span class="n">is_str</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Array1D</span><span class="p">,</span>
@@ -949,21 +944,29 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalMetadata</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
-    <span class="n">Table</span><span class="p">,</span>
     <span class="n">get_dtype</span><span class="p">,</span>
     <span class="n">make_datakey</span><span class="p">,</span>
     <span class="n">wait_for_connection</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestConfig</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._converters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TangoConverter</span><span class="p">,</span>
     <span class="n">TangoDevStateArrayConverter</span><span class="p">,</span>
     <span class="n">TangoDevStateConverter</span><span class="p">,</span>
+    <span class="n">TangoDoubleStringTableConverter</span><span class="p">,</span>
     <span class="n">TangoEnumArrayConverter</span><span class="p">,</span>
     <span class="n">TangoEnumConverter</span><span class="p">,</span>
+    <span class="n">TangoLongStringTableConverter</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">get_device_trl_and_attr</span><span class="p">,</span> <span class="n">try_to_cast_as_float</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AttributeConfig</span><span class="p">,</span>
+    <span class="n">CommandConfig</span><span class="p">,</span>
+    <span class="n">DevStateEnum</span><span class="p">,</span>
+    <span class="n">TangoDoubleStringTable</span><span class="p">,</span>
+    <span class="n">TangoLongStringTable</span><span class="p">,</span>
+    <span class="n">get_device_trl_and_attr</span><span class="p">,</span>
+    <span class="n">try_to_cast_as_float</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async&quot;</span><span class="p">)</span>
 
@@ -992,96 +995,136 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="TangoLongStringTable">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoLongStringTable">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TangoLongStringTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
-    <span class="n">long</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
-    <span class="n">string</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+<span class="c1"># Base mapping for Tango types to Python types</span>
+<span class="c1"># For attributes, it is useful to know the type carried by the array</span>
+<span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevBoolean</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevShort</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevLong</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevLong64</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevFloat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevDouble</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevUChar</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevUShort</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevULong</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevULong64</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevString</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">ConstDevString</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span> <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span> <span class="n">DevStateEnum</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarBooleanArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarCharArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarShortArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarUShortArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarULongArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLong64Array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarULong64Array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarFloatArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarStringArray</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">:</span> <span class="n">TangoLongStringTable</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">:</span> <span class="n">TangoDoubleStringTable</span><span class="p">,</span>
+<span class="p">}</span>
 
-
-
-<div class="viewcode-block" id="TangoDoubleStringTable">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoDoubleStringTable">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TangoDoubleStringTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
-    <span class="n">double</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
-    <span class="n">string</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
-
+<span class="c1"># Derived mappings for attributes and commands</span>
+<span class="c1"># For commands, it is easiest to pass the full signal type,</span>
+<span class="c1"># not just the contents of Array1D</span>
+<span class="n">TANGO_TO_ATTR_TYPE</span> <span class="o">=</span> <span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span>
+<span class="n">TANGO_TO_PYTHON_CMD_TYPE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">**</span><span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarBooleanArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarCharArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarShortArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarUShortArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarULongArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLong64Array</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarULong64Array</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarFloatArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleArray</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarStringArray</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="get_python_type">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_python_type">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_python_type</span><span class="p">(</span>
-    <span class="n">config</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span> <span class="o">|</span> <span class="n">TestConfig</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">,</span>
+    <span class="n">return_input_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For converting between recieved tango types and python primatives.&quot;&quot;&quot;</span>
-    <span class="n">tango_type</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">tango_format</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">AttributeInfo</span><span class="p">):</span>
-        <span class="n">tango_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_type</span>
-        <span class="n">tango_format</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandInfo</span><span class="p">):</span>
-        <span class="n">read_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">read_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
-            <span class="n">tango_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert Tango types to Python types based on the configuration.&quot;&quot;&quot;</span>
+    <span class="n">tango_type</span><span class="p">,</span> <span class="n">tango_format</span> <span class="o">=</span> <span class="n">_extract_tango_info</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">,</span> <span class="n">return_input_type</span><span class="o">=</span><span class="n">return_input_type</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Handle special cases first</span>
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">,</span>
+        <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span><span class="p">[</span><span class="n">tango_type</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported Tango type: </span><span class="si">{</span><span class="n">tango_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">attr_type</span> <span class="o">=</span> <span class="n">TANGO_TO_PYTHON_ATTR_TYPE</span><span class="p">[</span><span class="n">tango_type</span><span class="p">]</span>
+
+    <span class="c1"># Handle format-specific logic</span>
+    <span class="c1"># Only attributes carry tango_format</span>
+    <span class="k">if</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">attr_type</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Images of type str or enum are not supported&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">attr_type</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">attr_type</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">or</span> <span class="n">attr_type</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">attr_type</span> <span class="ow">is</span> <span class="n">StrictEnum</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">(</span><span class="n">AttributeConfig</span><span class="p">,</span> <span class="n">CommandConfig</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot create enum type from </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">_create_enum_type</span><span class="p">(</span><span class="n">config</span><span class="p">)]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">tango_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">TestConfig</span><span class="p">):</span>
-        <span class="n">tango_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_type</span>
-        <span class="n">tango_format</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span>
+            <span class="k">return</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">attr_type</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">attr_type</span> <span class="ow">is</span> <span class="n">StrictEnum</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">(</span><span class="n">AttributeConfig</span><span class="p">,</span> <span class="n">CommandConfig</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot create enum type from </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_create_enum_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attr_type</span>
+    <span class="k">elif</span> <span class="n">tango_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TANGO_TO_PYTHON_CMD_TYPE</span><span class="p">[</span><span class="n">tango_type</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown Tango format: </span><span class="si">{</span><span class="n">tango_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_tango_info</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">,</span>
+    <span class="n">return_input_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CmdArgType</span><span class="p">,</span> <span class="n">AttrDataFormat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract Tango type and format from the configuration.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeConfig</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">CmdArgType</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">data_type</span><span class="p">),</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandConfig</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">return_input_type</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span><span class="p">,</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unrecognized Tango resource configuration&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">tango_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">,</span>
-        <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
-        <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
-        <span class="kc">None</span><span class="p">,</span>
-    <span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unknown TangoFormat&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">tango_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">TangoLongStringTable</span>
-    <span class="k">if</span> <span class="n">tango_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">TangoDoubleStringTable</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">cls</span>
-        <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">Sequence</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">Array1D</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Images of type str or enum are not supported&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">cls</span>
-
-    <span class="k">if</span> <span class="n">is_int</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">is_float</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">is_bool</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">is_str</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">is_binary</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;enum_labels&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandInfo</span><span class="p">):</span>
-            <span class="n">enum_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">enum_labels</span><span class="p">}</span>
-            <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">(</span><span class="s2">&quot;TangoEnum&quot;</span><span class="p">,</span> <span class="n">enum_dict</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="n">DevStateEnum</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevUChar</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_enum_type</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an Enum type from the configuration&#39;s enum labels.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeConfig</span><span class="p">):</span>
+        <span class="n">enum_labels</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">enum_labels</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown TangoType: </span><span class="si">{</span><span class="n">tango_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot create enum type from </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">enum_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">enum_labels</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">type</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">],</span> <span class="n">StrictEnum</span><span class="p">(</span><span class="s2">&quot;TangoEnum&quot;</span><span class="p">,</span> <span class="n">enum_dict</span><span class="p">))</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">TangoProxy</span><span class="p">:</span>
@@ -1115,7 +1158,7 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Put value to TRL.&quot;&quot;&quot;</span>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get TRL config async.&quot;&quot;&quot;</span>
 
     <span class="nd">@abstractmethod</span>
@@ -1224,7 +1267,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.get_config">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeInfoEx</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeConfig</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
@@ -1421,36 +1464,6 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="CommandProxyReadCharacter">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxyReadCharacter">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">CommandProxyReadCharacter</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum to carry the read/write character of the CommandProxy.&quot;&quot;&quot;</span>
-
-    <span class="n">READ</span> <span class="o">=</span> <span class="s2">&quot;READ&quot;</span>
-    <span class="n">WRITE</span> <span class="o">=</span> <span class="s2">&quot;WRITE&quot;</span>
-    <span class="n">READ_WRITE</span> <span class="o">=</span> <span class="s2">&quot;READ_WRITE&quot;</span>
-    <span class="n">EXECUTE</span> <span class="o">=</span> <span class="s2">&quot;EXECUTE&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="get_command_character">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_command_character">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_command_character</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">CommandInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandProxyReadCharacter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the command character for the given command config.&quot;&quot;&quot;</span>
-    <span class="n">in_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span>
-    <span class="n">out_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span>
-    <span class="k">if</span> <span class="n">in_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span> <span class="ow">and</span> <span class="n">out_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
-        <span class="n">read_character</span> <span class="o">=</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span>
-    <span class="k">elif</span> <span class="n">in_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span> <span class="ow">and</span> <span class="n">out_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
-        <span class="n">read_character</span> <span class="o">=</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">WRITE</span>
-    <span class="k">elif</span> <span class="n">in_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span> <span class="ow">and</span> <span class="n">out_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
-        <span class="n">read_character</span> <span class="o">=</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">EXECUTE</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">read_character</span> <span class="o">=</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ_WRITE</span>
-    <span class="k">return</span> <span class="n">read_character</span></div>
-
-
-
 <div class="viewcode-block" id="CommandProxy">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CommandProxy</span><span class="p">(</span><span class="n">TangoProxy</span><span class="p">):</span>
@@ -1458,14 +1471,12 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">_last_reading</span><span class="p">:</span> <span class="n">Reading</span>
     <span class="n">_last_w_value</span><span class="p">:</span> <span class="n">Any</span>
-    <span class="n">_config</span><span class="p">:</span> <span class="n">CommandInfo</span>
-    <span class="n">_read_character</span><span class="p">:</span> <span class="n">CommandProxyReadCharacter</span>
+    <span class="n">_config</span><span class="p">:</span> <span class="n">CommandConfig</span>
     <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span> <span class="o">=</span> <span class="n">device_proxy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_w_value</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1482,16 +1493,6 @@ window.runMermaid = runMermaid;</script>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot unsubscribe from commands&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="CommandProxy.get">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ_WRITE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span></div>
-
-
 <div class="viewcode-block" id="CommandProxy.get_w_value">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_w_value">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
@@ -1501,16 +1502,15 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="CommandProxy.connect">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="CommandProxy.put">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.put">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
 
@@ -1518,15 +1518,9 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">command_inout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
             <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_put</span><span class="p">())</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_last_w_value</span> <span class="o">=</span> <span class="n">value</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
-                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">val</span><span class="p">),</span>
-                <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
-                <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">te</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> command failed: Timeout&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">te</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">DevFailed</span> <span class="k">as</span> <span class="n">de</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> device failure: </span><span class="si">{</span><span class="n">de</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1536,18 +1530,8 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="CommandProxy.get_config">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandInfo</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandConfig</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
-
-
-<div class="viewcode-block" id="CommandProxy.get_reading">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_reading">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span></div>
 
 
 <div class="viewcode-block" id="CommandProxy.set_polling">
@@ -1569,7 +1553,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="parse_precision">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.parse_precision">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_precision</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_precision</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">AttributeConfig</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">format</span> <span class="ow">and</span> <span class="p">(</span><span class="n">matches</span> <span class="o">:=</span> <span class="n">PRECISION_PATTERN</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">format</span><span class="p">)):</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">return</span> <span class="kc">None</span></div>
@@ -1593,11 +1577,11 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_source_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_source_metadata</span><span class="p">(</span>
     <span class="n">tango_resource</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">tr_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">],</span>
+    <span class="n">tr_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalMetadata</span><span class="p">:</span>
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tr_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeConfig</span><span class="p">):</span>
             <span class="n">alarm_info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">alarms</span>
             <span class="n">_limits</span> <span class="o">=</span> <span class="n">Limits</span><span class="p">(</span>
                 <span class="n">control</span><span class="o">=</span><span class="n">LimitsRange</span><span class="p">(</span>
@@ -1691,8 +1675,10 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">make_converter</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TangoConverter</span><span class="p">:</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+<div class="viewcode-block" id="make_converter">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.make_converter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_converter</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TangoConverter</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">AttributeConfig</span><span class="p">):</span>
         <span class="k">match</span> <span class="n">info</span><span class="o">.</span><span class="n">data_type</span><span class="p">:</span>
             <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
@@ -1726,8 +1712,13 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                         <span class="s2">&quot;No override enum class provided for Tango enum command&quot;</span>
                     <span class="p">)</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">TangoLongStringTableConverter</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">TangoDoubleStringTableConverter</span><span class="p">()</span>
     <span class="c1"># default case return trivial converter</span>
-    <span class="k">return</span> <span class="n">TangoConverter</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">TangoConverter</span><span class="p">()</span></div>
+
 
 
 <div class="viewcode-block" id="TangoSignalBackend">
@@ -1749,7 +1740,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">read_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
             <span class="n">write_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="kc">False</span><span class="p">,</span>
             <span class="mf">0.1</span><span class="p">,</span>
@@ -1853,18 +1844,18 @@ window.runMermaid = runMermaid;</script>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2"> has type </span><span class="si">{</span><span class="n">tr_dtype</span><span class="si">!r}</span><span class="s2">, expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_verify_datatype_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_verify_datatype_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">CommandConfig</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify that the datatype of the config matches the datatype of the signal.&quot;&quot;&quot;</span>
         <span class="n">tr_dtype</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="n">tango_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">signal_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">AttributeInfo</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeConfig</span> <span class="o">|</span> <span class="n">AttributeConfig</span><span class="p">):</span>
             <span class="n">tr_format</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span>
             <span class="k">if</span> <span class="n">tr_format</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_type_match_array</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">tr_dtype</span><span class="p">,</span> <span class="n">tango_resource</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">tr_format</span> <span class="ow">is</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_type_match_scalar</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">tr_dtype</span><span class="p">,</span> <span class="n">tango_resource</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandInfo</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandConfig</span><span class="p">):</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
                 <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
@@ -1900,7 +1891,7 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_verify_datatype_matches</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeConfig</span><span class="p">):</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="n">config</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevString</span>
                     <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -771,6 +771,24 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.YesNo" title="ophyd_async.core._enums.YesNo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YesNo</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Command</span></code></a></p></td>
+<td><p>A Device that can execute a typed remote-procedure command.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommandBackend</span></code></a></p></td>
+<td><p>A backend for a Command.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.CommandConnector" title="ophyd_async.core._command.CommandConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommandConnector</span></code></a></p></td>
+<td><p>A connector for a Command.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.MockCommandBackend" title="ophyd_async.core._command.MockCommandBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MockCommandBackend</span></code></a></p></td>
+<td><p>A backend for a Command that uses a mock for testing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftCommandBackend" title="ophyd_async.core._command.SoftCommandBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftCommandBackend</span></code></a></p></td>
+<td><p>A backend for a Command that uses a Python callback.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.TriggerableCommand" title="ophyd_async.core._command.TriggerableCommand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a></p></td>
+<td><p>A Command that can be triggered without arguments and returns nothing.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -806,8 +824,14 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_mock_put" title="ophyd_async.core._mock_signal_utils.get_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock_put</span></code></a></p></td>
 <td><p>Get the mock associated with the put call on the signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core._mock_signal_utils.callback_on_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_mock_execute" title="ophyd_async.core._mock_signal_utils.get_mock_execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a></p></td>
+<td><p>Get the mock associated with the execute call on a command.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core._mock_signal_utils.callback_on_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a></p></td>
 <td><p>For setting a callback when a backend is put to.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.callback_on_mock_execute" title="ophyd_async.core._mock_signal_utils.callback_on_mock_execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code></a></p></td>
+<td><p>Set a callback to be called whenever a Command is executed in mock mode.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.mock_puts_blocked" title="ophyd_async.core._mock_signal_utils.mock_puts_blocked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mock_puts_blocked</span></code></a></p></td>
 <td><p>Context manager to block puts at the start and unblock at the end.</p></td>
@@ -887,6 +911,9 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_w" title="ophyd_async.core._derived_signal.derived_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_w</span></code></a></p></td>
 <td><p>Create a write only derived signal.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core._command.soft_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_command</span></code></a></p></td>
+<td><p>Create a <a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by a Python callable.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -935,6 +962,9 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._datatypes.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.NO_ARG_VOID_SIGNATURE" title="ophyd_async.core._command.NO_ARG_VOID_SIGNATURE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NO_ARG_VOID_SIGNATURE</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -1066,8 +1096,8 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.DeviceFiller">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">DeviceFiller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_backend_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core._signal_backend.SignalDatatype"><span class="pre">SignalDatatype</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">SignalBackendT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_connector_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DeviceConnectorT</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_device_filler.html#DeviceFiller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceFiller" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device_filler.SignalBackendT</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device_filler.DeviceConnectorT</span></code>]</p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">DeviceFiller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_backend_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core._signal_backend.SignalDatatype"><span class="pre">SignalDatatype</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">SignalBackendT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_connector_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DeviceConnectorT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_backend_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">CommandBackendT</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_device_filler.html#DeviceFiller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceFiller" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device_filler.SignalBackendT</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device_filler.DeviceConnectorT</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device_filler.CommandBackendT</span></code>]</p>
 <p>For filling signals on introspected devices.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1110,7 +1140,7 @@ instances.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.DeviceFiller.create_devices_from_annotations">
 <span class="sig-name descname"><span class="pre">create_devices_from_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DeviceConnectorT</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device_filler.html#DeviceFiller.create_devices_from_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceFiller.create_devices_from_annotations" title="Link to this definition">#</a></dt>
-<dd><p>Create all Signals from annotations.</p>
+<dd><p>Create all Devices from annotations.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filled</strong> – If True then the Devices created should be considered already filled
@@ -1122,6 +1152,30 @@ be connected.</p>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(connector,</span> <span class="pre">extras)</span></code>
 The <code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code> that has been created for this Signal, and the list of
 extra annotations that could be used to customize it.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.DeviceFiller.create_commands_from_annotations">
+<span class="sig-name descname"><span class="pre">create_commands_from_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">CommandBackendT</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device_filler.html#DeviceFiller.create_commands_from_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceFiller.create_commands_from_annotations" title="Link to this definition">#</a></dt>
+<dd><p>Create all Command children from annotations.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filled</strong> – If True the Commands are considered already filled with
+connection data.  If False then <code class="docutils literal notranslate"><span class="pre">fill_child_command</span></code> must be called
+before the Command can be connected.</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(command_backend,</span> <span class="pre">extras)</span></code>
+The <code class="docutils literal notranslate"><span class="pre">CommandBackend</span></code> created for this Command and the list of extra
+annotations that may be used to customise it.  Unhandled extras should
+be left on the list so this class can handle them (e.g.
+<code class="docutils literal notranslate"><span class="pre">StandardReadableFormat</span></code> instances).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If no <code class="docutils literal notranslate"><span class="pre">command_backend_factory</span></code> was supplied at
+construction time.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1177,6 +1231,27 @@ reporting as an error message</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The DeviceConnector for the filled Device.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.DeviceFiller.fill_child_command">
+<span class="sig-name descname"><span class="pre">fill_child_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><span class="pre">Command</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CommandBackendT</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device_filler.html#DeviceFiller.fill_child_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceFiller.fill_child_command" title="Link to this definition">#</a></dt>
+<dd><p>Mark a Command as filled and return its backend.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Logical name (without trailing underscore).</p></li>
+<li><p><strong>command_type</strong> – The <code class="docutils literal notranslate"><span class="pre">Command</span></code> subclass to create.</p></li>
+<li><p><strong>vector_index</strong> – Index within a <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>, if applicable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The <code class="docutils literal notranslate"><span class="pre">CommandBackend</span></code> for the filled Command.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If no <code class="docutils literal notranslate"><span class="pre">command_backend_factory</span></code> was provided.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1793,6 +1868,8 @@ if the status raised an exception it will be re-raised by the iterator:</p>
 <dt class="sig sig-object py" id="ophyd_async.core.Signal.datatype">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">datatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.core.Signal.datatype" title="Link to this definition">#</a></dt>
 <dd><p>Returns the datatype of the signal.</p>
+<p>This will return what was passed at construction time. None means the
+backend will calculate it from the control system on connection.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1920,9 +1997,12 @@ if the status raised an exception it will be re-raised by the iterator:</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalX">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">SignalX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalX" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">SignalX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalX" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._signal.Signal</span></code></a></p>
 <p>Signal that puts the default value.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 0.19: </span>Use <a class="reference internal" href="#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> instead.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalX.trigger">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><span class="pre">CalculatableTimeout</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CALCULATE_TIMEOUT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalX.trigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalX.trigger" title="Link to this definition">#</a></dt>
@@ -2499,6 +2579,13 @@ before all values have been consumed.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.get_mock_execute">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_mock_execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><span class="pre">Command</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.14)"><span class="pre">AsyncMock</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#get_mock_execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_mock_execute" title="Link to this definition">#</a></dt>
+<dd><p>Get the mock associated with the execute call on a command.</p>
+<p>The command must have been connected in mock mode.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.callback_on_mock_put">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MockPutCallback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#callback_on_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.callback_on_mock_put" title="Link to this definition">#</a></dt>
 <dd><p>For setting a callback when a backend is put to.</p>
@@ -2512,6 +2599,25 @@ readback. If None is returned then the readback will be set to the setpoint.</p>
 <li><p><strong>signal</strong> – A signal with a <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code> backend.</p></li>
 <li><p><strong>callback</strong> – The callback to call when the backend is put to during the
 context.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.callback_on_mock_execute">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><span class="pre">Command</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MockExecuteCallback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#callback_on_mock_execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.callback_on_mock_execute" title="Link to this definition">#</a></dt>
+<dd><p>Set a callback to be called whenever a Command is executed in mock mode.</p>
+<p>Can either be used as a context manager, with the callback cleared on exit,
+or as a plain function call for a persistent override.</p>
+<p>When the initial backend is a <code class="docutils literal notranslate"><span class="pre">SoftCommandBackend</span></code> the original Python
+function is used by default; set a callback here to suppress it and return
+something else instead.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> – A command connected in mock mode.</p></li>
+<li><p><strong>callback</strong> – The callback to call when the command is executed.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2655,7 +2761,7 @@ True then also wait for the set operation to complete before returning.</p></li>
 <dt class="field-even">Seealso<span class="colon">:</span></dt>
 <dd class="field-even"><p></p></dd>
 </dl>
-<p><a class="reference internal" href="../../how-to/interact-with-signals.html#interact-with-signals"><span class="std std-ref">How to interact with signals while implementing bluesky verbs</span></a></p>
+<p><a class="reference internal" href="../../how-to/interact-with-signals.html#interact-with-signals"><span class="std std-ref">How to interact with signals and commands while implementing bluesky verbs</span></a></p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Examples<span class="colon">:</span></dt>
 <dd class="field-odd"><p></p></dd>
@@ -2703,7 +2809,7 @@ True then also wait for the set operation to complete before returning.</p></li>
 <dt class="field-even">Seealso<span class="colon">:</span></dt>
 <dd class="field-even"><p></p></dd>
 </dl>
-<p><a class="reference internal" href="../../how-to/interact-with-signals.html#interact-with-signals"><span class="std std-ref">How to interact with signals while implementing bluesky verbs</span></a></p>
+<p><a class="reference internal" href="../../how-to/interact-with-signals.html#interact-with-signals"><span class="std std-ref">How to interact with signals and commands while implementing bluesky verbs</span></a></p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Example<span class="colon">:</span></dt>
 <dd class="field-odd"><p></p></dd>
@@ -4505,6 +4611,237 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <dd><p>‘TypeVar(…)’</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.Command">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><span class="pre">CommandBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Command" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device.Device</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.T</span></code>]</p>
+<p>A Device that can execute a typed remote-procedure command.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Command[P,</span> <span class="pre">T]</span></code> wraps a remote procedure call where <code class="docutils literal notranslate"><span class="pre">P</span></code> is the
+<code class="docutils literal notranslate"><span class="pre">ParamSpec</span></code> for the arguments and <code class="docutils literal notranslate"><span class="pre">T</span></code> is the return type.
+Use <a class="reference internal" href="#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> when the command takes no arguments and
+returns nothing.</p>
+<p>The return value is stored on the resulting status object and is available
+via <code class="docutils literal notranslate"><span class="pre">status.value</span></code> once the status completes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">move_to</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">status</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">value</span>  <span class="c1"># T</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.core.Command.signature">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.core.Command.signature" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.core.Command.source">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">source</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#ophyd_async.core.Command.source" title="Link to this definition">#</a></dt>
+<dd><p>Returns the source of the command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.Command.execute">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#Command.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Command.execute" title="Link to this definition">#</a></dt>
+<dd><p>Execute the command, returning an <a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>.</p>
+<p>The status resolves to the result <code class="docutils literal notranslate"><span class="pre">T</span></code>.</p>
+<p>After the status completes the return value is available via <code class="docutils literal notranslate"><span class="pre">status.value</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">status</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">value</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">CommandBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.T</span></code>]</p>
+<p>A backend for a Command.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signature</strong> – The Python signature of the command, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the
+signature is not yet known until connect time (analogous to <code class="docutils literal notranslate"><span class="pre">datatype=None</span></code>
+for signals).  Hardware backends that are unambiguously void/void should
+pass <code class="docutils literal notranslate"><span class="pre">NO_ARG_VOID_SIGNATURE</span></code> instead.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandBackend.source">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandBackend.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandBackend.source" title="Link to this definition">#</a></dt>
+<dd><p>Return source of command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandBackend.connect">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandBackend.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandBackend.connect" title="Link to this definition">#</a></dt>
+<dd><p>Connect to underlying hardware.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandBackend.execute">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandBackend.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandBackend.execute" title="Link to this definition">#</a></dt>
+<dd><p>Execute the command and return its result.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandConnector">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">CommandConnector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><span class="pre">CommandBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandConnector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandConnector" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device.DeviceConnector</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.T</span></code>]</p>
+<p>A connector for a Command.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandConnector.connect_mock">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandConnector.connect_mock" title="Link to this definition">#</a></dt>
+<dd><p>Connect the backend in mock mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.CommandConnector.connect_real">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connect_real</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#CommandConnector.connect_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CommandConnector.connect_real" title="Link to this definition">#</a></dt>
+<dd><p>Connect the backend to real hardware.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">MockCommandBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><span class="pre">CommandBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#MockCommandBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockCommandBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._command.CommandBackend</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.T</span></code>]</p>
+<p>A backend for a Command that uses a mock for testing.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.source">
+<span class="sig-name descname"><span class="pre">source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#MockCommandBackend.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.source" title="Link to this definition">#</a></dt>
+<dd><p>Return source of command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.set_mock_execute_callback">
+<span class="sig-name descname"><span class="pre">set_mock_execute_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MockExecuteCallback</span><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#MockCommandBackend.set_mock_execute_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.set_mock_execute_callback" title="Link to this definition">#</a></dt>
+<dd><p>Set a callback that will be called when the command is executed.</p>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> to restore the default side effect (the original callable for
+<code class="docutils literal notranslate"><span class="pre">SoftCommandBackend</span></code>, or a manufactured default for hardware backends).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.execute_mock">
+<span class="sig-name descname"><span class="pre">execute_mock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.14)"><span class="pre">AsyncMock</span></a></span></span><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.execute_mock" title="Link to this definition">#</a></dt>
+<dd><p>Return the mock that will track calls to the command execution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.execute">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#MockCommandBackend.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.execute" title="Link to this definition">#</a></dt>
+<dd><p>Execute the mock command converting arguments as SoftCommandBackend would.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.connect">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#MockCommandBackend.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.connect" title="Link to this definition">#</a></dt>
+<dd><p>Mock backend does not support real connection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.core.NO_ARG_VOID_SIGNATURE">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">NO_ARG_VOID_SIGNATURE</span></span><a class="headerlink" href="#ophyd_async.core.NO_ARG_VOID_SIGNATURE" title="Link to this definition">#</a></dt>
+<dd><p>‘Signature(…)’</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">SoftCommandBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.14)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#SoftCommandBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._command.CommandBackend</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.T</span></code>]</p>
+<p>A backend for a Command that uses a Python callback.</p>
+<p>Concurrent calls to <code class="docutils literal notranslate"><span class="pre">execute()</span></code> are serialised by an internal lock: a second
+caller blocks until the first finishes.  This is intentional — hardware
+commands should not run concurrently, and it prevents re-entrant callback
+invocations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend.signature">
+<span class="sig-name descname"><span class="pre">signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a></span><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend.signature" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend.source">
+<span class="sig-name descname"><span class="pre">source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#SoftCommandBackend.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend.source" title="Link to this definition">#</a></dt>
+<dd><p>Return the source of the command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend.connect">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#SoftCommandBackend.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend.connect" title="Link to this definition">#</a></dt>
+<dd><p>No-op for SoftCommandBackend.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend.execute">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#SoftCommandBackend.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend.execute" title="Link to this definition">#</a></dt>
+<dd><p>Execute the configured callback and return its result.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.soft_command">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">soft_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.14)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><span class="pre">Command</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#soft_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.soft_command" title="Link to this definition">#</a></dt>
+<dd><p>Create a <a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by a Python callable.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command_cb</strong> – Callable to wrap — may be sync or async.</p></li>
+<li><p><strong>name</strong> – Optional name for the command node.</p></li>
+<li><p><strong>timeout</strong> – Timeout in seconds, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for no timeout.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Unlike hardware-backed commands, <a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core.soft_command"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">soft_command</span></code></a> accepts positional,
+keyword, and mixed arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="n">cmd</span> <span class="o">=</span> <span class="n">soft_command</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;move&quot;</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>             <span class="c1"># positional</span>
+<span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>           <span class="c1"># keyword</span>
+<span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># mixed</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerableCommand">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">TriggerableCommand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CommandBackend" title="ophyd_async.core._command.CommandBackend"><span class="pre">CommandBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#TriggerableCommand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.TriggerableCommand" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core._command.Command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._command.Command</span></code></a>[[], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</p>
+<p>A Command that can be triggered without arguments and returns nothing.</p>
+<p>Use this when the control system exposes a no-argument, no-return action —
+for example an EPICS <code class="docutils literal notranslate"><span class="pre">.PROC</span></code> field or a void/void Tango command.  Unlike
+a <a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> there is no readable value: the hardware fires an action
+when written to.</p>
+<p>Declarative EPICS usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>Procedural EPICS usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reset</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="s2">&quot;PREFIX:Reset.PROC&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Satisfies the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.15.2.dev5+g8f4f530ce"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Triggerable</span></code></a> protocol so
+bluesky plans can call <code class="docutils literal notranslate"><span class="pre">.trigger()</span></code> on it directly.  It is the replacement
+for the deprecated <a class="reference internal" href="#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerableCommand.trigger">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><span class="pre">CalculatableTimeout</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CALCULATE_TIMEOUT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_command.html#TriggerableCommand.trigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.TriggerableCommand.trigger" title="Link to this definition">#</a></dt>
+<dd><p>Trigger the action and return a status saying when it’s done.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -4580,10 +4917,12 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.check_created"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.check_created()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.create_signals_from_annotations"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.create_signals_from_annotations()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.create_devices_from_annotations"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.create_devices_from_annotations()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.create_commands_from_annotations"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.create_commands_from_annotations()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.create_device_vector_entries_to_mock"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.create_device_vector_entries_to_mock()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.check_filled"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.check_filled()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.fill_child_signal"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.fill_child_signal()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.fill_child_device"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.fill_child_device()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceFiller.fill_child_command"><code class="docutils literal notranslate"><span class="pre">DeviceFiller.fill_child_command()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceAnnotation"><code class="docutils literal notranslate"><span class="pre">DeviceAnnotation</span></code></a></li>
@@ -4777,7 +5116,9 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_value"><code class="docutils literal notranslate"><span class="pre">set_mock_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_values"><code class="docutils literal notranslate"><span class="pre">set_mock_values()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_mock_put"><code class="docutils literal notranslate"><span class="pre">get_mock_put()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_mock_execute"><code class="docutils literal notranslate"><span class="pre">get_mock_execute()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.callback_on_mock_put"><code class="docutils literal notranslate"><span class="pre">callback_on_mock_put()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.callback_on_mock_execute"><code class="docutils literal notranslate"><span class="pre">callback_on_mock_execute()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.mock_puts_blocked"><code class="docutils literal notranslate"><span class="pre">mock_puts_blocked()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_put_proceeds"><code class="docutils literal notranslate"><span class="pre">set_mock_put_proceeds()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_units"><code class="docutils literal notranslate"><span class="pre">set_mock_units()</span></code></a></li>
@@ -5030,6 +5371,44 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TableSubclass"><code class="docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Command.signature"><code class="docutils literal notranslate"><span class="pre">Command.signature</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Command.source"><code class="docutils literal notranslate"><span class="pre">Command.source</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Command.execute"><code class="docutils literal notranslate"><span class="pre">Command.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandBackend"><code class="docutils literal notranslate"><span class="pre">CommandBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandBackend.source"><code class="docutils literal notranslate"><span class="pre">CommandBackend.source()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandBackend.connect"><code class="docutils literal notranslate"><span class="pre">CommandBackend.connect()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandBackend.execute"><code class="docutils literal notranslate"><span class="pre">CommandBackend.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandConnector"><code class="docutils literal notranslate"><span class="pre">CommandConnector</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandConnector.connect_mock"><code class="docutils literal notranslate"><span class="pre">CommandConnector.connect_mock()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CommandConnector.connect_real"><code class="docutils literal notranslate"><span class="pre">CommandConnector.connect_real()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend.source"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend.source()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend.set_mock_execute_callback"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend.set_mock_execute_callback()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend.execute_mock"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend.execute_mock()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend.execute"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend.execute()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockCommandBackend.connect"><code class="docutils literal notranslate"><span class="pre">MockCommandBackend.connect()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.NO_ARG_VOID_SIGNATURE"><code class="docutils literal notranslate"><span class="pre">NO_ARG_VOID_SIGNATURE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftCommandBackend"><code class="docutils literal notranslate"><span class="pre">SoftCommandBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftCommandBackend.signature"><code class="docutils literal notranslate"><span class="pre">SoftCommandBackend.signature</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftCommandBackend.source"><code class="docutils literal notranslate"><span class="pre">SoftCommandBackend.source()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftCommandBackend.connect"><code class="docutils literal notranslate"><span class="pre">SoftCommandBackend.connect()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftCommandBackend.execute"><code class="docutils literal notranslate"><span class="pre">SoftCommandBackend.execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_command"><code class="docutils literal notranslate"><span class="pre">soft_command()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerableCommand"><code class="docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerableCommand.trigger"><code class="docutils literal notranslate"><span class="pre">TriggerableCommand.trigger()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

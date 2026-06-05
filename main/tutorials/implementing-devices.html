@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -1143,15 +1143,15 @@ FastCS</label><div class="sd-tab-content docutils">
 <p>Moving up a level, we have the point detector itself. This also has some Signals to control acquisition which are created in the same way as above:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">acquire_time</span></code>: a configuration float saying how long each point should be acquired for</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code>: an executable to start a single acquisition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code>: a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> to start a single acquisition</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">acquiring</span></code>: a boolean that is True when acquiring</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code>: an executable to reset the counts on all channels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code>: a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> to reset the counts on all channels</p></li>
 </ul>
 <p>We also have a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceVector</span></code></a> called <code class="docutils literal notranslate"><span class="pre">channel</span></code> with <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code> instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.</p>
-<p>Finally, we need to communicate to bluesky that it has to <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> an acquisition before it can <code class="docutils literal notranslate"><span class="pre">read()</span></code> from the underlying channels. We do this by implementing the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Triggerable</span></code></span></a> protocol. This involves writing a <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> method with the logic that must be run, calling <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX.trigger" title="ophyd_async.core.SignalX.trigger"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalX.trigger</span></code></a>, <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set" title="ophyd_async.core.SignalW.set"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalW.set</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a> to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>, which is used by bluesky to run this operation in the background and know when it is complete.</p>
+<p>Finally, we need to communicate to bluesky that it has to <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> an acquisition before it can <code class="docutils literal notranslate"><span class="pre">read()</span></code> from the underlying channels. We do this by implementing the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Triggerable</span></code></span></a> protocol. This involves writing a <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> method with the logic that must be run, calling <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand.trigger" title="ophyd_async.core.TriggerableCommand.trigger"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">TriggerableCommand.trigger</span></code></a>, <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set" title="ophyd_async.core.SignalW.set"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalW.set</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a> to manipulate the values of the underlying Signals and Commands, returning when complete. This is wrapped in an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>, which is used by bluesky to run this operation in the background and know when it is complete.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="../how-to/interact-with-signals.html"><span class="doc std std-doc">How to interact with signals while implementing bluesky verbs</span></a></p>
+<p><a class="reference internal" href="../how-to/interact-with-signals.html"><span class="doc std std-doc">How to interact with signals and commands while implementing bluesky verbs</span></a></p>
 </div>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-12" name="sd-tab-set-4" type="radio">
@@ -1167,8 +1167,8 @@ EPICS</label><div class="sd-tab-content docutils">
     <span class="n">DeviceVector</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">SignalX</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
@@ -1180,9 +1180,9 @@ EPICS</label><div class="sd-tab-content docutils">
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo detector that produces a point values based on X and Y motors.&quot;&quot;&quot;</span>
 
     <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AcquireTime&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
-    <span class="n">start</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Start.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Start.PROC&quot;</span><span class="p">)]</span>
     <span class="n">acquiring</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Acquiring&quot;</span><span class="p">)]</span>
-    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
@@ -1201,6 +1201,7 @@ EPICS</label><div class="sd-tab-content docutils">
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </pre></div>
 </div>
+<p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> is used for <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">reset</span></code> rather than Signals because these are actions to fire on the hardware, not values to read or write. Calling <code class="docutils literal notranslate"><span class="pre">.trigger()</span></code> executes the action and waits for the hardware to acknowledge it.</p>
 <p>Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. This is because it requires the <code class="docutils literal notranslate"><span class="pre">num_channels</span></code> to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as <code class="docutils literal notranslate"><span class="pre">PREFIX:</span></code> then the first channel would have prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:CHAN1:</span></code>. We also register them with <code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> in a different way, adding them within a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager which adds all the children created within its body.</p>
 <p>Whilst it is not required for the call to <code class="docutils literal notranslate"><span class="pre">super().__init__</span></code> to be after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for <a class="reference internal" href="../how-to/derive-one-signal-from-others.html"><span class="std std-doc">derived signals</span></a> that depend on their parent.</p>
 </div>
@@ -1226,8 +1227,8 @@ FastCS</label><div class="sd-tab-content docutils">
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">readback</span></code>: the current position of the motor as a float</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">velocity</span></code>: a configuration parameter for the velocity in units/s</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">setpoint</span></code>: the position the motor has been requested to move to as a float</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">stop_</span></code>: an executable to stop the move immediately</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setpoint</span></code>: the position the motor has been requested to move to as a float, it returns as soon as it’s been set</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop_</span></code>: a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> to stop the move immediately</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code> inherits from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable" title="ophyd_async.core.StandardMovable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardMovable</span></code></a>, which provides the full
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Movable</span></code></span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Locatable</span></code></span></a>,
@@ -1259,9 +1260,9 @@ EPICS</label><div class="sd-tab-content docutils">
     <span class="n">MovableLogic</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">SignalX</span><span class="p">,</span>
     <span class="n">StandardMovable</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
     <span class="n">set_and_wait_for_other_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
@@ -1271,7 +1272,7 @@ EPICS</label><div class="sd-tab-content docutils">
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoMotorMoveLogic</span><span class="p">(</span><span class="n">MovableLogic</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">stop_</span><span class="p">:</span> <span class="n">SignalX</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
@@ -1301,7 +1302,7 @@ EPICS</label><div class="sd-tab-content docutils">
     <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
     <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Setpoint&quot;</span><span class="p">)]</span>
     <span class="c1"># If a signal name clashes with a bluesky verb add _ to the attribute name</span>
-    <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>

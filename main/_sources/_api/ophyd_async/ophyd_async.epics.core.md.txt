@@ -39,6 +39,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.core._epics_device.EpicsDevice
     :summary:
     ```
+* - {py:obj}`EpicsCommandBackend <ophyd_async.epics.core._util.EpicsCommandBackend>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._util.EpicsCommandBackend
+    :summary:
+    ```
 * - {py:obj}`EpicsOptions <ophyd_async.epics.core._util.EpicsOptions>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._util.EpicsOptions
     :summary:
@@ -69,6 +73,10 @@
     ```
 * - {py:obj}`epics_signal_x <ophyd_async.epics.core._signal.epics_signal_x>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
+    :summary:
+    ```
+* - {py:obj}`epics_triggerable_command <ophyd_async.epics.core._signal.epics_triggerable_command>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_triggerable_command
     :summary:
     ```
 * - {py:obj}`stop_busy_record <ophyd_async.epics.core._util.stop_busy_record>`
@@ -167,6 +175,17 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
    'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.signals
+```
+
+````
+
+````{py:attribute} commands
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.commands
+:type: ~collections.abc.Mapping[str, str]
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.commands
 ```
 
 ````
@@ -368,6 +387,13 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```
 ````
 
+````{py:function} epics_triggerable_command(write_pv: str, execute_value: int = 1, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.TriggerableCommand
+:canonical: ophyd_async.epics.core._signal.epics_triggerable_command
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_triggerable_command
+```
+````
+
 ````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[bool], timeout: float = DEFAULT_TIMEOUT) -> None
 :canonical: ophyd_async.epics.core._util.stop_busy_record
 :async:
@@ -382,6 +408,16 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._util.wait_for_good_state
 ```
+````
+
+````{py:class} EpicsCommandBackend(write_pv: str = '', execute_value: int = 1)
+:canonical: ophyd_async.epics.core._util.EpicsCommandBackend
+
+Bases: {py:obj}`ophyd_async.core.CommandBackend`\[\[\]\, {py:obj}`None`\]
+
+```{autodoc2-docstring} ophyd_async.epics.core._util.EpicsCommandBackend
+```
+
 ````
 
 `````{py:class} EpicsOptions

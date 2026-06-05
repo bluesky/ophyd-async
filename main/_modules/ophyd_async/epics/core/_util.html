@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -906,6 +906,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">NO_ARG_VOID_SIGNATURE</span><span class="p">,</span>
+    <span class="n">CommandBackend</span><span class="p">,</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
@@ -1004,6 +1006,28 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">write_pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span> <span class="ow">or</span> <span class="n">EpicsOptions</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EpicsCommandBackend">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsCommandBackend">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsCommandBackend</span><span class="p">(</span><span class="n">CommandBackend</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for EPICS command backends over CA or PVA.</span>
+
+<span class="sd">    Holds the mutable `write_pv` attribute set by</span>
+<span class="sd">    `fill_command_with_prefix()` after construction, and the</span>
+<span class="sd">    `execute_value` written to the PV on trigger.</span>
+
+<span class="sd">    :param write_pv: The PV to write to. Set after construction by</span>
+<span class="sd">        `fill_command_with_prefix()`.</span>
+<span class="sd">    :param execute_value: The integer value written to the PV on trigger</span>
+<span class="sd">        (default: 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execute_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">write_pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_value</span> <span class="o">=</span> <span class="n">execute_value</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">signature</span><span class="o">=</span><span class="n">NO_ARG_VOID_SIGNATURE</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="stop_busy_record">

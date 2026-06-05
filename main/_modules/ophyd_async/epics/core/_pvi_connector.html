@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -900,6 +900,7 @@ window.runMermaid = runMermaid;</script>
   <h1>Source code for ophyd_async.epics.core._pvi_connector</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 
@@ -920,12 +921,13 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">SignalW</span><span class="p">,</span>
-    <span class="n">SignalX</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
     <span class="n">gather_dict</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._epics_connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">fill_backend_with_prefix</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvaSignalBackend</span><span class="p">,</span> <span class="n">pvget_with_timeout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._epics_connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">fill_backend_with_prefix</span><span class="p">,</span> <span class="n">fill_command_with_prefix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvaCommandBackend</span><span class="p">,</span> <span class="n">PvaSignalBackend</span><span class="p">,</span> <span class="n">pvget_with_timeout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsCommandBackend</span>
 
 
 <div class="viewcode-block" id="PviDeviceConnector">
@@ -957,18 +959,38 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector.create_children_from_annotations">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;filler&quot;</span><span class="p">):</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_command_backend_factory</span><span class="p">(</span>
+                <span class="n">sig</span><span class="p">:</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EpicsCommandBackend</span><span class="p">:</span>
+                <span class="c1"># EPICS only supports void/void commands (plain PV put); typed</span>
+                <span class="c1"># Command[P, T] annotations are a mistake on an EPICS device.</span>
+                <span class="k">if</span> <span class="n">sig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: EPICS only supports TriggerableCommand /&quot;</span>
+                        <span class="s2">&quot; Command[[], None]; typed Command with parameters is not&quot;</span>
+                        <span class="s2">&quot; yet supported over EPICS&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="n">PvaCommandBackend</span><span class="p">()</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
                 <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
                 <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">PvaSignalBackend</span><span class="p">,</span>
                 <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">PviDeviceConnector</span><span class="p">,</span>
+                <span class="n">command_backend_factory</span><span class="o">=</span><span class="n">_command_backend_factory</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="c1"># Devices will be created with unfilled PviDeviceConnectors</span>
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">(</span><span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
             <span class="c1"># Signals can be filled in with EpicsSignalSuffix and checked at runtime</span>
             <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">(</span>
                 <span class="n">filled</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">):</span>
                 <span class="n">fill_backend_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+            <span class="c1"># Commands are filled from PVI tree at connect time</span>
+            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_commands_from_annotations</span><span class="p">(</span>
+                <span class="n">filled</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">):</span>
+                <span class="n">fill_command_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+            <span class="c1"># Devices will be created with unfilled PviDeviceConnectors</span>
+            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">(</span><span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_created</span><span class="p">()</span></div>
 
 
@@ -1048,6 +1070,11 @@ window.runMermaid = runMermaid;</script>
             <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">signal_details</span><span class="o">.</span><span class="n">read_pv</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">signal_details</span><span class="o">.</span><span class="n">write_pv</span>
 
+        <span class="c1"># Fill all commands (&quot;x&quot; entries from PVI tree)</span>
+        <span class="k">for</span> <span class="n">command_name</span><span class="p">,</span> <span class="n">execute_pv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">TriggerableCommand</span><span class="p">)</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">execute_pv</span>
+
         <span class="c1"># Check that all the requested children have been filled</span>
         <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">error_hint</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_hint</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_filled</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1083,9 +1110,6 @@ window.runMermaid = runMermaid;</script>
 
             <span class="k">case</span> <span class="p">{</span><span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">write_pv</span><span class="p">}:</span>
                 <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">signal_type</span><span class="o">=</span><span class="n">SignalW</span><span class="p">,</span> <span class="n">read_pv</span><span class="o">=</span><span class="n">write_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="o">=</span><span class="n">write_pv</span><span class="p">)</span>
-
-            <span class="k">case</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">execute_pv</span><span class="p">}:</span>
-                <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">signal_type</span><span class="o">=</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">read_pv</span><span class="o">=</span><span class="n">execute_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="o">=</span><span class="n">execute_pv</span><span class="p">)</span>
 
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t process entry </span><span class="si">{</span><span class="n">entry</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -1176,6 +1200,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param signals:</span>
 <span class="sd">        A mapping of signal names to `SignalDetails` objects.</span>
 
+<span class="sd">    :param commands:</span>
+<span class="sd">        A mapping of command names to their execute PV strings (from &quot;x&quot; PVI entries).</span>
+
 <span class="sd">    :param sub_devices:</span>
 <span class="sd">        A mapping of sub-device names to their corresponding `PviTree` objects.</span>
 
@@ -1190,6 +1217,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">pvi_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">signals</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalDetails</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">commands</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="n">sub_devices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PviTree</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="n">vector_children</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PviTree</span> <span class="o">|</span> <span class="n">SignalDetails</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 
@@ -1213,6 +1241,13 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># these entries are stored under the parent PVI structure name</span>
         <span class="c1"># for example, {&quot;device&quot;: {&quot;d&quot;: &quot;Prefix:Device:PVI&quot;, &quot;rw&quot;: &quot;Prefix:A&quot;}}</span>
         <span class="n">entries</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pvi_structure</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">todict</span><span class="p">()</span>
+        <span class="c1"># Separate &quot;x&quot; (command) entries before processing signals</span>
+        <span class="n">commands</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">entry_name</span><span class="p">:</span> <span class="n">entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">entry_name</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">entry_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="n">entry_name</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="n">entry_name</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">}</span>
+        <span class="p">}</span>
         <span class="n">signal_details</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">entry_name</span><span class="p">:</span> <span class="n">SignalDetails</span><span class="o">.</span><span class="n">from_entry</span><span class="p">(</span><span class="n">entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">entry_name</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">entry_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
@@ -1241,6 +1276,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">PviTree</span><span class="p">(</span>
             <span class="n">pvi_pv</span><span class="o">=</span><span class="n">pvi_pv</span><span class="p">,</span>
             <span class="n">signals</span><span class="o">=</span><span class="n">signal_details</span><span class="p">,</span>
+            <span class="n">commands</span><span class="o">=</span><span class="n">commands</span><span class="p">,</span>
             <span class="n">sub_devices</span><span class="o">=</span><span class="n">sub_trees</span><span class="p">,</span>
             <span class="n">vector_children</span><span class="o">=</span><span class="n">vector_children</span><span class="p">,</span>
         <span class="p">)</span></div>

@@ -94,7 +94,7 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.S
 
 ````{py:attribute} stop_
 :canonical: ophyd_async.epics.demo._motor.DemoMotor.stop_
-:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Stop.PROC')]
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('~Stop.PROC')]
 :value: >
    None
 
@@ -206,7 +206,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.c
 
 ````{py:attribute} start
 :canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.start
-:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Start.PROC')]
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('~Start.PROC')]
 :value: >
    None
 
@@ -228,7 +228,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.c
 
 ````{py:attribute} reset
 :canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.reset
-:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Reset.PROC')]
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('~Reset.PROC')]
 :value: >
    None
 

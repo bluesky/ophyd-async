@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.testing._one_of_everything &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.tango.testing._one_of_everything &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -904,7 +904,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttrDataFormat</span><span class="p">,</span> <span class="n">AttrWriteType</span><span class="p">,</span> <span class="n">DevState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttrDataFormat</span><span class="p">,</span> <span class="n">AttrWriteType</span><span class="p">,</span> <span class="n">CmdArgType</span><span class="p">,</span> <span class="n">DevState</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">command</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -943,8 +943,6 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_valid_command</span><span class="p">(</span><span class="n">dformat</span><span class="p">:</span> <span class="n">AttrDataFormat</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;DevUChar&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">dformat</span> <span class="o">!=</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span> <span class="ow">and</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DevState&quot;</span><span class="p">,</span> <span class="s2">&quot;DevEnum&quot;</span><span class="p">]:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="kc">True</span>
@@ -1018,6 +1016,27 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="OneOfEverythingTangoDevice.long_string_cmd">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.long_string_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">long_string_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Echo command for DevVarLongStringArray.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">arg</span></div>
+
+
+<div class="viewcode-block" id="OneOfEverythingTangoDevice.double_string_cmd">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.double_string_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">double_string_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Echo command for DevVarDoubleStringArray.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">arg</span></div>
+
+
+<div class="viewcode-block" id="OneOfEverythingTangoDevice.void_cmd">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.void_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">void_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Command for DevVoid.&quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+
 <div class="viewcode-block" id="OneOfEverythingTangoDevice.add_array_attrs">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.add_array_attrs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_array_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -1048,12 +1067,35 @@ window.runMermaid = runMermaid;</script>
             <span class="n">max_dim_y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">enum_labels</span><span class="o">=</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ExampleStrEnum</span><span class="p">],</span>
         <span class="p">)</span>
+        <span class="c1"># Arrays of enums are not supported, do not add their attribute data</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;strenum&quot;</span><span class="p">,</span> <span class="s2">&quot;my_state&quot;</span><span class="p">]:</span>
+            <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_attr</span><span class="p">(</span><span class="n">spectrum_attr</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span>
         <span class="c1"># have image just be 2 of the initial spectrum stacked</span>
         <span class="c1"># String images are not supported, do not add their attribute data</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;strenum&quot;</span><span class="p">,</span> <span class="s2">&quot;my_state&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">]:</span>
             <span class="k">return</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_add_attr</span><span class="p">(</span><span class="n">image_attr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">initial_value</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_attr</span><span class="p">(</span><span class="n">image_attr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">initial_value</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)))</span>
+
+        <span class="n">void_cmd</span> <span class="o">=</span> <span class="n">command</span><span class="p">(</span>
+            <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">void_cmd</span><span class="p">,</span>
+            <span class="n">dtype_in</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">,</span>
+            <span class="n">dtype_out</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">long_string_table_cmd</span> <span class="o">=</span> <span class="n">command</span><span class="p">(</span>
+            <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">long_string_cmd</span><span class="p">,</span>
+            <span class="n">dtype_in</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">,</span>
+            <span class="n">dtype_out</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarLongStringArray</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">double_string_table_cmd</span> <span class="o">=</span> <span class="n">command</span><span class="p">(</span>
+            <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">double_string_cmd</span><span class="p">,</span>
+            <span class="n">dtype_in</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">,</span>
+            <span class="n">dtype_out</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">void_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">long_string_table_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">double_string_table_cmd</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OneOfEverythingTangoDevice.add_scalar_command">
@@ -1075,15 +1117,24 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.add_spectrum_command">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_spectrum_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">_valid_command</span><span class="p">(</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span>
-                <span class="n">command</span><span class="p">(</span>
-                    <span class="n">f</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_spectrum_cmd&quot;</span><span class="p">),</span>
-                    <span class="n">dtype_in</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-                    <span class="n">dtype_out</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-                    <span class="n">dformat_in</span><span class="o">=</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
-                    <span class="n">dformat_out</span><span class="o">=</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
-                <span class="p">),</span>
-            <span class="p">)</span></div>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;int8&quot;</span><span class="p">,</span> <span class="s2">&quot;uint8&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span>
+                    <span class="n">command</span><span class="p">(</span>
+                        <span class="n">f</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_spectrum_cmd&quot;</span><span class="p">),</span>
+                        <span class="n">dtype_in</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarCharArray</span><span class="p">,</span>
+                        <span class="n">dtype_out</span><span class="o">=</span><span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarCharArray</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span>
+                    <span class="n">command</span><span class="p">(</span>
+                        <span class="n">f</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_spectrum_cmd&quot;</span><span class="p">),</span>
+                        <span class="n">dtype_in</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                        <span class="n">dtype_out</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                        <span class="n">dformat_in</span><span class="o">=</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
+                        <span class="n">dformat_out</span><span class="o">=</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OneOfEverythingTangoDevice.initialize_dynamic_attributes">

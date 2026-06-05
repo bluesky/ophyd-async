@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._base_device &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.tango.core._base_device &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -906,10 +906,18 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">DeviceFiller</span><span class="p">,</span> <span class="n">LazyMock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Command</span><span class="p">,</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">DeviceConnector</span><span class="p">,</span>
+    <span class="n">DeviceFiller</span><span class="p">,</span>
+    <span class="n">LazyMock</span><span class="p">,</span>
+    <span class="n">Signal</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">infer_python_type</span><span class="p">,</span> <span class="n">infer_signal_type</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_full_attr_trl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._tango_command_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoCommandBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_full_attr_trl</span><span class="p">,</span> <span class="n">sig_from_types</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 
@@ -1004,12 +1012,15 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">device_connector_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TangoDeviceConnector</span><span class="p">(</span>
                     <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_support_events</span>
                 <span class="p">),</span>
+                <span class="n">command_backend_factory</span><span class="o">=</span><span class="n">TangoCommandBackend</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">(</span><span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">(</span>
                 <span class="n">filled</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">):</span>
                 <span class="n">fill_backend_with_polling</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_support_events</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_commands_from_annotations</span><span class="p">(</span><span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_created</span><span class="p">()</span></div>
 
 
@@ -1048,12 +1059,32 @@ window.runMermaid = runMermaid;</script>
                 <span class="c1"># TODO: strip attribute name</span>
                 <span class="n">full_trl</span> <span class="o">=</span> <span class="n">get_full_attr_trl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
                 <span class="n">signal_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_signal_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">signal_type</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signal_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                     <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
-                    <span class="c1"># don&#39;t overlaod datatype if provided by annotation</span>
+                <span class="k">elif</span> <span class="n">signal_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
+                    <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Cannot infer type for </span><span class="si">{</span><span class="n">full_trl</span><span class="si">}</span><span class="s2"> (type </span><span class="si">{</span><span class="n">signal_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+                <span class="c1"># don&#39;t overload datatype if provided by annotation</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">TangoCommandBackend</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">in_type</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span>
+                            <span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span>
+                        <span class="p">)</span>
+                        <span class="n">sig</span> <span class="o">=</span> <span class="n">sig_from_types</span><span class="p">(</span><span class="n">in_type</span><span class="p">,</span> <span class="n">out_type</span><span class="p">)</span>
+
+                        <span class="c1"># # Pyright still thinks backend could be a</span>
+                        <span class="c1"># # TangoSignalBackend somehow</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="n">sig</span>  <span class="c1"># type: ignore</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">TangoSignalBackend</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
-                    <span class="n">backend</span><span class="o">.</span><span class="n">set_trl</span><span class="p">(</span><span class="n">full_trl</span><span class="p">)</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">out_type</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown backend type </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">set_trl</span><span class="p">(</span><span class="n">full_trl</span><span class="p">)</span>
 
         <span class="c1"># Check that all the requested children have been filled</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_filled</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">children</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

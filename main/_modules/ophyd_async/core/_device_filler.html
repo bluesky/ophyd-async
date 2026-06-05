@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device_filler &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.core._device_filler &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -900,6 +900,7 @@ window.runMermaid = runMermaid;</script>
   <h1>Source code for ophyd_async.core._device_filler</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -913,16 +914,19 @@ window.runMermaid = runMermaid;</script>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">cast</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
+    <span class="n">get_origin</span><span class="p">,</span>
     <span class="n">runtime_checkable</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._command</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span><span class="p">,</span> <span class="n">CommandBackend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">DeviceVector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ignore</span><span class="p">,</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalX</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalBackend</span><span class="p">,</span> <span class="n">SignalDatatype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_get_origin</span><span class="p">,</span> <span class="n">cached_get_type_hints</span><span class="p">,</span> <span class="n">get_origin_class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">cached_get_origin</span><span class="p">,</span> <span class="n">cached_get_type_hints</span><span class="p">,</span> <span class="n">get_origin_class</span>
 
 <span class="n">SignalBackendT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;SignalBackendT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">SignalBackend</span><span class="p">)</span>
 <span class="n">DeviceConnectorT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DeviceConnectorT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DeviceConnector</span><span class="p">)</span>
+<span class="n">CommandBackendT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;CommandBackendT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">CommandBackend</span><span class="p">)</span>
 <span class="c1"># Unique name possibly with trailing understore, the attribute name on the Device</span>
 <span class="n">UniqueName</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;UniqueName&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
 <span class="c1"># Logical name without trailing underscore, the name in the control system</span>
@@ -940,6 +944,28 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_command_signature</span><span class="p">(</span><span class="n">annotation</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract Signature from Command[[type_in...], type_out] annotations.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Command</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">param_types</span><span class="p">,</span> <span class="n">return_type</span> <span class="o">=</span> <span class="n">args</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param_types</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">param_types</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">param_types</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;arg</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">t</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param_types</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sig</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_device_vector_child_datatype</span><span class="p">(</span><span class="n">vector</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -983,7 +1009,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="DeviceFiller">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DeviceFiller</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalBackendT</span><span class="p">,</span> <span class="n">DeviceConnectorT</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DeviceFiller</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalBackendT</span><span class="p">,</span> <span class="n">DeviceConnectorT</span><span class="p">,</span> <span class="n">CommandBackendT</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For filling signals on introspected devices.</span>
 
 <span class="sd">    :param device: The device to fill.</span>
@@ -996,15 +1022,19 @@ window.runMermaid = runMermaid;</script>
         <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
         <span class="n">signal_backend_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">SignalBackendT</span><span class="p">],</span>
         <span class="n">device_connector_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">DeviceConnectorT</span><span class="p">],</span>
+        <span class="n">command_backend_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">CommandBackendT</span><span class="p">],</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">device</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_backend_factory</span> <span class="o">=</span> <span class="n">signal_backend_factory</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_device_connector_factory</span> <span class="o">=</span> <span class="n">device_connector_factory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_command_backend_factory</span> <span class="o">=</span> <span class="n">command_backend_factory</span>
         <span class="c1"># Annotations stored ready for the creation phase</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">UniqueName</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_commands</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">UniqueName</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Command</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_devices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">UniqueName</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">|</span> <span class="n">DeviceFactory</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">UniqueName</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_datatype</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_command_signature</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vector_device_type</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_optional_devices</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ignored_signals</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -1014,10 +1044,16 @@ window.runMermaid = runMermaid;</script>
         <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_connectors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="n">DeviceConnectorT</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Once they are filled they go here in case we reconnect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_command_backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
+            <span class="n">LogicalName</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CommandBackendT</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Command</span><span class="p">]]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
             <span class="n">LogicalName</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SignalBackendT</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filled_connectors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="n">DeviceConnectorT</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filled_command_backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
+            <span class="n">LogicalName</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CommandBackendT</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Command</span><span class="p">]]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scan_for_annotations</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_raise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
@@ -1039,6 +1075,17 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">_store_signal_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">UniqueName</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
         <span class="n">datatype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_signal_datatype</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">annotation</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_datatype</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">datatype</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_store_command_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">UniqueName</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">get_origin_class</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">_get_command_signature</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_command_signature</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">signature</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_raise</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected Command or Command[[type], type], got </span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_scan_for_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Get type hints on the class, not the instance</span>
@@ -1079,6 +1126,9 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_store_signal_datatype</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">annotation</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin</span>
+            <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_store_command_datatype</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">annotation</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_commands</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">origin</span>
             <span class="c1"># We either have an annotation of a Device, or we have a generic alias of</span>
             <span class="c1"># a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable</span>
             <span class="c1"># and returns a DeviceVector.</span>
@@ -1112,12 +1162,48 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.check_created">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_created</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that all Signals and Devices declared in annotations are created.&quot;&quot;&quot;</span>
-        <span class="n">uncreated</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_devices</span><span class="p">))</span>
+        <span class="n">uncreated</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_devices</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_commands</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">uncreated</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">uncreated</span><span class="si">}</span><span class="s2"> have not been created yet&quot;</span>
             <span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_device_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
+            <span class="n">_check_device_annotation</span><span class="p">(</span><span class="n">anno</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_children_iter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uncreated</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">UniqueName</span><span class="p">,</span> <span class="nb">type</span><span class="p">],</span>
+        <span class="n">factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">V</span><span class="p">],</span>
+        <span class="n">type_lookup</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">LogicalName</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">filled_dest</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">unfilled_dest</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shared creation loop used by signals and commands.</span>
+
+<span class="sd">        Yields `(backend, extras)` to the caller, who may mutate `backend`</span>
+<span class="sd">        (e.g. set PV suffixes), then resumes to finish child construction and</span>
+<span class="sd">        registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">uncreated</span><span class="p">):</span>
+            <span class="n">child_type</span> <span class="o">=</span> <span class="n">uncreated</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">backend</span> <span class="o">=</span> <span class="n">factory</span><span class="p">(</span><span class="n">type_lookup</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)])</span>
+            <span class="n">extras</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="k">yield</span> <span class="n">backend</span><span class="p">,</span> <span class="n">extras</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">child_type</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_device_annotations</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">filled_dest</span> <span class="k">if</span> <span class="n">filled</span> <span class="k">else</span> <span class="n">unfilled_dest</span><span class="p">)[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">backend</span><span class="p">,</span>
+                <span class="n">child_type</span><span class="p">,</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="DeviceFiller.create_signals_from_annotations">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.create_signals_from_annotations">[docs]</a>
@@ -1140,20 +1226,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            list so this class can handle them, e.g. `StandardReadableFormat`</span>
 <span class="sd">            instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">):</span>
-            <span class="n">child_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_backend_factory</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_signal_datatype</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span>
-            <span class="p">)</span>
-            <span class="n">extras</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
-            <span class="k">yield</span> <span class="n">backend</span><span class="p">,</span> <span class="n">extras</span>
-            <span class="n">signal</span> <span class="o">=</span> <span class="n">child_type</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
-                <span class="n">device_annotation</span> <span class="o">=</span> <span class="n">_check_device_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="o">=</span><span class="n">anno</span><span class="p">)</span>
-                <span class="n">device_annotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">signal</span><span class="p">)</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">signal</span><span class="p">)</span>
-            <span class="n">dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span> <span class="k">if</span> <span class="n">filled</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_backends</span>
-            <span class="n">dest</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">child_type</span><span class="p">)</span></div>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_children_iter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_signals</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal_backend_factory</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signal_datatype</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_backends</span><span class="p">,</span>
+            <span class="n">filled</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DeviceFiller.create_devices_from_annotations">
@@ -1162,7 +1242,7 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">DeviceConnectorT</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create all Signals from annotations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create all Devices from annotations.</span>
 
 <span class="sd">        :param filled:</span>
 <span class="sd">            If True then the Devices created should be considered already filled</span>
@@ -1179,12 +1259,39 @@ window.runMermaid = runMermaid;</script>
             <span class="n">extras</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
             <span class="k">yield</span> <span class="n">connector</span><span class="p">,</span> <span class="n">extras</span>
             <span class="n">device</span> <span class="o">=</span> <span class="n">child_type</span><span class="p">(</span><span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
-                <span class="n">device_annotation</span> <span class="o">=</span> <span class="n">_check_device_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="o">=</span><span class="n">anno</span><span class="p">)</span>
-                <span class="n">device_annotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_device_annotations</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
             <span class="n">dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_connectors</span> <span class="k">if</span> <span class="n">filled</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_connectors</span>
             <span class="n">dest</span><span class="p">[</span><span class="n">_logical</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">connector</span></div>
+
+
+<div class="viewcode-block" id="DeviceFiller.create_commands_from_annotations">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.create_commands_from_annotations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_commands_from_annotations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">CommandBackendT</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create all Command children from annotations.</span>
+
+<span class="sd">        :param filled: If True the Commands are considered already filled with</span>
+<span class="sd">            connection data.  If False then `fill_child_command` must be called</span>
+<span class="sd">            before the Command can be connected.</span>
+<span class="sd">        :yields: `(command_backend, extras)`</span>
+<span class="sd">            The `CommandBackend` created for this Command and the list of extra</span>
+<span class="sd">            annotations that may be used to customise it.  Unhandled extras should</span>
+<span class="sd">            be left on the list so this class can handle them (e.g.</span>
+<span class="sd">            `StandardReadableFormat` instances).</span>
+<span class="sd">        :raises RuntimeError: If no `command_backend_factory` was supplied at</span>
+<span class="sd">            construction time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_children_iter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uncreated_commands</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_command_backend_factory</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_command_signature</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filled_command_backends</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_command_backends</span><span class="p">,</span>
+            <span class="n">filled</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DeviceFiller.create_device_vector_entries_to_mock">
@@ -1208,6 +1315,8 @@ window.runMermaid = runMermaid;</script>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">base_cls</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">hinted_child_cls</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">base_cls</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">hinted_child_cls</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">base_cls</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fill_child_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">hinted_child_cls</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1266,7 +1375,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span><span class="p">:</span>
             <span class="c1"># We made it and filled it so return for validation</span>
             <span class="n">backend</span><span class="p">,</span> <span class="n">expected_signal_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">vector_index</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">vector_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># We need to add a new entry to a DeviceVector</span>
             <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_backend_factory</span><span class="p">(</span><span class="n">_get_datatype</span><span class="p">(</span><span class="n">signal_type</span><span class="p">))</span>
             <span class="n">vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_device_vector</span><span class="p">()</span>
@@ -1311,7 +1420,7 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># We made it above</span>
             <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_connectors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filled_connectors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">connector</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_backends</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_connectors</span><span class="p">:</span>
             <span class="c1"># We made it and filled it so return for validation</span>
             <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_connectors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">vector_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1338,6 +1447,74 @@ window.runMermaid = runMermaid;</script>
             <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_connector_factory</span><span class="p">()</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_type</span><span class="p">(</span><span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">connector</span></div>
+
+
+<div class="viewcode-block" id="DeviceFiller.fill_child_command">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.fill_child_command">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fill_child_command</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">command_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Command</span><span class="p">]</span> <span class="o">=</span> <span class="n">Command</span><span class="p">,</span>
+        <span class="n">vector_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandBackendT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark a Command as filled and return its backend.</span>
+
+<span class="sd">        :param name: Logical name (without trailing underscore).</span>
+<span class="sd">        :param command_type: The `Command` subclass to create.</span>
+<span class="sd">        :param vector_index: Index within a `DeviceVector`, if applicable.</span>
+<span class="sd">        :return: The `CommandBackend` for the filled Command.</span>
+<span class="sd">        :raises RuntimeError: If no `command_backend_factory` was provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_backend_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: cannot fill Command child &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; — &quot;</span>
+                <span class="s2">&quot;no command_backend_factory was provided to DeviceFiller&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">logical_name</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">LogicalName</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="c1"># First check unfilled command backends</span>
+        <span class="k">if</span> <span class="n">logical_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_command_backends</span><span class="p">:</span>
+            <span class="n">backend</span><span class="p">,</span> <span class="n">expected_command_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unfilled_command_backends</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+                <span class="n">logical_name</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filled_command_backends</span><span class="p">[</span><span class="n">logical_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span><span class="p">,</span> <span class="n">expected_command_type</span>
+
+        <span class="c1"># Then check filled command backends</span>
+        <span class="k">elif</span> <span class="n">logical_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_command_backends</span><span class="p">:</span>
+            <span class="n">backend</span><span class="p">,</span> <span class="n">expected_command_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled_command_backends</span><span class="p">[</span><span class="n">logical_name</span><span class="p">]</span>
+
+        <span class="c1"># Handle DeviceVector case</span>
+        <span class="k">elif</span> <span class="n">vector_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_device_vector</span><span class="p">()</span>
+            <span class="n">vector_command_type</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_vector_device_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">logical_name</span><span class="p">)</span> <span class="ow">or</span> <span class="n">command_type</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">vector_command_type</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vector_command_type</span><span class="si">}</span><span class="s2"> is not a Command&quot;</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_backend_factory</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_command_signature</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">logical_name</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">expected_command_type</span> <span class="o">=</span> <span class="n">vector_command_type</span>
+            <span class="n">vector</span><span class="p">[</span><span class="n">vector_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">vector_command_type</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+        <span class="c1"># Shadowing check</span>
+        <span class="k">elif</span> <span class="n">child</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_raise</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot make child as it would shadow </span><span class="si">{</span><span class="n">child</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create new command</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_backend_factory</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">expected_command_type</span> <span class="o">=</span> <span class="n">command_type</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">command_type</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">command_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">expected_command_type</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_raise</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;is a </span><span class="si">{</span><span class="n">command_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> not a </span><span class="si">{</span><span class="n">expected_command_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">CommandBackendT</span><span class="p">,</span> <span class="n">backend</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

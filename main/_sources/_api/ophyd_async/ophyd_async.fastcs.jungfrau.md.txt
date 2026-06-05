@@ -288,7 +288,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````{py:attribute} acquisition_start
 :canonical: ophyd_async.fastcs.jungfrau._io.JungfrauDriverIO.acquisition_start
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
@@ -299,7 +299,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````{py:attribute} acquisition_stop
 :canonical: ophyd_async.fastcs.jungfrau._io.JungfrauDriverIO.acquisition_stop
-:type: ~ophyd_async.core.SignalX
+:type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 

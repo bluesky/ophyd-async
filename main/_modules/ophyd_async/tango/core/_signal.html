@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.19.dev1+g942a0fd6f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=d27fb2b8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e4ea469b"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev1+g942a0fd6f documentation - Home"/>
   
   
 </a></div>
@@ -903,15 +903,14 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AttrWriteType</span><span class="p">,</span>
-    <span class="n">DeviceProxy</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttrWriteType</span><span class="p">,</span> <span class="n">CmdArgType</span><span class="p">,</span> <span class="n">DeviceProxy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">Command</span><span class="p">,</span>
     <span class="n">Signal</span><span class="p">,</span>
     <span class="n">SignalDatatype</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
@@ -919,12 +918,11 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">SignalW</span><span class="p">,</span>
     <span class="n">SignalX</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._tango_transport</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CommandProxyReadCharacter</span><span class="p">,</span>
     <span class="n">TangoSignalBackend</span><span class="p">,</span>
-    <span class="n">get_command_character</span><span class="p">,</span>
     <span class="n">get_python_type</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_device_trl_and_attr</span>
@@ -1036,6 +1034,10 @@ window.runMermaid = runMermaid;</script>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalX</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalX` backed by 1 Tango Attribute/Command.</span>
 
+<span class="sd">    ```{version-deprecated} 0.19</span>
+<span class="sd">    Use `tango_triggerable_command` instead.</span>
+<span class="sd">    ```</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    write_trl:</span>
@@ -1046,8 +1048,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The name of the Signal</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;tango_signal_x is deprecated, use tango_triggerable_command instead&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">SignalX</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SignalX</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
 
@@ -1055,7 +1064,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.infer_python_type">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_python_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infers the python type from the TRL.&quot;&quot;&quot;</span>
     <span class="c1"># TODO: work out if this is still needed</span>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
@@ -1063,19 +1072,20 @@ window.runMermaid = runMermaid;</script>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="n">proxy</span>
-
+    <span class="n">input_type</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
         <span class="c1"># A Device proxy instantiated by awaiting</span>
         <span class="c1"># tango.asyncio.DeviceProxy is typed the same as the sync</span>
         <span class="c1"># despite having awaitable methods.</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">return_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">input_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">return_input_type</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">():</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">return_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find </span><span class="si">{</span><span class="n">tr_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">device_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">py_type</span></div>
+    <span class="k">return</span> <span class="n">input_type</span><span class="p">,</span> <span class="n">return_type</span></div>
 
 
 
@@ -1083,7 +1093,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.infer_signal_type">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_signal_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">Command</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
@@ -1105,15 +1115,12 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="n">command_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SignalR</span>
-        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">WRITE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SignalW</span>
-        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ_WRITE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SignalRW</span>
-        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">EXECUTE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SignalX</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
+            <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">TriggerableCommand</span>
+        <span class="k">return</span> <span class="n">Command</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to infer signal character for </span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 </pre></div>

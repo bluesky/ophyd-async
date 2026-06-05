@@ -307,6 +307,30 @@
   - ```{autodoc2-docstring} ophyd_async.core._enums.YesNo
     :summary:
     ```
+* - {py:obj}`Command <ophyd_async.core._command.Command>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.Command
+    :summary:
+    ```
+* - {py:obj}`CommandBackend <ophyd_async.core._command.CommandBackend>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.CommandBackend
+    :summary:
+    ```
+* - {py:obj}`CommandConnector <ophyd_async.core._command.CommandConnector>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.CommandConnector
+    :summary:
+    ```
+* - {py:obj}`MockCommandBackend <ophyd_async.core._command.MockCommandBackend>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend
+    :summary:
+    ```
+* - {py:obj}`SoftCommandBackend <ophyd_async.core._command.SoftCommandBackend>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend
+    :summary:
+    ```
+* - {py:obj}`TriggerableCommand <ophyd_async.core._command.TriggerableCommand>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.TriggerableCommand
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -351,8 +375,16 @@
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock_put
     :summary:
     ```
+* - {py:obj}`get_mock_execute <ophyd_async.core._mock_signal_utils.get_mock_execute>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock_execute
+    :summary:
+    ```
 * - {py:obj}`callback_on_mock_put <ophyd_async.core._mock_signal_utils.callback_on_mock_put>`
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
+    :summary:
+    ```
+* - {py:obj}`callback_on_mock_execute <ophyd_async.core._mock_signal_utils.callback_on_mock_execute>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_execute
     :summary:
     ```
 * - {py:obj}`mock_puts_blocked <ophyd_async.core._mock_signal_utils.mock_puts_blocked>`
@@ -459,6 +491,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_w
     :summary:
     ```
+* - {py:obj}`soft_command <ophyd_async.core._command.soft_command>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.soft_command
+    :summary:
+    ```
 ````
 
 ### Data
@@ -521,6 +557,10 @@
     ```
 * - {py:obj}`TableSubclass <ophyd_async.core._datatypes.TableSubclass>`
   - ```{autodoc2-docstring} ophyd_async.core._datatypes.TableSubclass
+    :summary:
+    ```
+* - {py:obj}`NO_ARG_VOID_SIGNATURE <ophyd_async.core._command.NO_ARG_VOID_SIGNATURE>`
+  - ```{autodoc2-docstring} ophyd_async.core._command.NO_ARG_VOID_SIGNATURE
     :summary:
     ```
 ````
@@ -624,10 +664,10 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 
 `````
 
-`````{py:class} DeviceFiller(device: ~ophyd_async.core._device.Device, signal_backend_factory: ~collections.abc.Callable[[type[~ophyd_async.core._signal_backend.SignalDatatype] | None], ~ophyd_async.core._device_filler.SignalBackendT], device_connector_factory: ~collections.abc.Callable[[], ~ophyd_async.core._device_filler.DeviceConnectorT])
+`````{py:class} DeviceFiller(device: ~ophyd_async.core._device.Device, signal_backend_factory: ~collections.abc.Callable[[type[~ophyd_async.core._signal_backend.SignalDatatype] | None], ~ophyd_async.core._device_filler.SignalBackendT], device_connector_factory: ~collections.abc.Callable[[], ~ophyd_async.core._device_filler.DeviceConnectorT], command_backend_factory: ~collections.abc.Callable[[~inspect.Signature | None], ~ophyd_async.core._device_filler.CommandBackendT])
 :canonical: ophyd_async.core._device_filler.DeviceFiller
 
-Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.SignalBackendT`\, {py:obj}`ophyd_async.core._device_filler.DeviceConnectorT`\]
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.SignalBackendT`\, {py:obj}`ophyd_async.core._device_filler.DeviceConnectorT`\, {py:obj}`ophyd_async.core._device_filler.CommandBackendT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller
 ```
@@ -652,6 +692,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.create_devices_from_annotations
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_devices_from_annotations
+```
+
+````
+
+````{py:method} create_commands_from_annotations(filled=True) -> ~collections.abc.Iterator[tuple[~ophyd_async.core._device_filler.CommandBackendT, list[~typing.Any]]]
+:canonical: ophyd_async.core._device_filler.DeviceFiller.create_commands_from_annotations
+
+```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_commands_from_annotations
 ```
 
 ````
@@ -684,6 +732,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_device
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_device
+```
+
+````
+
+````{py:method} fill_child_command(name: str, command_type: type[~ophyd_async.core._command.Command] = Command, vector_index: int | None = None) -> ~ophyd_async.core._device_filler.CommandBackendT
+:canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_command
+
+```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_command
 ```
 
 ````
@@ -1387,7 +1443,7 @@ Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._si
 
 `````
 
-`````{py:class} SignalX(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
+`````{py:class} SignalX(backend: ~ophyd_async.core._signal_backend.SignalBackend, timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
 :canonical: ophyd_async.core._signal.SignalX
 
 Bases: {py:obj}`ophyd_async.core._signal.Signal`
@@ -2005,10 +2061,24 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
+````{py:function} get_mock_execute(command: ~ophyd_async.core._command.Command) -> ~unittest.mock.AsyncMock
+:canonical: ophyd_async.core._mock_signal_utils.get_mock_execute
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock_execute
+```
+````
+
 ````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback)
 :canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
+```
+````
+
+````{py:function} callback_on_mock_execute(command: ~ophyd_async.core._command.Command, callback: ~ophyd_async.core._command.MockExecuteCallback)
+:canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_execute
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_execute
 ```
 ````
 
@@ -3835,3 +3905,242 @@ Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 ```
 
 ````
+
+`````{py:class} Command(backend: ~ophyd_async.core._command.CommandBackend[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+:canonical: ophyd_async.core._command.Command
+
+Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.P`\, {py:obj}`ophyd_async.core._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.Command
+```
+
+````{py:property} signature
+:canonical: ophyd_async.core._command.Command.signature
+:type: ~inspect.Signature | None
+
+```{autodoc2-docstring} ophyd_async.core._command.Command.signature
+```
+
+````
+
+````{py:property} source
+:canonical: ophyd_async.core._command.Command.source
+:type: str
+
+```{autodoc2-docstring} ophyd_async.core._command.Command.source
+```
+
+````
+
+````{py:method} execute(*args: ~ophyd_async.core._utils.P.args, **kwargs: ~ophyd_async.core._utils.P.kwargs) -> ~ophyd_async.core._utils.T
+:canonical: ophyd_async.core._command.Command.execute
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.Command.execute
+```
+
+````
+
+`````
+
+`````{py:class} CommandBackend(signature: ~inspect.Signature | None)
+:canonical: ophyd_async.core._command.CommandBackend
+
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.P`\, {py:obj}`ophyd_async.core._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandBackend
+```
+
+````{py:method} source(name: str) -> str
+:canonical: ophyd_async.core._command.CommandBackend.source
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandBackend.source
+```
+
+````
+
+````{py:method} connect(timeout: float) -> None
+:canonical: ophyd_async.core._command.CommandBackend.connect
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandBackend.connect
+```
+
+````
+
+````{py:method} execute(*args: ~ophyd_async.core._utils.P.args, **kwargs: ~ophyd_async.core._utils.P.kwargs) -> ~ophyd_async.core._utils.T
+:canonical: ophyd_async.core._command.CommandBackend.execute
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandBackend.execute
+```
+
+````
+
+`````
+
+`````{py:class} CommandConnector(backend: ~ophyd_async.core._command.CommandBackend[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T])
+:canonical: ophyd_async.core._command.CommandConnector
+
+Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.P`\, {py:obj}`ophyd_async.core._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandConnector
+```
+
+````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._device.LazyMock)
+:canonical: ophyd_async.core._command.CommandConnector.connect_mock
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandConnector.connect_mock
+```
+
+````
+
+````{py:method} connect_real(device: ~ophyd_async.core._device.Device, timeout: float, force_reconnect: bool)
+:canonical: ophyd_async.core._command.CommandConnector.connect_real
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.CommandConnector.connect_real
+```
+
+````
+
+`````
+
+`````{py:class} MockCommandBackend(initial_backend: ~ophyd_async.core._command.CommandBackend[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T], mock: ~ophyd_async.core._device.LazyMock)
+:canonical: ophyd_async.core._command.MockCommandBackend
+
+Bases: {py:obj}`ophyd_async.core._command.CommandBackend`\[{py:obj}`ophyd_async.core._utils.P`\, {py:obj}`ophyd_async.core._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend
+```
+
+````{py:method} source(name: str) -> str
+:canonical: ophyd_async.core._command.MockCommandBackend.source
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend.source
+```
+
+````
+
+````{py:method} set_mock_execute_callback(callback: ~ophyd_async.core._command.MockExecuteCallback[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T] | None)
+:canonical: ophyd_async.core._command.MockCommandBackend.set_mock_execute_callback
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend.set_mock_execute_callback
+```
+
+````
+
+````{py:method} execute_mock() -> ~unittest.mock.AsyncMock
+:canonical: ophyd_async.core._command.MockCommandBackend.execute_mock
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend.execute_mock
+```
+
+````
+
+````{py:method} execute(*args: ~ophyd_async.core._utils.P.args, **kwargs: ~ophyd_async.core._utils.P.kwargs) -> ~ophyd_async.core._utils.T
+:canonical: ophyd_async.core._command.MockCommandBackend.execute
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend.execute
+```
+
+````
+
+````{py:method} connect(timeout: float) -> None
+:canonical: ophyd_async.core._command.MockCommandBackend.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.MockCommandBackend.connect
+```
+
+````
+
+`````
+
+````{py:data} NO_ARG_VOID_SIGNATURE
+:canonical: ophyd_async.core._command.NO_ARG_VOID_SIGNATURE
+:value: >
+   'Signature(...)'
+
+```{autodoc2-docstring} ophyd_async.core._command.NO_ARG_VOID_SIGNATURE
+```
+
+````
+
+`````{py:class} SoftCommandBackend(command_cb: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T] | ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.Awaitable[~ophyd_async.core._utils.T]], sig: ~inspect.Signature)
+:canonical: ophyd_async.core._command.SoftCommandBackend
+
+Bases: {py:obj}`ophyd_async.core._command.CommandBackend`\[{py:obj}`ophyd_async.core._utils.P`\, {py:obj}`ophyd_async.core._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend
+```
+
+````{py:attribute} signature
+:canonical: ophyd_async.core._command.SoftCommandBackend.signature
+:type: ~inspect.Signature
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend.signature
+```
+
+````
+
+````{py:method} source(name: str) -> str
+:canonical: ophyd_async.core._command.SoftCommandBackend.source
+
+```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend.source
+```
+
+````
+
+````{py:method} connect(timeout: float) -> None
+:canonical: ophyd_async.core._command.SoftCommandBackend.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend.connect
+```
+
+````
+
+````{py:method} execute(*args: ~ophyd_async.core._utils.P.args, **kwargs: ~ophyd_async.core._utils.P.kwargs) -> ~ophyd_async.core._utils.T
+:canonical: ophyd_async.core._command.SoftCommandBackend.execute
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.SoftCommandBackend.execute
+```
+
+````
+
+`````
+
+````{py:function} soft_command(command_cb: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T] | ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.Awaitable[~ophyd_async.core._utils.T]], name: str = '', timeout: float | None = DEFAULT_TIMEOUT) -> ~ophyd_async.core._command.Command[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T]
+:canonical: ophyd_async.core._command.soft_command
+
+```{autodoc2-docstring} ophyd_async.core._command.soft_command
+```
+````
+
+`````{py:class} TriggerableCommand(backend: ~ophyd_async.core._command.CommandBackend[~ophyd_async.core._utils.P, ~ophyd_async.core._utils.T], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+:canonical: ophyd_async.core._command.TriggerableCommand
+
+Bases: {py:obj}`ophyd_async.core._command.Command`\[\[\]\, {py:obj}`None`\]
+
+```{autodoc2-docstring} ophyd_async.core._command.TriggerableCommand
+```
+
+````{py:method} trigger(timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
+:canonical: ophyd_async.core._command.TriggerableCommand.trigger
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._command.TriggerableCommand.trigger
+```
+
+````
+
+`````
