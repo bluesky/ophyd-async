@@ -222,6 +222,11 @@ class OneOfEverythingTangoDevice(Device):
             self.add_scalar_command(attr_data.name, attr_data.tango_type)
             self.add_spectrum_command(attr_data.name, attr_data.tango_type)
 
+    @command(dtype_in=float, dtype_out=bool)
+    def float_to_bool_cmd(self, value: float) -> bool:
+        """Command with float input and bool output (different in/out types)."""
+        return value > 0
+
     @command
     def reset_values(self):
         for attr_name in self.attr_values:
