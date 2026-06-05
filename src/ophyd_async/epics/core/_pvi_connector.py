@@ -15,6 +15,7 @@ from ophyd_async.core import (
     DeviceConnector,
     DeviceFiller,
     DeviceMap,
+    DeviceVector,
     LazyMock,
     Signal,
     SignalR,
@@ -89,8 +90,9 @@ class PviDeviceConnector(DeviceConnector):
         for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
+                # Need to deal with this correctly
                 connector = self.filler.fill_child_device(
-                    device_name, device_type=DeviceMap
+                    device_name, device_type=DeviceVector
                 )
             else:
                 # This is a Device
