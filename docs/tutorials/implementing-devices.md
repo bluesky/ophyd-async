@@ -147,7 +147,7 @@ Here we start the TANGO device server application with a device name prefix and 
 We then pass the same device Tango Resource Locator (TRL) for each Device down using prior knowledge about the attributes that these particular devices will create. For example, we know that there will be a `DemoStage`, and the device names will start with `prefix + "/X"` and `prefix + "/Y"`.
 
 ```{note}
-There is no introspection of attributes in a device in TANGO, if we tell the device server to make 3 channels on the point detector, we must also tell the ophyd-async device that the point detector has 3 channels.
+There is no introspection of child devices of a device in TANGO, if we tell the device server to make 3 channels on the point detector, we must also tell the ophyd-async device that the point detector has 3 channels.
 ```
 
 :::
