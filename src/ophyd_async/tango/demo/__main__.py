@@ -9,8 +9,6 @@ from bluesky.run_engine import RunEngine, autoawait_in_bluesky_event_loop
 from ophyd_async.core import init_devices
 from ophyd_async.tango import demo
 
-from ._tango import start_device_server_subprocess
-
 # Create a run engine and make ipython use it for `await` commands
 RE = RunEngine(call_returns_result=True)
 autoawait_in_bluesky_event_loop()
@@ -21,7 +19,7 @@ RE.subscribe(bec)
 
 # Start demo DeviceServer in subprocess
 prefix = "test/device"
-ds = start_device_server_subprocess(prefix, num_channels=3)
+ds = demo.start_device_server_subprocess(prefix, num_channels=3)
 
 # All Devices created within this block will be
 # connected and named at the end of the with block

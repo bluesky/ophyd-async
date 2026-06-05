@@ -73,11 +73,14 @@ class DemoMultiChannelDetectorDevice(Device):
     channels = device_property(dtype=int, default_value=0)
 
     green_mode = GreenMode.Asyncio
-    _locators = []
-    _dps = []
     _acquire_time = 0.1
     _acquiring = False
     _elapsed = 0.0
+
+    def init_device(self):
+        super().init_device()
+        self._locators = []
+        self._dps = []
 
     @attribute(dtype=(str,), max_dim_x=32, access=AttrWriteType.READ_WRITE)
     async def locators(self):
@@ -114,7 +117,6 @@ class DemoMultiChannelDetectorDevice(Device):
     @command
     async def start(self):
         await self._acquisition()
-        # asyncio.create_task(self._acquisition())
 
     @command
     async def reset(self):

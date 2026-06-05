@@ -1,3 +1,11 @@
+"""Provides a mechanism for creating a Tango device server executed as a subprocess.
+
+The device server is run up using the Tango MultiDeviceTestContext which allows it
+to run standalone without a Tango Database.  Multiple Tango Devices can be loaded into
+the single device server instance.
+"""
+
+import os
 import pickle
 import socket
 import subprocess
@@ -6,15 +14,28 @@ from pathlib import Path
 
 from tango.test_context import MultiDeviceTestContext
 
-"""
-This file provides a mechanism for creating a Tango demo device server executed as a
-python subprocess.
-The demo device server is run up using the Tango MultiDeviceTestContext which allows it
-to run standalone without a Tango Database.  Multiple Tango Devices can be loaded into
-the single device server instance.
-"""
+_ACCEPT_TIMEOUT = 30.0  # seconds to wait for subprocess to connect back
+_COMMUNICATE_TIMEOUT = 10.0  # seconds to wait for subprocess to exit cleanly
 
-BYTES_TO_READ = 2048
+
+def _recv_all(conn: socket.socket, n: int) -> bytes:
+    buf = b""
+    while len(buf) < n:
+        chunk = conn.recv(n - len(buf))
+        if not chunk:
+            raise ConnectionError("Connection closed before all bytes were received")
+        buf += chunk
+    return buf
+
+
+def _send_pickled(conn: socket.socket, obj: object) -> None:
+    data = pickle.dumps(obj)
+    conn.sendall(len(data).to_bytes(4, "big") + data)
+
+
+def _recv_pickled(conn: socket.socket) -> object:
+    n = int.from_bytes(_recv_all(conn, 4), "big")
+    return pickle.loads(_recv_all(conn, n))
 
 
 class TangoSubprocessDeviceServer:
@@ -27,16 +48,31 @@ class TangoSubprocessDeviceServer:
         port = str(self.sock.getsockname()[1])
         self.sock.listen(1)
         subprocess_path = str(Path(__file__).parent / "_device_server.py")
-        self.process = subprocess.Popen([sys.executable, subprocess_path, port])
+        self.process = subprocess.Popen(
+            [sys.executable, subprocess_path, port],
+            env={**os.environ, "PYTHONPATH": os.pathsep.join(sys.path)},
+        )
+        self.sock.settimeout(_ACCEPT_TIMEOUT)
         self.conn, _ = self.sock.accept()
-        self.conn.send(pickle.dumps(self._args))
-        self.trls = pickle.loads(self.conn.recv(BYTES_TO_READ))
+        self.sock.settimeout(None)
+        _send_pickled(self.conn, self._args)
+        self.trls = _recv_pickled(self.conn)
         return self
 
     def disconnect(self):
         self.conn.close()
         self.sock.close()
-        self.process.communicate()
+        try:
+            self.process.communicate(timeout=_COMMUNICATE_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.communicate()
+
+    def __enter__(self):
+        return self.connect()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect()
 
 
 if __name__ == "__main__":
@@ -45,8 +81,7 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", port))
 
-    pickled_args = sock.recv(BYTES_TO_READ)
-    context_args = pickle.loads(pickled_args)
+    context_args = _recv_pickled(sock)
 
     device_names = []
     for arg_dict in context_args:
@@ -57,7 +92,7 @@ if __name__ == "__main__":
     with MultiDeviceTestContext(context_args, process=False) as context:
         for name in device_names:
             trls[name] = context.get_device_access(name)
-        sock.send(pickle.dumps(trls))
-        while sock.recv(BYTES_TO_READ):
+        _send_pickled(sock, trls)
+        while sock.recv(1):
             pass  # when connection closes subprocess should end
     sock.close()

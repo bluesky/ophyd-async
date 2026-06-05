@@ -1,5 +1,4 @@
 import atexit
-from pathlib import Path
 
 import tango
 
@@ -10,8 +9,6 @@ from ._servers import (
     DemoMultiChannelDetectorDevice,
     DemoPointDetectorChannelDevice,
 )
-
-HERE = Path(__file__).absolute().parent
 
 
 def start_device_server_subprocess(
@@ -25,10 +22,7 @@ def start_device_server_subprocess(
     devices = [
         {
             "class": DemoMotorDevice,
-            "devices": [
-                {"name": f"{prefix}/{suffix}", "properties": {"prop1": 12345}}
-                for suffix in ["X", "Y"]
-            ],
+            "devices": [{"name": f"{prefix}/{suffix}"} for suffix in ["X", "Y"]],
         },
         {
             "class": DemoPointDetectorChannelDevice,

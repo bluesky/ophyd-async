@@ -69,9 +69,6 @@ $ ipython --matplotlib=qt6 -i -m ophyd_async.tango.demo
 Python 3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]
 Type 'copyright', 'credits' or 'license' for more information
 IPython 9.9.0 -- An enhanced Interactive Python. Type '?' for help.
-Tip: Use `F2` or %edit with no arguments to open an empty editor with a temporary file.
-Can't create notifd event supplier. Notifd event not available
-Ready to accept request
 
 In [1]: 
 ```

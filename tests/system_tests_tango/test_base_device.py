@@ -38,7 +38,10 @@ from ophyd_async.tango.demo import (
     DemoMotorDevice,
     DemoMultiChannelDetectorDevice,
     DemoPointDetector,
+    DemoPointDetectorChannel,
     DemoPointDetectorChannelDevice,
+    DemoStage,
+    EnergyMode,
     start_device_server_subprocess,
 )
 from ophyd_async.testing import assert_reading
@@ -462,6 +465,42 @@ async def test_with_bluesky(tango_test_device):
 async def test_tango_demo():
     server = start_device_server_subprocess("test/device", 3)
     server.disconnect()
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.timeout(8.0)
+async def test_tango_enum_roundtrip(sim_test_context_trls):
+    channel = DemoPointDetectorChannel(
+        name="channel",
+        trl=sim_test_context_trls["sim/counter/1"],
+    )
+    await channel.connect()
+
+    # Write HIGH (index 1) and read it back
+    await channel.mode.set(EnergyMode.HIGH)
+    assert await channel.mode.get_value() == EnergyMode.HIGH
+
+    # Write LOW (index 0) and read it back
+    await channel.mode.set(EnergyMode.LOW)
+    assert await channel.mode.get_value() == EnergyMode.LOW
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.timeout(8.0)
+async def test_tango_stage(sim_test_context_trls):
+    stage = DemoStage(
+        name="stage",
+        x_trl=sim_test_context_trls["sim/motor/1"],
+        y_trl=sim_test_context_trls["sim/motor/1"],
+    )
+    await stage.connect()
+    assert stage.x.name == "stage-x"
+    assert stage.y.name == "stage-y"
+    reading = await stage.read()
+    assert "stage-x-position" in reading
+    assert "stage-y-position" in reading
 
 
 # --------------------------------------------------------------------

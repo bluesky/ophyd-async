@@ -1,11 +1,7 @@
 import asyncio
-import pickle
-import socket
-import subprocess
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from random import choice
 from typing import Any, Generic, TypeVar
 
@@ -15,7 +11,7 @@ from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
 from ophyd_async.tango.core import DevStateEnum
-from ophyd_async.tango.testing import ExampleStrEnum
+from ophyd_async.tango.testing import ExampleStrEnum, TangoSubprocessDeviceServer
 from ophyd_async.testing import (
     float_array_value,
     int_array_value,
@@ -43,31 +39,9 @@ def pytest_collection_modifyitems(config, items):
                 )
 
 
-class TangoSubprocessHelper:
-    def __init__(self, args):
-        self._args = args
-
-    def __enter__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("127.0.0.1", 0))
-        port = str(self.sock.getsockname()[1])
-        self.sock.listen(1)
-        subprocess_path = str(Path(__file__).parent / "context_subprocess.py")
-        self.process = subprocess.Popen([sys.executable, subprocess_path, port])
-        self.conn, _ = self.sock.accept()
-        self.conn.send(pickle.dumps(self._args))
-        self.trls = pickle.loads(self.conn.recv(2048))
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.close()
-        self.sock.close()
-        self.process.communicate()
-
-
 @pytest.fixture(scope="module")
 def subprocess_helper():
-    return TangoSubprocessHelper
+    return TangoSubprocessDeviceServer
 
 
 @dataclass
