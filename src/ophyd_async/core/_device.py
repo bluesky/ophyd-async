@@ -286,6 +286,9 @@ _not_device_attrs = {
 class DeviceCollection(MutableMapping[T, DeviceT], Device):
     """Defines a dictionary of Device children with arbitrary keys."""
 
+    # Needed for for devive filler
+    key_type: type[T]
+
     def __init__(
         self,
         children: Mapping[T, DeviceT] | None = None,
@@ -330,6 +333,8 @@ class DeviceMap(DeviceCollection[str, DeviceT]):
     :see-also: [](#implementing-devices) for examples of how to use this class.
     """
 
+    key_type = str
+
     def __setattr__(self, name: str, value: Any):
         if name not in _not_device_attrs and not "parent":
             raise TypeError("Setting new attributes on DeviceMap not supported.")
@@ -349,6 +354,8 @@ class DeviceVector(DeviceCollection[int, DeviceT]):
 
     :see-also: [](#implementing-devices) for examples of how to use this class.
     """
+
+    key_type = int
 
     def __setitem__(self, key: int, value: DeviceT) -> None:
         if not isinstance(key, int):

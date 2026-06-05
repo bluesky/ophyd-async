@@ -364,7 +364,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             expected_signal_type = (
                 _get_device_collection_child_datatype(device_collection) or signal_type
             )
-            device_collection[map_key] = signal_type(backend)
+            key_type = device_collection.key_type
+            device_collection[key_type(map_key)] = signal_type(backend)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")

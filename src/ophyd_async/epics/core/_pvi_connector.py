@@ -69,7 +69,7 @@ class PviDeviceConnector(DeviceConnector):
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        if isinstance(device, DeviceMap) or isinstance(device, DeviceMap):
+        if isinstance(device, DeviceMap) or isinstance(device, DeviceVector):
             self.filler.create_device_collection_entries_to_mock(
                 self.mock_device_map_entries
             )
@@ -342,13 +342,20 @@ class PviTree(ConfinedModel):
 
         a `PviTree` is built for each device entry in this list.
         """
-        sub_trees = await gather_dict(
-            {
-                vector_index: cls.build_device_tree(vector_entry["d"], timeout)
-                for vector_index, vector_entry in enumerate(legacy_entry)
-                if vector_entry is not None
-            }
-        )
+        sub_trees = {}
+        for vector_index, vector_entry in enumerate(legacy_entry):
+            if vector_entry is not None:
+                sub_trees[vector_index] = await cls.build_device_tree(
+                    vector_entry["d"], timeout
+                )
+
+        # sub_trees = await gather_dict(
+        #     {
+        #         vector_index: cls.build_device_tree(vector_entry["d"], timeout)
+        #         for vector_index, vector_entry in enumerate(legacy_entry)
+        #         if vector_entry is not None
+        #     }
+        # )
 
         # Legacy FastCS vector should not contain child signals,
         # devices, or its own PVI PV.
