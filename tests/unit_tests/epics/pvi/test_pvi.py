@@ -6,6 +6,7 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
+    DeviceConnector,
     DeviceMap,
     DeviceVector,
     SignalR,
@@ -14,13 +15,13 @@ from ophyd_async.core import (
     SignalX,
     StandardReadable,
     init_devices,
+    soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import PviDeviceConnector, SignalDetails
 
 
 class Block1(Device, HasHints):
-    device_map_signal_r: DeviceMap[SignalRW[float]]
     device_vector_signal_x: DeviceVector[SignalX]
     device_vector_signal_rw: DeviceVector[SignalRW[float]]
     signal_x: SignalX
@@ -184,7 +185,11 @@ class NoSignalTypeInVector(Device):
     a: DeviceVector[SignalRW]
 
 
-@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
+class NoSignalTypeInMap(Device):
+    a: DeviceMap[SignalRW]
+
+
+@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector, NoSignalTypeInMap])
 async def test_no_type_annotation_blocks(cls):
     with pytest.raises(TypeError) as exc:
         with_pvi_connector(cls, "PREFIX:")
@@ -215,3 +220,35 @@ async def test_correctly_setting_signal_type_from_signal_details(
     else:
         details = SignalDetails.from_entry(mock_entry)
         assert details.signal_type == expected_signal_type
+
+
+class MapDeviceImplementation(Device):
+    def __init__(self, name: str = "", connector: DeviceConnector | None = None):
+        self.device_map = DeviceMap[SignalR[float]]({"test": soft_signal_rw(float)})
+        super().__init__(name, connector)
+
+
+async def test_map_device():
+    async with init_devices(mock=True):
+        test_device = with_pvi_connector(MapDeviceImplementation, "PREFIX:")
+
+    assert test_device.name == "test_device"
+    assert test_device.device_map.name == "test_device-device_map"
+    assert test_device.device_map["test"].name == "test_device-device_map-test"
+    assert isinstance(test_device.device_map["test"], SignalR)
+    assert test_device.device_map["test"]._connector.backend.datatype is float
+
+
+class MapDeviceFromAnnotations(Device):
+    device_map: DeviceMap[SignalR[float]]
+
+
+async def test_map_device_from_annotations():
+    async with init_devices(mock=True):
+        test_device = with_pvi_connector(MapDeviceFromAnnotations, "PREFIX:")
+
+    assert test_device.name == "test_device"
+    assert test_device.device_map.name == "test_device-device_map"
+    assert test_device.device_map["1"].name == "test_device-device_map-1"
+    assert isinstance(test_device.device_map["1"], SignalR)
+    assert test_device.device_map["1"]._connector.backend.datatype is float
