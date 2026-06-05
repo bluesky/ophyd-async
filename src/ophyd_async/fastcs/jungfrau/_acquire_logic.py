@@ -1,13 +1,13 @@
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorArmLogic, wait_for_value
+from ophyd_async.core import DEFAULT_TIMEOUT, DetectorAcquireLogic, wait_for_value
 
 from ._io import DetectorStatus, JungfrauDriverIO, PedestalMode
 
 
-class JungfrauArmLogic(DetectorArmLogic):
+class JungfrauAcquireLogic(DetectorAcquireLogic):
     def __init__(self, detector: JungfrauDriverIO) -> None:
         self.detector = detector
 
-    async def arm(self):
+    async def start_acquiring(self):
         await self.detector.acquisition_start.trigger()
 
     async def wait_for_idle(self):
@@ -15,6 +15,6 @@ class JungfrauArmLogic(DetectorArmLogic):
             self.detector.detector_status, DetectorStatus.IDLE, timeout=DEFAULT_TIMEOUT
         )
 
-    async def disarm(self):
+    async def ensure_stopped(self):
         await self.detector.acquisition_stop.trigger()
         await self.detector.pedestal_mode_state.set(PedestalMode.OFF)

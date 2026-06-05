@@ -18,7 +18,7 @@ from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
 
 
-class AsyncStatusBase(Status, Awaitable[None]):
+class AsyncStatusBase(Status, Awaitable[T]):
     """Convert asyncio awaitable to bluesky Status interface.
 
     Can be used as an async context manager to cancel the status task when the
@@ -34,7 +34,7 @@ class AsyncStatusBase(Status, Awaitable[None]):
 
             async def wait_with_error_message(awaitable):
                 try:
-                    await awaitable
+                    return await awaitable
                 except CancelledError as e:
                     raise CancelledError(
                         f"CancelledError while awaiting {awaitable} on {name}"
@@ -92,6 +92,11 @@ class AsyncStatusBase(Status, Awaitable[None]):
             and not self.task.cancelled()
             and self.task.exception() is None
         )
+
+    @property
+    def value(self) -> T:
+        """Return the result of the awaitable. Only valid after the status is done."""
+        return self.task.result()
 
     def __repr__(self) -> str:
         if self.done:

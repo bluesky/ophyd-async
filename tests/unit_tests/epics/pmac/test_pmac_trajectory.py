@@ -5,8 +5,8 @@ import pytest
 from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     get_mock,
+    get_mock_execute,
     set_and_wait_for_value,
     set_mock_value,
 )
@@ -14,6 +14,7 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
     PmacExecuteState,
+    PmacScanInfo,
     PmacTrajectoryTriggerLogic,
 )
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
@@ -24,8 +25,9 @@ from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
+    value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    await pmac_trajectory.prepare(spec)
+    await pmac_trajectory.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -1.2
 
@@ -44,7 +46,112 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert await pmac_io.trajectory.points_to_build.get_value() == 6
 
 
-async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
+async def test_pmac_prepare_with_configured_ramp(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, sim_x_motor, _ = sim_motors
+    spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
+    value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=None)
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    await pmac_trajectory.prepare(value)
+
+    assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
+
+    assert await pmac_io.trajectory.positions[7].get_value() == pytest.approx(
+        [-1.0, 1.0, 3.0, 5.0, 7.0, 7.2]
+    )
+
+    assert await pmac_io.trajectory.velocities[7].get_value() == pytest.approx(
+        [2.0, 2.0, 2.0, 2.0, 2.0, 0]
+    )
+
+    assert await pmac_io.trajectory.time_array.get_value() == pytest.approx(
+        [2000000, 1000000, 1000000, 1000000, 1000000, 200000]
+    )
+
+    assert await pmac_io.trajectory.points_to_build.get_value() == 6
+
+
+async def test_pmac_prepare_with_configured_ramp_and_turnaround(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, sim_x_motor, _ = sim_motors
+    spec = Fly(2.0 @ (2 * ~Line(sim_x_motor, 1, 5, 2)))
+    value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=3)
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    await pmac_trajectory.prepare(value)
+
+    assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
+
+    assert await pmac_io.trajectory.positions[7].get_value() == pytest.approx(
+        [
+            -1.0,
+            1.0,
+            3.0,
+            5.0,
+            7.0,
+            7.2,
+            7.2,
+            7.0,
+            5.0,
+            3.0,
+            1.0,
+            -1,
+            -1.2,
+        ]
+    )
+
+    assert await pmac_io.trajectory.velocities[7].get_value() == pytest.approx(
+        [
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            0.0,
+            0.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            0.0,
+        ]
+    )
+
+    assert await pmac_io.trajectory.time_array.get_value() == pytest.approx(
+        [
+            2000000,
+            1000000,
+            1000000,
+            1000000,
+            1000000,
+            200000,
+            2600000,
+            200000,
+            1000000,
+            1000000,
+            1000000,
+            1000000,
+            200000,
+        ]
+    )
+
+    assert await pmac_io.trajectory.points_to_build.get_value() == 13
+
+
+@pytest.mark.parametrize(
+    "x_pos, y_pos, expected_timeout",
+    [
+        # No cruise, just acceleration
+        (1.25, 1, 10.712),
+        # Intermediate cruise
+        (-10, -5, 12.004),
+    ],
+)
+async def test_pmac_move_to_start(
+    x_pos, y_pos, expected_timeout, sim_motors: tuple[PmacIO, Motor, Motor]
+):
     pmac_io, sim_x_motor, sim_y_motor = sim_motors
     motor_info = _PmacMotorInfo(
         "CS1",
@@ -54,7 +161,7 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 10, sim_y_motor: 10},
     )
     coord = pmac_io.coord[motor_info.cs_number]
-    ramp_up_position = {sim_x_motor: np.float64(-1.2), sim_y_motor: np.float64(-0.6)}
+    ramp_up_position = {sim_x_motor: np.float64(x_pos), sim_y_motor: np.float64(y_pos)}
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
 
     # Wrap set_and_wait_for_value to check passed arguments
@@ -69,21 +176,15 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
         assert coord_mock_calls[0] == call.defer_moves.put(True)
         assert coord_mock_calls[1] == (
             "cs_axis_setpoint.7.put",
-            (np.float64(-1.2)),
+            (np.float64(x_pos)),
             {},
         )
         assert coord_mock_calls[2] == (
             "cs_axis_setpoint.8.put",
-            (np.float64(-0.6)),
+            (np.float64(y_pos)),
             {},
         )
         assert coord_mock_calls[3] == call.defer_moves.put(False)
-
-        # Longest move time should be sim_motor_x, so calculate this
-        expected_timeout = DEFAULT_TIMEOUT + (
-            abs(ramp_up_position[sim_x_motor])
-            / motor_info.motor_max_velocity[sim_x_motor]
-        )
 
         # All motors should have the same move timeout
         assert all(
@@ -98,9 +199,10 @@ async def test_pmac_trajectory_kickoff(
     pmac_io, sim_x_motor, sim_y_motor = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
+    value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
-        await pmac_trajectory.prepare(spec)
+        await pmac_trajectory.prepare(value)
         # This will consume another 2 frames
         set_mock_value(
             pmac_io.trajectory.total_points, 2
@@ -243,7 +345,7 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
         call.time_array.put(np.array(0)),
         call.user_array.put(np.array(8)),
         call.points_to_build.put(1),
-        call.build_profile.put(None),
+        call.build_profile.execute(),
         call.execute_profile.put(True),
     ]
 
@@ -259,12 +361,11 @@ async def test_pmac_trajectory_unstage(sim_motors: tuple[PmacIO, Motor, Motor]):
 async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    mock_abort_profile = get_mock(pmac_io.trajectory.abort_profile)
-    mock_abort_profile.put = AsyncMock()
+    execute_mock = get_mock_execute(pmac_io.trajectory.abort_profile)
 
     # Method not called as no running trajectory
     await pmac_trajectory._stop_if_running()
-    mock_abort_profile.put.assert_not_called()
+    execute_mock.assert_not_awaited()
 
     # Mocking that trajectory is executing
     set_mock_value(
@@ -273,4 +374,4 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
 
     # Method called as there is now a running trajectory
     await pmac_trajectory._stop_if_running()
-    mock_abort_profile.put.assert_called_once()
+    execute_mock.assert_awaited_once_with()

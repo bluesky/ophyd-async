@@ -10,7 +10,7 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
-    callback_on_mock_put,
+    callback_on_mock_execute,
     init_devices,
     set_mock_value,
     soft_signal_rw,
@@ -41,8 +41,7 @@ def odin_det(RE: RunEngine, tmp_path) -> OdinDet:
 
 
 async def test_describe_gives_detector_shape(odin_det: OdinDet, tmp_path):
-    set_mock_value(odin_det.odin.fp.writing, True)
-    set_mock_value(odin_det.odin.mw.writing, True)
+    set_mock_value(odin_det.odin.writing, True)
     set_mock_value(odin_det.odin.fp.data_dims_1, 1024)
     set_mock_value(odin_det.odin.fp.data_dims_0, 768)
     await odin_det.prepare(TriggerInfo())
@@ -57,7 +56,7 @@ async def test_describe_gives_detector_shape(odin_det: OdinDet, tmp_path):
                 768,
                 1024,
             ],
-            "source": f"file://localhost/{tmp_path.as_posix().lstrip('/')}/filename.h5",
+            "source": f"file://localhost/{tmp_path.as_posix().lstrip('/')}/filename.h5_000001.h5",
         },
     }
 
@@ -67,8 +66,8 @@ async def test_when_closed_then_data_capture_turned_off(odin_det: OdinDet):
     assert_has_calls(
         odin_det,
         [
-            call.odin.fp.stop_writing.put(None),
-            call.odin.mw.stop.put(None),
+            call.odin.fp.stop_writing.execute(),
+            call.odin.mw.stop.execute(),
         ],
     )
 
@@ -78,7 +77,7 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
 ):
     odin: OdinIO = odin_det.odin
     ev = asyncio.Event()
-    callback_on_mock_put(odin_det.odin.fp.start_writing, lambda v: ev.set())
+    callback_on_mock_execute(odin_det.odin.fp.start_writing, lambda: ev.set())
     # Start it preparing
     status = odin_det.prepare(TriggerInfo(number_of_events=15))
     # Wait for start_writing to be called
@@ -89,21 +88,17 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
     assert_has_calls(
         odin,
         [
-            call.fp.data_datatype.put("uint16"),
+            call.acquisition_id.put("filename.h5"),
+            call.file_path.put(str(tmp_path)),
             call.fp.data_compression.put("BSLZ4"),
+            call.fp.data_datatype.put("uint16"),
             call.fp.frames.put(0),
-            call.fp.process_frames_per_block.put(1000),
-            call.fp.file_path.put(str(tmp_path)),
-            call.mw.directory.put(str(tmp_path)),
-            call.fp.file_prefix.put("filename.h5"),
-            call.mw.file_prefix.put("filename.h5"),
-            call.mw.acquisition_id.put("filename.h5"),
-            call.fp.start_writing.put(None),
+            call.block_size.put(100000),
+            call.fp.start_writing.execute(),
         ],
     )
     # Set the filewriters going
-    set_mock_value(odin.fp.writing, True)
-    set_mock_value(odin.mw.writing, True)
+    set_mock_value(odin.writing, True)
     # Check we are done now, and no additional calls
     async with asyncio.timeout(1):
         await status
@@ -113,7 +108,6 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
 
 @pytest.mark.timeout(15)
 async def test_hinted_fields(odin_det: OdinDet):
-    set_mock_value(odin_det.odin.fp.writing, True)
-    set_mock_value(odin_det.odin.mw.writing, True)
+    set_mock_value(odin_det.odin.writing, True)
     await odin_det.prepare(TriggerInfo())
     assert odin_det.hints == {"fields": ["det"]}

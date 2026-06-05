@@ -3,11 +3,11 @@
 https://github.com/areaDetector/ADCore
 """
 
-from ._arm_logic import ADArmLogic, ADContAcqArmLogic
+from ._acquire_logic import ADAcquireLogic, ADContAcqAcquireLogic
 from ._data_logic import (
     ADHDFDataLogic,
     ADMultipartDataLogic,
-    ADWriterType,
+    ADWriterFactory,
     NDArrayDescription,
     PluginSignalDataLogic,
 )
@@ -70,15 +70,15 @@ __all__ = [
     "prepare_exposures",
     "ADContAcqTriggerLogic",
     "trigger_info_from_num_images",
-    # ArmLogic
-    "ADArmLogic",
-    "ADContAcqArmLogic",
+    # AcquireLogic
+    "ADAcquireLogic",
+    "ADContAcqAcquireLogic",
     # DataLogic
     "NDArrayDescription",
     "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
-    "ADWriterType",
+    "ADWriterFactory",
     # Detector
     "AreaDetector",
     "ContAcqDetector",
