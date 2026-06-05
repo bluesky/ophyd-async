@@ -16,7 +16,7 @@ from typing import (
     runtime_checkable,
 )
 
-from ._device import Device, DeviceConnector, DeviceVector
+from ._device import Device, DeviceConnector, DeviceMap
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
@@ -42,21 +42,28 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
-    # If passed a Device, try to get the original class
-    # extracting DeviceVector[SomeDevice] from a <DeviceVector>
+def _get_device_vector_child_datatype(
+    vector: Device | type[Device],
+) -> type | None:
+
     if generic_class := getattr(vector, "__orig_class__", None):
-        # Type hinted DeviceVector
-        # e.g., DeviceVector[SomeDevice]
         return _get_datatype(generic_class)
-    else:
-        # Sub class of type hinted DeviceVector
-        # We must extract the original base, which we can do from a type or cls
-        # e.g., instance of `class CustomVector(DeviceVector[SomeDevice])`
-        for base in getattr(vector, "__orig_bases__", ()):
-            origin = get_origin_class(base)
-            if origin is DeviceVector:
-                return _get_datatype(base)
+
+    for base in getattr(vector, "__orig_bases__", ()):
+        origin = get_origin_class(base)
+
+        if (
+            origin is not None
+            and isinstance(origin, type)
+            and issubclass(origin, DeviceMap)
+        ):
+            datatype = _get_datatype(base)
+            if datatype is not None:
+                return datatype
+
+            datatype = _get_device_vector_child_datatype(origin)
+            if datatype is not None:
+                return datatype
 
     return None
 
@@ -194,7 +201,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
                     isinstance(annotation, type)
-                    and issubclass(annotation, DeviceVector)
+                    and issubclass(annotation, DeviceMap)
                     and not _get_device_vector_child_datatype(annotation)
                 ):
                     # DeviceVector has no type parameter
@@ -316,9 +323,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_vector(self) -> DeviceVector:
-        if not isinstance(self._device, DeviceVector):
-            self._raise(self._device.name, f"Expected DeviceVector, got {self._device}")
+    def _ensure_device_vector(self) -> DeviceMap:
+        if not isinstance(self._device, DeviceMap):
+            self._raise(self._device.name, f"Expected DeviceMap, got {self._device}")
         return self._device
 
     def fill_child_signal(
@@ -333,7 +340,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             The name without trailing underscore, the name in the control system
         :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param vector_index: If the child is in a `DeviceMap` then what index is it
         :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
@@ -345,7 +352,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
         elif vector_index:
-            # We need to add a new entry to a DeviceVector
+            # We need to add a new entry to a DeviceMap
             backend = self._signal_backend_factory(_get_datatype(signal_type))
             vector = self._ensure_device_vector()
             expected_signal_type = (
@@ -370,7 +377,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def fill_child_device(
         self,
         name: str,
-        device_type: type[Device | DeviceVector] = Device,
+        device_type: type[Device | DeviceMap] = Device,
         vector_index: int | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
@@ -378,7 +385,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         :param name:
             The name without trailing underscore, the name in the control system
         :param device_type: The `Device` subclass to be created
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param vector_index: If the child is in a `DeviceMap` then what index is it
         :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
