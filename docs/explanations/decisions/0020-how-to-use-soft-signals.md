@@ -1,4 +1,4 @@
-# 20. Using commands and soft signals as a generic input/output strategy
+# 20. How to use soft signals
 
 The introduction of callable-backed `SoftSignalBackend` enables users to integrate non-EPICS/Tango systems (e.g., Python APIs, scripts, or custom hardware drivers) into ophyd-async without writing full `SignalBackend` implementations. Below are idiomatic patterns for common scenarios, balancing simplicity and type safety.
 

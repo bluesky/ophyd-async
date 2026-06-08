@@ -31,6 +31,7 @@ from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
+    # This is Any -> SignalDatatypeT because we support coercing
     @abstractmethod
     def write_value(self, value: Any) -> SignalDatatypeT: ...
 
@@ -166,7 +167,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         self._poll_period = poll_period
         self._poll_task: asyncio.Task | None = None
         self.set_value(self.initial_value)
-        self._setpoint = None
+        self._setpoint = self.initial_value
         super().__init__(datatype)
 
     async def _update_value_from_getter(self) -> SignalDatatypeT | None:
