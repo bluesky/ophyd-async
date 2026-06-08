@@ -109,14 +109,6 @@ class SignalTransformer(Generic[TransformT]):
         }
 
     @cached_property
-    def raw_non_locatables(self) -> dict[str, AsyncReadable]:
-        return {
-            k: v
-            for k, v in self._raw_devices.items()
-            if not isinstance(v, AsyncLocatable)
-        }
-
-    @cached_property
     def transform_readables(self) -> dict[str, AsyncReadable]:
         return validate_by_type(self._transform_devices, AsyncReadable)
 
