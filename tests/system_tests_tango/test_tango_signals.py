@@ -31,6 +31,7 @@ from ophyd_async.tango.core import (
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
+    TangoSubprocessDeviceServer,
 )
 from ophyd_async.testing import (
     MonitorQueue,
@@ -47,8 +48,8 @@ T = TypeVar("T")
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device(subprocess_helper):
-    with subprocess_helper(
+def tango_test_device():
+    with TangoSubprocessDeviceServer(
         [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
@@ -69,8 +70,8 @@ def assert_enum(initial_value, readout_value):
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def everything_device_trl(subprocess_helper):
-    with subprocess_helper(
+def everything_device_trl():
+    with TangoSubprocessDeviceServer(
         [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
     ) as context:
         yield context.trls["test/device/2"]

@@ -21,6 +21,7 @@ from ophyd_async.tango.core import (
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
+    TangoSubprocessDeviceServer,
 )
 
 TEST_PARAMS = [
@@ -68,8 +69,8 @@ TEST_PARAMS = [
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def everything_device_trl(subprocess_helper):
-    with subprocess_helper(
+def everything_device_trl():
+    with TangoSubprocessDeviceServer(
         [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
     ) as context:
         yield context.trls["test/device/2"]
@@ -283,3 +284,24 @@ async def test_triggerable_command_annotation(everything_device_triggerable):
     assert isinstance(attr, TriggerableCommand)
     await everything_device_triggerable.connect()
     await attr.trigger()
+
+
+@pytest.mark.asyncio
+async def test_tango_command_mixed_types(everything_device_trl: str):
+    """Test Command[[float], bool] with different input and output types."""
+
+    def call_spec(x: float) -> bool: ...
+
+    trl = ""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = (
+            everything_device_trl[:-9]
+            + "/float_to_bool_cmd"
+            + everything_device_trl[-9:]
+        )
+    cmd = tango_command(call_spec=call_spec, trl=trl, name="float_to_bool_cmd")
+    await cmd.connect()
+    assert cmd.signature.return_annotation is bool
+    assert list(cmd.signature.parameters.values())[0].annotation is float
+    assert await cmd.execute(1.0) is True
+    assert await cmd.execute(-1.0) is False
