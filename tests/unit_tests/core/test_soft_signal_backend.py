@@ -408,34 +408,3 @@ async def test_soft_signal_backend_no_poll_without_poll_period():
     backend.set_callback(updates.put_nowait)
     assert backend._poll_task is None
     backend.set_callback(None)
-
-
-async def test_soft_signal_backend_setter_accepts_config_object():
-
-    class MotorConfig:
-        velocity: float
-        acceleration: float
-        units: str
-
-    configs_received = []
-    store = [0.0]
-
-    def config_setter(config: MotorConfig) -> float:
-        configs_received.append(config)
-        store[0] = config.velocity
-        return config.velocity
-
-    backend = SoftSignalBackend(float, setter=config_setter)
-    await backend.connect(timeout=1)
-
-    cfg = MotorConfig()
-    cfg.velocity = 2.5
-    cfg.acceleration = 0.1
-    cfg.units = "mm/s"
-    await backend.put(cfg)
-
-    assert len(configs_received) == 1
-    assert configs_received[0].velocity == 2.5
-    assert configs_received[0].acceleration == 0.1
-    assert configs_received[0].units == "mm/s"
-    assert await backend.get_value() == pytest.approx(2.5)

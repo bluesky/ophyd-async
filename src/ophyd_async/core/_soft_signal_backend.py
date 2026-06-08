@@ -166,6 +166,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         self._poll_period = poll_period
         self._poll_task: asyncio.Task | None = None
         self.set_value(self.initial_value)
+        self._setpoint = None
         super().__init__(datatype)
 
     async def _update_value_from_getter(self) -> SignalDatatypeT | None:
@@ -187,7 +188,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     def set_value(self, value: SignalDatatypeT):
         """Set the current value, alarm and timestamp."""
         self.reading = Reading(
-            value=self.converter.write_value(value),
+            value=value,
             timestamp=time.time(),
             alarm_severity=0,
         )
@@ -201,17 +202,19 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         pass
 
     async def put(self, value: Any) -> None:
-        write_value = self.initial_value if value is None else value
+        converted_value = self.initial_value if value is None else value
+        converted_value = self.convert.write_value(converted_value)
+        self._setpoint = converted_value
         if self._setter is not None:
-            written_value = await maybe_await(self._setter(value))
-            if written_value is not None:
-                self.set_value(written_value)
+            returned_by_setter = await maybe_await(self._setter(converted_value))
+            if returned_by_setter is not None:
+                self.set_value(returned_by_setter)
             elif self._getter is not None:
                 await self._update_value_from_getter()
             else:
-                self.set_value(write_value)
+                self.set_value(converted_value)
         else:
-            self.set_value(write_value)
+            self.set_value(converted_value)
 
     async def get_datakey(self, source: str) -> DataKey:
         return make_datakey(
@@ -227,8 +230,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         return self.reading["value"]
 
     async def get_setpoint(self) -> SignalDatatypeT:
-        # For a soft signal, the setpoint and readback values are the same.
-        return self.reading["value"]
+        return self._setpoint
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.callback:
