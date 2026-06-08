@@ -6,7 +6,6 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
-    DeviceConnector,
     DeviceMap,
     DeviceVector,
     SignalR,
@@ -15,7 +14,6 @@ from ophyd_async.core import (
     SignalX,
     StandardReadable,
     init_devices,
-    soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import PviDeviceConnector, SignalDetails
@@ -222,23 +220,6 @@ async def test_correctly_setting_signal_type_from_signal_details(
         assert details.signal_type == expected_signal_type
 
 
-class MapDeviceImplementation(Device):
-    def __init__(self, name: str = "", connector: DeviceConnector | None = None):
-        self.device_map = DeviceMap[SignalR[float]]({"test": soft_signal_rw(float)})
-        super().__init__(name, connector)
-
-
-async def test_map_device():
-    async with init_devices(mock=True):
-        test_device = with_pvi_connector(MapDeviceImplementation, "PREFIX:")
-
-    assert test_device.name == "test_device"
-    assert test_device.device_map.name == "test_device-device_map"
-    assert test_device.device_map["test"].name == "test_device-device_map-test"
-    assert isinstance(test_device.device_map["test"], SignalR)
-    assert test_device.device_map["test"]._connector.backend.datatype is float
-
-
 class MapDeviceFromAnnotations(Device):
     device_map: DeviceMap[SignalR[float]]
 
@@ -249,6 +230,11 @@ async def test_map_device_from_annotations():
 
     assert test_device.name == "test_device"
     assert test_device.device_map.name == "test_device-device_map"
-    assert test_device.device_map["1"].name == "test_device-device_map-1"
-    assert isinstance(test_device.device_map["1"], SignalR)
-    assert test_device.device_map["1"]._connector.backend.datatype is float
+
+    assert test_device.device_map["mock1"].name == "test_device-device_map-mock1"
+    assert isinstance(test_device.device_map["mock1"], SignalR)
+    assert test_device.device_map["mock1"]._connector.backend.datatype is float
+
+    assert test_device.device_map["mock2"].name == "test_device-device_map-mock2"
+    assert isinstance(test_device.device_map["mock2"], SignalR)
+    assert test_device.device_map["mock2"]._connector.backend.datatype is float

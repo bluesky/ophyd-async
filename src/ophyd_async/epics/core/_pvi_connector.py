@@ -43,7 +43,8 @@ class PviDeviceConnector(DeviceConnector):
         hinted Signals are not present.
     """
 
-    mock_device_map_entries: list[int] = [1, 2]
+    mock_device_vector_children: list[int] = [1, 2]
+    mock_device_map_children: list[str] = ["mock1", "mock2"]
     pvi_tree: PviTree | None = None
 
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
@@ -69,9 +70,13 @@ class PviDeviceConnector(DeviceConnector):
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        if isinstance(device, DeviceMap) or isinstance(device, DeviceVector):
+        if isinstance(device, DeviceVector):
             self.filler.create_device_collection_entries_to_mock(
-                self.mock_device_map_entries
+                self.mock_device_vector_children
+            )
+        elif isinstance(device, DeviceMap):
+            self.filler.create_device_collection_entries_to_mock(
+                self.mock_device_map_children
             )
         # Set the name of the device to name all children
         device.set_name(device.name)
@@ -89,10 +94,12 @@ class PviDeviceConnector(DeviceConnector):
         # Fill all sub devices
         for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
             if device_sub_tree.vector_children:
-                # This is a DeviceVector
-                # Need to deal with this correctly
                 connector = self.filler.fill_child_device(
                     device_name, device_type=DeviceVector
+                )
+            elif device_sub_tree.map_children:
+                connector = self.filler.fill_child_device(
+                    device_name, device_type=DeviceMap
                 )
             else:
                 # This is a Device
@@ -130,6 +137,39 @@ class PviDeviceConnector(DeviceConnector):
                     raise TypeError(
                         "Failed to fill DeviceVector. "
                         f"Expected PviTree, got {type(vector_child)}"
+                    )
+
+        # ToDo - Compose above and this into single function.
+        # Fill all map sub-device
+        for (
+            key,
+            map_child,
+        ) in self.pvi_tree.map_children.items():
+            if self.pvi_tree.is_signal_vector:
+                # DeviceMap of signals
+                if isinstance(map_child, SignalDetails):
+                    backend = self.filler.fill_child_signal(
+                        device.name, map_child.signal_type, key
+                    )
+                    backend.read_pv = map_child.read_pv
+                    backend.write_pv = map_child.write_pv
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceMap. "
+                        f"Expected SignalDetails, got {type(map_child)}"
+                    )
+            else:
+                # DeviceVector of devices
+                if isinstance(map_child, PviTree):
+                    connector = self.filler.fill_child_device(
+                        device.name, map_key=map_child
+                    )
+                    connector.pvi_tree = map_child
+                    connector.pvi_pv = map_child.pvi_pv
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceMap. "
+                        f"Expected PviTree, got {type(map_child)}"
                     )
 
         # Fill all signals
@@ -273,9 +313,8 @@ class PviTree(ConfinedModel):
     pvi_pv: str = Field(default="")
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
-    vector_children: Mapping[str | int, PviTree | SignalDetails] = Field(
-        default_factory=dict
-    )
+    map_children: Mapping[str, PviTree | SignalDetails] = Field(default_factory=dict)
+    vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
 
     @classmethod
     async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
@@ -311,27 +350,31 @@ class PviTree(ConfinedModel):
             }
         )
 
-        vector_children: dict[str | int, PviTree | SignalDetails] = {}
-        # Filter vector children out of stand-alone devices
+        vector_children: dict[int, PviTree | SignalDetails] = {}
+        map_children: dict[str, PviTree | SignalDetails] = {}
+        # Filter vector children and map children out of stand-alone devices
 
         for processed_entries in (sub_trees, signal_details):
             for child_name in list(processed_entries):
                 if m := re.match(r"^__(\d+)$", child_name):
-                    sub_tree = processed_entries.pop(child_name)
-                    vector_children[int(m.group(1))] = sub_tree
+                    vector_children[int(m.group(1))] = processed_entries.pop(child_name)
+
+                elif m := re.match(r"^__([A-Za-z]\w*)$", child_name):
+                    map_children[m.group(1)] = processed_entries.pop(child_name)
 
         return PviTree(
             pvi_pv=pvi_pv,
             signals=signal_details,
             sub_devices=sub_trees,
             vector_children=vector_children,
+            map_children=map_children,
         )
 
     @classmethod
     async def _handle_legacy_entry(
         cls, legacy_entry: list[None | dict[str, str]], timeout: float
     ) -> PviTree:
-        """Handle legacy vector entries.
+        """Handle legacy vector entries. Cannot be converted to map as have no str keys.
 
         For example;
         ```
@@ -342,20 +385,13 @@ class PviTree(ConfinedModel):
 
         a `PviTree` is built for each device entry in this list.
         """
-        sub_trees = {}
-        for vector_index, vector_entry in enumerate(legacy_entry):
-            if vector_entry is not None:
-                sub_trees[vector_index] = await cls.build_device_tree(
-                    vector_entry["d"], timeout
-                )
-
-        # sub_trees = await gather_dict(
-        #     {
-        #         vector_index: cls.build_device_tree(vector_entry["d"], timeout)
-        #         for vector_index, vector_entry in enumerate(legacy_entry)
-        #         if vector_entry is not None
-        #     }
-        # )
+        sub_trees = await gather_dict(
+            {
+                vector_index: cls.build_device_tree(vector_entry["d"], timeout)
+                for vector_index, vector_entry in enumerate(legacy_entry)
+                if vector_entry is not None
+            }
+        )
 
         # Legacy FastCS vector should not contain child signals,
         # devices, or its own PVI PV.
@@ -368,6 +404,12 @@ class PviTree(ConfinedModel):
     def is_signal_vector(self) -> bool:
         """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
         return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
+
+    @computed_field
+    @property
+    def is_signal_map(self) -> bool:
+        """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
+        return any(isinstance(v, SignalDetails) for v in self.map_children.values())
 
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
