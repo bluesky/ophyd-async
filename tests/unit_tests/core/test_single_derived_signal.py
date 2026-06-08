@@ -334,8 +334,10 @@ async def test_datakey_shape():
 
 class DerivedSignalWithSignalRW(Device):
     def __init__(self, name: str = ""):
-        self.sig1 = soft_signal_rw(float, initial_value=5)
-        self.sig2 = soft_signal_rw(float, initial_value=2)
+        # Must use epics signals for valid test. Using soft_signal_r_and_setter
+        # doesn't reproduce the same issue.
+        self.sig1 = epics_signal_r(float, "")
+        self.sig2 = epics_signal_r(float, "")
         self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
         super().__init__(name)
 
@@ -348,6 +350,8 @@ class DerivedSignalWithSignalRW(Device):
 
 class DerivedSignalWithSignalR(Device):
     def __init__(self, name: str = ""):
+        # Must use epics signals for valid test. Using soft_signal_r_and_setter
+        # doesn't reproduce the same issue.
         self.sig1 = epics_signal_r(float, "")
         self.sig2 = epics_signal_r(float, "")
         self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
@@ -361,37 +365,34 @@ class DerivedSignalWithSignalR(Device):
 
 
 @pytest.fixture
-def example1() -> DerivedSignalWithSignalRW:
+def derived_signal_rw_example() -> DerivedSignalWithSignalRW:
     with init_devices(mock=True):
-        example1 = DerivedSignalWithSignalRW()
-    return example1
+        derived_signal_rw_example = DerivedSignalWithSignalRW()
+    return derived_signal_rw_example
 
 
 @pytest.fixture
-def example2() -> DerivedSignalWithSignalR:
+def derived_signal_r_example() -> DerivedSignalWithSignalR:
     with init_devices(mock=True):
-        example2 = DerivedSignalWithSignalR()
-    return example2
+        derived_signal_r_example = DerivedSignalWithSignalR()
+    return derived_signal_r_example
 
 
+@pytest.mark.parametrize(
+    "fixture_name", ["derived_signal_rw_example", "derived_signal_r_example"]
+)
 async def test_derived_signal_rw_with_bluesky_read(
     RE: RunEngine,
-    example1: DerivedSignalWithSignalRW,
-    example2: DerivedSignalWithSignalR,
+    request: pytest.FixtureRequest,
+    fixture_name: str,
 ) -> None:
-
-    set_mock_value(example1.sig1, 2)
-    set_mock_value(example1.sig2, 5)
-
-    set_mock_value(example2.sig1, 2)
-    set_mock_value(example2.sig2, 5)
+    example = request.getfixturevalue(fixture_name)
+    set_mock_value(example.sig1, 2)
+    set_mock_value(example.sig2, 5)
 
     def test_rd(dev):
         pos = yield from rd(dev.sig3)
         assert pos == 7
 
-    assert await example1.sig3.get_value() == 7
-    RE(test_rd(example1))
-
-    assert await example2.sig3.get_value() == 7
-    RE(test_rd(example2))
+    assert await example.sig3.get_value() == 7
+    RE(test_rd(example))
