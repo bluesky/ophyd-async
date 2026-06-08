@@ -4,11 +4,14 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 import pytest
+from bluesky import RunEngine
+from bluesky.plan_stubs import rd
 from bluesky.protocols import Reading, Subscribable
 
 from ophyd_async.core import (
     Array1D,
     Callback,
+    Device,
     Signal,
     SignalBackend,
     SignalDatatype,
@@ -16,9 +19,12 @@ from ophyd_async.core import (
     derived_signal_rw,
     derived_signal_w,
     get_mock,
+    init_devices,
+    set_mock_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.testing import (
     BeamstopPosition,
     Exploder,
@@ -324,3 +330,68 @@ async def test_datakey_shape():
         match="Can't make shape for 0.0 with SignalDataType: <class 'numpy.float64'>",
     ):
         await intensity.describe()
+
+
+class DerivedSignalWithSignalRW(Device):
+    def __init__(self, name: str = ""):
+        self.sig1 = soft_signal_rw(float, initial_value=5)
+        self.sig2 = soft_signal_rw(float, initial_value=2)
+        self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
+        super().__init__(name)
+
+    async def _set(self, value: float):
+        pass
+
+    def _get(self, v1: float, v2: float) -> float:
+        return v1 + v2
+
+
+class DerivedSignalWithSignalR(Device):
+    def __init__(self, name: str = ""):
+        self.sig1 = epics_signal_r(float, "")
+        self.sig2 = epics_signal_r(float, "")
+        self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
+        super().__init__(name)
+
+    async def _set(self, value: float):
+        pass
+
+    def _get(self, v1: float, v2: float) -> float:
+        return v1 + v2
+
+
+@pytest.fixture
+def example1() -> DerivedSignalWithSignalRW:
+    with init_devices(mock=True):
+        example1 = DerivedSignalWithSignalRW()
+    return example1
+
+
+@pytest.fixture
+def example2() -> DerivedSignalWithSignalR:
+    with init_devices(mock=True):
+        example2 = DerivedSignalWithSignalR()
+    return example2
+
+
+async def test_derived_signal_rw_with_bluesky_read(
+    RE: RunEngine,
+    example1: DerivedSignalWithSignalRW,
+    example2: DerivedSignalWithSignalR,
+) -> None:
+
+    set_mock_value(example1.sig1, 2)
+    set_mock_value(example1.sig2, 5)
+
+    set_mock_value(example2.sig1, 2)
+    set_mock_value(example2.sig2, 5)
+
+    def test_rd(dev):
+        pos = yield from rd(dev.sig3)
+        assert pos == 7
+
+    assert await example1.sig3.get_value() == 7
+    RE(test_rd(example1))
+
+    assert await example2.sig3.get_value() == 7
+    RE(test_rd(example2))
