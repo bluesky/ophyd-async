@@ -64,7 +64,14 @@ In [1]:
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```
+$ ipython --matplotlib=qt6 -i -m ophyd_async.tango.demo
+Python 3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 9.9.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: 
+```
 
 :::
 
@@ -130,7 +137,18 @@ There is no introspection of PVs in a device in EPICS, if we tell the IOC to mak
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/__main__.py
+:language: python
+:emphasize-lines: 20-
+```
+
+Here we start the TANGO device server application with a device name prefix and add all of the devices into a `MultiDeviceTestContext` which allows us to run without an external TANGO database.  Starting this device server here is done just for the demo, in production the application would already be running before you started bluesky.
+
+We then pass the same device Tango Resource Locator (TRL) for each Device down using prior knowledge about the attributes that these particular devices will create. For example, we know that there will be a `DemoStage`, and the device names will start with `prefix + "/X"` and `prefix + "/Y"`.
+
+```{note}
+There is no introspection of child devices of a device in TANGO, if we tell the device server to make 3 channels on the point detector, we must also tell the ophyd-async device that the point detector has 3 channels.
+```
 
 :::
 
@@ -191,8 +209,11 @@ When the Device is instantiated, the [](#EpicsDevice) baseclass will look at all
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_point_detector_channel.py
+:language: python
+```
 
+When the Device is instantiated, the [](#TangoDevice) baseclass will look at all the signals and construct a full TRL for each signal from the supplied device TRL and the signal name.  In this case if we made a `DemoPointDetectorChannel(trl="test/device/C1")`, then the signal `value` would have TRL `test/device/C1/value`. If the server doesn't support events, then using the TangoPolling annotation gives the parameters for ophyd to poll instead.
 :::
 
 :::{tab-item} FastCS
@@ -207,13 +228,13 @@ TODO
 
 Moving up a level, we have the point detector itself. This also has some Signals to control acquisition which are created in the same way as above:
 - `acquire_time`: a configuration float saying how long each point should be acquired for
-- `start`: an executable to start a single acquisition
+- `start`: a [](#TriggerableCommand) to start a single acquisition
 - `acquiring`: a boolean that is True when acquiring
-- `reset`: an executable to reset the counts on all channels
+- `reset`: a [](#TriggerableCommand) to reset the counts on all channels
 
 We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel` instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.
 
-Finally, we need to communicate to bluesky that it has to `trigger()` an acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
+Finally, we need to communicate to bluesky that it has to `trigger()` an acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#TriggerableCommand.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals and Commands, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
 
 ```{seealso}
 [](../how-to/interact-with-signals)
@@ -229,6 +250,8 @@ Finally, we need to communicate to bluesky that it has to `trigger()` an acquisi
 :language: python
 ```
 
+[](#TriggerableCommand) is used for `start` and `reset` rather than Signals because these are actions to fire on the hardware, not values to read or write. Calling `.trigger()` executes the action and waits for the hardware to acknowledge it.
+
 Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires the `num_channels` to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as `PREFIX:` then the first channel would have prefix `PREFIX:CHAN1:`. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
 
 Whilst it is not required for the call to `super().__init__` to be after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for [derived signals](../how-to/derive-one-signal-from-others.md) that depend on their parent.
@@ -237,7 +260,13 @@ Whilst it is not required for the call to `super().__init__` to be after all sig
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_point_detector.py
+:language: python
+```
+
+Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires a list of TRLs to be passed in to the constructor to know how many channels require creation, and how to connect to each channel through the channel's TRL. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
+
+Whilst it is not required for the call to `super().__init__` to be made after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for [derived signals](../how-to/derive-one-signal-from-others.md) that depend on their parent.
 
 :::
 
@@ -258,8 +287,8 @@ For more information on when to construct Devices declaratively using type hints
 Moving onto the motion side, we have `DemoMotor`. This has a few signals:
 - `readback`: the current position of the motor as a float
 - `velocity`: a configuration parameter for the velocity in units/s
-- `setpoint`: the position the motor has been requested to move to as a float
-- `stop_`: an executable to stop the move immediately
+- `setpoint`: the position the motor has been requested to move to as a float, it returns as soon as it's been set
+- `stop_`: a [](#TriggerableCommand) to stop the move immediately
 
 `DemoMotor` inherits from [](#StandardMovable), which provides the full
 [`Movable`](#bluesky.protocols.Movable), [`Locatable`](#bluesky.protocols.Locatable),
@@ -294,7 +323,10 @@ the readback signal to match the device.
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_motor.py
+:language: python
+```
+
 
 :::
 
@@ -327,7 +359,10 @@ Like `DemoPointDetector`, the PV concatenation is done explicitly in code, and t
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_stage.py
+:language: python
+```
+Like `DemoPointDetector`, the TRLs are specified explicitly in code and passed into the constructor, and the children are added within a [](#StandardReadable.add_children_as_readables) context manager.
 
 :::
 

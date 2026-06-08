@@ -1,11 +1,7 @@
 import asyncio
-import pickle
-import socket
-import subprocess
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from random import choice
 from typing import Any, Generic, TypeVar
 
@@ -41,33 +37,6 @@ def pytest_collection_modifyitems(config, items):
                         reason="Ophyd-async is currently not tested on Windows + Tango"
                     )
                 )
-
-
-class TangoSubprocessHelper:
-    def __init__(self, args):
-        self._args = args
-
-    def __enter__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("", 0))
-        port = str(self.sock.getsockname()[1])
-        self.sock.listen(1)
-        subprocess_path = str(Path(__file__).parent / "context_subprocess.py")
-        self.process = subprocess.Popen([sys.executable, subprocess_path, port])
-        self.conn, _ = self.sock.accept()
-        self.conn.send(pickle.dumps(self._args))
-        self.trls = pickle.loads(self.conn.recv(1024))
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.close()
-        self.sock.close()
-        self.process.communicate()
-
-
-@pytest.fixture(scope="module")
-def subprocess_helper():
-    return TangoSubprocessHelper
 
 
 @dataclass
@@ -152,21 +121,6 @@ def everything_signal_info():
         ],
         cmd_name=None,
     )
-    signal_info["strenum_spectrum"] = SequenceData(
-        name="strenum_spectrum",
-        py_type=Sequence[ExampleStrEnum],
-        initial=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        random_put_values=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        cmd_name=None,
-    )
     add_ads(
         "bool",
         "DevBoolean",
@@ -203,14 +157,6 @@ def everything_signal_info():
         "my_state",
         DevStateEnum,
         DevStateEnum.INIT,
-        random_put_values=[e.name for e in DevStateEnum],
-        cmd_name=None,
-    )
-
-    signal_info["my_state_spectrum"] = SequenceData(
-        "my_state_spectrum",
-        Sequence[DevStateEnum],
-        initial=[e.name for e in DevStateEnum],
         random_put_values=[e.name for e in DevStateEnum],
         cmd_name=None,
     )

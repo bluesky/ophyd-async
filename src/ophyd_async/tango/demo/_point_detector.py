@@ -12,28 +12,28 @@ from ophyd_async.core import (
     TriggerableCommand,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.epics.core import EpicsDevice, PvSuffix
+from ophyd_async.tango.core import TangoDevice
 
 from ._point_detector_channel import DemoPointDetectorChannel
 
 
-class DemoPointDetector(StandardReadable, EpicsDevice, Triggerable):
+class DemoPointDetector(TangoDevice, StandardReadable, Triggerable):
     """A demo detector that produces a point values based on X and Y motors."""
 
-    acquire_time: A[SignalRW[float], PvSuffix("AcquireTime"), Format.CONFIG_SIGNAL]
-    start: A[TriggerableCommand, PvSuffix("Start.PROC")]
-    acquiring: A[SignalR[bool], PvSuffix("Acquiring")]
-    reset: A[TriggerableCommand, PvSuffix("Reset.PROC")]
+    acquire_time: A[SignalRW[float], Format.CONFIG_SIGNAL]
+    start: TriggerableCommand
+    acquiring: SignalR[bool]
+    reset: TriggerableCommand
 
-    def __init__(self, prefix: str, num_channels: int = 3, name: str = "") -> None:
+    def __init__(self, trl: str, channel_trls: list[str], name: str = "") -> None:
         with self.add_children_as_readables():
             self.channel = DeviceVector(
                 {
-                    i: DemoPointDetectorChannel(f"{prefix}{i}:")
-                    for i in range(1, num_channels + 1)
+                    i + 1: DemoPointDetectorChannel(channel_trl)
+                    for i, channel_trl in enumerate(channel_trls)
                 }
             )
-        super().__init__(prefix=prefix, name=name)
+        super().__init__(trl, name=name)
 
     @AsyncStatus.wrap
     async def trigger(self):

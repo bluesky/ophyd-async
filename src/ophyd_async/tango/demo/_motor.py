@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Annotated as A
 
-import numpy as np
-
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     MovableLogic,
@@ -12,16 +10,17 @@ from ophyd_async.core import (
     StandardMovable,
     StandardReadable,
     TriggerableCommand,
-    set_and_wait_for_other_value,
+    wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.epics.core import EpicsDevice, PvSuffix
+from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 
 
 @dataclass
 class DemoMotorMoveLogic(MovableLogic[float]):
     velocity: SignalRW[float]
     stop_: TriggerableCommand
+    state: SignalR[DevStateEnum]
 
     async def stop(self):
         await self.stop_.trigger()
@@ -33,25 +32,23 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
     async def move(self, new_position: float, timeout: float | None) -> None:
-        # If we are close to the desired position then break
-        await set_and_wait_for_other_value(
-            self.setpoint,
-            new_position,
-            self.readback,
-            lambda v: bool(np.isclose(v, new_position)),
-            timeout=timeout,
-        )
+        # Write the setpoint and wait for the motor state to return to ON,
+        # which happens whether the move completes normally or is stopped.
+        await self.setpoint.set(new_position, timeout=timeout)
+        await wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
 
 
-class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
+class DemoMotor(TangoDevice, StandardReadable, StandardMovable):
     """A demo movable that moves based on velocity."""
 
-    # Define some signals
-    readback: A[SignalR[float], PvSuffix("Readback"), Format.HINTED_SIGNAL]
-    velocity: A[SignalRW[float], PvSuffix("Velocity"), Format.CONFIG_SIGNAL]
-    setpoint: A[SignalRW[float], PvSuffix("Setpoint")]
-    # If a signal name clashes with a bluesky verb add _ to the attribute name
-    stop_: A[TriggerableCommand, PvSuffix("Stop.PROC")]
+    # If the server doesn't support events, the TangoPolling annotation gives
+    # the parameters for ophyd to poll instead
+    readback: A[SignalR[float], TangoPolling(0.1, 0.001, 0.001), Format.HINTED_SIGNAL]
+    velocity: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001), Format.CONFIG_SIGNAL]
+    setpoint: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+    state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
+    # If a tango name clashes with a bluesky verb, add a trailing underscore
+    stop_: TriggerableCommand
 
     @cached_property
     def movable_logic(self) -> MovableLogic:
@@ -60,4 +57,5 @@ class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
             setpoint=self.setpoint,
             velocity=self.velocity,
             stop_=self.stop_,
+            state=self.state,
         )

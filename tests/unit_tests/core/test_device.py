@@ -301,11 +301,17 @@ def test_device_filler_check_filled_with_optional_signals():
     def mock_connector_factory():
         return Mock()
 
+    def mock_command_backend_factory(signature):
+        backend = Mock()
+        backend.signature = signature
+        return backend
+
     device = TestDevice()
     filler = DeviceFiller(
         device=device,
         signal_backend_factory=mock_backend_factory,
         device_connector_factory=mock_connector_factory,
+        command_backend_factory=mock_command_backend_factory,
     )
 
     # Create signals from annotations (unfilled)

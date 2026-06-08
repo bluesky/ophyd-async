@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import re
 from collections.abc import Mapping
 
@@ -21,12 +22,13 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalW,
-    SignalX,
+    TriggerableCommand,
     gather_dict,
 )
 
-from ._epics_connector import fill_backend_with_prefix
-from ._signal import PvaSignalBackend, pvget_with_timeout
+from ._epics_connector import fill_backend_with_prefix, fill_command_with_prefix
+from ._signal import PvaCommandBackend, PvaSignalBackend, pvget_with_timeout
+from ._util import EpicsCommandBackend
 
 
 class PviDeviceConnector(DeviceConnector):
@@ -55,18 +57,38 @@ class PviDeviceConnector(DeviceConnector):
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
+
+            def _command_backend_factory(
+                sig: inspect.Signature | None,
+            ) -> EpicsCommandBackend:
+                # EPICS only supports void/void commands (plain PV put); typed
+                # Command[P, T] annotations are a mistake on an EPICS device.
+                if sig is not None:
+                    raise TypeError(
+                        f"{device.name}: EPICS only supports TriggerableCommand /"
+                        " Command[[], None]; typed Command with parameters is not"
+                        " yet supported over EPICS"
+                    )
+                return PvaCommandBackend()
+
             self.filler = DeviceFiller(
                 device=device,
                 signal_backend_factory=PvaSignalBackend,
                 device_connector_factory=PviDeviceConnector,
+                command_backend_factory=_command_backend_factory,
             )
-            # Devices will be created with unfilled PviDeviceConnectors
-            list(self.filler.create_devices_from_annotations(filled=False))
             # Signals can be filled in with EpicsSignalSuffix and checked at runtime
             for backend, annotations in self.filler.create_signals_from_annotations(
                 filled=False
             ):
                 fill_backend_with_prefix(self.prefix, backend, annotations)
+            # Commands are filled from PVI tree at connect time
+            for backend, annotations in self.filler.create_commands_from_annotations(
+                filled=False
+            ):
+                fill_command_with_prefix(self.prefix, backend, annotations)
+            # Devices will be created with unfilled PviDeviceConnectors
+            list(self.filler.create_devices_from_annotations(filled=False))
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
@@ -180,6 +202,11 @@ class PviDeviceConnector(DeviceConnector):
             backend.read_pv = signal_details.read_pv
             backend.write_pv = signal_details.write_pv
 
+        # Fill all commands ("x" entries from PVI tree)
+        for command_name, execute_pv in self.pvi_tree.commands.items():
+            backend = self.filler.fill_child_command(command_name, TriggerableCommand)
+            backend.write_pv = execute_pv
+
         # Check that all the requested children have been filled
         suffix = f"\n{self.error_hint}" if self.error_hint else ""
         self.filler.check_filled(f"{self.pvi_pv}: {self.pvi_tree}{suffix}")
@@ -209,9 +236,6 @@ class SignalDetails(ConfinedModel):
 
             case {"w": write_pv}:
                 return cls(signal_type=SignalW, read_pv=write_pv, write_pv=write_pv)
-
-            case {"x": execute_pv}:
-                return cls(signal_type=SignalX, read_pv=execute_pv, write_pv=execute_pv)
 
             case _:
                 raise TypeError(f"Can't process entry {entry}")
@@ -298,6 +322,9 @@ class PviTree(ConfinedModel):
     :param signals:
         A mapping of signal names to `SignalDetails` objects.
 
+    :param commands:
+        A mapping of command names to their execute PV strings (from "x" PVI entries).
+
     :param sub_devices:
         A mapping of sub-device names to their corresponding `PviTree` objects.
 
@@ -312,6 +339,7 @@ class PviTree(ConfinedModel):
 
     pvi_pv: str = Field(default="")
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
+    commands: Mapping[str, str] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
     map_children: Mapping[str, PviTree | SignalDetails] = Field(default_factory=dict)
     vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
@@ -334,6 +362,13 @@ class PviTree(ConfinedModel):
         # these entries are stored under the parent PVI structure name
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
+        # Separate "x" (command) entries before processing signals
+        commands: dict[str, str] = {
+            entry_name: entries.pop(entry_name)["x"]
+            for entry_name in list(entries)
+            if not isinstance(entries[entry_name], list)
+            and set(entries[entry_name]) == {"x"}
+        }
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
             for entry_name in list(entries)
@@ -365,6 +400,7 @@ class PviTree(ConfinedModel):
         return PviTree(
             pvi_pv=pvi_pv,
             signals=signal_details,
+            commands=commands,
             sub_devices=sub_trees,
             vector_children=vector_children,
             map_children=map_children,
