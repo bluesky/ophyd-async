@@ -381,7 +381,7 @@ def derived_signal_r_example() -> DerivedSignalWithSignalR:
 @pytest.mark.parametrize(
     "fixture_name", ["derived_signal_rw_example", "derived_signal_r_example"]
 )
-async def test_derived_signal_rw_with_bluesky_read(
+async def test_derived_signal_with_bluesky_rd_plan(
     RE: RunEngine,
     request: pytest.FixtureRequest,
     fixture_name: str,
