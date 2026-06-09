@@ -181,7 +181,7 @@ class InstantMotorMock(DeviceMock["Motor"]):
 
 
 @default_mock_class(InstantMotorMock)
-class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
+class Motor(StandardMovable[float], StandardReadable, Flyable, Preparable):
     """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:
