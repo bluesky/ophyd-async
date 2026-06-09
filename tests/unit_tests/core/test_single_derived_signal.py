@@ -24,7 +24,7 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
-from ophyd_async.epics.core import epics_signal_r
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.testing import (
     BeamstopPosition,
     Exploder,
@@ -336,8 +336,8 @@ class DerivedSignalWithSignalRW(Device):
     def __init__(self, name: str = ""):
         # Must use epics signals for valid test. Using soft_signal_r_and_setter
         # doesn't reproduce the same issue.
-        self.sig1 = epics_signal_r(float, "")
-        self.sig2 = epics_signal_r(float, "")
+        self.sig1 = epics_signal_rw(float, "")
+        self.sig2 = epics_signal_rw(float, "")
         self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
         super().__init__(name)
 
