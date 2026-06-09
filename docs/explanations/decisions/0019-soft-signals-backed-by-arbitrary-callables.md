@@ -25,7 +25,7 @@ To address this, `SoftSignalBackend` was extended to support arbitrary callables
 - `get_setpoint()` **does not invoke the `getter`**; it returns the last value written to the `setter` or the initial value of.
 
 ### **Factory Function Updates**
-The convenience functions `soft_signal_rw` and `soft_signal_r_and_setter` were updated to accept `getter`, `setter`, and `poll_period` arguments, passing them through to `SoftSignalBackend`.
+The convenience functions `soft_signal_rw` and `soft_signal_r_and_setter` were updated to accept `getter`, and `poll_period` arguments. `soft_signal_rw` additionally accepts a `setter` argument. These additional arguments are passed to `SoftSignalBackend`.
 
 ## **Consequences**
 **Improved Usability**:
