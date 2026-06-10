@@ -12,6 +12,7 @@ from ophyd_async.core import (
     EnableDisable,
     EnumTypes,
     SignalRW,
+    StandardMovable,
     StrictEnum,
     Table,
     Transform,
@@ -20,9 +21,12 @@ from ophyd_async.core import (
     set_mock_value,
     soft_signal_rw,
 )
+from ophyd_async.epics.demo import DemoMotor
+from ophyd_async.epics.motor import Motor
 from ophyd_async.sim import (
     HorizontalMirror,
     HorizontalMirrorDerived,
+    SimMotor,
     TwoJackDerived,
     TwoJackTransform,
     VerticalMirror,
@@ -249,3 +253,39 @@ def test_protocol_type_hint_in_raw_to_derived_transform():
         set_derived=None,
         x=soft_signal_rw(EnableDisable),
     )
+
+
+@pytest.mark.parametrize(
+    ("m1", "m2"),
+    [
+        (Motor("PREFIX1:", "epics1"), Motor("PREFIX2:", "epics2")),
+        (
+            SimMotor(name="sim1", instant=True),
+            SimMotor(name="sim2", instant=True),
+        ),
+        (DemoMotor("PREFIX1:", name="demo1"), DemoMotor("PREFIX2:", name="demo2")),
+    ],
+)
+async def test_derived_signal_with_motor_devices(
+    m1: StandardMovable, m2: StandardMovable
+):
+    await m1.connect(mock=True)
+    await m2.connect(mock=True)
+
+    # Needed for demo motor
+    set_mock_value(m1.velocity, 1)  # type: ignore
+    set_mock_value(m2.velocity, 1)  # type: ignore
+
+    def _get(m1: float, m2: float) -> float:
+        return m1 + m2
+
+    async def _put(val: float) -> None:
+        await m1.set(val / 2)
+        await m2.set(val / 2)
+
+    derived_sig = derived_signal_rw(_get, _put, m1=m1, m2=m2)
+
+    await derived_sig.set(6)
+    assert await m1.movable_logic.readback.get_value() == 3
+    assert await m2.movable_logic.readback.get_value() == 3
+    assert await derived_sig.get_value() == 6
