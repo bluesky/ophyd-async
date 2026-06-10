@@ -268,7 +268,7 @@ def test_protocol_type_hint_in_raw_to_derived_transform():
     ids=["epics_motor", "sim_motor", "demo_motor"],
 )
 async def test_derived_signal_with_motor_devices(
-    m1: StandardMovable, m2: StandardMovable
+    m1: StandardMovable[float], m2: StandardMovable[float]
 ):
     await m1.connect(mock=True)
     await m2.connect(mock=True)
