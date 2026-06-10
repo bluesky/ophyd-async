@@ -134,16 +134,22 @@ async def test_observe_value_times_out_with_no_external_task():
     start = time.monotonic()
 
     with pytest.raises(asyncio.TimeoutError):
-        async for val in observe_value(sig, done_timeout=0.05):
+        async for val in observe_value(sig, done_timeout=0.3):
             recv.append(time.monotonic() - start)
             setter(val + 1)
 
-    # On a dev machine we can do >200 iterations in 0.05s, but CI is slower
-    # For python 3.13 we can't seem to get more than 0.05s worth of continuous
-    # callbacks, then it pauses.
-    assert len(recv) > 10
+    # On a dev machine we can do >4000 iterations in 0.3s, but CI is slower.
+    # We need at least 0.28s of timeout budget because on Python 3.13 asyncio's
+    # wait_for always schedules the Queue.get() wakeup via call_soon, so even
+    # though setter() puts a value synchronously the event loop yields once per
+    # iteration. Under CI load that yield can occasionally stall for ~0.25s
+    # (the loop's selector sleeping until the call_later deadline fires), so the
+    # fast burst of callbacks ends and a single long gap pushes elapsed well past
+    # the old 0.05s timeout. Using 0.3s with abs=0.05 keeps the assertion
+    # meaningful while tolerating that stall.
+    assert len(recv) > 50
     elapsed = time.monotonic() - start
-    assert elapsed == pytest.approx(0.05, abs=0.03), (
+    assert elapsed == pytest.approx(0.3, abs=0.05), (
         f"Elapsed: {elapsed} Received: {recv}"
     )
 
