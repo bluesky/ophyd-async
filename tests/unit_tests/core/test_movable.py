@@ -20,7 +20,7 @@ from ophyd_async.core import (
 from ophyd_async.testing import wait_for_pending_wakeups
 
 
-class StandardMovableImpl(StandardMovable):
+class StandardMovableImpl(StandardMovable[float]):
     def __init__(self, name: str = ""):
         self.readback, _ = soft_signal_r_and_setter(float)
         self.setpoint = soft_signal_rw(float)
