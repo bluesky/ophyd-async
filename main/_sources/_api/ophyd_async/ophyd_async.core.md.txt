@@ -35,6 +35,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
     :summary:
     ```
+* - {py:obj}`DeviceProcessor <ophyd_async.core._device.DeviceProcessor>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.DeviceProcessor
+    :summary:
+    ```
 * - {py:obj}`MovableLogic <ophyd_async.core._movable.MovableLogic>`
   - ```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic
     :summary:
@@ -773,6 +777,14 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 ````
 
 `````
+
+````{py:class} DeviceProcessor(process_devices: ~collections.abc.Callable[[dict[str, ~ophyd_async.core._device.Device]], ~collections.abc.Awaitable[None]])
+:canonical: ophyd_async.core._device.DeviceProcessor
+
+```{autodoc2-docstring} ophyd_async.core._device.DeviceProcessor
+```
+
+````
 
 ````{py:function} init_devices(set_name: bool = True, child_name_separator: str = '-', connect: bool = True, mock: bool = False, timeout: float = 10.0)
 :canonical: ophyd_async.core._device.init_devices
