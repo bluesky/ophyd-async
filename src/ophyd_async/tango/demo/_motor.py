@@ -38,7 +38,7 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         await wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
 
 
-class DemoMotor(TangoDevice, StandardReadable, StandardMovable):
+class DemoMotor(TangoDevice, StandardReadable, StandardMovable[float]):
     """A demo movable that moves based on velocity."""
 
     # If the server doesn't support events, the TangoPolling annotation gives
