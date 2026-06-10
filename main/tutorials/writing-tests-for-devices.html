@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.19.dev4+g296f8a11b documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.19.dev5+g6bbec6266 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=0eb996de"></script>
+    <script src="../_static/documentation_options.js?v=42f12f66"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev4+g296f8a11b documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev4+g296f8a11b documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev5+g6bbec6266 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev5+g6bbec6266 documentation - Home"/>
   
   
 </a></div>
@@ -558,7 +558,7 @@ especially useful for defining standard mock behavior alongside your Device defi
 <p>Then decorate the original class with <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.default_mock_class" title="ophyd_async.core.default_mock_class"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">default_mock_class</span></code></a> so it is automatically
 used when connected in mock mode:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>Now whenever a <code class="docutils literal notranslate"><span class="pre">Motor</span></code> is connected using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a><code class="docutils literal notranslate"><span class="pre">(mock=True)</span></code>, it will

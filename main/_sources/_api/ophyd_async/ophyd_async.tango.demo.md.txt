@@ -42,7 +42,7 @@
 `````{py:class} DemoMotor(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.demo._motor.DemoMotor
 
-Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor
 ```

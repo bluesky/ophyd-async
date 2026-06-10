@@ -48,7 +48,7 @@ Bases: {py:obj}`Exception`
 `````{py:class} Motor(prefix: str, name='')
 :canonical: ophyd_async.epics.motor.Motor
 
-Bases: {py:obj}`ophyd_async.core.StandardMovable`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Preparable`
+Bases: {py:obj}`ophyd_async.core.StandardMovable`\[{py:obj}`float`\], {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Preparable`
 
 ```{autodoc2-docstring} ophyd_async.epics.motor.Motor
 ```

@@ -54,7 +54,7 @@
 `````{py:class} DemoMotor(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.demo._motor.DemoMotor
 
-Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor
 ```

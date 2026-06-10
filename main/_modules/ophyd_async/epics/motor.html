@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.19.dev4+g296f8a11b documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.19.dev5+g6bbec6266 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=0eb996de"></script>
+    <script src="../../../_static/documentation_options.js?v=42f12f66"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev4+g296f8a11b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev4+g296f8a11b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev5+g6bbec6266 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev5+g6bbec6266 documentation - Home"/>
   
   
 </a></div>
@@ -1098,7 +1098,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="Motor">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
 <span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
