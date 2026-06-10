@@ -265,6 +265,7 @@ def test_protocol_type_hint_in_raw_to_derived_transform():
         ),
         (DemoMotor("PREFIX1:", name="demo1"), DemoMotor("PREFIX2:", name="demo2")),
     ],
+    ids=["epics_motor", "sim_motor", "demo_motor"],
 )
 async def test_derived_signal_with_motor_devices(
     m1: StandardMovable, m2: StandardMovable
@@ -273,8 +274,8 @@ async def test_derived_signal_with_motor_devices(
     await m2.connect(mock=True)
 
     # Needed for demo motor
-    set_mock_value(m1.velocity, 1)  # type: ignore
-    set_mock_value(m2.velocity, 1)  # type: ignore
+    set_mock_value(m1.velocity, 1000)  # type: ignore
+    set_mock_value(m2.velocity, 1000)  # type: ignore
 
     def _get(m1: float, m2: float) -> float:
         return m1 + m2
