@@ -37,6 +37,7 @@ from ._device import (
     Device,
     DeviceConnector,
     DeviceMock,
+    DeviceProcessor,
     DeviceVector,
     LazyMock,
     default_mock_class,
@@ -177,6 +178,7 @@ __all__ = [
     "DeviceFiller",
     "DeviceAnnotation",
     "DeviceVector",
+    "DeviceProcessor",
     "init_devices",
     # Movable
     "MovableLogic",
