@@ -134,14 +134,16 @@ async def test_observe_value_times_out_with_no_external_task():
     start = time.monotonic()
 
     with pytest.raises(asyncio.TimeoutError):
-        async for val in observe_value(sig, done_timeout=0.07):
+        async for val in observe_value(sig, done_timeout=0.05):
             recv.append(time.monotonic() - start)
             setter(val + 1)
 
-    # On a dev machine we can do >200 iterations in 0.07s, but CI is slower
+    # On a dev machine we can do >200 iterations in 0.05s, but CI is slower
+    # For python 3.13 we can't seem to get more than 0.05s worth of continuous
+    # callbacks, then it pauses.
     assert len(recv) > 10
     elapsed = time.monotonic() - start
-    assert elapsed == pytest.approx(0.07, abs=0.05), (
+    assert elapsed == pytest.approx(0.05, abs=0.03), (
         f"Elapsed: {elapsed} Received: {recv}"
     )
 
