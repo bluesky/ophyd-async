@@ -270,12 +270,11 @@ def test_protocol_type_hint_in_raw_to_derived_transform():
 async def test_derived_signal_with_motor_devices(
     m1: StandardMovable[float], m2: StandardMovable[float]
 ):
-    await m1.connect(mock=True)
-    await m2.connect(mock=True)
+    await asyncio.gather(m1.connect(mock=True), m2.connect(mock=True))
 
     # Needed for demo motor
-    set_mock_value(m1.velocity, 1000)  # type: ignore
-    set_mock_value(m2.velocity, 1000)  # type: ignore
+    set_mock_value(m1.velocity, 10000)  # type: ignore
+    set_mock_value(m2.velocity, 10000)  # type: ignore
 
     def _get(m1: float, m2: float) -> float:
         return m1 + m2
