@@ -263,9 +263,18 @@ def test_protocol_type_hint_in_raw_to_derived_transform():
             SimMotor(name="sim1", instant=True),
             SimMotor(name="sim2", instant=True),
         ),
+        (
+            SimMotor(name="sim1", instant=False),
+            SimMotor(name="sim2", instant=False),
+        ),
         (DemoMotor("PREFIX1:", name="demo1"), DemoMotor("PREFIX2:", name="demo2")),
     ],
-    ids=["epics_motor", "sim_motor", "demo_motor"],
+    ids=[
+        "epics_motor",
+        "sim_motor[instant=True]",
+        "sim_motor[instant=Fasle]",
+        "demo_motor",
+    ],
 )
 async def test_derived_signal_with_motor_devices(
     m1: StandardMovable[float], m2: StandardMovable[float]
