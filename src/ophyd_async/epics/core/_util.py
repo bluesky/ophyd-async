@@ -40,6 +40,15 @@ class EpicsOptions(Generic[SignalDatatypeT]):
     as it causes a deadlock.
     """
 
+    element_count: None | int = None
+    """Epics allows to specify the maximum number of elements to transfer
+
+    Fast devices provide buffers that acquire large data sets. Typically
+    one only needs the beginning of this buffer.
+
+    None is used as standard argument: transfer as many elements as provided
+    """
+
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
     """Split PV into record name and field."""
