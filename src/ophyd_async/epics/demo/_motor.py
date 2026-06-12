@@ -43,7 +43,7 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         )
 
 
-class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
+class DemoMotor(EpicsDevice, StandardReadable, StandardMovable[float]):
     """A demo movable that moves based on velocity."""
 
     # Define some signals
