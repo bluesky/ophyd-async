@@ -147,6 +147,21 @@ class Trajectory:
         ).reshape((-1, 2))
 
         collection_window_iter = iter(collection_windows)
+
+        if any(
+            slice.lower[motor].min() <= motor_info.motor_lower_limit[motor]
+            or slice.upper[motor].max() >= motor_info.motor_upper_limit[motor]
+            for motor in motors
+        ):
+            raise ValueError("Unable to generate trajectory due to motor limit.")
+
+        if any(
+            (np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration).max()
+            > motor_info.motor_max_velocity[motor]
+            for motor in motors
+        ):
+            raise ValueError("Unable to generate trajectory due to velocity limit.")
+
         sub_traj_funcs = []
 
         # Given we start at a collection window, insert it

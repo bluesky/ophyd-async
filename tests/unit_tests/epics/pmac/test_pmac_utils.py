@@ -82,6 +82,8 @@ async def test_motor_info_from_cs_motors(sim_cs_motors: tuple[PmacIO, Motor, Mot
         {sim_cs_x_motor: 7, sim_cs_y_motor: 8},
         {sim_cs_x_motor: 10.0, sim_cs_y_motor: 20.0},
         {sim_cs_x_motor: 5.0, sim_cs_y_motor: 10.0},
+        {sim_cs_x_motor: -20.0, sim_cs_y_motor: -20.0},
+        {sim_cs_x_motor: 20.0, sim_cs_y_motor: 20.0},
     )
     assert motor_info == expected_motor_info
 
@@ -104,6 +106,8 @@ async def test_motor_info_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 7, sim_y_motor: 8},
         {sim_x_motor: 10, sim_y_motor: 20},
         {sim_x_motor: 5, sim_y_motor: 10},
+        {sim_x_motor: -20.0, sim_y_motor: -20.0},
+        {sim_x_motor: 20.0, sim_y_motor: 20.0},
     )
     assert motor_info == expected_motor_info
 

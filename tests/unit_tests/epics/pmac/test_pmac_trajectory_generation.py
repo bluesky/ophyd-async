@@ -25,6 +25,8 @@ async def motor_info(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 6, sim_y_motor: 7},
         {sim_x_motor: 10, sim_y_motor: 10},
         {sim_x_motor: 5, sim_y_motor: 5},
+        {sim_x_motor: -20.0, sim_y_motor: -20.0},
+        {sim_x_motor: 20.0, sim_y_motor: 20.0},
     )
 
 
@@ -1191,3 +1193,25 @@ async def test_small_turnaround_durations_are_quantized(
 
     # Check that gap durations are snapped up to nearest interval
     assert min(trajectory.durations) == pytest.approx(MIN_INTERVAL)
+
+
+async def test_motor_limits(
+    sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
+):
+    _, sim_x_motor, sim_y_motor = sim_motors
+    spec = Fly(1.0 @ Line(sim_x_motor, -30, 30, 5))
+    slice = Path(spec.calculate()).consume()
+
+    with pytest.raises(ValueError, match="motor limit"):
+        Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
+
+
+async def test_velocity_limit(
+    sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
+):
+    _, sim_x_motor, sim_y_motor = sim_motors
+    spec = Fly(0.1 @ Line(sim_x_motor, 0, 10, 5))
+    slice = Path(spec.calculate()).consume()
+
+    with pytest.raises(ValueError, match="velocity limit"):
+        Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
