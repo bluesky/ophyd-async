@@ -25,7 +25,7 @@ from ._device import Device, DeviceConnector, LazyMock
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
-from ._soft_signal_backend import SoftSignalBackend
+from ._soft_signal_backend import Getter, Setter, SoftSignalBackend
 from ._status import AsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
@@ -353,6 +353,10 @@ def soft_signal_rw(
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
+    *,
+    getter: Getter[SignalDatatypeT] | None = None,
+    setter: Setter[Any] | None = None,
+    poll_period: float | None = None,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-writable Signal with a [](#SoftSignalBackend).
 
@@ -363,8 +367,26 @@ def soft_signal_rw(
     :param name: The name of the signal.
     :param units: The units of the signal.
     :param precision: The precision of the signal.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param setter:
+        Optional callable performing the set action. May return the settled
+        value; if it returns None and a getter is configured, the getter is
+        called to refresh the cache.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     """
-    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    backend = SoftSignalBackend(
+        datatype,
+        initial_value,
+        units,
+        precision,
+        getter=getter,
+        setter=setter,
+        poll_period=poll_period,
+    )
     signal = SignalRW(backend=backend, name=name)
     return signal
 
@@ -375,6 +397,9 @@ def soft_signal_r_and_setter(
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
+    *,
+    getter: Getter[SignalDatatypeT] | None = None,
+    poll_period: float | None = None,
 ) -> tuple[SignalR[SignalDatatypeT], Callable[[SignalDatatypeT], None]]:
     """Create a read-only Signal with a [](#SoftSignalBackend).
 
@@ -386,9 +411,22 @@ def soft_signal_r_and_setter(
     :param name: The name of the signal.
     :param units: The units of the signal.
     :param precision: The precision of the signal.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     :return: A tuple of the created SignalR and a callable to set its value.
     """
-    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    backend = SoftSignalBackend(
+        datatype,
+        initial_value,
+        units,
+        precision,
+        getter=getter,
+        poll_period=poll_period,
+    )
     signal = SignalR(backend=backend, name=name)
     return (signal, backend.set_value)
 
