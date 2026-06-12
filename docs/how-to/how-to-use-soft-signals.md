@@ -1,8 +1,31 @@
-# 20. How to use soft signals
+# How to use soft signals
 
-The introduction of callable-backed `SoftSignalBackend` enables users to integrate non-EPICS/Tango systems (e.g., Python APIs, scripts, or custom hardware drivers) into ophyd-async without writing full `SignalBackend` implementations. Below are idiomatic patterns for common scenarios, balancing simplicity and type safety.
+`SoftSignalBackend` provides a lightweight way to expose Python values and callables as ophyd-async signals, without implementing a full hardware backend. There are two broad usage patterns: **pure soft signals** (in-memory state only) and **callable-backed signals** (delegating to Python functions or coroutines).
 
-## Case A: Single-Value Read/Write with Matching Types
+---
+
+## Case A: Pure soft signals (no callable)
+
+**Use case**: a signal that holds a value in memory, with no hardware or external function involved. Useful for configuration parameters, simulated devices.
+
+```python
+from ophyd_async.core import soft_signal_rw
+
+# A read/write float signal, default value 0.0
+exposure_time = soft_signal_rw(float, initial_value=0.1, units="s")
+
+# A read/write enum signal
+from enum import Enum
+class Mode(Enum):
+    DARK = "dark"
+    LIGHT = "light"
+
+mode = soft_signal_rw(Mode, initial_value=Mode.DARK)
+```
+
+Reads always return the last value written. No polling or external calls occur.
+
+## Case B: Single-value read/write with matching types
 
 **Use Case**: A callable with a single argument where the input and output types match the signal's `SignalDatatypeT` (e.g., a motor position setter/getter).
 
@@ -25,7 +48,7 @@ motor_position = soft_signal_rw(
 - Avoids the need for separate `Command` + `Signal` pairs when types align.
 - Preserves type hints and integrates seamlessly with scans.
 
-## Case B: Mismatched setter and getter types or multiple input types
+## Case C: Mismatched setter and getter types or multiple input types
 
 **Use Case**: A callable where the input type differs from the output (e.g., sending a config object but receiving a string status).
 
@@ -43,7 +66,7 @@ current_status = await status.read()
 - Store the result in a separate `Signal` (here, `status`) for readability in plans.
 - Ensures type safety: `Command` input (`MotorConfig`) and `Signal` output (`float`) remain distinct.
 
-## Case C: Complex returns or multiple outputs
+## Case D: Complex returns or multiple outputs
 
 **Use Case**: A callable returning structured data (e.g., a diagnostic function yielding many metrics).
 
