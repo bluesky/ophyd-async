@@ -96,7 +96,7 @@ pressure = await pressure_signal.read()
 - Maintains separation of concerns: signals represent *state*, commands represent *actions*.
 
 **Key Takeaways**:
-1. **Prioritize `SoftSignalBackend` with callables** for simple, type-aligned read/write operations (Case A).
-2. **Combine `Command` + `Signal`** when types diverge or actions yield secondary results (Cases B/C).
+1. **Prioritize `SoftSignalBackend` with callables** for simple, type-aligned read/write operations (Case B).
+2. **Combine `Command` + `Signal`** when types diverge or actions yield secondary results (Cases C/D).
 3. **Avoid overloading signals**: If a callable performs an action *and* returns data, model the action as a `Command` and the data as one or more `Signal`s.
 4. **Polling**: Use `poll_period` in `SoftSignalBackend` for live updates (e.g., sensor readings), but ensure `getter` is lightweight.
