@@ -244,6 +244,7 @@ async def test_soft_signal_backend_getter_does_not_affect_setpoint():
     store[0] = 99.0
     assert await backend.get_setpoint() == 5.0
     assert await backend.get_value() == 99.0
+    assert await backend.get_setpoint() == 5.0
 
 
 async def test_soft_signal_backend_setter_homogeneous_types():
