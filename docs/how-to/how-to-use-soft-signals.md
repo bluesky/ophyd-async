@@ -76,12 +76,15 @@ current_status = await status.get_value()
 **Approach**:
 ```python
 # Split outputs into individual signals
-temp_signal = soft_signal_rw(float, getter=lambda: run_diagnostics()["temperature"])
-pressure_signal = soft_signal_rw(float, getter=lambda: run_diagnostics()["pressure"])
+temp_signal = soft_signal_rw(float)
+pressure_signal = soft_signal_rw(float)
+
+def _diagnostics(): return 0.0, 1.0
 async def run_diagnostics() -> None:
     temp, pressure = _diagnostics()
     await temp_signal.set(temp)
     await pressure_signal.set(pressure)
+    
 diagnostics_cmd = soft_command(run_diagnostics)
 result = await diagnostics_cmd.execute()
 temp = await temp_signal.read()
