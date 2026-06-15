@@ -355,7 +355,7 @@ def soft_signal_rw(
     precision: int | None = None,
     *,
     getter: Getter[SignalDatatypeT] | None = None,
-    setter: Setter[Any] | None = None,
+    setter: Setter[SignalDatatypeT] | None = None,
     poll_period: float | None = None,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-writable Signal with a [](#SoftSignalBackend).
