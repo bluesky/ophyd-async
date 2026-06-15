@@ -54,13 +54,16 @@ motor_position = soft_signal_rw(
 
 ```python
 status = soft_signal_rw(str)
-def configure_subsystem(*args, **kwargs) -> None:
+
+from ophyd_async.core import soft_command
+
+async def configure_subsystem(*args, **kwargs) -> None:
     # Apply config...
     await status.set("configured")
+
 config_cmd = soft_command(configure_subsystem)
 await config_cmd.execute(...)
-current_status = await status.read()
-```
+current_status = await status.get_value()
 **Rationale**:
 - Use a **`Command`** to handle the mismatched input/output types.
 - Store the result in a separate `Signal` (here, `status`) for readability in plans.
