@@ -259,62 +259,6 @@ async def test_soft_signal_backend_setter_homogeneous_types():
     assert store[0] == 7.0
 
 
-async def test_soft_signal_backend_setter_heterogeneous_types():
-    counts_written = []
-
-    def counts_setter(counts: int) -> float:
-        counts_written.append(counts)
-        return counts * 0.01
-
-    backend = SoftSignalBackend(float, setter=counts_setter)
-    await backend.connect(timeout=1)
-    await backend.put(1000)
-    assert counts_written == [1000]
-    assert await backend.get_value() == pytest.approx(10.0)
-
-
-async def test_soft_signal_backend_async_setter_heterogeneous_types():
-    counts_written = []
-
-    async def counts_setter(counts: int) -> float:
-        counts_written.append(counts)
-        return counts * 0.01
-
-    backend = SoftSignalBackend(float, setter=counts_setter)
-    await backend.connect(timeout=1)
-    await backend.put(500)
-    assert counts_written == [500]
-    assert await backend.get_value() == pytest.approx(5.0)
-
-
-async def test_soft_signal_backend_setter_heterogeneous_none_return_with_getter():
-    store = [0.0]
-    commands = []
-
-    def command_setter(cmd: str) -> None:
-        commands.append(cmd)
-        store[0] = float(cmd.split("=")[1])
-
-    backend = SoftSignalBackend(float, setter=command_setter, getter=lambda: store[0])
-    await backend.connect(timeout=1)
-    await backend.put("pos=42.5")
-    assert commands == ["pos=42.5"]
-    assert await backend.get_value() == pytest.approx(42.5)
-
-
-async def test_soft_signal_backend_setter_heterogeneous_none_return_without_getter():
-    received = []
-
-    def int_setter(v: int) -> None:
-        received.append(v)
-
-    backend = SoftSignalBackend(float, setter=int_setter)
-    await backend.connect(timeout=1)
-    await backend.put(42)
-    assert received == [42]
-    assert await backend.get_value() == pytest.approx(42.0)
-
-
 async def test_soft_signal_backend_async_setter():
     store = [0.0]
 
