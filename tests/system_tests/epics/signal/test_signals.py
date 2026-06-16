@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 import typing
 from collections.abc import Awaitable, Callable
@@ -955,3 +956,22 @@ def test_subscribe_works_under_re_and_fails_outside(
         "are you trying to run subscribe outside a plan?",
     ):
         s2.subscribe_reading(print)
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_accept_enum(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_enum = epics_triggerable_command(ioc_devices.get_pv(protocol, "enum"))
+    await triggerable_enum.connect()
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_raise_with_float(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_float = epics_triggerable_command(
+        ioc_devices.get_pv(protocol, "float_prec_1")
+    )
+    with pytest.raises(TypeError, match=re.escape("requires a scalar numeric PV")):
+        await triggerable_float.connect()
