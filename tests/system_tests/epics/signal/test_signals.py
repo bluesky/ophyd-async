@@ -960,7 +960,7 @@ def test_subscribe_works_under_re_and_fails_outside(
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_command_backends_accept_enum(
-    RE, ioc_devices: EpicsTestIocAndDevices, protocol
+    ioc_devices: EpicsTestIocAndDevices, protocol
 ):
     triggerable_enum = epics_triggerable_command(ioc_devices.get_pv(protocol, "enum"))
     await triggerable_enum.connect()
@@ -968,7 +968,7 @@ async def test_command_backends_accept_enum(
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_command_backends_raise_with_float(
-    RE, ioc_devices: EpicsTestIocAndDevices, protocol
+    ioc_devices: EpicsTestIocAndDevices, protocol
 ):
     triggerable_float = epics_triggerable_command(
         ioc_devices.get_pv(protocol, "float_prec_1")
