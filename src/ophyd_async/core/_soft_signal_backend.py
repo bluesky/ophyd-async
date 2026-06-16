@@ -205,26 +205,17 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         pass
 
     async def put(self, value: Any) -> None:
-        # Setpoint
         self._setpoint = (
             self.initial_value if value is None else self.converter.write_value(value)
         )
-
-        # Setter
         if self._setter is not None:
             readback = await maybe_await(self._setter(value))
-
-            # Setter returns a good value, set that value
             if readback is not None:
                 self.set_value(readback)
-            # If not, call the getter to update the value
             elif self._getter is not None:
                 await self._update_value_from_getter()
-            # If no getter and no good value from setter, set value to setpoint
             else:
                 self.set_value(self._setpoint)
-
-        # No Setter
         else:
             self.set_value(self._setpoint)
 
