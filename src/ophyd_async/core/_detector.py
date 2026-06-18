@@ -206,30 +206,57 @@ def _get_supported_triggers(
     return supported_triggers
 
 
-class DetectorArmLogic(ABC):
-    """Abstract base class for detector arming and disarming logic.
+class DetectorAcquireLogic(ABC):
+    """Abstract base class for detector acquisition lifecycle hooks.
 
-    Implementations must provide methods to arm the detector, wait for it to become
-    idle, and disarm it. This interface allows for detector-specific behavior during
-    the arm/disarm lifecycle.
+    Subclasses implement four hooks that are called at defined points in the
+    `[](#StandardDetector)` lifecycle:
+
+    - `ensure_ready` — called from `stage()` to put the detector into a known
+      idle state before a scan begins.
+    - `start_acquiring` — called from `prepare()`, `kickoff()`, or `trigger()`
+      to start the detector acquiring.
+    - `wait_for_idle` — called after the final collection completes to confirm
+      the detector has returned to idle.
+    - `ensure_stopped` — called from `unstage()` to stop the detector and
+      perform any end-of-scan cleanup.
+
+    The default `ensure_ready` delegates to `ensure_stopped`, which is correct
+    for detectors where stage-time reset and scan-end teardown are identical.
+    Override `ensure_ready` when the two phases require different behaviour
+    (e.g. arming the detector once at stage time while keeping it armed across
+    multiple kickoff/complete cycles).
     """
 
+    async def ensure_ready(self):
+        """Ensure the detector is idle before a scan.
+
+        Called from `stage()`. The default implementation delegates to
+        `ensure_stopped`, which is sufficient for detectors that perform the
+        same reset at stage time as at unstage time. Override this method when
+        a different action is required at stage time (for example, arming the
+        detector once so it is ready for multiple kickoff/complete cycles
+        without re-arming).
+        """
+        await self.ensure_stopped()
+
     @abstractmethod
-    async def arm(self):
-        """Arm the detector, waiting until it is armed."""
+    async def start_acquiring(self):
+        """Start the detector acquiring.
+
+        Called from `prepare()` for external-trigger modes, and from
+        `kickoff()` / `trigger()` for internal-trigger modes.
+        """
 
     @abstractmethod
     async def wait_for_idle(self):
-        """Wait for the detector to be disarmed or idle."""
+        """Wait for the detector to return to idle after the final collection."""
 
     @abstractmethod
-    async def disarm(self, on_unstage: bool):
-        """Disarm the detector, return detector to an idle state.
+    async def ensure_stopped(self):
+        """Stop the detector and perform end-of-scan cleanup.
 
-        :param on_unstage: True if called from `unstage()`, False if called from
-            `stage()` before a new acquisition. Implementations can use this to
-            perform cleanup that should only happen at the end of a scan (for
-            example, closing a shutter that must stay open between exposures).
+        Called from `unstage()`.
         """
 
 
@@ -342,7 +369,7 @@ class StandardDetector(
 
     # Logic for the detector
     _trigger_logic: DetectorTriggerLogic | None = None
-    _arm_logic: DetectorArmLogic | None = None
+    _acquire_logic: DetectorAcquireLogic | None = None
     _data_logics: Sequence[DetectorDataLogic] = ()
     # Signals to include in read_configuration
     _config_signals: Sequence[SignalR] = ()
@@ -367,9 +394,9 @@ class StandardDetector(
         return signal
 
     def add_detector_logics(
-        self, *logics: DetectorTriggerLogic | DetectorArmLogic | DetectorDataLogic
+        self, *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic
     ) -> None:
-        """Add arm, trigger or data logic to the detector.
+        """Add acquire, trigger or data logic to the detector.
 
         :param logic: The logic to add
         """
@@ -382,10 +409,10 @@ class StandardDetector(
                 self._supported_triggers = _get_supported_triggers(logic)
                 # Add the config signals it needs
                 self.add_config_signals(*logic.config_sigs())
-            elif isinstance(logic, DetectorArmLogic):
-                if self._arm_logic is not None:
-                    raise RuntimeError("Detector already has arm logic")
-                self._arm_logic = logic
+            elif isinstance(logic, DetectorAcquireLogic):
+                if self._acquire_logic is not None:
+                    raise RuntimeError("Detector already has acquire logic")
+                self._acquire_logic = logic
             elif isinstance(logic, DetectorDataLogic):
                 self._data_logics = (*self._data_logics, logic)
             else:
@@ -397,12 +424,6 @@ class StandardDetector(
         :param sig: The signal to add
         """
         self._config_signals = (*self._config_signals, *signals)
-
-    async def _disarm_and_stop(self, on_unstage: bool = False):
-        coros = [data_logic.stop() for data_logic in self._data_logics]
-        if self._arm_logic:
-            coros.append(self._arm_logic.disarm(on_unstage=on_unstage))
-        await asyncio.gather(*coros)
 
     async def get_trigger_deadtime(
         self, settings: Settings | None = None
@@ -432,7 +453,10 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._disarm_and_stop(on_unstage=False)
+        coros = [data_logic.stop() for data_logic in self._data_logics]
+        if self._acquire_logic:
+            coros.append(self._acquire_logic.ensure_ready())
+        await asyncio.gather(*coros)
         self._prepare_ctx = None
         self._kickoff_ctx = None
         await self.events_to_kickoff.set(0)
@@ -522,8 +546,8 @@ class StandardDetector(
                 )
                 if collections_written >= target_collections_written:
                     break
-        if self._arm_logic and wait_for_idle:
-            await self._arm_logic.wait_for_idle()
+        if self._acquire_logic and wait_for_idle:
+            await self._acquire_logic.wait_for_idle()
 
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
@@ -579,9 +603,9 @@ class StandardDetector(
         await self._update_prepare_context(value)
         # Tell people how many collections we will acquire for
         await self.events_to_kickoff.set(value.number_of_events)
-        # External triggering can arm now
-        if self._arm_logic and value.trigger != DetectorTrigger.INTERNAL:
-            await self._arm_logic.arm()
+        # External triggering can start acquiring now
+        if self._acquire_logic and value.trigger != DetectorTrigger.INTERNAL:
+            await self._acquire_logic.start_acquiring()
 
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
@@ -631,9 +655,9 @@ class StandardDetector(
             # Ensure the data provider is still usable
             await self._update_prepare_context(trigger_info)
         ctx = error_if_none(self._prepare_ctx, "Prepare should have been run")
-        # Arm the detector and wait for it to finish.
-        if self._arm_logic:
-            await self._arm_logic.arm()
+        # Start the detector acquiring and wait for it to finish.
+        if self._acquire_logic:
+            await self._acquire_logic.start_acquiring()
         async for update in self._wait_for_index(
             data_providers=ctx.streamable_data_providers,
             trigger_info=ctx.trigger_info,
@@ -674,9 +698,9 @@ class StandardDetector(
             collections_requested=collections_requested,
             is_last_kickoff=last_requested_collection == last_expected_collection,
         )
-        # External trigering has been armed already, internal should arm now
-        if self._arm_logic and ctx.trigger_info.trigger == DetectorTrigger.INTERNAL:
-            await self._arm_logic.arm()
+        # External triggering has already started; internal starts now
+        if self._acquire_logic and ctx.trigger_info.trigger == DetectorTrigger.INTERNAL:
+            await self._acquire_logic.start_acquiring()
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
@@ -754,5 +778,8 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        """Disarm the detector and stop file writing."""
-        await self._disarm_and_stop(on_unstage=True)
+        """Stop the detector and file writing."""
+        coros = [data_logic.stop() for data_logic in self._data_logics]
+        if self._acquire_logic:
+            coros.append(self._acquire_logic.ensure_stopped())
+        await asyncio.gather(*coros)

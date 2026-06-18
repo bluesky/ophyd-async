@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 import typing
 from collections.abc import Awaitable, Callable
@@ -20,6 +21,7 @@ from ophyd.signal import EpicsSignal
 
 from ophyd_async.core import (
     Array1D,
+    Command,
     NotConnectedError,
     Signal,
     SignalDatatypeT,
@@ -34,13 +36,15 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
 )
 from ophyd_async.epics.core import (
+    CaCommandBackend,
     CaSignalBackend,
+    PvaCommandBackend,
     PvaSignalBackend,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
     epics_signal_w,
-    epics_signal_x,
+    epics_triggerable_command,
 )
 from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
@@ -640,6 +644,12 @@ def _get_epics_backend(signal: Signal) -> CaSignalBackend | PvaSignalBackend:
     return backend
 
 
+def _get_command_backend(command: Command) -> CaCommandBackend | PvaCommandBackend:
+    backend = command._connector.backend
+    assert isinstance(backend, CaCommandBackend | PvaCommandBackend)
+    return backend
+
+
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
     assert _get_epics_backend(read_write).read_pv == "ReadWrite"
@@ -667,8 +677,8 @@ def test_signal_helpers():
     write = epics_signal_w(int, "Write")
     assert _get_epics_backend(write).write_pv == "Write"
 
-    execute = epics_signal_x("Execute")
-    assert _get_epics_backend(execute).write_pv == "Execute"
+    execute = epics_triggerable_command("Execute")
+    assert _get_command_backend(execute).write_pv == "Execute"
 
 
 def test_signal_helpers_explicit_read_timeout():
@@ -687,7 +697,7 @@ def test_signal_helpers_explicit_read_timeout():
     write = epics_signal_w(int, "Write", timeout=987)
     assert write._timeout == 987
 
-    execute = epics_signal_x("Execute", timeout=654)
+    execute = epics_triggerable_command("Execute", timeout=654)
     assert execute._timeout == 654
 
 
@@ -946,3 +956,22 @@ def test_subscribe_works_under_re_and_fails_outside(
         "are you trying to run subscribe outside a plan?",
     ):
         s2.subscribe_reading(print)
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_accept_enum(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_enum = epics_triggerable_command(ioc_devices.get_pv(protocol, "enum"))
+    await triggerable_enum.connect()
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_raise_with_float(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_float = epics_triggerable_command(
+        ioc_devices.get_pv(protocol, "float_prec_1")
+    )
+    with pytest.raises(TypeError, match=re.escape("requires a scalar numeric PV")):
+        await triggerable_float.connect()

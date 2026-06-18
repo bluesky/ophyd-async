@@ -8,7 +8,7 @@ import pytest
 
 from ophyd_async.core import (
     Array1D,
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
@@ -108,14 +108,14 @@ class DeadtimeTriggerLogic(DetectorTriggerLogic):
         self.num, self.livetime, self.deadtime = num, livetime, deadtime
 
 
-class MockArmLogic(DetectorArmLogic):
-    """Mock arm logic that tracks state."""
+class MockAcquireLogic(DetectorAcquireLogic):
+    """Mock acquire logic that tracks state."""
 
     armed = False
     arm_count = 0
     disarm_count = 0
 
-    async def arm(self):
+    async def start_acquiring(self):
         self.armed = True
         self.arm_count += 1
 
@@ -123,7 +123,7 @@ class MockArmLogic(DetectorArmLogic):
         await asyncio.sleep(0.001)
         self.armed = False
 
-    async def disarm(self, on_unstage: bool):
+    async def ensure_stopped(self):
         self.armed = False
         self.disarm_count += 1
 
@@ -337,7 +337,7 @@ async def test_arm_timing(trigger_type, arm_timing, tmp_path):
     """Verify detector is armed at the correct time based on trigger type."""
     det = StandardDetector()
     tl = AllTriggerTypesLogic()
-    al = MockArmLogic()
+    al = MockAcquireLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
     det.add_detector_logics(tl, al, dl)
 
@@ -369,7 +369,7 @@ async def test_arm_timing(trigger_type, arm_timing, tmp_path):
 async def test_trigger_arms_detector(tmp_path):
     """Test that trigger() arms the detector when arm logic is present."""
     det = StandardDetector()
-    al = MockArmLogic()
+    al = MockAcquireLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
     det.add_detector_logics(JustInternalTriggerLogic(), al, dl)
 
@@ -392,9 +392,9 @@ async def test_trigger_arms_detector(tmp_path):
 
 
 async def test_arm_logic_called_on_stage():
-    """Test that arm logic is disarmed on stage."""
+    """Test that acquire logic is stopped on stage."""
     det = StandardDetector()
-    al = MockArmLogic()
+    al = MockAcquireLogic()
     det.add_detector_logics(al)
 
     al.armed = True  # Simulate being armed
@@ -726,14 +726,14 @@ async def test_cannot_add_two_trigger_logics():
 
 
 async def test_cannot_add_two_arm_logics():
-    """Test that adding two arm logics raises an error."""
+    """Test that adding two acquire logics raises an error."""
     det = StandardDetector()
-    al1 = MockArmLogic()
-    al2 = MockArmLogic()
+    al1 = MockAcquireLogic()
+    al2 = MockAcquireLogic()
 
     det.add_detector_logics(al1)
 
-    with pytest.raises(RuntimeError, match="Detector already has arm logic"):
+    with pytest.raises(RuntimeError, match="Detector already has acquire logic"):
         det.add_detector_logics(al2)
 
 
@@ -749,31 +749,34 @@ async def test_add_unknown_logic_type_raises():
 
 
 @pytest.mark.parametrize("initial_shutter_closed", [True, False])
-async def test_disarm_on_unstage_shutter_use_case(initial_shutter_closed: bool):
-    """Shutter use case: close the shutter only at the end of the scan.
+async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool):
+    """ensure_ready and ensure_stopped are separate hooks.
 
-    A beamline detector needs the shutter to stay open between exposures during
-    a scan, but must always close it when the scan ends.  By branching on
-    ``on_unstage`` inside ``disarm()``, the arm logic can close the shutter in
-    ``unstage()`` without inadvertently closing it during ``stage()``.
+    A detector that needs different behaviour at stage time (ensure_ready) versus
+    scan-end (ensure_stopped) can override both independently.  Here a shutter
+    must stay open between kickoff/complete cycles, but must close when the scan
+    ends (unstage).  stage() must not close the shutter even if it was already
+    closed before the scan began.
     """
 
-    class ShutterArmLogic(DetectorArmLogic):
+    class ShutterAcquireLogic(DetectorAcquireLogic):
         def __init__(self, shutter_closed: bool):
             self.shutter_closed = shutter_closed
 
-        async def arm(self):
-            self.shutter_closed = False  # open shutter when arming
+        async def ensure_ready(self):
+            pass  # don't touch the shutter at stage time
+
+        async def start_acquiring(self):
+            self.shutter_closed = False  # open shutter when acquiring
 
         async def wait_for_idle(self):
             pass
 
-        async def disarm(self, on_unstage: bool):
-            if on_unstage:
-                self.shutter_closed = True
+        async def ensure_stopped(self):
+            self.shutter_closed = True  # close shutter at end of scan
 
     det = StandardDetector()
-    al = ShutterArmLogic(initial_shutter_closed)
+    al = ShutterAcquireLogic(initial_shutter_closed)
     det.add_detector_logics(al)
 
     await det.stage()
@@ -782,7 +785,7 @@ async def test_disarm_on_unstage_shutter_use_case(initial_shutter_closed: bool):
     )  # stage() must not touch the shutter
 
     await det.trigger()
-    assert al.shutter_closed is False  # arm() opens the shutter
+    assert al.shutter_closed is False  # start_acquiring() opens the shutter
 
     await det.unstage()
     assert al.shutter_closed is True  # unstage() must close the shutter
@@ -813,7 +816,7 @@ async def test_data_logic_with_no_prepare_methods_raises():
 async def test_unstage_disarms_detector():
     """Test that unstage() calls disarm on the detector."""
     det = StandardDetector()
-    al = MockArmLogic()
+    al = MockAcquireLogic()
     det.add_detector_logics(al)
 
     al.armed = True

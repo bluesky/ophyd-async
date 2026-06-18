@@ -1,5 +1,15 @@
 """The building blocks for making devices."""
 
+from ._command import (
+    NO_ARG_VOID_SIGNATURE,
+    Command,
+    CommandBackend,
+    CommandConnector,
+    MockCommandBackend,
+    SoftCommandBackend,
+    TriggerableCommand,
+    soft_command,
+)
 from ._data_providers import (
     ReadableDataProvider,
     SignalDataProvider,
@@ -16,7 +26,7 @@ from ._derived_signal import (
 )
 from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
@@ -27,6 +37,7 @@ from ._device import (
     Device,
     DeviceConnector,
     DeviceMock,
+    DeviceProcessor,
     DeviceVector,
     LazyMock,
     default_mock_class,
@@ -44,14 +55,19 @@ from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
+    get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_precision,
     set_mock_put_proceeds,
+    set_mock_units,
     set_mock_value,
     set_mock_values,
 )
+from ._movable import InstantMovableMock, MovableLogic, StandardMovable
 from ._path_providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
@@ -162,7 +178,12 @@ __all__ = [
     "DeviceFiller",
     "DeviceAnnotation",
     "DeviceVector",
+    "DeviceProcessor",
     "init_devices",
+    # Movable
+    "MovableLogic",
+    "StandardMovable",
+    "InstantMovableMock",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
@@ -210,9 +231,13 @@ __all__ = [
     "set_mock_value",
     "set_mock_values",
     "get_mock_put",
+    "get_mock_execute",
     "callback_on_mock_put",
+    "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
+    "set_mock_units",
+    "set_mock_precision",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
@@ -231,7 +256,7 @@ __all__ = [
     "DetectorTrigger",
     "TriggerInfo",
     "DetectorTriggerLogic",
-    "DetectorArmLogic",
+    "DetectorAcquireLogic",
     "DetectorDataLogic",
     "StandardDetector",
     # Path
@@ -295,4 +320,13 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    # Commands
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "MockCommandBackend",
+    "NO_ARG_VOID_SIGNATURE",
+    "SoftCommandBackend",
+    "soft_command",
+    "TriggerableCommand",
 ]

@@ -4,8 +4,8 @@ from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
-    SignalX,
     StrictEnum,
+    TriggerableCommand,
 )
 
 
@@ -73,9 +73,9 @@ class JungfrauDriverIO(Device):
 
     gain_mode: SignalRW[GainMode]
 
-    acquisition_start: SignalX
+    acquisition_start: TriggerableCommand
 
-    acquisition_stop: SignalX
+    acquisition_stop: TriggerableCommand
     bit_depth: SignalR[int]
     trigger_mode: SignalRW[JungfrauTriggerMode]
     detector_status: SignalR[DetectorStatus]

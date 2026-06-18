@@ -25,12 +25,42 @@ We will be writing a test using the pytest framework which encourages fixtures t
 :pyobject: mock_motor
 ```
 
-This will use [](#init_devices) to call [](#Device.connect) with `mock=True`. This will recursively replace the real connection to hardware with a mock that allows us to change the Signal's value that our code will see and capture any attempts to set the value from our code. In this case we know our tests will expect `units="mm"` and `precision=3`, so we use [](#set_mock_value) to those here.
+This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#LazyMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
 
 If we had any cleanup to do, we would do that after the yield statement.
 
+### Automatic mock behavior injection
+
+If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock
+behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass
+to automatically inject that behavior when the Device is connected in mock mode. This is
+especially useful for defining standard mock behavior alongside your Device definitions.
+
+For example:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:pyobject: InstantMotorMock
+```
+
+Then decorate the original class with [](#default_mock_class) so it is automatically
+used when connected in mock mode:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: default_mock_class(
+:end-at: class Motor
+```
+
+Now whenever a `Motor` is connected using [](#init_devices)`(mock=True)`, it will
+automatically use `InstantMotorMock` without any fixture setup. You can still override
+the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
+or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
+
+### pytest-asyncio setup
+
 :::{note}
-This is an async fixture, and we will be using async tests, so we need to install and configure [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) in our projects's `pyproject.toml`:
+Fixtures and tests for async Devices must be `async`. To enable this, install and configure [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) in your project's `pyproject.toml`:
 
 ```toml
 [project.optional-dependencies]
@@ -59,15 +89,17 @@ We write an `async` test method so we can `await` our calls to verbs. We include
 Some of our tests produce timestamps, instead of checking their values we use [](#unittest.mock.ANY) to say that the timestamp just has to be present to pass.
 ```
 
-## Checking that signals were changed
+## Checking that commands and signals were called
 
-Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#SignalX) `stop_`, waiting for it to complete:
+Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#TriggerableCommand) `stop_`, waiting for it to complete:
 
 ```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_stopped
 ```
 
-This time we use [](#get_mock_put) to get a [](#unittest.mock.Mock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with `None` (what a SignalX sends to tell the backend to put the value needed to trigger). We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all it's children, useful to check ordering.
+This time we use [](#get_mock_execute) to get an [](#unittest.mock.AsyncMock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with no arguments. We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all its children, useful to check ordering.
+
+For [](#Signal)s, the equivalent is [](#get_mock_put), which returns an `AsyncMock` that records every `Signal.set()` / `put()` call.
 
 ## Checking for watcher updates
 
@@ -79,54 +111,33 @@ Now let's pretend to be a progress bar and check that we get the right outputs. 
 
 Here we call the verb, but don't wait for it to complete (as that would wait forever). Instead we attach a [](#StatusWatcher) to the [](#WatchableAsyncStatus) that `set()` returns, and periodically call [](#set_mock_value) on the readback, checking that our watcher was called with the right values. When we give it a value that should make `set()` terminate, we call [](#wait_for_pending_wakeups) to make sure the background tasks get some time to finish correctly before checking the status completed successfully.
 
+## Setting side effects on mocks
+
+By default, a [](#Signal) connected in mock mode records all `put()` calls and stores the put value as the readback. Use [](#callback_on_mock_put) to inject side effects — for example, to propagate a setpoint write through to a readback:
+
+```python
+with callback_on_mock_put(motor.setpoint, lambda v: set_mock_value(motor.readback, v)):
+    await motor.setpoint.set(10.0)
+# motor.readback is now 10.0
+```
+
+The callback is cleared automatically when the context exits. For a persistent side effect across a whole test, call it as a plain function (without `with`).
+
+For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else.
+
+For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
+
 ## Other test utilities
 
 There are a few other things we may wish to do in tests:
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
+- [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
+- [](#callback_on_mock_execute) to override the function called when a Command is executed
+- [](#get_mock_put) to get the `AsyncMock` tracking `put()` calls on a Signal
+- [](#get_mock_execute) to get the `AsyncMock` tracking `execute()` calls on a Command
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing
 - [](#mock_puts_blocked) a context manager that blocks put proceeds at the start, and unblocks at the end
-
-### Automatic mock behavior injection
-
-If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass to automatically inject that behavior when the Device is connected in mock mode. This is especially useful for defining standard mock behavior alongside your Device definitions, making it easier to switch between hardware and mock modes.
-
-For example, if you have a device that needs automatic mock behavior, you can define:
-
-```{literalinclude} ../../src/ophyd_async/epics/motor.py
-:language: python
-:pyobject: InstantMotorMock
-```
-
-Then decorate the original class with [](#default_mock_class) so it is automatically used when connected in mock mode:
-
-```{literalinclude} ../../src/ophyd_async/epics/motor.py
-:language: python
-:start-at: default_mock_class(
-:end-at: class Motor
-```
-
-Now whenever a Motor is connected in mock mode using [](#init_devices)`(mock=True)`, it will automatically use `InstantMotorMock` and have this behavior:
-
-```python
-async with init_devices(mock=True):
-    motor = Motor("BLxxI-MO-TABLE-01:X")
-
-# No manual callback setup needed - the mock behavior is already active
-await motor.user_setpoint.set(50.0)
-assert await motor.user_readback.get_value() == 50.0
-```
-
-You can still override the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance:
-
-```python
-# Use a plain DeviceMock without the automatic behavior
-custom_mock = DeviceMock()
-motor = Motor("TEST:MOTOR")
-await motor.connect(mock=custom_mock)
-```
-
-This approach keeps your mock logic close to your Device definition, reduces duplication across tests, and makes it easier to maintain consistent mock behavior.
 
 ## Tests that execute a bluesky plan
 
