@@ -2,7 +2,7 @@ import asyncio
 import time
 from abc import abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Generic
 
@@ -33,7 +33,7 @@ class MoveTimeout:
     """The time left for a move to complete before it times out."""
 
     timeout: float | None
-    start_time: float = time.monotonic()
+    start_time: float = field(default_factory=time.monotonic)
 
     def __call__(self) -> float | None:
         """Remaining time for a calculated timeout left for the move to use."""
