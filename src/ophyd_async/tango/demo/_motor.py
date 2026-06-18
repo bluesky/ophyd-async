@@ -31,11 +31,11 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         velocity = await self.velocity.get_value()
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
-    async def move(self, new_position: float, timeout: float | None) -> None:
+    async def move(self, new_position: float) -> None:
         # Write the setpoint and wait for the motor state to return to ON,
         # which happens whether the move completes normally or is stopped.
-        await self.setpoint.set(new_position, timeout=timeout)
-        await wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
+        await self.setpoint.set(new_position)
+        await wait_for_value(self.state, DevStateEnum.ON, timeout=None)
 
 
 class DemoMotor(TangoDevice, StandardReadable, StandardMovable[float]):

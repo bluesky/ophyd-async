@@ -32,14 +32,13 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         velocity = await self.velocity.get_value()
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
-    async def move(self, new_position: float, timeout: float | None) -> None:
+    async def move(self, new_position: float) -> None:
         # If we are close to the desired position then break
         await set_and_wait_for_other_value(
             self.setpoint,
             new_position,
             self.readback,
             lambda v: bool(np.isclose(v, new_position)),
-            timeout=timeout,
         )
 
 

@@ -62,7 +62,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         datakey = (await self.readback.describe())[self.readback.name]
         return datakey.get("units"), datakey.get("precision")
 
-    async def move(self, new_position: SignalDatatypeT, timeout: float | None) -> None:
+    async def move(self, new_position: SignalDatatypeT) -> None:
         """Move the device, waiting for the readback to reach the correct position.
 
         ```{note}
@@ -73,7 +73,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         ```
         """
         await set_and_wait_for_other_value(
-            self.setpoint, new_position, self.readback, new_position, timeout=timeout
+            self.setpoint, new_position, self.readback, new_position
         )
 
 
@@ -143,11 +143,12 @@ class StandardMovable(
             move_timeout = timeout
 
         async with AsyncStatus(
-            self.movable_logic.move(new_position=new_position, timeout=move_timeout)
+            self.movable_logic.move(new_position=new_position)
         ) as move_status:
             async for current_position in observe_value(
                 self.movable_logic.readback,
                 done_status=move_status,
+                timeout=move_timeout,
             ):
                 yield WatcherUpdate(
                     current=current_position,
