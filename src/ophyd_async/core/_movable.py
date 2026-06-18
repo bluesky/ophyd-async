@@ -43,7 +43,7 @@ class MoveTimeout:
         return max(0.0, self.timeout - elapsed)
 
 
-Timeout = Callable[[], float | None]
+CalculatedTimeout = Callable[[], float | None]
 
 
 @dataclass
@@ -82,7 +82,9 @@ class MovableLogic(Generic[SignalDatatypeT]):
         datakey = (await self.readback.describe())[self.readback.name]
         return datakey.get("units"), datakey.get("precision")
 
-    async def move(self, new_position: SignalDatatypeT, timeout: Timeout) -> None:
+    async def move(
+        self, new_position: SignalDatatypeT, timeout: CalculatedTimeout
+    ) -> None:
         """Move the device, waiting for the readback to reach the correct position.
 
         ```{note}

@@ -6,12 +6,12 @@ import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    CalculatedTimeout,
     MovableLogic,
     SignalR,
     SignalRW,
     StandardMovable,
     StandardReadable,
-    Timeout,
     TriggerableCommand,
     set_and_wait_for_other_value,
 )
@@ -33,7 +33,7 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         velocity = await self.velocity.get_value()
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
-    async def move(self, new_position: float, timeout: Timeout) -> None:
+    async def move(self, new_position: float, timeout: CalculatedTimeout) -> None:
         # If we are close to the desired position then break
         await set_and_wait_for_other_value(
             self.setpoint,
