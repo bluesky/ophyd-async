@@ -28,17 +28,19 @@ from ._utils import (
 )
 
 
+@dataclass
 class MoveTimeout:
-    def __init__(self, timeout: float | None):
-        self._timeout = timeout
-        self._start_time = time.monotonic()
+    """The time left for a move to complete before it times out."""
 
-    def remaining(self) -> float | None:
+    timeout: float | None
+    start_time: float = time.monotonic()
+
+    def __call__(self) -> float | None:
         """Remaining time for a calculated timeout left for the move to use."""
-        if self._timeout is None:
+        if self.timeout is None:
             return None
-        elapsed = time.monotonic() - self._start_time
-        return max(0.0, self._timeout - elapsed)
+        elapsed = time.monotonic() - self.start_time
+        return max(0.0, self.timeout - elapsed)
 
 
 Timeout = Callable[[], float | None]
@@ -165,14 +167,11 @@ class StandardMovable(
             move_timeout = MoveTimeout(timeout)
 
         async with AsyncStatus(
-            self.movable_logic.move(
-                new_position=new_position, timeout=move_timeout.remaining
-            )
+            self.movable_logic.move(new_position=new_position, timeout=move_timeout)
         ) as move_status:
             async for current_position in observe_value(
                 self.movable_logic.readback,
                 done_status=move_status,
-                timeout=move_timeout.remaining(),
             ):
                 yield WatcherUpdate(
                     current=current_position,
