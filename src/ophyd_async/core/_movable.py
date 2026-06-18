@@ -1,5 +1,7 @@
 import asyncio
+import time
 from abc import abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Generic
@@ -24,6 +26,22 @@ from ._utils import (
     Callback,
     WatcherUpdate,
 )
+
+
+class MoveTimeout:
+    def __init__(self, timeout: float | None):
+        self._timeout = timeout
+        self._start_time = time.monotonic()
+
+    def remaining(self) -> float | None:
+        """Remaining time for a calculated timeout left for the move to use."""
+        if self._timeout is None:
+            return None
+        elapsed = time.monotonic() - self._start_time
+        return max(0.0, self._timeout - elapsed)
+
+
+Timeout = Callable[[], float | None]
 
 
 @dataclass
@@ -62,7 +80,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         datakey = (await self.readback.describe())[self.readback.name]
         return datakey.get("units"), datakey.get("precision")
 
-    async def move(self, new_position: SignalDatatypeT) -> None:
+    async def move(self, new_position: SignalDatatypeT, timeout: Timeout) -> None:
         """Move the device, waiting for the readback to reach the correct position.
 
         ```{note}
@@ -73,7 +91,11 @@ class MovableLogic(Generic[SignalDatatypeT]):
         ```
         """
         await set_and_wait_for_other_value(
-            self.setpoint, new_position, self.readback, new_position
+            self.setpoint,
+            new_position,
+            self.readback,
+            new_position,
+            timeout=timeout(),
         )
 
 
@@ -136,19 +158,21 @@ class StandardMovable(
         await self.movable_logic.check_move(new_position)
 
         if timeout == CALCULATE_TIMEOUT:
-            move_timeout = await self.movable_logic.calculate_timeout(
-                old_position, new_position
+            move_timeout = MoveTimeout(
+                await self.movable_logic.calculate_timeout(old_position, new_position)
             )
         else:
-            move_timeout = timeout
+            move_timeout = MoveTimeout(timeout)
 
         async with AsyncStatus(
-            self.movable_logic.move(new_position=new_position)
+            self.movable_logic.move(
+                new_position=new_position, timeout=move_timeout.remaining
+            )
         ) as move_status:
             async for current_position in observe_value(
                 self.movable_logic.readback,
                 done_status=move_status,
-                timeout=move_timeout,
+                timeout=move_timeout.remaining(),
             ):
                 yield WatcherUpdate(
                     current=current_position,

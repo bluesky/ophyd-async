@@ -67,7 +67,7 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
-from ._movable import InstantMovableMock, MovableLogic, StandardMovable
+from ._movable import InstantMovableMock, MovableLogic, StandardMovable, Timeout
 from ._path_providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
@@ -184,6 +184,7 @@ __all__ = [
     "MovableLogic",
     "StandardMovable",
     "InstantMovableMock",
+    "Timeout",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
