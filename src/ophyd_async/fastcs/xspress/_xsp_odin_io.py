@@ -3,7 +3,7 @@ from ophyd_async.core import (
     DeviceVector,
     SignalR,
     SignalRW,
-    SignalX,
+    TriggerableCommand,
 )
 
 
@@ -14,9 +14,8 @@ class XspressFrameProcessorIO(Device):
 class XspressFrameProcessorVectorIO(DeviceVector[XspressFrameProcessorIO]):
     """Implementation of a XspressFrameProcessor Odin Subdevice."""
 
-    start_writing: SignalX
-    stop_writing: SignalX
-    total_frames_written: SignalR[int]
+    start_writing: TriggerableCommand
+    stop_writing: TriggerableCommand
     frames: SignalRW[int]
     data_dims_0: SignalRW[int]
     data_dims_1: SignalRW[int]
@@ -27,6 +26,7 @@ class XspressFrameProcessorVectorIO(DeviceVector[XspressFrameProcessorIO]):
     data_compression: SignalRW[str]
     process_frames_per_block: SignalRW[int]
     chunks: SignalRW[int]
+    total_frames_written: SignalR[int]
 
 
 class XspressOdinIO(Device):

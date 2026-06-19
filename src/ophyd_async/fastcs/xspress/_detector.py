@@ -10,7 +10,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.fastcs.core import fastcs_connector
 
-from ._arm_logic import XspressArmLogic
+from ._acquire_logic import XspressAcquireLogic
 from ._data_logic import XspressOdinDataLogic
 from ._io import XspressDetectorIO
 from ._trigger_logic import XspressTriggerLogic
@@ -37,7 +37,7 @@ class XspressDetector(StandardDetector):
 
         self.add_detector_logics(
             XspressTriggerLogic(self.xspress),
-            XspressArmLogic(self.xspress),
+            XspressAcquireLogic(self.xspress),
             XspressOdinDataLogic(
                 path_provider=path_provider,
                 odin=self.od,
