@@ -4,12 +4,12 @@ from typing import Annotated as A
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    CalculatedTimeout,
     MovableLogic,
     SignalR,
     SignalRW,
     StandardMovable,
     StandardReadable,
+    TimeoutCalculator,
     TriggerableCommand,
     wait_for_value,
 )
@@ -32,7 +32,7 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         velocity = await self.velocity.get_value()
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
-    async def move(self, new_position: float, timeout: CalculatedTimeout) -> None:
+    async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
         # Write the setpoint and wait for the motor state to return to ON,
         # which happens whether the move completes normally or is stopped.
         await self.setpoint.set(new_position, timeout=timeout())

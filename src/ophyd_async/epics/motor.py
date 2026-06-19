@@ -14,7 +14,6 @@ from bluesky.protocols import Flyable, Preparable
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    CalculatedTimeout,
     DeviceMock,
     FlyMotorInfo,
     MovableLogic,
@@ -23,6 +22,7 @@ from ophyd_async.core import (
     StandardMovable,
     StandardReadable,
     StrictEnum,
+    TimeoutCalculator,
     WatchableAsyncStatus,
     callback_on_mock_put,
     default_mock_class,
@@ -155,7 +155,7 @@ class MotorMoveLogic(MovableLogic[float]):
             msg = f"Motor {self.readback.name} has zero velocity."
             raise ValueError(msg) from error
 
-    async def move(self, new_position: float, timeout: CalculatedTimeout) -> None:
+    async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
         """Move by setting the setpoint and waiting for put completion."""
         await self.setpoint.set(new_position, timeout=timeout())
 

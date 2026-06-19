@@ -9,12 +9,12 @@ import numpy as np
 
 from ophyd_async.core import (
     AsyncStatus,
-    CalculatedTimeout,
     FlyMotorInfo,
     MovableLogic,
     SignalRW,
     StandardMovable,
     StandardReadable,
+    TimeoutCalculator,
     WatchableAsyncStatus,
     error_if_none,
     soft_signal_r_and_setter,
@@ -104,7 +104,7 @@ class SimMotorMoveLogic(MovableLogic[float]):
             # Update the readback position
             self.readback_set(position)
 
-    async def move(self, new_position: float, timeout: CalculatedTimeout) -> None:
+    async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
         # Needed so stop can successfully stop the task.
         self._move_task = asyncio.create_task(self._internal_sim_move(new_position))
         # If stop is called then this will raise a CancelledError, ignore it
