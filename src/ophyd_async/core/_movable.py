@@ -20,6 +20,7 @@ from ._signal_backend import SignalDatatypeT
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
+    DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
     WatcherUpdate,
@@ -55,7 +56,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
     ) -> float | None:
         """Optional hook to calculate valid timeout for a move."""
-        return None
+        return DEFAULT_TIMEOUT
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Optional hook to return the units and precision."""
