@@ -1,13 +1,13 @@
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorArmLogic, wait_for_value
+from ophyd_async.core import DEFAULT_TIMEOUT, DetectorAcquireLogic, wait_for_value
 
 from ._io import XspressDetectorIO
 
 
-class XspressArmLogic(DetectorArmLogic):
+class XspressAcquireLogic(DetectorAcquireLogic):
     def __init__(self, detector: XspressDetectorIO) -> None:
         self.detector = detector
 
-    async def arm(self):
+    async def start_acquiring(self):
         await self.detector.start_acquisition.trigger()
 
     async def wait_for_idle(self):
@@ -15,5 +15,5 @@ class XspressArmLogic(DetectorArmLogic):
             self.detector.acquisition_complete, True, timeout=DEFAULT_TIMEOUT
         )
 
-    async def disarm(self, on_unstage: bool):
+    async def ensure_stopped(self):
         await self.detector.stop_acquisition.trigger()

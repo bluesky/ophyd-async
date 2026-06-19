@@ -2,8 +2,8 @@ from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
-    SignalX,
     StrictEnum,
+    TriggerableCommand,
 )
 
 
@@ -21,5 +21,5 @@ class XspressDetectorIO(Device):
     exposure_time: SignalRW[float]
     trigger_mode: SignalRW[int]
     acquisition_complete: SignalR[bool]
-    start_acquisition: SignalX
-    stop_acquisition: SignalX
+    start_acquisition: TriggerableCommand
+    stop_acquisition: TriggerableCommand
