@@ -126,6 +126,29 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
+def _fail_if_overwriting_parent(self: Device, name: str, value: Any):
+    if self.parent not in (value, None):
+        raise TypeError(
+            f"Cannot set the parent of {self} to be {value}: "
+            f"it is already a child of {self.parent}"
+        )
+    object.__setattr__(self, name, value)
+
+
+def _set_device_child(self: Device, name: str, value: Device | None):
+    if value is None:
+        # Remove optional devices that have resolved to None
+        self._child_devices.pop(name, None)
+    else:
+        value.parent = self
+        self._child_devices[name] = value
+        # And if the name is set, then set the name of all children,
+        # including the child
+        if self._name:
+            self.set_name(self._name)
+    object.__setattr__(self, name, value)
+
+
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -144,6 +167,20 @@ class Device(HasName):
     _mock: DeviceMock | None = None
     # The separator to use when making child names
     _child_name_separator: str = "-"
+    # Methods to call on setattr
+    _setattr_methods: dict[str, Callable[[Device, str, Any], None]]
+
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+        # These are guarateed not to be devices, so don't check them
+        setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
+            # parent needs special handling
+            "parent": _fail_if_overwriting_parent
+        }
+        # Assign _setattr_methods in __new__ instead of __init__,
+        # as this is called before any __setattr__ calls are made
+        object.__setattr__(self, "_setattr_methods", setattr_methods)
+        return self
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -200,24 +237,19 @@ class Device(HasName):
 
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
-        # we need to make sure nothing expensive happens in it...
-        if name == "parent":
-            if self.parent not in (value, None):
-                raise TypeError(
-                    f"Cannot set the parent of {self} to be {value}: "
-                    f"it is already a child of {self.parent}"
-                )
-        # ...hence not doing an isinstance check for attributes we
-        # know not to be Devices
-        elif name not in _not_device_attrs and isinstance(value, Device):
-            value.parent = self
-            self._child_devices[name] = value
-            # And if the name is set, then set the name of all children,
-            # including the child
-            if self._name:
-                self.set_name(self._name)
-        # ...and avoiding the super call as we know it resolves to `object`
-        return object.__setattr__(self, name, value)
+        # we need to make sure nothing expensive happens in it, hence the
+        # dictionary of setattr functions
+        func = self._setattr_methods.get(name, None)
+        if func is None:
+            # First encounter, so assign correct
+            # __setattr__ method depending on `value` type
+            if isinstance(value, Device):
+                func = _set_device_child
+            else:
+                func = object.__setattr__
+            self._setattr_methods[name] = func
+        # Dispatch the correct __setattr__ method
+        func(self, name, value)
 
     async def connect(
         self,
@@ -279,6 +311,8 @@ _not_device_attrs = {
     "_timeout",
     "_mock",
     "_connect_task",
+    "_child_name_separator",
+    "_attempts",
 }
 
 
