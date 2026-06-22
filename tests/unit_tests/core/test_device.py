@@ -336,6 +336,7 @@ def test_device_filler_check_filled_with_optional_signals():
     assert isinstance(device.mandatory_signal, SignalRW)
     assert hasattr(device, "optional_signal")
     assert device.optional_signal is None
+    assert "optional_signal" not in dict(device.children())
 
 
 class DummyDisconnectDevice(Device):
