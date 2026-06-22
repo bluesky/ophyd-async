@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import CancelledError, Event, get_event_loop
 from functools import cached_property
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -17,7 +17,26 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+
+# Allow these imports from private modules for tests
+from ophyd_async.core._movable import MoveTimeout  # noqa: PLC2701
 from ophyd_async.testing import wait_for_pending_wakeups
+
+
+async def test_move_timeout_repeated_calls_reduces_avaliable_timeout():
+    with patch("ophyd_async.core._movable.time.monotonic") as monotonic:
+        timeout = 10
+        monotonic.return_value = 0
+        move_timeout = MoveTimeout(timeout=timeout, start_time=0)
+        for elapsed in range(timeout):
+            monotonic.return_value = elapsed
+            assert move_timeout() == timeout - elapsed
+
+
+async def test_move_timeout_with_timeout_none_returns_none():
+    move_timeout = MoveTimeout(timeout=None, start_time=0)
+    for _ in range(3):
+        assert move_timeout() is None
 
 
 class StandardMovableImpl(StandardMovable[float]):
@@ -136,13 +155,21 @@ async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     movable: StandardMovableImpl,
 ):
     mock_check_move = movable.movable_logic.check_move = AsyncMock()
+    timeout = 5
     mock_calculate_timeout = movable.movable_logic.calculate_timeout = AsyncMock(
-        return_value=5
+        return_value=timeout
     )
-    await movable.set(10)
+    mock_move = movable.movable_logic.move = AsyncMock()
 
-    mock_check_move.assert_awaited_once_with(10)
-    mock_calculate_timeout.assert_awaited_once_with(0, 10)
+    with patch("ophyd_async.core._movable.MoveTimeout") as move_timeout:
+        pos = 10
+        await movable.set(pos)
+
+        mock_check_move.assert_awaited_once_with(pos)
+        mock_calculate_timeout.assert_awaited_once_with(0, pos)
+        mock_move.assert_awaited_once_with(
+            new_position=pos, timeout=move_timeout.return_value
+        )
 
 
 async def test_motor_set_with_instant_mock(
