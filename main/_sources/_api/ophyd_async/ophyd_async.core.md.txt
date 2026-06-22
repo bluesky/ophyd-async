@@ -841,7 +841,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 
 ````
 
-````{py:method} calculate_timeout(old_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT) -> float
+````{py:method} calculate_timeout(old_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT) -> float | None
 :canonical: ophyd_async.core._movable.MovableLogic.calculate_timeout
 :async:
 
