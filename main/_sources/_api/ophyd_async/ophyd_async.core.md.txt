@@ -507,6 +507,10 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`TimeoutCalculator <ophyd_async.core._movable.TimeoutCalculator>`
+  - ```{autodoc2-docstring} ophyd_async.core._movable.TimeoutCalculator
+    :summary:
+    ```
 * - {py:obj}`SignalDatatype <ophyd_async.core._signal_backend.SignalDatatype>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatype
     :summary:
@@ -859,7 +863,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 
 ````
 
-````{py:method} move(new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, timeout: float | None) -> None
+````{py:method} move(new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, timeout: ~ophyd_async.core._movable.TimeoutCalculator) -> None
 :canonical: ophyd_async.core._movable.MovableLogic.move
 :async:
 
@@ -977,6 +981,16 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceMock`\[{py:obj}`StandardMovable`\
 ````
 
 `````
+
+````{py:data} TimeoutCalculator
+:canonical: ophyd_async.core._movable.TimeoutCalculator
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._movable.TimeoutCalculator
+```
+
+````
 
 `````{py:class} AsyncReadable
 :canonical: ophyd_async.core._protocol.AsyncReadable

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>When should a device extend movable &#8212; ophyd-async 0.19.3.dev2+ge9a9e1987 documentation</title>
+    <title>When should a device extend movable &#8212; ophyd-async 0.19.3.dev3+gabc4ecdde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=c7731592"></script>
+    <script src="../_static/documentation_options.js?v=4febcc12"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev2+ge9a9e1987 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev2+ge9a9e1987 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
   
   
 </a></div>
@@ -559,14 +559,14 @@ device needs, and override the hook methods that differ from the defaults:</p>
         <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutCalculator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># If we are close to the desired position then break</span>
         <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span>
             <span class="n">new_position</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
             <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">new_position</span><span class="p">)),</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">(),</span>
         <span class="p">)</span>
 </pre></div>
 </div>

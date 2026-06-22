@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.19.3.dev2+ge9a9e1987 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.19.3.dev3+gabc4ecdde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=c7731592"></script>
+    <script src="../../_static/documentation_options.js?v=4febcc12"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev2+ge9a9e1987 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev2+ge9a9e1987 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
   
   
 </a></div>
@@ -925,49 +925,52 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core._signal_backend.SignalDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalDatatype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.TimeoutCalculator" title="ophyd_async.core._movable.TimeoutCalculator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeoutCalculator</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core._signal_backend.SignalDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalDatatype</span></code></a></p></td>
 <td><p>The supported <a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> datatypes:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalDatatypeT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalDatatypeT</span></code></a></p></td>
 <td><p>A typevar for a <a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core.SignalDatatype"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">SignalDatatype</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core._datatypes.DTypeScalar_co"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTypeScalar_co</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core._datatypes.DTypeScalar_co"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTypeScalar_co</span></code></a></p></td>
 <td><p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.6.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core._datatypes.Array1D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array1D</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core._datatypes.Array1D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array1D</span></code></a></p></td>
 <td><p>A type alias for a 1D numpy array with a specific scalar data type.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.EnumTypes" title="ophyd_async.core._utils.EnumTypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnumTypes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.EnumTypes" title="ophyd_async.core._utils.EnumTypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnumTypes</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Primitive" title="ophyd_async.core._signal_backend.Primitive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Primitive</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Primitive" title="ophyd_async.core._signal_backend.Primitive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Primitive</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.CALCULATE_TIMEOUT" title="ophyd_async.core._utils.CALCULATE_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALCULATE_TIMEOUT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.CALCULATE_TIMEOUT" title="ophyd_async.core._utils.CALCULATE_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALCULATE_TIMEOUT</span></code></a></p></td>
 <td><p>Sentinel used to implement <code class="docutils literal notranslate"><span class="pre">myfunc(timeout=CalculateTimeout)</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalculatableTimeout</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalculatableTimeout</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DEFAULT_TIMEOUT" title="ophyd_async.core._utils.DEFAULT_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_TIMEOUT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DEFAULT_TIMEOUT" title="ophyd_async.core._utils.DEFAULT_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_TIMEOUT</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.ConfigSignal" title="ophyd_async.core._readable.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.ConfigSignal" title="ophyd_async.core._readable.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._datatypes.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._datatypes.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.NO_ARG_VOID_SIGNATURE" title="ophyd_async.core._command.NO_ARG_VOID_SIGNATURE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NO_ARG_VOID_SIGNATURE</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.NO_ARG_VOID_SIGNATURE" title="ophyd_async.core._command.NO_ARG_VOID_SIGNATURE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NO_ARG_VOID_SIGNATURE</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -1408,7 +1411,7 @@ position is outside soft limits.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MovableLogic.move">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_movable.html#MovableLogic.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MovableLogic.move" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.TimeoutCalculator" title="ophyd_async.core._movable.TimeoutCalculator"><span class="pre">TimeoutCalculator</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_movable.html#MovableLogic.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MovableLogic.move" title="Link to this definition">#</a></dt>
 <dd><p>Move the device, waiting for the readback to reach the correct position.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1507,6 +1510,12 @@ same names as the equivalent ophyd sync device.</p></li>
 <dd><p>Mock signals to do an instant move on setpoint write.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.core.TimeoutCalculator">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">TimeoutCalculator</span></span><a class="headerlink" href="#ophyd_async.core.TimeoutCalculator" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
 </dd></dl>
 
 <dl class="py class">
@@ -4968,6 +4977,7 @@ for the deprecated <a class="reference internal" href="#ophyd_async.core.SignalX
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.InstantMovableMock.connect"><code class="docutils literal notranslate"><span class="pre">InstantMovableMock.connect()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TimeoutCalculator"><code class="docutils literal notranslate"><span class="pre">TimeoutCalculator</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.AsyncReadable"><code class="docutils literal notranslate"><span class="pre">AsyncReadable</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.AsyncReadable.read"><code class="docutils literal notranslate"><span class="pre">AsyncReadable.read()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.AsyncReadable.describe"><code class="docutils literal notranslate"><span class="pre">AsyncReadable.describe()</span></code></a></li>
