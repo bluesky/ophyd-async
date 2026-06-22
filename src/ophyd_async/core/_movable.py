@@ -54,7 +54,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
     async def calculate_timeout(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
-    ) -> float:
+    ) -> float | None:
         """Optional hook to calculate valid timeout for a move."""
         return DEFAULT_TIMEOUT
 
