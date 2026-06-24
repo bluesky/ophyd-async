@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.19.3.dev3+gabc4ecdde documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.19.3.dev4+g55fd1a7fb documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=4febcc12"></script>
+    <script src="../_static/documentation_options.js?v=9c0baf59"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev3+gabc4ecdde documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev4+g55fd1a7fb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev4+g55fd1a7fb documentation - Home"/>
   
   
 </a></div>
@@ -576,6 +576,8 @@
 </pre></div>
 </div>
 <p>It is compact and has the minimum amount of boilerplate, but is limited in its scope to what sorts of Signals and Devices the base class can create. It also requires the usage of a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat" title="ophyd_async.core.StandardReadableFormat"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadableFormat</span></code></a> for each Signal if using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> which may be more verbose than the procedural approach. It is best suited for introspectable FastCS and Tango devices, and repetitive EPICS Devices that are wrapped into larger Devices like areaDetectors.</p>
+<p><em>Note on using the declarative approach for Tango device servers:<br>
+Tango devices support attribute names that contain special characters including decimal points. This may result in invalid python syntax if this signal is declared in an annotation. These signals will still be autofilled by the device connector and will remain useable via <code class="docutils literal notranslate"><span class="pre">getattr</span></code> but they will not appear as top level attributes. These attributes should be declared procedurally with syntax-friendly names.</em></p>
 </section>
 <section id="grey-area">
 <h2>Grey area<a class="headerlink" href="#grey-area" title="Link to this heading">#</a></h2>

@@ -23,6 +23,9 @@ For a traditional EPICS IOC there is no such introspection mechanism, so we requ
 ```
 It is compact and has the minimum amount of boilerplate, but is limited in its scope to what sorts of Signals and Devices the base class can create. It also requires the usage of a [](#StandardReadableFormat) for each Signal if using [](#StandardReadable) which may be more verbose than the procedural approach. It is best suited for introspectable FastCS and Tango devices, and repetitive EPICS Devices that are wrapped into larger Devices like areaDetectors.
 
+*Note on using the declarative approach for Tango device servers:<br>
+Tango devices support attribute names that contain special characters including decimal points. This may result in invalid python syntax if this signal is declared in an annotation. These signals will still be autofilled by the device connector and will remain useable via `getattr` but they will not appear as top level attributes. These attributes should be declared procedurally with syntax-friendly names.*
+
 ## Grey area
 
 There is quite a large segment of Devices that could be written both ways, for instance `ophyd_async.epics.demo.DemoMotor`. This could be written in either style with roughly the same legibility, so is a matter of taste:
