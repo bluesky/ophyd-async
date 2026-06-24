@@ -28,10 +28,11 @@ result = await device.move_to.execute(0.5)
 ```
 
 The return value is also accessible from the status after it completes:
+
 ```python
 status = device.move_to.execute(0.5)
 await status
-value = status.value
+value = status.result
 ```
 
 [](#TriggerableCommand) also has a [](#TriggerableCommand.trigger) method that satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol used by bluesky scan machinery:
