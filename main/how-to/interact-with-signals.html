@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to interact with signals and commands while implementing bluesky verbs &#8212; ophyd-async 0.19.3.dev4+g55fd1a7fb documentation</title>
+    <title>How to interact with signals and commands while implementing bluesky verbs &#8212; ophyd-async 0.19.3.dev5+g0513030af documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=9c0baf59"></script>
+    <script src="../_static/documentation_options.js?v=dc892c54"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev4+g55fd1a7fb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev4+g55fd1a7fb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev5+g0513030af documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev5+g0513030af documentation - Home"/>
   
   
 </a></div>
@@ -520,7 +520,7 @@
 <p>The return value is also accessible from the status after it completes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">move_to</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="k">await</span> <span class="n">status</span>
-<span class="n">value</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">value</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">result</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> also has a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand.trigger" title="ophyd_async.core.TriggerableCommand.trigger"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">TriggerableCommand.trigger</span></code></a> method that satisfies the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.15.2.dev20+gd276e2bf8"><span class="xref myst">Triggerable</span></a> protocol used by bluesky scan machinery:</p>
