@@ -94,7 +94,7 @@ class AsyncStatusBase(Status, Awaitable[T]):
         )
 
     @property
-    def value(self) -> T:
+    def result(self) -> T:
         """Return the result of the awaitable. Only valid after the status is done."""
         return self.task.result()
 
