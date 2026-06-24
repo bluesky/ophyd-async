@@ -1,5 +1,3 @@
-from pydantic import Field, PositiveInt
-
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
@@ -15,10 +13,6 @@ from ._data_logic import XspressOdinDataLogic
 from ._io import XspressDetectorIO
 from ._trigger_logic import XspressTriggerLogic
 from ._xsp_odin_io import XspressOdinIO
-
-
-class XspressTriggerInfo(TriggerInfo):
-    chunk: PositiveInt = Field(default=1)
 
 
 class XspressDetector(StandardDetector):
@@ -46,15 +40,15 @@ class XspressDetector(StandardDetector):
         super().__init__(name=name, connector=connector)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: XspressTriggerInfo) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+    async def prepare(self, value: TriggerInfo) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         datakey_name = self.name + self._data_logics[0].datakey_suffix
+
+        chunk = int(1 / value.livetime) if value.livetime < 1 else 1
 
         await self.od.file_prefix.set(
             self._data_logics[0].path_provider(datakey_name).filename  # pyright: ignore[reportAttributeAccessIssue]
         )
-        await self.od.fp.chunks.set(value.chunk)
+        await self.od.fp.chunks.set(chunk)
         # Wait for all the datasets to have changed their chunk sizes
-        await wait_for_value(
-            self.od.fp.data_chunks_0, value.chunk, timeout=DEFAULT_TIMEOUT
-        )
+        await wait_for_value(self.od.fp.data_chunks_0, chunk, timeout=DEFAULT_TIMEOUT)
         await super().prepare(value)
