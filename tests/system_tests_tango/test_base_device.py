@@ -440,9 +440,10 @@ async def test_set_trl(tango_test_device):
 async def test_connect_proxy(tango_test_device, use_trl: str | None):
     if use_trl:
         test_device = TestTangoReadable(trl=tango_test_device)
-        test_device.proxy = None
+        assert test_device.get_trl() == tango_test_device
+        test_device._proxy = None
         await test_device.connect()
-        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device.get_proxy(), tango._tango.DeviceProxy)
     else:
         test_device = TestTangoReadable()
         assert test_device

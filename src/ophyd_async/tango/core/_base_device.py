@@ -32,8 +32,7 @@ class TangoDevice(Device):
         trl and awaited when the device is connected.
     """
 
-    trl: str = ""
-    proxy: DeviceProxy | None = None
+    _trl: str = ""
 
     def __init__(
         self,
@@ -42,12 +41,19 @@ class TangoDevice(Device):
         name: str = "",
         auto_fill_signals: bool = True,
     ) -> None:
+        self._trl = trl
         connector = TangoDeviceConnector(
             trl=trl,
             support_events=support_events,
             auto_fill_signals=auto_fill_signals,
         )
         super().__init__(name=name, connector=connector)
+
+    def get_trl(self) -> str:
+        return self._trl
+
+    def get_proxy(self) -> DeviceProxy | None:
+        return self._connector.proxy
 
 
 @dataclass
