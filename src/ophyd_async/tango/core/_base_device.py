@@ -53,7 +53,10 @@ class TangoDevice(Device):
         return self._trl
 
     def get_proxy(self) -> DeviceProxy | None:
-        return self._connector.proxy
+        connector = self._connector
+        if isinstance(connector, TangoDeviceConnector):
+            return connector.proxy
+        return None
 
 
 @dataclass
@@ -127,11 +130,10 @@ class TangoDeviceConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-        self.proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        self.proxy = proxy
         children = sorted(
-            set()
-            .union(self.proxy.get_attribute_list())
-            .union(self.proxy.get_command_list())
+            set().union(proxy.get_attribute_list()).union(proxy.get_command_list())
         )  # type: ignore
 
         children = [
@@ -146,7 +148,7 @@ class TangoDeviceConnector(DeviceConnector):
             if self._auto_fill_signals or name in not_filled:
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
-                signal_type = await infer_signal_type(full_trl, self.proxy)
+                signal_type = await infer_signal_type(full_trl, proxy)
                 if signal_type is not None and issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
                 elif signal_type is not None and issubclass(signal_type, Command):
@@ -158,9 +160,7 @@ class TangoDeviceConnector(DeviceConnector):
                 # don't overload datatype if provided by annotation
                 if isinstance(backend, TangoCommandBackend):
                     if backend.signature is None:
-                        in_type, out_type = await infer_python_type(
-                            full_trl, self.proxy
-                        )
+                        in_type, out_type = await infer_python_type(full_trl, proxy)
                         sig = sig_from_types(in_type, out_type)
 
                         # # Pyright still thinks backend could be a
@@ -168,7 +168,7 @@ class TangoDeviceConnector(DeviceConnector):
                         backend.signature = sig  # type: ignore
                 elif isinstance(backend, TangoSignalBackend):
                     if backend.datatype is None:
-                        _, out_type = await infer_python_type(full_trl, self.proxy)
+                        _, out_type = await infer_python_type(full_trl, proxy)
                         backend.datatype = out_type
                 else:
                     raise TypeError(f"Unknown backend type {backend}")
