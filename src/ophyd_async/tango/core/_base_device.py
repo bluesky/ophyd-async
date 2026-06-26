@@ -91,6 +91,7 @@ class TangoDeviceConnector(DeviceConnector):
         auto_fill_signals: bool = True,
     ) -> None:
         self.trl = trl
+        self.proxy: AsyncDeviceProxy | None = None
         self._support_events = support_events
         self._auto_fill_signals = auto_fill_signals
 
