@@ -147,19 +147,33 @@ class Trajectory:
 
         collection_window_iter = iter(collection_windows)
 
-        if any(
-            slice.lower[motor].min() <= motor_info.motor_lower_limit[motor]
-            or slice.upper[motor].max() >= motor_info.motor_upper_limit[motor]
-            for motor in motors
-        ):
-            raise ValueError("Unable to generate trajectory due to motor limit.")
+        for motor in motors:
+            slice_lower = slice.lower[motor].min()
+            slice_upper = slice.upper[motor].max()
+            motor_lower_limit = motor_info.motor_lower_limit[motor]
+            motor_upper_limit = motor_info.motor_upper_limit[motor]
 
-        if any(
-            (np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration).max()
-            > motor_info.motor_max_velocity[motor]
-            for motor in motors
-        ):
-            raise ValueError("Unable to generate trajectory due to velocity limit.")
+            max_velocity = motor_info.motor_max_velocity[motor]
+            current_velocity = (
+                np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration
+            ).max()
+
+            if any(
+                slice_lower <= motor_lower_limit or slice_upper >= motor_upper_limit
+                for motor in motors
+            ):
+                raise ValueError(
+                    "Unable to generate trajectory due to motor limit."
+                    f" {motor.name} demand is {slice_lower} to {slice_upper},"
+                    f" motor limit is {motor_lower_limit} to {motor_upper_limit}"
+                )
+
+            if any(current_velocity > max_velocity for motor in motors):
+                raise ValueError(
+                    "Unable to generate trajectory due to velocity limit."
+                    f" Motor: {motor.name} velocity is {current_velocity},"
+                    f" velocity limit is {max_velocity}"
+                )
 
         sub_traj_funcs = []
 

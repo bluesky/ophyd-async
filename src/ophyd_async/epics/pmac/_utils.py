@@ -145,18 +145,17 @@ class _PmacMotorInfo:
                 f"{list(cs_numbers_set)}"
             )
 
-        # Get the velocities and acceleration rates for each motor
-        max_velocity, acceleration_time = await asyncio.gather(
+        # Get the velocities, acceleration rates, and limits for each motor
+        (
+            max_velocity,
+            acceleration_time,
+            motor_lower_limit,
+            motor_upper_limit,
+        ) = await asyncio.gather(
             gather_dict({motor: motor.max_velocity.get_value() for motor in motors}),
             gather_dict(
                 {motor: motor.acceleration_time.get_value() for motor in motors}
             ),
-        )
-        motor_acceleration_rate = {
-            motor: max_velocity[motor] / acceleration_time[motor] for motor in motors
-        }
-
-        motor_lower_limit, motor_upper_limit = await asyncio.gather(
             gather_dict(
                 {motor: motor.low_limit_travel.get_value() for motor in motors}
             ),
@@ -164,6 +163,9 @@ class _PmacMotorInfo:
                 {motor: motor.high_limit_travel.get_value() for motor in motors}
             ),
         )
+        motor_acceleration_rate = {
+            motor: max_velocity[motor] / acceleration_time[motor] for motor in motors
+        }
 
         return _PmacMotorInfo(
             cs_port=cs_ports_set.pop(),
