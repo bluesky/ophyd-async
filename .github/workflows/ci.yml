@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         tests-path: ["", "tests/system_tests"]
         include:
           - runs-on: "ubuntu-latest"

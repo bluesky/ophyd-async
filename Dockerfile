@@ -1,6 +1,6 @@
 # The devcontainer should use the developer target and run as root with podman
 # or docker with user namespaces.
-FROM ghcr.io/diamondlightsource/ubuntu-devcontainer:noble AS developer
+FROM ghcr.io/diamondlightsource/ubuntu-devcontainer:resolute AS developer
 
 ENV DOCKER=docker-28.5.1
 ENV DOCKER_COMPOSE_RELEASE_TAG=v2.40.3
