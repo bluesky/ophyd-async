@@ -158,17 +158,14 @@ class Trajectory:
                 np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration
             ).max()
 
-            if any(
-                slice_lower <= motor_lower_limit or slice_upper >= motor_upper_limit
-                for motor in motors
-            ):
+            if slice_lower <= motor_lower_limit or slice_upper >= motor_upper_limit:
                 raise ValueError(
                     "Unable to generate trajectory due to motor limit."
                     f" {motor.name} demand is {slice_lower} to {slice_upper},"
                     f" motor limit is {motor_lower_limit} to {motor_upper_limit}"
                 )
 
-            if any(current_velocity > max_velocity for motor in motors):
+            if current_velocity > max_velocity:
                 raise ValueError(
                     "Unable to generate trajectory due to velocity limit."
                     f" Motor: {motor.name} velocity is {current_velocity},"
