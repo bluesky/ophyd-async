@@ -89,7 +89,7 @@ class TangoEverythingOphydDeviceTriggerableAnnotation(TangoDevice, StandardReada
 
 @pytest.fixture()
 async def everything_device(everything_device_trl):
-    return TangoEverythingOphydDevice(everything_device_trl)
+    return TangoEverythingOphydDevice(everything_device_trl, name="everything_device")
 
 
 @pytest.mark.asyncio

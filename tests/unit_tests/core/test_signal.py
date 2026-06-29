@@ -1099,3 +1099,89 @@ async def test_can_unsubscribe_from_subscribe_callback():
         call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
         call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
     ]
+
+
+async def test_soft_signal_rw_with_getter():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+
+
+async def test_soft_signal_rw_with_setter():
+    store = [0.0]
+    signal = soft_signal_rw(float, setter=lambda v: store.__setitem__(0, v))
+    await signal.connect()
+    await signal.set(7.0)
+    assert store[0] == pytest.approx(7.0)
+
+
+async def test_soft_signal_rw_with_getter_and_setter():
+    store = [0.0]
+    signal = soft_signal_rw(
+        float,
+        setter=lambda v: store.__setitem__(0, v),
+        getter=lambda: store[0],
+    )
+    await signal.connect()
+    await signal.set(3.0)
+    store[0] = 99.0  # external change
+    assert await signal.get_value() == pytest.approx(99.0)
+
+
+async def test_soft_signal_rw_with_poll_period():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0], poll_period=0.05)
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 5.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(5.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_rw_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_rw(float, poll_period=0.1)
+
+
+async def test_soft_signal_r_and_setter_with_getter():
+    store = [0.0]
+    signal, set_value = soft_signal_r_and_setter(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+    # set_value still works independently of the getter
+    set_value(99.0)
+    assert signal._connector.backend.reading["value"] == pytest.approx(99.0)
+
+
+async def test_soft_signal_r_and_setter_with_poll_period():
+    store = [0.0]
+    signal, _ = soft_signal_r_and_setter(
+        float, getter=lambda: store[0], poll_period=0.05
+    )
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 7.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(7.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_r_and_setter_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_r_and_setter(float, poll_period=0.1)
