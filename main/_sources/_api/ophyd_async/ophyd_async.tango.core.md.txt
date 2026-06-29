@@ -877,23 +877,18 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice
 ```
 
-````{py:attribute} trl
-:canonical: ophyd_async.tango.core._base_device.TangoDevice.trl
-:type: str
-:value: <Multiline-String>
+````{py:method} get_trl() -> str
+:canonical: ophyd_async.tango.core._base_device.TangoDevice.get_trl
 
-```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.trl
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.get_trl
 ```
 
 ````
 
-````{py:attribute} proxy
-:canonical: ophyd_async.tango.core._base_device.TangoDevice.proxy
-:type: ~tango.DeviceProxy | None
-:value: >
-   None
+````{py:method} get_proxy() -> ~tango.DeviceProxy | None
+:canonical: ophyd_async.tango.core._base_device.TangoDevice.get_proxy
 
-```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.proxy
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.get_proxy
 ```
 
 ````

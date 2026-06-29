@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.tango.core &#8212; ophyd-async 0.19.3.dev6+gc2cbb80be documentation</title>
+    <title>ophyd_async.tango.core &#8212; ophyd-async 0.19.3.dev7+gaeef1dc4e documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=37fc78c6"></script>
+    <script src="../../_static/documentation_options.js?v=7b92a785"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev6+gc2cbb80be documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev6+gc2cbb80be documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
   
   
 </a></div>
@@ -1246,16 +1246,15 @@ An asynchronous DeviceProxy object will be created using the
 trl and awaited when the device is connected.</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDevice.trl">
-<span class="sig-name descname"><span class="pre">trl</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></span><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice.trl" title="Link to this definition">#</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDevice.get_trl">
+<span class="sig-name descname"><span class="pre">get_trl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDevice.get_trl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice.get_trl" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDevice.proxy">
-<span class="sig-name descname"><span class="pre">proxy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice.proxy" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDevice.get_proxy">
+<span class="sig-name descname"><span class="pre">get_proxy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDevice.get_proxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice.get_proxy" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1894,8 +1893,8 @@ one is created from <code class="docutils literal notranslate"><span class="pre"
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.tango_signal_w"><code class="docutils literal notranslate"><span class="pre">tango_signal_w()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.tango_signal_x"><code class="docutils literal notranslate"><span class="pre">tango_signal_x()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice"><code class="docutils literal notranslate"><span class="pre">TangoDevice</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice.trl"><code class="docutils literal notranslate"><span class="pre">TangoDevice.trl</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice.proxy"><code class="docutils literal notranslate"><span class="pre">TangoDevice.proxy</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice.get_trl"><code class="docutils literal notranslate"><span class="pre">TangoDevice.get_trl()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice.get_proxy"><code class="docutils literal notranslate"><span class="pre">TangoDevice.get_proxy()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoPolling"><code class="docutils literal notranslate"><span class="pre">TangoPolling</span></code></a><ul class="nav section-nav flex-column">

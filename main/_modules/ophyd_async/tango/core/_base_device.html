@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._base_device &#8212; ophyd-async 0.19.3.dev6+gc2cbb80be documentation</title>
+    <title>ophyd_async.tango.core._base_device &#8212; ophyd-async 0.19.3.dev7+gaeef1dc4e documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=37fc78c6"></script>
+    <script src="../../../../_static/documentation_options.js?v=7b92a785"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev6+gc2cbb80be documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev6+gc2cbb80be documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
   
   
 </a></div>
@@ -934,8 +934,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        trl and awaited when the device is connected.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -944,12 +943,28 @@ window.runMermaid = runMermaid;</script>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">auto_fill_signals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trl</span> <span class="o">=</span> <span class="n">trl</span>
         <span class="n">connector</span> <span class="o">=</span> <span class="n">TangoDeviceConnector</span><span class="p">(</span>
             <span class="n">trl</span><span class="o">=</span><span class="n">trl</span><span class="p">,</span>
             <span class="n">support_events</span><span class="o">=</span><span class="n">support_events</span><span class="p">,</span>
             <span class="n">auto_fill_signals</span><span class="o">=</span><span class="n">auto_fill_signals</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TangoDevice.get_trl">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoDevice.get_trl">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trl</span></div>
+
+
+<div class="viewcode-block" id="TangoDevice.get_proxy">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoDevice.get_proxy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="p">,</span> <span class="n">TangoDeviceConnector</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">connector</span><span class="o">.</span><span class="n">proxy</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+</div>
 
 
 
@@ -993,6 +1008,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">auto_fill_signals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="n">trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_support_events</span> <span class="o">=</span> <span class="n">support_events</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_auto_fill_signals</span> <span class="o">=</span> <span class="n">auto_fill_signals</span>
 
@@ -1039,11 +1055,10 @@ window.runMermaid = runMermaid;</script>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not created Device Proxy for TRL </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="n">proxy</span>
         <span class="n">children</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
-            <span class="nb">set</span><span class="p">()</span>
-            <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">())</span>
-            <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">())</span>
+            <span class="nb">set</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">())</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">())</span>
         <span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="n">children</span> <span class="o">=</span> <span class="p">[</span>
@@ -1058,7 +1073,7 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_fill_signals</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">not_filled</span><span class="p">:</span>
                 <span class="c1"># TODO: strip attribute name</span>
                 <span class="n">full_trl</span> <span class="o">=</span> <span class="n">get_full_attr_trl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-                <span class="n">signal_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_signal_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+                <span class="n">signal_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_signal_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">signal_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                     <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">signal_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
@@ -1070,9 +1085,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="c1"># don&#39;t overload datatype if provided by annotation</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">TangoCommandBackend</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">in_type</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span>
-                            <span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span>
-                        <span class="p">)</span>
+                        <span class="n">in_type</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">)</span>
                         <span class="n">sig</span> <span class="o">=</span> <span class="n">sig_from_types</span><span class="p">(</span><span class="n">in_type</span><span class="p">,</span> <span class="n">out_type</span><span class="p">)</span>
 
                         <span class="c1"># # Pyright still thinks backend could be a</span>
@@ -1080,7 +1093,7 @@ window.runMermaid = runMermaid;</script>
                         <span class="n">backend</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="n">sig</span>  <span class="c1"># type: ignore</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">TangoSignalBackend</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">_</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">out_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">)</span>
                         <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">out_type</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown backend type </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
