@@ -1793,7 +1793,7 @@ Bases: {py:obj}`typing.TypedDict`
 
 ````
 
-`````{py:class} SoftSignalBackend(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT] | None, initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, units: str | None = None, precision: int | None = None)
+`````{py:class} SoftSignalBackend(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT] | None, initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, units: str | None = None, precision: int | None = None, *, getter: ~ophyd_async.core._soft_signal_backend.Getter[~ophyd_async.core._signal_backend.SignalDatatypeT] | None = None, setter: ~ophyd_async.core._soft_signal_backend.Setter[~ophyd_async.core._signal_backend.SignalDatatypeT] | None = None, poll_period: float | None = None)
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend
 
 Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
@@ -1826,7 +1826,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None) -> None
+````{py:method} put(value: ~typing.Any) -> None
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.put
 :async:
 
@@ -1881,14 +1881,14 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 `````
 
-````{py:function} soft_signal_r_and_setter(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, name: str = '', units: str | None = None, precision: int | None = None) -> tuple[~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], None]]
+````{py:function} soft_signal_r_and_setter(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, name: str = '', units: str | None = None, precision: int | None = None, *, getter: ~ophyd_async.core._soft_signal_backend.Getter[~ophyd_async.core._signal_backend.SignalDatatypeT] | None = None, poll_period: float | None = None) -> tuple[~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], None]]
 :canonical: ophyd_async.core._signal.soft_signal_r_and_setter
 
 ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_r_and_setter
 ```
 ````
 
-````{py:function} soft_signal_rw(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, name: str = '', units: str | None = None, precision: int | None = None) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+````{py:function} soft_signal_rw(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, name: str = '', units: str | None = None, precision: int | None = None, *, getter: ~ophyd_async.core._soft_signal_backend.Getter[~ophyd_async.core._signal_backend.SignalDatatypeT] | None = None, setter: ~ophyd_async.core._soft_signal_backend.Setter[~ophyd_async.core._signal_backend.SignalDatatypeT] | None = None, poll_period: float | None = None) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
 :canonical: ophyd_async.core._signal.soft_signal_rw
 
 ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_rw

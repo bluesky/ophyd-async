@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.19.3.dev7+gaeef1dc4e documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.19.3.dev8+gc33d42a9b documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=7b92a785"></script>
+    <script src="../_static/documentation_options.js?v=820bcab6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Design goals and differences with ophyd sync" href="design-goals.html" />
-    <link rel="prev" title="18. Typed Command to replace SignalX" href="decisions/0018-typed-command.html" />
+    <link rel="prev" title="19. SoftSignalBackend Wrapping Arbitrary Callables" href="decisions/0019-soft-signals-backed-by-arbitrary-callables.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev7+gaeef1dc4e documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.3.dev8+gc33d42a9b documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.3.dev8+gc33d42a9b documentation - Home"/>
   
   
 </a></div>
@@ -443,6 +443,7 @@
 <li class="toctree-l2"><a class="reference internal" href="decisions/0016-ad-writer-factory.html">16. Replace AreaDetector writer parameters with ADWriterFactory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0017-standard-movable.html">17. Create StandardMovable with Composition-Based Logic</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0018-typed-command.html">18. Typed Command to replace SignalX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0019-soft-signals-backed-by-arbitrary-callables.html">19. SoftSignalBackend Wrapping Arbitrary Callables</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Declarative vs Procedural Devices</a></li>
@@ -611,12 +612,12 @@ Tango devices support attribute names that contain special characters including 
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="decisions/0018-typed-command.html"
+       href="decisions/0019-soft-signals-backed-by-arbitrary-callables.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">18. Typed Command to replace SignalX</p>
+        <p class="prev-next-title">19. SoftSignalBackend Wrapping Arbitrary Callables</p>
       </div>
     </a>
     <a class="right-next"
