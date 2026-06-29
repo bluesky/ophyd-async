@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 import time
 import typing
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Generic, get_args
 
 import numpy as np
 from bluesky.protocols import Reading
+from bluesky.utils import maybe_await
 from event_model import DataKey
 
 from ._datatypes import Table
@@ -30,8 +32,6 @@ from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
 
 class SoftConverter(Generic[SignalDatatypeT]):
     # This is Any -> SignalDatatypeT because we support coercing
-    # value types to SignalDatatype to allow people to do things like
-    # SignalRW[Enum].set("enum value")
     @abstractmethod
     def write_value(self, value: Any) -> SignalDatatypeT: ...
 
@@ -114,6 +114,14 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     raise TypeError(f"Can't make converter for {datatype}")
 
 
+Setter = (
+    Callable[[SignalDatatypeT | None], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT | None], Awaitable[SignalDatatypeT | None]]
+    | None
+)
+Getter = Callable[[], SignalDatatypeT | Awaitable[SignalDatatypeT]]
+
+
 class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     """An backend to a soft Signal, for test signals see [](#MockSignalBackend).
 
@@ -124,6 +132,16 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     :param units: The units for numeric datatypes.
     :param precision:
         The number of digits after the decimal place to display for a float datatype.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param setter:
+        Optional callable performing the set action. May return the settled
+        value; if it returns None and a getter is configured, the getter is
+        called to refresh the cache.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     """
 
     def __init__(
@@ -132,20 +150,46 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         initial_value: SignalDatatypeT | None = None,
         units: str | None = None,
         precision: int | None = None,
+        *,
+        getter: Getter[SignalDatatypeT] | None = None,
+        setter: Setter[SignalDatatypeT] | None = None,
+        poll_period: float | None = None,
     ):
-        # Create the right converter for the datatype
+        if poll_period is not None and getter is None:
+            raise ValueError("poll_period requires a getter to be set")
         self.converter = make_converter(datatype or float)
-        # Add the extra static metadata to the dictionary
         self.metadata = make_metadata(datatype, units, precision)
-        # Create and set the initial value
         self.initial_value = self.converter.write_value(initial_value)
         self.reading: Reading[SignalDatatypeT]
         self.callback: Callback[Reading[SignalDatatypeT]] | None = None
+        self._getter = getter
+        self._setter = setter
+        self._poll_period = poll_period
+        self._poll_task: asyncio.Task | None = None
         self.set_value(self.initial_value)
+        self._setpoint = self.initial_value
         super().__init__(datatype)
+
+    async def _update_value_from_getter(self) -> SignalDatatypeT | None:
+        if self._getter is None:
+            return
+        result = await maybe_await(self._getter())
+        self.set_value(result)
+
+    async def _poll(self) -> None:
+        if self._poll_period is None:
+            raise RuntimeError("No poll_period configured")
+        while True:
+            await asyncio.sleep(self._poll_period)
+            try:
+                await self._update_value_from_getter()
+            except Exception:
+                continue
 
     def set_value(self, value: SignalDatatypeT):
         """Set the current value, alarm and timestamp."""
+        # setp = self.converter.write_value(value)
+        # self._setpoint = setp
         self.reading = Reading(
             value=self.converter.write_value(value),
             timestamp=time.time(),
@@ -160,9 +204,20 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def connect(self, timeout: float):
         pass
 
-    async def put(self, value: SignalDatatypeT | None) -> None:
-        write_value = self.initial_value if value is None else value
-        self.set_value(write_value)
+    async def put(self, value: Any) -> None:
+        self._setpoint = (
+            self.initial_value if value is None else self.converter.write_value(value)
+        )
+        if self._setter is not None:
+            readback = await maybe_await(self._setter(value))
+            if readback is not None:
+                self.set_value(readback)
+            elif self._getter is not None:
+                await self._update_value_from_getter()
+            else:
+                self.set_value(self._setpoint)
+        else:
+            self.set_value(self._setpoint)
 
     async def get_datakey(self, source: str) -> DataKey:
         return make_datakey(
@@ -170,18 +225,25 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         )
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
+        await self._update_value_from_getter()
         return self.reading
 
     async def get_value(self) -> SignalDatatypeT:
+        await self._update_value_from_getter()
         return self.reading["value"]
 
     async def get_setpoint(self) -> SignalDatatypeT:
-        # For a soft signal, the setpoint and readback values are the same.
-        return self.reading["value"]
+        return self._setpoint
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.callback:
             raise RuntimeError("Cannot set a callback when one is already set")
         if callback:
             callback(self.reading)
+            if self._poll_period is not None:
+                self._poll_task = asyncio.create_task(self._poll())
+        else:
+            if self._poll_task is not None:
+                self._poll_task.cancel()
+                self._poll_task = None
         self.callback = callback
