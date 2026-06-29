@@ -910,6 +910,41 @@ async def test_from_collection_window(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert (trajectory.user_programs == [1, 1, 1, 1, 1, 1, 1, 1]).all()
 
 
+async def test_trajectory_velocity_raises(
+    sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
+):
+    _, _, sim_y_motor = sim_motors
+
+    traj = Trajectory(
+        positions={sim_y_motor: np.linspace(1, 5, 5)},
+        velocities={sim_y_motor: np.repeat(10, 5)},
+        user_programs=np.repeat(1, 5),
+        durations=np.repeat(0.1, 5),
+    )
+
+    with pytest.raises(RuntimeError, match="Max velocity exceeded."):
+        traj.check_velocities([sim_y_motor], motor_info)
+
+
+async def test_trajectory_position_raises(
+    sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
+):
+    _, _, sim_y_motor = sim_motors
+
+    traj = Trajectory(
+        positions={sim_y_motor: np.linspace(1, 15, 5)},
+        velocities={sim_y_motor: np.repeat(1, 5)},
+        user_programs=np.repeat(1, 5),
+        durations=np.repeat(0.1, 5),
+    )
+    limits = {sim_y_motor: (10.0, -10.0)}
+
+    with pytest.raises(
+        RuntimeError, match="Position exceeded one of the software limits."
+    ):
+        traj.check_positions([sim_y_motor], limits)
+
+
 async def test_appending_trajectory(
     sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
 ):
