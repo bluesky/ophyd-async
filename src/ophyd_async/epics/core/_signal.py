@@ -160,6 +160,7 @@ def epics_signal_r(
     read_pv: str,
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
+    element_count: int | None = None
 ) -> SignalR[SignalDatatypeT]:
     """Create a `SignalR` backed by 1 EPICS PV.
 
@@ -168,7 +169,9 @@ def epics_signal_r(
     :param name: The name of the signal (defaults to empty string)
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-    backend = _epics_signal_backend(datatype, read_pv, read_pv)
+    backend = _epics_signal_backend(
+        datatype, read_pv, read_pv, options=EpicsOptions(element_count=element_count)
+    )
     return SignalR(backend, name=name, timeout=timeout)
 
 
