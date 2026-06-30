@@ -88,7 +88,8 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
     assert_has_calls(
         odin,
         [
-            call.acquisition_id.put("filename.h5"),
+            call.acquisition_id.put(""),
+            call.file_prefix.put("filename.h5"),
             call.file_path.put(str(tmp_path)),
             call.fp.data_compression.put("BSLZ4"),
             call.fp.data_datatype.put("uint16"),

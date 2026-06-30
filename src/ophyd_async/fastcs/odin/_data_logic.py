@@ -35,8 +35,9 @@ class OdinDataLogic(DetectorDataLogic):
         datatype = f"uint{await self.detector_bit_depth.get_value()}"
         # Setup the HDF writer
         filename = f"{path_info.filename}.h5"
+        await self.odin.acquisition_id.set("")
         await asyncio.gather(
-            self.odin.acquisition_id.set(filename),
+            self.odin.file_prefix.set(filename),
             self.odin.file_path.set(str(path_info.directory_path)),
             self.odin.fp.data_compression.set("BSLZ4"),
             self.odin.fp.data_datatype.set(datatype),
