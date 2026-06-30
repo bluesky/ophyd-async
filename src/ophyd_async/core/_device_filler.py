@@ -19,7 +19,7 @@ from typing import (
 )
 
 from ._command import Command, CommandBackend
-from ._device import Device, DeviceConnector, DeviceVector
+from ._device import Device, DeviceCollection, DeviceConnector
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import T, V, cached_get_origin, cached_get_type_hints, get_origin_class
@@ -68,21 +68,31 @@ def _get_command_signature(annotation: Any) -> inspect.Signature | None:
     return sig
 
 
-def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
+def _get_device_collection_child_datatype(map: Device | type[Device]) -> type | None:
     # If passed a Device, try to get the original class
-    # extracting DeviceVector[SomeDevice] from a <DeviceVector>
-    if generic_class := getattr(vector, "__orig_class__", None):
-        # Type hinted DeviceVector
-        # e.g., DeviceVector[SomeDevice]
+    # extracting DeviceCollection[T, SomeDevice] from a <DeviceCollection>
+    if generic_class := getattr(map, "__orig_class__", None):
+        # Type hinted DeviceCollection
+        # e.g., DeviceCollection[T, SomeDevice]
         return _get_datatype(generic_class)
-    else:
-        # Sub class of type hinted DeviceVector
+
+    for base in getattr(map, "__orig_bases__", ()):
+        # Sub class of type hinted DeviceCollection
         # We must extract the original base, which we can do from a type or cls
-        # e.g., instance of `class CustomVector(DeviceVector[SomeDevice])`
-        for base in getattr(vector, "__orig_bases__", ()):
-            origin = get_origin_class(base)
-            if origin is DeviceVector:
-                return _get_datatype(base)
+        # e.g., instance of `class CustomMap(DeviceCollection[T, SomeDevice])`
+        origin = get_origin_class(base)
+        if (
+            origin is not None
+            and isinstance(origin, type)
+            and issubclass(origin, DeviceCollection)
+        ):
+            datatype = _get_datatype(base)
+            if datatype is not None:
+                return datatype
+
+            datatype = _get_device_collection_child_datatype(origin)
+            if datatype is not None:
+                return datatype
 
     return None
 
@@ -130,6 +140,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._command_signature: dict[LogicalName, inspect.Signature | None] = {}
+        self._device_map_type: dict[LogicalName, type[Device] | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
@@ -225,31 +236,32 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 self._store_command_datatype(name, annotation)
                 self._uncreated_commands[name] = origin
             # We either have an annotation of a Device, or we have a generic alias of
-            # a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable
-            # and returns a DeviceVector.
+            # a DeviceCollection (i.e., DeviceCollection[T, SomeDevice]), which must be
+            # callable and returns a DeviceCollection.
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
                 isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
-                # Check for DeviceVector generic alias type hint
+                # Check for DeviceCollection generic alias type hint
                 # If this is a plain `type`, then _get_datatype will return None
-                if vector_child_class := _get_datatype(annotation):
+                if device_map_child_class := _get_datatype(annotation):
                     # Get the origin class of the type hint
-                    child_origin = get_origin_class(vector_child_class)
+                    child_origin = get_origin_class(device_map_child_class)
                     if child_origin and issubclass(child_origin, Signal):
-                        # This is a DeviceVector of Signals, so validate hint
+                        # This is a DeviceCollection of Signals, so validate hint
                         # i.e., Check that Signal hint contains datatype
-                        self._validate_signal_datatype(name, vector_child_class)
-                # We may have a sub-class of DeviceVector
+                        self._validate_signal_datatype(name, device_map_child_class)
+                # We may have a sub-class of DeviceCollection
                 # If it is not a sub-class, then its a Device, so continue
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
                     isinstance(annotation, type)
-                    and issubclass(annotation, DeviceVector)
-                    and not _get_device_vector_child_datatype(annotation)
+                    and issubclass(annotation, DeviceCollection)
+                    and not _get_device_collection_child_datatype(annotation)
                 ):
-                    # DeviceVector has no type parameter
+                    # DeviceCollection has no type parameter
                     self._raise(
-                        name, f"Expected DeviceVector[SomeDevice], got {annotation}."
+                        name,
+                        f"Expected DeviceCollection[T, SomeDevice], got {annotation}.",
                     )
                 self._uncreated_devices[name] = annotation
 
@@ -377,23 +389,23 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             filled,
         )
 
-    def create_device_vector_entries_to_mock(self, num: int):
-        """Create num entries for each `DeviceVector`.
+    def create_device_collection_entries_to_mock(self, entries: list[Any]):
+        """Create num entries for each `DeviceCollection`.
 
         This is used when the Device is being connected in mock mode.
         """
-        hinted_child_cls = _get_device_vector_child_datatype(self._device)
+        hinted_child_cls = _get_device_collection_child_datatype(self._device)
         if not hinted_child_cls:
-            msg = "Malformed device vector"
+            msg = "Malformed device map"
             raise TypeError(msg)
         # Get base class for subclass checks, as
         # generic classes are not direct subclasses
         base_cls = get_origin_class(hinted_child_cls) or Device
 
-        # Fill DeviceVector
+        # Fill DeviceCollection
         self.fill_child_device(self._device.name)
         # Then handle children
-        for i in range(1, num + 1):
+        for i in entries:
             if issubclass(base_cls, Signal):
                 self.fill_child_signal(self._device.name, hinted_child_cls, i)
             elif issubclass(base_cls, Command):
@@ -422,16 +434,18 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_vector(self) -> DeviceVector:
-        if not isinstance(self._device, DeviceVector):
-            self._raise(self._device.name, f"Expected DeviceVector, got {self._device}")
+    def _ensure_device_collection(self) -> DeviceCollection:
+        if not isinstance(self._device, DeviceCollection):
+            self._raise(
+                self._device.name, f"Expected DeviceCollection, got {self._device}"
+            )
         return self._device
 
     def fill_child_signal(
         self,
         name: str,
         signal_type: type[Signal],
-        vector_index: int | None = None,
+        map_key: int | str | None = None,
     ) -> SignalBackendT:
         """Mark a Signal as filled, and return its backend for filling.
 
@@ -439,7 +453,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             The name without trailing underscore, the name in the control system
         :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param map_key: If the child is in a `DeviceCollection` then what key is it
         :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
@@ -450,14 +464,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
-        elif vector_index is not None:
-            # We need to add a new entry to a DeviceVector
+        elif map_key is not None:
+            # We need to add a new entry to a DeviceCollection
             backend = self._signal_backend_factory(_get_datatype(signal_type))
-            vector = self._ensure_device_vector()
+            device_collection = self._ensure_device_collection()
             expected_signal_type = (
-                _get_device_vector_child_datatype(vector) or signal_type
+                _get_device_collection_child_datatype(device_collection) or signal_type
             )
-            vector[vector_index] = signal_type(backend)
+            key_type = device_collection.key_type
+            device_collection[key_type(map_key)] = signal_type(backend)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -476,15 +491,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
     def fill_child_device(
         self,
         name: str,
-        device_type: type[Device | DeviceVector] = Device,
-        vector_index: int | None = None,
+        device_type: type[Device | DeviceCollection] = Device,
+        map_key: Any | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
 
         :param name:
             The name without trailing underscore, the name in the control system
         :param device_type: The `Device` subclass to be created
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param map_key: If the child is in a `DeviceCollection` then what key is it
         :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
@@ -495,22 +510,22 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         elif name in self._filled_connectors:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
-        elif vector_index is not None:
-            # We need to add a new entry to a DeviceVector
-            vector = self._ensure_device_vector()
-            vector_device_type = (
-                _get_device_vector_child_datatype(vector) or device_type
+        elif map_key is not None:
+            # We need to add a new entry to a DeviceCollection
+            device_map = self._ensure_device_collection()
+            device_map_type = (
+                _get_device_collection_child_datatype(device_map) or device_type
             )
-            if not issubclass(vector_device_type, Device):
-                # Raise if adding Non-Device to DeviceVector
+            if not issubclass(device_map_type, Device):
+                # Raise if adding Non-Device to DeviceCollection
                 self._raise(
                     name,
                     f"Expected {type(self._device).__name__}"
-                    f"[{vector_device_type.__name__}], "
-                    f"but {vector_device_type} is not a subclass of `Device`",
+                    f"[{device_map_type.__name__}], "
+                    f"but {device_map_type} is not a subclass of `Device`",
                 )
             connector = self._device_connector_factory()
-            vector[vector_index] = vector_device_type(connector=connector)
+            device_map[map_key] = device_map_type(connector=connector)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -524,13 +539,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self,
         name: str,
         command_type: type[Command] = Command,
-        vector_index: int | None = None,
+        map_key: str | int | None = None,
     ) -> CommandBackendT:
         """Mark a Command as filled and return its backend.
 
         :param name: Logical name (without trailing underscore).
         :param command_type: The `Command` subclass to create.
-        :param vector_index: Index within a `DeviceVector`, if applicable.
+        :param map_key: Key within a `DeviceVector` or `DeviceMap`, if applicable.
         :return: The `CommandBackend` for the filled Command.
         :raises RuntimeError: If no `command_backend_factory` was provided.
         """
@@ -552,20 +567,24 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         elif logical_name in self._filled_command_backends:
             backend, expected_command_type = self._filled_command_backends[logical_name]
 
-        # Handle DeviceVector case
-        elif vector_index is not None:
-            vector = self._ensure_device_vector()
-            vector_command_type = (
-                self._vector_device_type.get(logical_name) or command_type
+        # Handle DeviceVector/DeviceMap case
+        elif map_key is not None:
+            device_collection = self._ensure_device_collection()
+            type_lookup = (
+                self._vector_device_type
+                if isinstance(map_key, str)
+                else self._device_map_type
             )
-            if not issubclass(vector_command_type, Command):
-                msg = f"{vector_command_type} is not a Command"
-                raise TypeError(msg)
+            selected_type = type_lookup.get(logical_name) or command_type
+
+            if not issubclass(selected_type, Command):
+                raise TypeError(f"{selected_type} is not a Command")
+
             backend = self._command_backend_factory(
                 self._command_signature.get(logical_name)
             )
-            expected_command_type = vector_command_type
-            vector[vector_index] = vector_command_type(backend)
+            device_collection[map_key] = selected_type(backend)
+            expected_command_type = selected_type
 
         # Shadowing check
         elif child := getattr(self._device, name, None):

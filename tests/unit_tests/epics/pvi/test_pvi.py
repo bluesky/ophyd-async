@@ -6,6 +6,7 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
+    DeviceMap,
     DeviceVector,
     SignalR,
     SignalRW,
@@ -182,7 +183,11 @@ class NoSignalTypeInVector(Device):
     a: DeviceVector[SignalRW]
 
 
-@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
+class NoSignalTypeInMap(Device):
+    a: DeviceMap[SignalRW]
+
+
+@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector, NoSignalTypeInMap])
 async def test_no_type_annotation_blocks(cls):
     with pytest.raises(TypeError) as exc:
         with_pvi_connector(cls, "PREFIX:")
@@ -239,3 +244,23 @@ async def test_pvi_x_entry_creates_triggerable_command():
     await device.connect(mock=True)
     # In mock mode the backend is a MockCommandBackend, not PvaCommandBackend
     assert isinstance(device.do_thing, TriggerableCommand)
+
+
+class MapDeviceFromAnnotations(Device):
+    device_map: DeviceMap[SignalR[float]]
+
+
+async def test_map_device_from_annotations():
+    async with init_devices(mock=True):
+        test_device = with_pvi_connector(MapDeviceFromAnnotations, "PREFIX:")
+
+    assert test_device.name == "test_device"
+    assert test_device.device_map.name == "test_device-device_map"
+
+    assert test_device.device_map["mock1"].name == "test_device-device_map-mock1"
+    assert isinstance(test_device.device_map["mock1"], SignalR)
+    assert test_device.device_map["mock1"]._connector.backend.datatype is float
+
+    assert test_device.device_map["mock2"].name == "test_device-device_map-mock2"
+    assert isinstance(test_device.device_map["mock2"], SignalR)
+    assert test_device.device_map["mock2"]._connector.backend.datatype is float
