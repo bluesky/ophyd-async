@@ -159,6 +159,8 @@ async def test_pmac_move_to_start(
         {sim_x_motor: 7, sim_y_motor: 8},
         {sim_x_motor: 10, sim_y_motor: 20},
         {sim_x_motor: 10, sim_y_motor: 10},
+        {sim_x_motor: -20, sim_y_motor: -20},
+        {sim_x_motor: 20, sim_y_motor: 20},
     )
     coord = pmac_io.coord[motor_info.cs_number]
     ramp_up_position = {sim_x_motor: np.float64(x_pos), sim_y_motor: np.float64(y_pos)}
