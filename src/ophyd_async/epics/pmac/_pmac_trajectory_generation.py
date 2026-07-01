@@ -148,8 +148,11 @@ class Trajectory:
         collection_window_iter = iter(collection_windows)
 
         for motor in motors:
-            slice_lower = slice.lower[motor].min()
-            slice_upper = slice.upper[motor].max()
+            lower = slice.lower[motor]
+            midpoint = slice.midpoints[motor]
+            upper = slice.upper[motor]
+            slice_min = min(lower.min(), midpoint.min(), upper.min())
+            slice_max = max(lower.max(), midpoint.max(), upper.max())
             motor_lower_limit = motor_info.motor_lower_limit[motor]
             motor_upper_limit = motor_info.motor_upper_limit[motor]
 
@@ -158,10 +161,10 @@ class Trajectory:
                 np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration
             ).max()
 
-            if slice_lower <= motor_lower_limit or slice_upper >= motor_upper_limit:
+            if slice_min <= motor_lower_limit or slice_max >= motor_upper_limit:
                 raise ValueError(
                     "Unable to generate trajectory due to motor limit."
-                    f" {motor.name} demand is {slice_lower} to {slice_upper},"
+                    f" {motor.name} demand is {slice_min} to {slice_max},"
                     f" motor limit is {motor_lower_limit} to {motor_upper_limit}"
                 )
 
