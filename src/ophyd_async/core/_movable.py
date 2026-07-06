@@ -3,6 +3,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import cached_property
 from typing import Generic
 
@@ -115,6 +116,12 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
         callback_on_mock_put(device.movable_logic.setpoint, _instant_move)
 
 
+class StopMode(Enum):
+    NONE = "NONE"
+    USER_SUCCESS = "USER_SUCCESS"
+    USER_FAILURE = "USER_FAILURE"
+
+
 @default_mock_class(InstantMovableMock)
 class StandardMovable(
     Device,
@@ -131,8 +138,7 @@ class StandardMovable(
     """
 
     # Whether set() should complete successfully or not
-    _set_success = True
-    _stopped_by_user = False
+    _stop_mode: Enum = StopMode.NONE
     _move_status: AsyncStatus | None = None
 
     @cached_property
@@ -157,7 +163,7 @@ class StandardMovable(
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ):
         """Move to the given value."""
-        self._set_success = True
+        self._stop_mode = StopMode.NONE
         old_position, (units, precision) = await asyncio.gather(
             self.movable_logic.readback.get_value(),
             self.movable_logic.get_units_precision(),
@@ -194,21 +200,22 @@ class StandardMovable(
         # If stop(success=False) was called, raise a RuntimeError below.
         # If not stopped but times out, show the CancelledError from the timeout.
         except asyncio.CancelledError:
-            if not self._stopped_by_user:
+            if self._stop_mode == StopMode.NONE:
                 raise
         finally:
             self._move_status = None
-            self._stopped_by_user = False
 
-        if not self._set_success:
+        # Raise error if needed, reset stop state.
+        stop_mode = self._stop_mode
+        self._stop_mode = StopMode.NONE
+        if stop_mode == StopMode.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
-        self._stopped_by_user = True
-        self._set_success = success
+        self._stop_mode = StopMode.USER_SUCCESS if success else StopMode.USER_FAILURE
         await self.movable_logic.stop()
-        if self._move_status is not None:
+        if self._move_status:
             self._move_status.task.cancel()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
