@@ -533,9 +533,8 @@ async def test_tango_sim(sim_test_context_trls):
     set_status = motor.set(1.0)
     await asyncio.sleep(1.0)
 
-    with pytest.raises(RuntimeError, match=f"Device {motor.name} was stopped."):
-        await motor.stop(success=True)
-        assert set_status.done
+    await motor.stop(success=True)
+    assert set_status.done
 
 
 @pytest.mark.asyncio
