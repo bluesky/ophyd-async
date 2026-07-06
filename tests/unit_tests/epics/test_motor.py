@@ -10,7 +10,6 @@ from ophyd_async.core import (
     Device,
     DeviceMock,
     FlyMotorInfo,
-    LazyMock,
     callback_on_mock_put,
     default_mock_class,
     get_mock_put,
@@ -34,7 +33,7 @@ async def sim_motor():
     # Opt out of the default mocking behaviour so we can test it
     # better below
     sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
-    await sim_motor.connect(mock=LazyMock())
+    await sim_motor.connect(mock=DeviceMock())
 
     set_mock_units(sim_motor.user_readback, "mm")
     set_mock_precision(sim_motor.user_readback, 3)
@@ -108,11 +107,11 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
     set_mock_value(sim_motor.motor_done_move, False)
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
-    s = sim_motor.set(1.5)
-    s.add_callback(Mock())
+    move_status = sim_motor.set(1.5)
+    move_status.add_callback(Mock())
     await asyncio.sleep(0.001)
 
-    assert not s.done
+    assert not move_status.done
     await sim_motor.stop()
 
     # Note: needs to explicitly be called with 1, not just processed.
@@ -122,8 +121,10 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
     await wait_for_pending_wakeups(max_yields=25)
 
-    assert s.done
-    assert s.success is False
+    assert not move_status.success
+    with pytest.raises(RuntimeError, match=f"Device {sim_motor.name} was stopped"):
+        await move_status
+    assert move_status.done
 
 
 async def test_read_motor(sim_motor: motor.Motor):

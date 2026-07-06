@@ -1,5 +1,4 @@
 import asyncio
-from asyncio import CancelledError, Event, get_event_loop
 from functools import cached_property
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -9,7 +8,6 @@ from ophyd_async.core import (
     MovableLogic,
     StandardMovable,
     callback_on_mock_put,
-    get_mock_put,
     init_devices,
     mock_puts_blocked,
     set_mock_put_proceeds,
@@ -109,46 +107,21 @@ async def test_movable_move_timeout(movable: StandardMovableImpl):
 
 async def test_movable_moving_stopped(movable: StandardMovableImpl):
     set_mock_put_proceeds(movable.setpoint, False)
-    s = movable.set(1.5)
-    s.add_callback(Mock())
+    move_status = movable.set(1.5)
+    move_status.add_callback(Mock())
     await asyncio.sleep(0.0001)
 
-    assert not s.done
+    assert not move_status.done
     await movable.stop()
 
     set_mock_put_proceeds(movable.setpoint, True)
     await wait_for_pending_wakeups()
 
-    assert s.done
-    assert s.success is False
+    assert move_status.done
+    assert move_status.success is False
 
-
-async def test_cancellederror_in_set_ensures_movable_setpoint_set_task_is_cancelled(
-    movable: StandardMovableImpl,
-):
-    sleep_result = get_event_loop().create_future()
-    block_until_ready = Event()
-
-    async def wait_forever_in_setpoint_set(value: float, *args, **kwargs):
-        try:
-            block_until_ready.set()
-            await asyncio.sleep(0.5)
-            sleep_result.set_result(None)
-        except CancelledError as e:
-            sleep_result.set_exception(e)
-            raise
-
-    get_mock_put(movable.setpoint).side_effect = wait_forever_in_setpoint_set
-
-    status = movable.set(1)
-    await block_until_ready.wait()
-    assert status.task.cancel()
-    with pytest.raises(CancelledError):
-        await status
-    with pytest.raises(CancelledError):
-        await sleep_result
-    assert sleep_result.done()
-    assert isinstance(sleep_result.exception(), CancelledError)
+    with pytest.raises(RuntimeError, match=f"Device {movable.name} was stopped"):
+        await move_status
 
 
 async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(

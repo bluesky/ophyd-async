@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import time
 from abc import abstractmethod
 from collections.abc import Callable
@@ -127,10 +128,12 @@ class StandardMovable(
     """Device that provides standard logic for moving.
 
     This class must be inherited and have a `movable_logic` @cached_property.
+    If stop is called while moving, it will raise a RuntimeError.
     """
 
     # Whether set() should complete successfully or not
     _set_success = True
+    _move_status: AsyncStatus | None = None
 
     @cached_property
     @abstractmethod
@@ -168,31 +171,37 @@ class StandardMovable(
         else:
             move_timeout = timeout
 
-        async with AsyncStatus(
-            self.movable_logic.move(
-                new_position=new_position, timeout=MoveTimeout(move_timeout)
-            )
-        ) as move_status:
-            async for current_position in observe_value(
-                self.movable_logic.readback,
-                done_status=move_status,
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                    precision=precision,
-                )
+        try:
+            with contextlib.suppress(asyncio.CancelledError):
+                async with AsyncStatus(
+                    self.movable_logic.move(
+                        new_position=new_position, timeout=MoveTimeout(move_timeout)
+                    )
+                ) as self._move_status:
+                    async for current_position in observe_value(
+                        self.movable_logic.readback,
+                        done_status=self._move_status,
+                    ):
+                        yield WatcherUpdate(
+                            current=current_position,
+                            initial=old_position,
+                            target=new_position,
+                            name=self.name,
+                            unit=units,
+                            precision=precision,
+                        )
 
-        if not self._set_success:
-            raise RuntimeError(f"Device {self.name} was stopped.")
+            if not self._set_success:
+                raise RuntimeError(f"Device {self.name} was stopped.")
+        finally:
+            self._move_status = None
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
         self._set_success = success
         await self.movable_logic.stop()
+        if self._move_status is not None:
+            self._move_status.task.cancel()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)
