@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.testing &#8212; ophyd-async 0.19.4.dev1+ge9e7a023e documentation</title>
+    <title>ophyd_async.testing &#8212; ophyd-async 0.19.4.dev2+g527bbfd9b documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=c03434b5"></script>
+    <script src="../../_static/documentation_options.js?v=cb498679"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
   
   
 </a></div>
@@ -547,6 +547,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleEnum" title="ophyd_async.testing._one_of_everything.ExampleEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleEnum</span></code></a></p></td>
 <td><p>Example of a strict Enum datatype.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSubsetEnum" title="ophyd_async.testing._one_of_everything.ExampleSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSubsetEnum</span></code></a></p></td>
+<td><p>Example of a subset Enum datatype: the backend may have extra choices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSupersetEnum" title="ophyd_async.testing._one_of_everything.ExampleSupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSupersetEnum</span></code></a></p></td>
+<td><p>Example of a superset Enum datatype: not all choices need exist in backend.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleTable" title="ophyd_async.testing._one_of_everything.ExampleTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
@@ -767,6 +773,56 @@ with a timeout</p></li>
 <dt class="sig sig-object py" id="ophyd_async.testing.ExampleEnum.C">
 <span class="sig-name descname"><span class="pre">C</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleEnum.C" title="Link to this definition">#</a></dt>
 <dd><p>‘Ccc’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSubsetEnum">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ExampleSubsetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_one_of_everything.html#ExampleSubsetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ExampleSubsetEnum" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SubsetEnum</span></code></a></p>
+<p>Example of a subset Enum datatype: the backend may have extra choices.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSubsetEnum.A">
+<span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSubsetEnum.A" title="Link to this definition">#</a></dt>
+<dd><p>‘Aaa’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSubsetEnum.B">
+<span class="sig-name descname"><span class="pre">B</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSubsetEnum.B" title="Link to this definition">#</a></dt>
+<dd><p>‘Bbb’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSupersetEnum">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ExampleSupersetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_one_of_everything.html#ExampleSupersetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ExampleSupersetEnum" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SupersetEnum" title="ophyd_async.core.SupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SupersetEnum</span></code></a></p>
+<p>Example of a superset Enum datatype: not all choices need exist in backend.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSupersetEnum.A">
+<span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSupersetEnum.A" title="Link to this definition">#</a></dt>
+<dd><p>‘Aaa’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSupersetEnum.B">
+<span class="sig-name descname"><span class="pre">B</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSupersetEnum.B" title="Link to this definition">#</a></dt>
+<dd><p>‘Bbb’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSupersetEnum.C">
+<span class="sig-name descname"><span class="pre">C</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSupersetEnum.C" title="Link to this definition">#</a></dt>
+<dd><p>‘Ccc’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.ExampleSupersetEnum.D">
+<span class="sig-name descname"><span class="pre">D</span></span><a class="headerlink" href="#ophyd_async.testing.ExampleSupersetEnum.D" title="Link to this definition">#</a></dt>
+<dd><p>‘Ddd’</p>
 </dd></dl>
 
 </dd></dl>
@@ -1046,6 +1102,18 @@ the same calls again.</p></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum.A"><code class="docutils literal notranslate"><span class="pre">ExampleEnum.A</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum.B"><code class="docutils literal notranslate"><span class="pre">ExampleEnum.B</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum.C"><code class="docutils literal notranslate"><span class="pre">ExampleEnum.C</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSubsetEnum"><code class="docutils literal notranslate"><span class="pre">ExampleSubsetEnum</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSubsetEnum.A"><code class="docutils literal notranslate"><span class="pre">ExampleSubsetEnum.A</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSubsetEnum.B"><code class="docutils literal notranslate"><span class="pre">ExampleSubsetEnum.B</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSupersetEnum"><code class="docutils literal notranslate"><span class="pre">ExampleSupersetEnum</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSupersetEnum.A"><code class="docutils literal notranslate"><span class="pre">ExampleSupersetEnum.A</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSupersetEnum.B"><code class="docutils literal notranslate"><span class="pre">ExampleSupersetEnum.B</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSupersetEnum.C"><code class="docutils literal notranslate"><span class="pre">ExampleSupersetEnum.C</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleSupersetEnum.D"><code class="docutils literal notranslate"><span class="pre">ExampleSupersetEnum.D</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleTable"><code class="docutils literal notranslate"><span class="pre">ExampleTable</span></code></a><ul class="nav section-nav flex-column">

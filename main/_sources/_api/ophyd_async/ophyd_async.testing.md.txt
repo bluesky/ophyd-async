@@ -19,6 +19,14 @@
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
     :summary:
     ```
+* - {py:obj}`ExampleSubsetEnum <ophyd_async.testing._one_of_everything.ExampleSubsetEnum>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSubsetEnum
+    :summary:
+    ```
+* - {py:obj}`ExampleSupersetEnum <ophyd_async.testing._one_of_everything.ExampleSupersetEnum>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum
+    :summary:
+    ```
 * - {py:obj}`ExampleTable <ophyd_async.testing._one_of_everything.ExampleTable>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable
     :summary:
@@ -210,6 +218,86 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Ccc'
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.C
+```
+
+````
+
+`````
+
+`````{py:class} ExampleSubsetEnum()
+:canonical: ophyd_async.testing._one_of_everything.ExampleSubsetEnum
+
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSubsetEnum
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.testing._one_of_everything.ExampleSubsetEnum.A
+:value: >
+   'Aaa'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSubsetEnum.A
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.testing._one_of_everything.ExampleSubsetEnum.B
+:value: >
+   'Bbb'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSubsetEnum.B
+```
+
+````
+
+`````
+
+`````{py:class} ExampleSupersetEnum()
+:canonical: ophyd_async.testing._one_of_everything.ExampleSupersetEnum
+
+Bases: {py:obj}`ophyd_async.core.SupersetEnum`
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.testing._one_of_everything.ExampleSupersetEnum.A
+:value: >
+   'Aaa'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum.A
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.testing._one_of_everything.ExampleSupersetEnum.B
+:value: >
+   'Bbb'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum.B
+```
+
+````
+
+````{py:attribute} C
+:canonical: ophyd_async.testing._one_of_everything.ExampleSupersetEnum.C
+:value: >
+   'Ccc'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum.C
+```
+
+````
+
+````{py:attribute} D
+:canonical: ophyd_async.testing._one_of_everything.ExampleSupersetEnum.D
+:value: >
+   'Ddd'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleSupersetEnum.D
 ```
 
 ````

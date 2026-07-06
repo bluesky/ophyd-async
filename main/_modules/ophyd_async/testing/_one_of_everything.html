@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._one_of_everything &#8212; ophyd-async 0.19.4.dev1+ge9e7a023e documentation</title>
+    <title>ophyd_async.testing._one_of_everything &#8212; ophyd-async 0.19.4.dev2+g527bbfd9b documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=c03434b5"></script>
+    <script src="../../../_static/documentation_options.js?v=cb498679"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
   
   
 </a></div>
@@ -911,6 +911,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">SubsetEnum</span><span class="p">,</span>
+    <span class="n">SupersetEnum</span><span class="p">,</span>
     <span class="n">Table</span><span class="p">,</span>
     <span class="n">soft_signal_r_and_setter</span><span class="p">,</span>
     <span class="n">soft_signal_rw</span><span class="p">,</span>
@@ -926,6 +928,28 @@ window.runMermaid = runMermaid;</script>
     <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
     <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span>
     <span class="n">C</span> <span class="o">=</span> <span class="s2">&quot;Ccc&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ExampleSubsetEnum">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.ExampleSubsetEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleSubsetEnum</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example of a subset Enum datatype: the backend may have extra choices.&quot;&quot;&quot;</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ExampleSupersetEnum">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.ExampleSupersetEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleSupersetEnum</span><span class="p">(</span><span class="n">SupersetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example of a superset Enum datatype: not all choices need exist in backend.&quot;&quot;&quot;</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="s2">&quot;Ccc&quot;</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="s2">&quot;Ddd&quot;</span></div>
 
 
 
@@ -996,6 +1020,10 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">a_str</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;test_string&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">a_bool</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">a_enum</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">ExampleEnum</span><span class="p">,</span> <span class="n">ExampleEnum</span><span class="o">.</span><span class="n">B</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a_subset_enum</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">ExampleSubsetEnum</span><span class="p">,</span> <span class="n">ExampleSubsetEnum</span><span class="o">.</span><span class="n">B</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a_superset_enum</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span>
+                <span class="n">ExampleSupersetEnum</span><span class="p">,</span> <span class="n">ExampleSupersetEnum</span><span class="o">.</span><span class="n">B</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">boola</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span>
                 <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
             <span class="p">)</span>

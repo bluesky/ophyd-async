@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._example_ioc &#8212; ophyd-async 0.19.4.dev1+ge9e7a023e documentation</title>
+    <title>ophyd_async.epics.testing._example_ioc &#8212; ophyd-async 0.19.4.dev2+g527bbfd9b documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=c03434b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=cb498679"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev1+ge9e7a023e documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
   
   
 </a></div>
@@ -904,7 +904,15 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array1D</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">SubsetEnum</span><span class="p">,</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Array1D</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">SubsetEnum</span><span class="p">,</span>
+    <span class="n">SupersetEnum</span><span class="p">,</span>
+    <span class="n">Table</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">EpicsDevice</span><span class="p">,</span>
     <span class="n">PvSuffix</span><span class="p">,</span>
@@ -930,10 +938,32 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="EpicsTestSubsetEnum">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestSubsetEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestSubsetEnum</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For testing subset enum values in test IOCs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For testing subset enum values in test IOCs.</span>
+
+<span class="sd">    The backing PV (mbbo with choices Aaa/Bbb/Ccc) has an extra choice (&quot;Ccc&quot;)</span>
+<span class="sd">    beyond what this enum declares.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
     <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestSupersetEnum">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestSupersetEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestSupersetEnum</span><span class="p">(</span><span class="n">SupersetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For testing superset enum values in test IOCs.</span>
+
+<span class="sd">    Deliberately points at the same backing PV as `EpicsTestSubsetEnum`</span>
+<span class="sd">    (mbbo with choices Aaa/Bbb/Ccc): this enum declares a choice (&quot;Ddd&quot;) that</span>
+<span class="sd">    does not exist in the backend, which is exactly what a superset enum</span>
+<span class="sd">    allows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="s2">&quot;Ccc&quot;</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="s2">&quot;Ddd&quot;</span></div>
 
 
 
@@ -965,6 +995,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum&quot;</span><span class="p">)]</span>
     <span class="n">enum2</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum2&quot;</span><span class="p">)]</span>
     <span class="n">subset_enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestSubsetEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;subset_enum&quot;</span><span class="p">)]</span>
+    <span class="n">superset_enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestSupersetEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;subset_enum&quot;</span><span class="p">)]</span>
     <span class="n">enum_str_fallback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum_str_fallback&quot;</span><span class="p">)]</span>
     <span class="n">bool_unnamed</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;bool_unnamed&quot;</span><span class="p">)]</span>
     <span class="n">partialint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;partialint&quot;</span><span class="p">)]</span>

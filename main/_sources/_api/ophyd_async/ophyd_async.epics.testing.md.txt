@@ -27,6 +27,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
     :summary:
     ```
+* - {py:obj}`EpicsTestSupersetEnum <ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+    :summary:
+    ```
 * - {py:obj}`EpicsTestPvaDevice <ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
     :summary:
@@ -220,6 +224,17 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.subset_enum
+```
+
+````
+
+````{py:attribute} superset_enum
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.superset_enum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum], PvSuffix('subset_enum')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.superset_enum
 ```
 
 ````
@@ -422,6 +437,56 @@ Bases: {py:obj}`ophyd_async.core.SubsetEnum`
    'Bbb'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.B
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestSupersetEnum()
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+
+Bases: {py:obj}`ophyd_async.core.SupersetEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.A
+:value: >
+   'Aaa'
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.A
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.B
+:value: >
+   'Bbb'
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.B
+```
+
+````
+
+````{py:attribute} C
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.C
+:value: >
+   'Ccc'
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.C
+```
+
+````
+
+````{py:attribute} D
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.D
+:value: >
+   'Ddd'
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.D
 ```
 
 ````
