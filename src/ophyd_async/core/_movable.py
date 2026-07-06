@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import time
 from abc import abstractmethod
 from collections.abc import Callable
@@ -172,31 +171,32 @@ class StandardMovable(
             move_timeout = timeout
 
         try:
-            # Suppress CancelledError and instead we will raise our own
-            # with more useful information.
-            with contextlib.suppress(asyncio.CancelledError):
-                async with AsyncStatus(
-                    self.movable_logic.move(
-                        new_position=new_position, timeout=MoveTimeout(move_timeout)
+            async with AsyncStatus(
+                self.movable_logic.move(
+                    new_position=new_position, timeout=MoveTimeout(move_timeout)
+                )
+            ) as self._move_status:
+                async for current_position in observe_value(
+                    self.movable_logic.readback,
+                    done_status=self._move_status,
+                ):
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.name,
+                        unit=units,
+                        precision=precision,
                     )
-                ) as self._move_status:
-                    async for current_position in observe_value(
-                        self.movable_logic.readback,
-                        done_status=self._move_status,
-                    ):
-                        yield WatcherUpdate(
-                            current=current_position,
-                            initial=old_position,
-                            target=new_position,
-                            name=self.name,
-                            unit=units,
-                            precision=precision,
-                        )
-
-            if not self._set_success:
-                raise RuntimeError(f"Device {self.name} was stopped.")
+        # Suppress CancelledError if stop called and instead raise a more useful error
+        except asyncio.CancelledError:
+            if self._set_success:
+                raise
         finally:
             self._move_status = None
+
+        if not self._set_success:
+            raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
