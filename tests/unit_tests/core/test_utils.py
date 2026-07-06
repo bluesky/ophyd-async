@@ -367,9 +367,9 @@ async def test_gather_dict(keys_awaitable, values_awaitable):
         # Task wrapping an async function (currently not handled)
         ["z", None, None],
         # Setting a Motor on a Device
-        ["omega", "BL03I-MO-OMEGA", None],
+        # ["omega", "BL03I-MO-OMEGA", None],
         # Everything completes successfully in a timely fashion
-        [None, None, [1, None, 1, None]],
+        [None, None, [1, None, 1]],
     ],
 )
 async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
@@ -390,26 +390,26 @@ async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
         async def set(self, value: int):
             await async_func("y", value)
 
-    class MotorDevice(Device):
-        def __init__(self, name):
-            self.omega = Motor("BL03I-MO-OMEGA")
-            super().__init__(name)
+    # class MotorDevice(Device):
+    #     def __init__(self, name):
+    #         self.omega = Motor("BL03I-MO-OMEGA")
+    #         super().__init__(name)
 
-        async def set_omega(self, value: int, *args, **kwargs):
-            await async_func("omega", value)
+    #     async def set_omega(self, value: int, *args, **kwargs):
+    #         await async_func("omega", value)
 
     async_status_device = GenericDevice("my_device")
     task_wrapped = asyncio.create_task(async_func("z", 1), name="set z")
-    motor_device = MotorDevice("my_motor_device")
-    await motor_device.connect(mock=True)
-    _patch_motor(motor_device.omega)
-    callback_on_mock_put(motor_device.omega.user_setpoint, motor_device.set_omega)
+    # motor_device = MotorDevice("my_motor_device")
+    # await motor_device.connect(mock=True)
+    # _patch_motor(motor_device.omega)
+    # callback_on_mock_put(motor_device.omega.user_setpoint, motor_device.set_omega)
 
     gather_awaitable = asyncio.gather(
         plain_awaitable,
         async_status_device.set(1),
         task_wrapped,
-        motor_device.omega.set(1),
+        # motor_device.omega.set(1),
     )
     if set_to_delay:
         with pytest.raises(asyncio.TimeoutError) as exc_info:

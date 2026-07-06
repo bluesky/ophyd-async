@@ -172,6 +172,8 @@ class StandardMovable(
             move_timeout = timeout
 
         try:
+            # Suppress CancelledError and instead we will raise our own
+            # with more useful information.
             with contextlib.suppress(asyncio.CancelledError):
                 async with AsyncStatus(
                     self.movable_logic.move(
