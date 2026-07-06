@@ -35,6 +35,10 @@ TangoClassConfig = TypedDict(
 
 _ACCEPT_TIMEOUT = 30.0  # seconds to wait for subprocess to connect back
 _COMMUNICATE_TIMEOUT = 10.0  # seconds to wait for subprocess to exit cleanly
+# MultiDeviceTestContext's default thread timeout (5s) is too tight on loaded
+# CI runners, especially Windows, and causes flaky
+# "GIOP TCP port ... not available during startup" errors.
+_DEVICE_SERVER_STARTUP_TIMEOUT = 30.0
 
 
 def generate_random_trl_prefix() -> str:
@@ -112,7 +116,9 @@ if __name__ == "__main__":
     device_names = [d["name"] for cfg in configs for d in cfg["devices"]]
 
     trls = {}
-    with MultiDeviceTestContext(configs, process=False) as context:
+    with MultiDeviceTestContext(
+        configs, process=False, timeout=_DEVICE_SERVER_STARTUP_TIMEOUT
+    ) as context:
         for name in device_names:
             trls[name] = context.get_device_access(name)
         _send_pickled(sock, trls)
