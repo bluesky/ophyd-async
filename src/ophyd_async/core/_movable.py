@@ -207,9 +207,9 @@ class StandardMovable(
             self._move_status = None
 
         # Raise error if needed, reset stop state.
-        stop_mode = self._stop_state
+        stop_state = self._stop_state
         self._stop_state = StopState.NONE
-        if stop_mode == StopState.USER_FAILURE:
+        if stop_state == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
