@@ -132,6 +132,7 @@ class StandardMovable(
 
     # Whether set() should complete successfully or not
     _set_success = True
+    _stopped_by_user = False
     _move_status: AsyncStatus | None = None
 
     @cached_property
@@ -188,18 +189,23 @@ class StandardMovable(
                         unit=units,
                         precision=precision,
                     )
-        # Suppress CancelledError if stop called and instead raise a more useful error
+        # Convert cancellation into the appropriate stop result.
+        # If stop(success=True) was called, complete without raising.
+        # If stop(success=False) was called, raise a RuntimeError below.
+        # If not stopped but times out, show the CancelledError from the timeout.
         except asyncio.CancelledError:
-            if self._set_success:
+            if not self._stopped_by_user:
                 raise
         finally:
             self._move_status = None
+            self._stopped_by_user = False
 
         if not self._set_success:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
+        self._stopped_by_user = True
         self._set_success = success
         await self.movable_logic.stop()
         if self._move_status is not None:

@@ -534,6 +534,7 @@ async def test_tango_sim(sim_test_context_trls):
     await asyncio.sleep(1.0)
 
     await motor.stop(success=True)
+    await set_status
     assert set_status.done
 
 
