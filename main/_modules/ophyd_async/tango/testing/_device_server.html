@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.testing._device_server &#8212; ophyd-async 0.19.4.dev2+g527bbfd9b documentation</title>
+    <title>ophyd_async.tango.testing._device_server &#8212; ophyd-async 0.19.4.dev3+g932f90b50 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=cb498679"></script>
+    <script src="../../../../_static/documentation_options.js?v=79aa1669"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev2+g527bbfd9b documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev3+g932f90b50 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev3+g932f90b50 documentation - Home"/>
   
   
 </a></div>
@@ -938,6 +938,10 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">_ACCEPT_TIMEOUT</span> <span class="o">=</span> <span class="mf">30.0</span>  <span class="c1"># seconds to wait for subprocess to connect back</span>
 <span class="n">_COMMUNICATE_TIMEOUT</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># seconds to wait for subprocess to exit cleanly</span>
+<span class="c1"># MultiDeviceTestContext&#39;s default thread timeout (5s) is too tight on loaded</span>
+<span class="c1"># CI runners, especially Windows, and causes flaky</span>
+<span class="c1"># &quot;GIOP TCP port ... not available during startup&quot; errors.</span>
+<span class="n">_DEVICE_SERVER_STARTUP_TIMEOUT</span> <span class="o">=</span> <span class="mf">30.0</span>
 
 
 <div class="viewcode-block" id="generate_random_trl_prefix">
@@ -1027,7 +1031,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">device_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">configs</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;devices&quot;</span><span class="p">]]</span>
 
     <span class="n">trls</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">with</span> <span class="n">MultiDeviceTestContext</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">context</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">MultiDeviceTestContext</span><span class="p">(</span>
+        <span class="n">configs</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_DEVICE_SERVER_STARTUP_TIMEOUT</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">context</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">device_names</span><span class="p">:</span>
             <span class="n">trls</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_device_access</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">_send_pickled</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">trls</span><span class="p">)</span>
