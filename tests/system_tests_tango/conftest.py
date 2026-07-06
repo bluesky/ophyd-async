@@ -100,11 +100,11 @@ def everything_signal_info():
             None,
         )
 
-    signal_info["str"] = AttributeData(
-        "str", str, "test_string", ("four", "five", "six"), None
+    signal_info["a_str"] = AttributeData(
+        "a_str", str, "test_string", ("four", "five", "six"), None
     )
-    signal_info["str_spectrum"] = SequenceData(
-        "str_spectrum",
+    signal_info["a_str_spectrum"] = SequenceData(
+        "a_str_spectrum",
         Sequence[str],
         ("one", "two", "three"),
         ("four", "five", "six"),
@@ -122,7 +122,7 @@ def everything_signal_info():
         cmd_name=None,
     )
     add_ads(
-        "bool",
+        "a_bool",
         "DevBoolean",
         bool,
         True,

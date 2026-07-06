@@ -22,4 +22,5 @@ stra:
 - six
 - seven
 subset_enum: Bbb
+superset_enum: Bbb
 uint8a: [0, 255]

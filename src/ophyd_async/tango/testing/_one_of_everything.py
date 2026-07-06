@@ -55,13 +55,15 @@ class AttributeData(Generic[T]):
 
 _all_attribute_definitions = [
     AttributeData(
-        "str",
+        # Named a_str, not str, to avoid shadowing the builtin as a Python identifier
+        "a_str",
         "DevString",
         "test_string",
         ["one", "two", "three"],
     ),
     AttributeData(
-        "bool",
+        # Named a_bool, not bool, to avoid shadowing the builtin as a Python identifier
+        "a_bool",
         "DevBoolean",
         True,
         np.array([False, True], dtype=bool),
@@ -154,7 +156,7 @@ class OneOfEverythingTangoDevice(Device):
         self._add_attr(spectrum_attr, initial_value)
         # have image just be 2 of the initial spectrum stacked
         # String images are not supported, do not add their attribute data
-        if name in ["str"]:
+        if name in ["a_str"]:
             return
         self._add_attr(image_attr, np.vstack((initial_value, initial_value)))
 

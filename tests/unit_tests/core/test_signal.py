@@ -44,6 +44,8 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
     ExampleEnum,
+    ExampleSubsetEnum,
+    ExampleSupersetEnum,
     ExampleTable,
     OneOfEverythingDevice,
     assert_configuration,
@@ -585,6 +587,8 @@ async def test_assert_configuration_everything(
             "everything-device-a_str": partial_reading("test_string"),
             "everything-device-a_bool": partial_reading(True),
             "everything-device-a_enum": partial_reading("Bbb"),
+            "everything-device-a_subset_enum": partial_reading("Bbb"),
+            "everything-device-a_superset_enum": partial_reading("Bbb"),
             "everything-device-boola": partial_reading(_array_vals["boola"]),
             "everything-device-int8a": partial_reading(_array_vals["int8a"]),
             "everything-device-uint8a": partial_reading(_array_vals["uint8a"]),
@@ -635,6 +639,18 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.a_bool,
         {"everything-device-a_bool": partial_reading(True)},
+    )
+    await assert_reading(
+        one_of_everything_device.a_subset_enum,
+        {
+            "everything-device-a_subset_enum": partial_reading(ExampleSubsetEnum.B),
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.a_superset_enum,
+        {
+            "everything-device-a_superset_enum": partial_reading(ExampleSupersetEnum.B),
+        },
     )
     await assert_reading(
         one_of_everything_device.boola,
@@ -872,6 +888,8 @@ async def test_assert_value_everything(
     await assert_value(one_of_everything_device.a_bool, True)
     # for bools we must provide an array not a list for approx comparison to work
     await assert_value(one_of_everything_device.a_enum, ExampleEnum.B)
+    await assert_value(one_of_everything_device.a_subset_enum, ExampleSubsetEnum.B)
+    await assert_value(one_of_everything_device.a_superset_enum, ExampleSupersetEnum.B)
     await assert_value(one_of_everything_device.boola, _array_vals["boola"])
     await assert_value(
         one_of_everything_device.int8a,

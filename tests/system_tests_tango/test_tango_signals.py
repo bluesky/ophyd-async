@@ -315,8 +315,8 @@ async def test_assert_val_reading_everything_tango(
     await everything_device.connect()
     await everything_device.reset_values.trigger()
     await asyncio.sleep(1)
-    await assert_val_reading(everything_device.str, esi["str"].initial)
-    await assert_val_reading(everything_device.bool, esi["bool"].initial)
+    await assert_val_reading(everything_device.a_str, esi["a_str"].initial)
+    await assert_val_reading(everything_device.a_bool, esi["a_bool"].initial)
     await assert_val_reading(everything_device.strenum, esi["strenum"].initial)
     await assert_val_reading(everything_device.int8, esi["int8"].initial)
     await assert_val_reading(everything_device.uint8, esi["uint8"].initial)
@@ -331,10 +331,10 @@ async def test_assert_val_reading_everything_tango(
     await assert_val_reading(everything_device.my_state, esi["my_state"].initial)
 
     await assert_val_reading(
-        everything_device.str_spectrum, esi["str_spectrum"].initial
+        everything_device.a_str_spectrum, esi["a_str_spectrum"].initial
     )
     await assert_val_reading(
-        everything_device.bool_spectrum, esi["bool_spectrum"].initial
+        everything_device.a_bool_spectrum, esi["a_bool_spectrum"].initial
     )
     await assert_val_reading(
         everything_device.int8_spectrum, esi["int8_spectrum"].initial
@@ -367,7 +367,9 @@ async def test_assert_val_reading_everything_tango(
         everything_device.float64_spectrum, esi["float64_spectrum"].initial
     )
 
-    await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
+    await assert_val_reading(
+        everything_device.a_bool_image, esi["a_bool_image"].initial
+    )
     await assert_val_reading(everything_device.int8_image, esi["int8_image"].initial)
     await assert_val_reading(everything_device.uint8_image, esi["uint8_image"].initial)
     await assert_val_reading(everything_device.int16_image, esi["int16_image"].initial)

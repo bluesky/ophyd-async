@@ -6,6 +6,7 @@ from ._example_ioc import (
     EpicsTestIocAndDevices,
     EpicsTestPvaDevice,
     EpicsTestSubsetEnum,
+    EpicsTestSupersetEnum,
     EpicsTestTable,
 )
 from ._utils import TestingIOC, generate_random_pv_prefix
@@ -16,6 +17,7 @@ __all__ = [
     "EpicsTestCaDevice",
     "EpicsTestEnum",
     "EpicsTestSubsetEnum",
+    "EpicsTestSupersetEnum",
     "EpicsTestPvaDevice",
     "EpicsTestTable",
     "EpicsTestIocAndDevices",

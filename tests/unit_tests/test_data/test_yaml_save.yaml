@@ -4,6 +4,8 @@ child.a_enum: Bbb
 child.a_float: 1.234
 child.a_int: 1
 child.a_str: test_string
+child.a_subset_enum: Bbb
+child.a_superset_enum: Bbb
 child.boola: [false, false, true]
 child.enuma:
   - Aaa
@@ -63,6 +65,8 @@ vector.1.a_enum: Bbb
 vector.1.a_float: 1.234
 vector.1.a_int: 1
 vector.1.a_str: test_string
+vector.1.a_subset_enum: Bbb
+vector.1.a_superset_enum: Bbb
 vector.1.boola: [false, false, true]
 vector.1.enuma:
   - Aaa
@@ -121,6 +125,8 @@ vector.3.a_enum: Bbb
 vector.3.a_float: 1.234
 vector.3.a_int: 1
 vector.3.a_str: test_string
+vector.3.a_subset_enum: Bbb
+vector.3.a_superset_enum: Bbb
 vector.3.boola: [false, false, true]
 vector.3.enuma:
   - Aaa
