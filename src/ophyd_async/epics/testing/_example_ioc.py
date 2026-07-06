@@ -4,7 +4,15 @@ from typing import Annotated as A
 
 import numpy as np
 
-from ophyd_async.core import Array1D, SignalR, SignalRW, StrictEnum, SubsetEnum, Table
+from ophyd_async.core import (
+    Array1D,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+    SubsetEnum,
+    SupersetEnum,
+    Table,
+)
 from ophyd_async.epics.core import (
     EpicsDevice,
     PvSuffix,
@@ -25,10 +33,29 @@ class EpicsTestEnum(StrictEnum):
 
 
 class EpicsTestSubsetEnum(SubsetEnum):
-    """For testing subset enum values in test IOCs."""
+    """For testing subset enum values in test IOCs.
+
+    The backing PV (mbbo with choices Aaa/Bbb/Ccc) has an extra choice ("Ccc")
+    beyond what this enum declares.
+    """
 
     A = "Aaa"
     B = "Bbb"
+
+
+class EpicsTestSupersetEnum(SupersetEnum):
+    """For testing superset enum values in test IOCs.
+
+    Deliberately points at the same backing PV as `EpicsTestSubsetEnum`
+    (mbbo with choices Aaa/Bbb/Ccc): this enum declares a choice ("Ddd") that
+    does not exist in the backend, which is exactly what a superset enum
+    allows.
+    """
+
+    A = "Aaa"
+    B = "Bbb"
+    C = "Ccc"
+    D = "Ddd"
 
 
 class EpicsTestTable(Table):
@@ -54,6 +81,7 @@ class EpicsTestCaDevice(EpicsDevice):
     enum: A[SignalRW[EpicsTestEnum], PvSuffix("enum")]
     enum2: A[SignalRW[EpicsTestEnum], PvSuffix("enum2")]
     subset_enum: A[SignalRW[EpicsTestSubsetEnum], PvSuffix("subset_enum")]
+    superset_enum: A[SignalRW[EpicsTestSupersetEnum], PvSuffix("subset_enum")]
     enum_str_fallback: A[SignalRW[str], PvSuffix("enum_str_fallback")]
     bool_unnamed: A[SignalRW[bool], PvSuffix("bool_unnamed")]
     partialint: A[SignalRW[int], PvSuffix("partialint")]

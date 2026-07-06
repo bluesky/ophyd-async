@@ -26,13 +26,13 @@ from ophyd_async.tango.testing import (
 
 TEST_PARAMS = [
     (None, None, "void_cmd"),
-    (bool, True, "bool_cmd"),
+    (bool, True, "a_bool_cmd"),
     (int, 42, "int32_cmd"),
     (float, 3.14, "float64_cmd"),
-    (str, "hello", "str_cmd"),
+    (str, "hello", "a_str_cmd"),
     (ExampleStrEnum, ExampleStrEnum.A, "strenum_cmd"),
     (DevStateEnum, DevStateEnum.ON, "my_state_cmd"),
-    (Array1D[np.bool_], np.array([True, False], dtype=np.bool_), "bool_spectrum_cmd"),
+    (Array1D[np.bool_], np.array([True, False], dtype=np.bool_), "a_bool_spectrum_cmd"),
     (Array1D[np.int8], np.array([1, 2], dtype=np.int8), "int8_spectrum_cmd"),
     (Array1D[np.uint8], np.array([1, 2], dtype=np.uint8), "uint8_spectrum_cmd"),
     (Array1D[np.int16], np.array([1, 2], dtype=np.int16), "int16_spectrum_cmd"),
@@ -51,7 +51,7 @@ TEST_PARAMS = [
         np.array([1.1, 2.2], dtype=np.float64),
         "float64_spectrum_cmd",
     ),
-    (Sequence[str], ["a", "b"], "str_spectrum_cmd"),
+    (Sequence[str], ["a", "b"], "a_str_spectrum_cmd"),
     (
         TangoLongStringTable,
         TangoLongStringTable(long=[1, 2], string=["a", "b"]),
@@ -79,7 +79,7 @@ def everything_device_trl():
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
     strenum_cmd: Command[[ExampleStrEnum], ExampleStrEnum]
-    bool_cmd: Command[[bool], bool]
+    a_bool_cmd: Command[[bool], bool]
     float32_spectrum_cmd: Command[[Array1D[np.float32]], Array1D[np.float32]]
 
 
@@ -105,7 +105,7 @@ async def test_tango_command(
     everything_device: TangoDevice,
     everything_signal_info,
 ):
-    for name in ["strenum_cmd", "bool_cmd", "float32_spectrum_cmd"]:
+    for name in ["strenum_cmd", "a_bool_cmd", "float32_spectrum_cmd"]:
         assert hasattr(everything_device, name)
     await everything_device.connect()
 
@@ -253,7 +253,7 @@ async def test_tango_command_validation(
 class TangoEverythingOphydDeviceWithBadAnnotation(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
     strenum_cmd: Command[[ExampleStrEnum], ExampleStrEnum]
-    bool_cmd: Command[[bool], None]
+    a_bool_cmd: Command[[bool], None]
     float32_spectrum_cmd: Command[[Array1D[np.float32]], Array1D[np.float32]]
 
 

@@ -24,6 +24,7 @@ stra:
 - six
 - seven
 subset_enum: Bbb
+superset_enum: Bbb
 table:
   a_bool: [false, false, true, true]
   a_enum:

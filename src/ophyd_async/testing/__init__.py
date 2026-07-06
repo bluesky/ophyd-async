@@ -16,6 +16,8 @@ from ._assert import (
 )
 from ._one_of_everything import (
     ExampleEnum,
+    ExampleSubsetEnum,
+    ExampleSupersetEnum,
     ExampleTable,
     OneOfEverythingDevice,
     ParentOfEverythingDevice,
@@ -71,6 +73,8 @@ __all__ = [
     # Wait for pending wakeups
     "wait_for_pending_wakeups",
     "ExampleEnum",
+    "ExampleSubsetEnum",
+    "ExampleSupersetEnum",
     "ExampleTable",
     "OneOfEverythingDevice",
     "ParentOfEverythingDevice",
