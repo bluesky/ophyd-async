@@ -116,7 +116,7 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
         callback_on_mock_put(device.movable_logic.setpoint, _instant_move)
 
 
-class StopMode(Enum):
+class StopState(Enum):
     NONE = "NONE"
     USER_SUCCESS = "USER_SUCCESS"
     USER_FAILURE = "USER_FAILURE"
@@ -137,8 +137,9 @@ class StandardMovable(
     If stop is called while moving, it will raise a RuntimeError.
     """
 
-    # Whether set() should complete successfully or not
-    _stop_mode: Enum = StopMode.NONE
+    # Whether set() should complete successfully or raise an error due to stop called or
+    # due to timeout.
+    _stop_state: Enum = StopState.NONE
     _move_status: AsyncStatus | None = None
 
     @cached_property
@@ -163,7 +164,7 @@ class StandardMovable(
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ):
         """Move to the given value."""
-        self._stop_mode = StopMode.NONE
+        self._stop_state = StopState.NONE
         old_position, (units, precision) = await asyncio.gather(
             self.movable_logic.readback.get_value(),
             self.movable_logic.get_units_precision(),
@@ -200,20 +201,20 @@ class StandardMovable(
         # If stop(success=False) was called, raise a RuntimeError below.
         # If not stopped but times out, show the CancelledError from the timeout.
         except asyncio.CancelledError:
-            if self._stop_mode == StopMode.NONE:
+            if self._stop_state == StopState.NONE:
                 raise
         finally:
             self._move_status = None
 
         # Raise error if needed, reset stop state.
-        stop_mode = self._stop_mode
-        self._stop_mode = StopMode.NONE
-        if stop_mode == StopMode.USER_FAILURE:
+        stop_mode = self._stop_state
+        self._stop_state = StopState.NONE
+        if stop_mode == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
-        self._stop_mode = StopMode.USER_SUCCESS if success else StopMode.USER_FAILURE
+        self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
         await self.movable_logic.stop()
         if self._move_status:
             self._move_status.task.cancel()
