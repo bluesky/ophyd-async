@@ -189,6 +189,10 @@ class Motor(StandardMovable[float], StandardReadable, Flyable, Preparable):
         # Define some signals
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.motor_egu = epics_signal_r(str, prefix + ".EGU")
+            self.motor_resolution = epics_signal_r(float, prefix + ".MRES")
+            self.steps_per_revolution = epics_signal_r(float, prefix + ".SREV")
+            self.units_per_revolution = epics_signal_r(float, prefix + ".UREV")
+            self.encoder_resolution = epics_signal_r(float, prefix + ".ERES")
             self.velocity = epics_signal_rw(float, prefix + ".VELO")
             self.offset = epics_signal_rw(float, prefix + ".OFF")
 
