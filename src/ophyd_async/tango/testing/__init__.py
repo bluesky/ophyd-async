@@ -4,15 +4,11 @@ from ._device_server import (
     TangoSubprocessDeviceServer,
     generate_random_trl_prefix,
 )
-from ._one_of_everything import (
-    ExampleStrEnum,
-    OneOfEverythingTangoDevice,
-    TangoTestDevice,
-)
+from ._example_types import ExampleStrEnum
+from ._tango_test_device import TangoTestDevice
 
 __all__ = [
     "ExampleStrEnum",
-    "OneOfEverythingTangoDevice",
     "TangoClassConfig",
     "TangoDeviceInfo",
     "TangoSubprocessDeviceServer",

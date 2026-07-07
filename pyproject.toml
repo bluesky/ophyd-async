@@ -277,7 +277,12 @@ source_modules = [
     "ophyd_async.epics.*",
     "ophyd_async.tango.*",
 ]
-ignore_imports = ["ophyd_async.*.testing.* -> ophyd_async.testing"]
+ignore_imports = [
+    # ophyd_async.tango.testing._tango is a subpackage (server-side test Devices,
+    # kept separate from the client-side ones so each is independently
+    # importable without pulling in the other's dependencies)
+    "ophyd_async.*.testing.*.* -> ophyd_async.testing",
+]
 
 [[tool.importlinter.contracts]]
 name = "ophyd_async.core private modules are not to be used outside ophyd_async.core"

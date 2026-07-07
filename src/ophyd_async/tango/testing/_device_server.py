@@ -14,10 +14,13 @@ import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, NotRequired, TypedDict, cast
+from typing import TYPE_CHECKING, Any, NotRequired, TypedDict, cast
 
-from tango.server import Device
-from tango.test_context import MultiDeviceTestContext
+if TYPE_CHECKING:
+    # Only needed for the "class" type hint below - deferred so importing this
+    # module (and therefore `ophyd_async.tango.testing`) doesn't require
+    # `tango.server`, which a pure ophyd-async client venv has no reason to have.
+    from tango.server import Device
 
 
 class TangoDeviceInfo(TypedDict):
@@ -27,10 +30,13 @@ class TangoDeviceInfo(TypedDict):
     properties: NotRequired[dict[str, Any]]
 
 
-# "class" is a Python keyword, so we use the functional TypedDict form
+# "class" is a Python keyword, so we use the functional TypedDict form.
+# The type hint is a string forward-reference (resolved by static type checkers
+# against the `TYPE_CHECKING`-only import above) so `tango.server` need not be
+# importable at runtime just to construct this TypedDict.
 TangoClassConfig = TypedDict(
     "TangoClassConfig",
-    {"class": type[Device], "devices": list[TangoDeviceInfo]},
+    {"class": "type[Device]", "devices": list[TangoDeviceInfo]},
 )
 
 _ACCEPT_TIMEOUT = 30.0  # seconds to wait for subprocess to connect back
@@ -106,6 +112,10 @@ class TangoSubprocessDeviceServer:
 
 
 if __name__ == "__main__":
+    # Deferred: only the subprocess entry point (run as a script, not imported)
+    # actually needs a real Tango server-hosting capability.
+    from tango.test_context import MultiDeviceTestContext
+
     port = int(sys.argv[1])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

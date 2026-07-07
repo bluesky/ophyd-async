@@ -20,8 +20,10 @@ from ophyd_async.tango.core import (
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
-    OneOfEverythingTangoDevice,
     TangoSubprocessDeviceServer,
+)
+from ophyd_async.tango.testing._tango import (  # noqa: PLC2701
+    OneOfEverythingTangoDevice,
 )
 
 TEST_PARAMS = [

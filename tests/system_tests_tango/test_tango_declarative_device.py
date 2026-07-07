@@ -10,9 +10,11 @@ import pytest
 
 from ophyd_async.tango.core import TangoDevice
 from ophyd_async.tango.testing import (
-    OneOfEverythingTangoDevice,
     TangoSubprocessDeviceServer,
     TangoTestDevice,
+)
+from ophyd_async.tango.testing._tango import (  # noqa: PLC2701
+    OneOfEverythingTangoDevice,
 )
 
 # Field names declared on TangoTestDevice that also exist on the fully-dynamic
