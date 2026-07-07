@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.testing &#8212; ophyd-async 0.19.4.dev5+g006bfd0e9 documentation</title>
+    <title>ophyd_async.epics.testing &#8212; ophyd-async 0.19.4.dev6+g82b61c0e2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=cd0aee58"></script>
+    <script src="../../_static/documentation_options.js?v=959ec5da"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev5+g006bfd0e9 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev5+g006bfd0e9 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev6+g82b61c0e2 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev6+g82b61c0e2 documentation - Home"/>
   
   
 </a></div>
@@ -546,28 +546,37 @@
 <h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestCaDevice</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="ophyd_async.epics.testing._devices.EpicsTestCaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestCaDevice</span></code></a></p></td>
 <td><p>Device for use in a channel access test IOC.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._devices.EpicsTestEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestEnum</span></code></a></p></td>
 <td><p>For testing strict enum values in test IOCs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestSubsetEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="ophyd_async.epics.testing._devices.EpicsTestSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestSubsetEnum</span></code></a></p></td>
 <td><p>For testing subset enum values in test IOCs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestSupersetEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="ophyd_async.epics.testing._devices.EpicsTestSupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestSupersetEnum</span></code></a></p></td>
 <td><p>For testing superset enum values in test IOCs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPvaDevice" title="ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPvaDevice</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPvaDevice" title="ophyd_async.epics.testing._devices.EpicsTestPvaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPvaDevice</span></code></a></p></td>
 <td><p>Device for use in a pv access test IOC.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._example_ioc.EpicsTestTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestTable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviDevice" title="ophyd_async.epics.testing._devices.EpicsTestPviDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPviDevice</span></code></a></p></td>
+<td><p>Device for use in a generic PVI test IOC, independent of PandA/FastCS.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPviLeafDevice</span></code></a></p></td>
+<td><p>Leaf sub-device for <code class="docutils literal notranslate"><span class="pre">child</span></code> and <code class="docutils literal notranslate"><span class="pre">device_vector</span></code> on EpicsTestPviNestedDevice.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice</span></code></a></p></td>
+<td><p>Real-IOC-backed structural PVI test device.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestPviNestedDeviceMissingChild</span></code></a></p></td>
+<td><p>Connects to the same served PVI tree as EpicsTestPviNestedDevice.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._devices.EpicsTestTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices" title="ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestIocAndDevices</span></code></a></p></td>
-<td><p>Test IOC with ca and pva devices.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.TestingIOC" title="ophyd_async.epics.testing._utils.TestingIOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestingIOC</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.TestingIOC" title="ophyd_async.epics.testing._utils.TestingIOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestingIOC</span></code></a></p></td>
 <td><p>For initialising an IOC in tests.</p></td>
 </tr>
 </tbody>
@@ -589,10 +598,13 @@
 <h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.CA_PVA_RECORDS" title="ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CA_PVA_RECORDS</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.CA_PVA_RECORDS" title="ophyd_async.epics.testing._devices.CA_PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CA_PVA_RECORDS</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVA_RECORDS" title="ophyd_async.epics.testing._example_ioc.PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVA_RECORDS" title="ophyd_async.epics.testing._devices.PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS" title="ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVI_NESTED_RECORDS</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -613,9 +625,15 @@
 <dd><p>None</p>
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.PVI_NESTED_RECORDS">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">PVI_NESTED_RECORDS</span></span><a class="headerlink" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestCaDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestCaDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestCaDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestCaDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
 <p>Device for use in a channel access test IOC.</p>
 <dl class="py attribute">
@@ -669,25 +687,25 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice.enum">
-<span class="sig-name descname"><span class="pre">enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.enum" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._devices.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.enum" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice.enum2">
-<span class="sig-name descname"><span class="pre">enum2</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'enum2'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.enum2" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">enum2</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._devices.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'enum2'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.enum2" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice.subset_enum">
-<span class="sig-name descname"><span class="pre">subset_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum"><span class="pre">EpicsTestSubsetEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'subset_enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.subset_enum" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">subset_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="ophyd_async.epics.testing._devices.EpicsTestSubsetEnum"><span class="pre">EpicsTestSubsetEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'subset_enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.subset_enum" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice.superset_enum">
-<span class="sig-name descname"><span class="pre">superset_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum"><span class="pre">EpicsTestSupersetEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'subset_enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.superset_enum" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">superset_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="ophyd_async.epics.testing._devices.EpicsTestSupersetEnum"><span class="pre">EpicsTestSupersetEnum</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'subset_enum'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.superset_enum" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -763,11 +781,17 @@
 <dd><p>None</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestCaDevice.go">
+<span class="sig-name descname"><span class="pre">go</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><span class="pre">TriggerableCommand</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'go'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestCaDevice.go" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestEnum">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestEnum" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestEnum" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
 <p>For testing strict enum values in test IOCs.</p>
 <dl class="py attribute">
@@ -792,7 +816,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestSubsetEnum">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestSubsetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestSubsetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestSubsetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestSubsetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestSubsetEnum" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SubsetEnum</span></code></a></p>
 <p>For testing subset enum values in test IOCs.</p>
 <p>The backing PV (mbbo with choices Aaa/Bbb/Ccc) has an extra choice (“Ccc”)
@@ -813,7 +837,7 @@ beyond what this enum declares.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestSupersetEnum">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestSupersetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestSupersetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestSupersetEnum</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestSupersetEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestSupersetEnum" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SupersetEnum" title="ophyd_async.core.SupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SupersetEnum</span></code></a></p>
 <p>For testing superset enum values in test IOCs.</p>
 <p>Deliberately points at the same backing PV as <code class="docutils literal notranslate"><span class="pre">EpicsTestSubsetEnum</span></code>
@@ -848,8 +872,8 @@ allows.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPvaDevice">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPvaDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestPvaDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPvaDevice" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice</span></code></a></p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPvaDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestPvaDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPvaDevice" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="ophyd_async.epics.testing._devices.EpicsTestCaDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.testing._devices.EpicsTestCaDevice</span></code></a></p>
 <p>Device for use in a pv access test IOC.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPvaDevice.int8a">
@@ -883,7 +907,7 @@ allows.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPvaDevice.table">
-<span class="sig-name descname"><span class="pre">table</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._example_ioc.EpicsTestTable"><span class="pre">EpicsTestTable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'table'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPvaDevice.table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">table</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._devices.EpicsTestTable"><span class="pre">EpicsTestTable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'table'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPvaDevice.table" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -896,8 +920,174 @@ allows.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPviDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestPviDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
+<p>Device for use in a generic PVI test IOC, independent of PandA/FastCS.</p>
+<p>Construct with <code class="docutils literal notranslate"><span class="pre">with_pvi=True</span></code>: signals here are plain type annotations
+with no <code class="docutils literal notranslate"><span class="pre">PvSuffix</span></code> (discovered and filled in from the IOC’s PVI structure
+by <code class="docutils literal notranslate"><span class="pre">PviDeviceConnector</span></code> at connect time), except <code class="docutils literal notranslate"><span class="pre">overridden_float</span></code>, which
+deliberately also carries a <code class="docutils literal notranslate"><span class="pre">PvSuffix</span></code> pointing at a <em>different</em> record —
+this checks that the PVI-supplied PV wins once connected.</p>
+<p>Most fields (<code class="docutils literal notranslate"><span class="pre">mbb_direct_bit_r</span></code>, <code class="docutils literal notranslate"><span class="pre">a_float</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>, <code class="docutils literal notranslate"><span class="pre">ntndarray</span></code>, <code class="docutils literal notranslate"><span class="pre">go</span></code>)
+reuse the same attribute names, PVI entries and backing records as
+<code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice</span></code>/<code class="docutils literal notranslate"><span class="pre">EpicsTestPvaDevice</span></code>, rather than declaring new
+synthetic ones. Only <code class="docutils literal notranslate"><span class="pre">wo_float</span></code> (no write-only field exists on those
+devices to reuse) and <code class="docutils literal notranslate"><span class="pre">overridden_float</span></code> (inherently synthetic by
+design, see above) are bespoke to this device.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.mbb_direct_bit_r">
+<span class="sig-name descname"><span class="pre">mbb_direct_bit_r</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.mbb_direct_bit_r" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.a_float">
+<span class="sig-name descname"><span class="pre">a_float</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.a_float" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.wo_float">
+<span class="sig-name descname"><span class="pre">wo_float</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><span class="pre">SignalW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.wo_float" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.overridden_float">
+<span class="sig-name descname"><span class="pre">overridden_float</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.14)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'float_prec_1'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.overridden_float" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.table">
+<span class="sig-name descname"><span class="pre">table</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._devices.EpicsTestTable"><span class="pre">EpicsTestTable</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.table" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.ntndarray">
+<span class="sig-name descname"><span class="pre">ntndarray</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.6.dev0)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.ntndarray" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviDevice.go">
+<span class="sig-name descname"><span class="pre">go</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><span class="pre">TriggerableCommand</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviDevice.go" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviLeafDevice">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPviLeafDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_pvi_nested_devices.html#EpicsTestPviLeafDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Leaf sub-device for <code class="docutils literal notranslate"><span class="pre">child</span></code> and <code class="docutils literal notranslate"><span class="pre">device_vector</span></code> on EpicsTestPviNestedDevice.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_rw">
+<span class="sig-name descname"><span class="pre">signal_rw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_rw" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_x">
+<span class="sig-name descname"><span class="pre">signal_x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><span class="pre">TriggerableCommand</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_x" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPviNestedDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_pvi_nested_devices.html#EpicsTestPviNestedDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
+<p>Real-IOC-backed structural PVI test device.</p>
+<p>Exercises PviDeviceConnector’s handling of nested sub-devices,
+DeviceVector of devices, DeviceVector of signals, DeviceVector of
+commands, and an Optional signal absent from the served tree – the
+structural mechanics that tests/unit_tests/epics/pvi/test_pvi.py’s
+Block1-Block5 classes exercise only against a <em>mocked</em> PVI tree.
+Construct with <code class="docutils literal notranslate"><span class="pre">with_pvi=True</span></code>.</p>
+<p>The served PVI tree also includes an <code class="docutils literal notranslate"><span class="pre">extra_devices</span></code> DeviceVector that
+is deliberately <em>not</em> annotated here, to prove that PviDeviceConnector
+fills in undeclared DeviceVectors of devices dynamically.</p>
+<p>Legacy list-based vector encoding (<code class="docutils literal notranslate"><span class="pre">PviTree._handle_legacy_entry</span></code>) is
+deliberately not covered here: it’s exclusively produced by
+pandablocks-ioc’s own hand-rolled PVA server, not something a
+QSRV2/db-file-based IOC can construct declaratively, so it stays
+covered by the existing mock-only unit test instead.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_rw">
+<span class="sig-name descname"><span class="pre">signal_rw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_rw" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_x">
+<span class="sig-name descname"><span class="pre">signal_x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><span class="pre">TriggerableCommand</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_x" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.child">
+<span class="sig-name descname"><span class="pre">child</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice"><span class="pre">EpicsTestPviLeafDevice</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.child" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.device_vector">
+<span class="sig-name descname"><span class="pre">device_vector</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice"><span class="pre">EpicsTestPviLeafDevice</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.device_vector" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_vector">
+<span class="sig-name descname"><span class="pre">signal_vector</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_vector" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.command_vector">
+<span class="sig-name descname"><span class="pre">command_vector</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><span class="pre">TriggerableCommand</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.command_vector" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDevice.optional_signal">
+<span class="sig-name descname"><span class="pre">optional_signal</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.optional_signal" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestPviNestedDeviceMissingChild</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_pvi_nested_devices.html#EpicsTestPviNestedDeviceMissingChild"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
+<p>Connects to the same served PVI tree as EpicsTestPviNestedDevice.</p>
+<p>Declares an extra required (non-Optional) sub-device the server
+doesn’t actually provide – demonstrates that connecting raises a clear
+RuntimeError when a required field can’t be resolved via PVI (the
+mirror image of <code class="docutils literal notranslate"><span class="pre">optional_signal</span></code> above, which is allowed to be
+absent).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.signal_rw">
+<span class="sig-name descname"><span class="pre">signal_rw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.signal_rw" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.missing_child">
+<span class="sig-name descname"><span class="pre">missing_child</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice" title="ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice"><span class="pre">EpicsTestPviLeafDevice</span></a></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.missing_child" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestTable">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestTable" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_devices.html#EpicsTestTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestTable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Table</span></code></a></p>
 <p>An abstraction of a Table where each field is a column.</p>
 <p>For example:</p>
@@ -947,30 +1137,9 @@ allows.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestTable.a_enum">
-<span class="sig-name descname"><span class="pre">a_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._example_ioc.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestTable.a_enum" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">a_enum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestEnum" title="ophyd_async.epics.testing._devices.EpicsTestEnum"><span class="pre">EpicsTestEnum</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestTable.a_enum" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestIocAndDevices">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">EpicsTestIocAndDevices</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestIocAndDevices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices" title="Link to this definition">#</a></dt>
-<dd><p>Test IOC with ca and pva devices.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestIocAndDevices.get_device">
-<span class="sig-name descname"><span class="pre">get_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestCaDevice" title="ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice"><span class="pre">EpicsTestCaDevice</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestPvaDevice" title="ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice"><span class="pre">EpicsTestPvaDevice</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestIocAndDevices.get_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_device" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestIocAndDevices.get_signal">
-<span class="sig-name descname"><span class="pre">get_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestIocAndDevices.get_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_signal" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.EpicsTestIocAndDevices.get_pv">
-<span class="sig-name descname"><span class="pre">get_pv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_example_ioc.html#EpicsTestIocAndDevices.get_pv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_pv" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -1059,6 +1228,7 @@ allows.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.CA_PVA_RECORDS"><code class="docutils literal notranslate"><span class="pre">CA_PVA_RECORDS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.PVA_RECORDS"><code class="docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS"><code class="docutils literal notranslate"><span class="pre">PVI_NESTED_RECORDS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.a_int"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.a_int</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.a_float"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.a_float</span></code></a></li>
@@ -1084,6 +1254,7 @@ allows.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.stra"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.stra</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.mbb_direct_bit_r"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.mbb_direct_bit_r</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.mbb_direct_bit"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.mbb_direct_bit</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice.go"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice.go</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestEnum"><code class="docutils literal notranslate"><span class="pre">EpicsTestEnum</span></code></a><ul class="nav section-nav flex-column">
@@ -1114,18 +1285,42 @@ allows.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPvaDevice.ntndarray"><code class="docutils literal notranslate"><span class="pre">EpicsTestPvaDevice.ntndarray</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.mbb_direct_bit_r"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.mbb_direct_bit_r</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.a_float"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.a_float</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.wo_float"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.wo_float</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.overridden_float"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.overridden_float</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.table"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.table</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.ntndarray"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.ntndarray</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviDevice.go"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviDevice.go</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviLeafDevice</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_rw"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviLeafDevice.signal_rw</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviLeafDevice.signal_x"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviLeafDevice.signal_x</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_rw"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.signal_rw</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_x"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.signal_x</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.child"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.child</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.device_vector"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.device_vector</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.signal_vector"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.signal_vector</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.command_vector"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.command_vector</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDevice.optional_signal"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDevice.optional_signal</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDeviceMissingChild</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.signal_rw"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDeviceMissingChild.signal_rw</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild.missing_child"><code class="docutils literal notranslate"><span class="pre">EpicsTestPviNestedDeviceMissingChild.missing_child</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_bool"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_bool</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_int"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_int</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_float"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_float</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_str"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_str</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_enum"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_enum</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices"><code class="docutils literal notranslate"><span class="pre">EpicsTestIocAndDevices</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_device"><code class="docutils literal notranslate"><span class="pre">EpicsTestIocAndDevices.get_device()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_signal"><code class="docutils literal notranslate"><span class="pre">EpicsTestIocAndDevices.get_signal()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_pv"><code class="docutils literal notranslate"><span class="pre">EpicsTestIocAndDevices.get_pv()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.TestingIOC"><code class="docutils literal notranslate"><span class="pre">TestingIOC</span></code></a><ul class="nav section-nav flex-column">

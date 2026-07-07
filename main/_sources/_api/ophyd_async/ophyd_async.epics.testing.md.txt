@@ -15,32 +15,44 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`EpicsTestCaDevice <ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
+* - {py:obj}`EpicsTestCaDevice <ophyd_async.epics.testing._devices.EpicsTestCaDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice
     :summary:
     ```
-* - {py:obj}`EpicsTestEnum <ophyd_async.epics.testing._example_ioc.EpicsTestEnum>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum
+* - {py:obj}`EpicsTestEnum <ophyd_async.epics.testing._devices.EpicsTestEnum>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestEnum
     :summary:
     ```
-* - {py:obj}`EpicsTestSubsetEnum <ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
+* - {py:obj}`EpicsTestSubsetEnum <ophyd_async.epics.testing._devices.EpicsTestSubsetEnum>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSubsetEnum
     :summary:
     ```
-* - {py:obj}`EpicsTestSupersetEnum <ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+* - {py:obj}`EpicsTestSupersetEnum <ophyd_async.epics.testing._devices.EpicsTestSupersetEnum>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum
     :summary:
     ```
-* - {py:obj}`EpicsTestPvaDevice <ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
+* - {py:obj}`EpicsTestPvaDevice <ophyd_async.epics.testing._devices.EpicsTestPvaDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice
     :summary:
     ```
-* - {py:obj}`EpicsTestTable <ophyd_async.epics.testing._example_ioc.EpicsTestTable>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable
+* - {py:obj}`EpicsTestPviDevice <ophyd_async.epics.testing._devices.EpicsTestPviDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice
     :summary:
     ```
-* - {py:obj}`EpicsTestIocAndDevices <ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
+* - {py:obj}`EpicsTestPviLeafDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+    :summary:
+    ```
+* - {py:obj}`EpicsTestPviNestedDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice
+    :summary:
+    ```
+* - {py:obj}`EpicsTestPviNestedDeviceMissingChild <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild
+    :summary:
+    ```
+* - {py:obj}`EpicsTestTable <ophyd_async.epics.testing._devices.EpicsTestTable>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable
     :summary:
     ```
 * - {py:obj}`TestingIOC <ophyd_async.epics.testing._utils.TestingIOC>`
@@ -67,12 +79,16 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`CA_PVA_RECORDS <ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS
+* - {py:obj}`CA_PVA_RECORDS <ophyd_async.epics.testing._devices.CA_PVA_RECORDS>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.CA_PVA_RECORDS
     :summary:
     ```
-* - {py:obj}`PVA_RECORDS <ophyd_async.epics.testing._example_ioc.PVA_RECORDS>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.PVA_RECORDS
+* - {py:obj}`PVA_RECORDS <ophyd_async.epics.testing._devices.PVA_RECORDS>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.PVA_RECORDS
+    :summary:
+    ```
+* - {py:obj}`PVI_NESTED_RECORDS <ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS
     :summary:
     ```
 ````
@@ -80,293 +96,314 @@
 ### API
 
 ````{py:data} CA_PVA_RECORDS
-:canonical: ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS
+:canonical: ophyd_async.epics.testing._devices.CA_PVA_RECORDS
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.CA_PVA_RECORDS
 ```
 
 ````
 
 ````{py:data} PVA_RECORDS
-:canonical: ophyd_async.epics.testing._example_ioc.PVA_RECORDS
+:canonical: ophyd_async.epics.testing._devices.PVA_RECORDS
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.PVA_RECORDS
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.PVA_RECORDS
 ```
 
 ````
 
-`````{py:class} EpicsTestCaDevice(prefix: str, name: str = '')
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
+````{py:data} PVI_NESTED_RECORDS
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS
+```
+
+````
+
+`````{py:class} EpicsTestCaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice
 ```
 
 ````{py:attribute} a_int
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_int
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_int
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('int')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_int
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_int
 ```
 
 ````
 
 ````{py:attribute} a_float
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_float
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('float')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_float
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_float
 ```
 
 ````
 
 ````{py:attribute} float_prec_0
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float_prec_0
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.float_prec_0
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('float_prec_0')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float_prec_0
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.float_prec_0
 ```
 
 ````
 
 ````{py:attribute} a_str
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_str
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_str
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('str')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_str
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_str
 ```
 
 ````
 
 ````{py:attribute} longstr
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.longstr
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('longstr')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.longstr
 ```
 
 ````
 
 ````{py:attribute} longstr2
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr2
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.longstr2
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('~longstr2.VAL$')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr2
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.longstr2
 ```
 
 ````
 
 ````{py:attribute} a_bool
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_bool
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_bool
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('bool')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_bool
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.a_bool
 ```
 
 ````
 
 ````{py:attribute} slowseq
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.slowseq
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.slowseq
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('slowseq')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.slowseq
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.slowseq
 ```
 
 ````
 
 ````{py:attribute} enum
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestEnum], PvSuffix('enum')]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestEnum], PvSuffix('enum')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum
 ```
 
 ````
 
 ````{py:attribute} enum2
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum2
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestEnum], PvSuffix('enum2')]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum2
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestEnum], PvSuffix('enum2')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum2
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum2
 ```
 
 ````
 
 ````{py:attribute} subset_enum
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.subset_enum
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum], PvSuffix('subset_enum')]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.subset_enum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestSubsetEnum], PvSuffix('subset_enum')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.subset_enum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.subset_enum
 ```
 
 ````
 
 ````{py:attribute} superset_enum
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.superset_enum
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum], PvSuffix('subset_enum')]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.superset_enum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestSupersetEnum], PvSuffix('subset_enum')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.superset_enum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.superset_enum
 ```
 
 ````
 
 ````{py:attribute} enum_str_fallback
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum_str_fallback
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum_str_fallback
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('enum_str_fallback')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum_str_fallback
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.enum_str_fallback
 ```
 
 ````
 
 ````{py:attribute} bool_unnamed
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.bool_unnamed
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.bool_unnamed
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('bool_unnamed')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.bool_unnamed
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.bool_unnamed
 ```
 
 ````
 
 ````{py:attribute} partialint
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.partialint
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.partialint
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('partialint')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.partialint
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.partialint
 ```
 
 ````
 
 ````{py:attribute} lessint
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.lessint
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.lessint
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('lessint')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.lessint
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.lessint
 ```
 
 ````
 
 ````{py:attribute} uint8a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.uint8a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.uint8a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.uint8]], PvSuffix('uint8a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.uint8a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.uint8a
 ```
 
 ````
 
 ````{py:attribute} int16a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int16a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.int16a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.int16]], PvSuffix('int16a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int16a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.int16a
 ```
 
 ````
 
 ````{py:attribute} int32a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int32a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.int32a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.int32]], PvSuffix('int32a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int32a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.int32a
 ```
 
 ````
 
 ````{py:attribute} float32a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float32a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.float32a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.float32]], PvSuffix('float32a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float32a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.float32a
 ```
 
 ````
 
 ````{py:attribute} float64a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float64a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.float64a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.float64]], PvSuffix('float64a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float64a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.float64a
 ```
 
 ````
 
 ````{py:attribute} stra
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.stra
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.stra
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~collections.abc.Sequence[str]], PvSuffix('stra')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.stra
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.stra
 ```
 
 ````
 
 ````{py:attribute} mbb_direct_bit_r
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit_r
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.mbb_direct_bit_r
 :type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], PvSuffix('~mbb_direct.B0')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit_r
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.mbb_direct_bit_r
 ```
 
 ````
 
 ````{py:attribute} mbb_direct_bit
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.mbb_direct_bit
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('~mbb_direct_rw.B0')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.mbb_direct_bit
+```
+
+````
+
+````{py:attribute} go
+:canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice.go
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('go')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestCaDevice.go
 ```
 
 ````
@@ -374,39 +411,39 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 `````
 
 `````{py:class} EpicsTestEnum()
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestEnum
+:canonical: ophyd_async.epics.testing._devices.EpicsTestEnum
 
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestEnum
 ```
 
 ````{py:attribute} A
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestEnum.A
+:canonical: ophyd_async.epics.testing._devices.EpicsTestEnum.A
 :value: >
    'Aaa'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.A
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestEnum.A
 ```
 
 ````
 
 ````{py:attribute} B
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestEnum.B
+:canonical: ophyd_async.epics.testing._devices.EpicsTestEnum.B
 :value: >
    'Bbb'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.B
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestEnum.B
 ```
 
 ````
 
 ````{py:attribute} C
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestEnum.C
+:canonical: ophyd_async.epics.testing._devices.EpicsTestEnum.C
 :value: >
    'Ccc'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.C
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestEnum.C
 ```
 
 ````
@@ -414,29 +451,29 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 `````
 
 `````{py:class} EpicsTestSubsetEnum()
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSubsetEnum
 
 Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSubsetEnum
 ```
 
 ````{py:attribute} A
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.A
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSubsetEnum.A
 :value: >
    'Aaa'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.A
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSubsetEnum.A
 ```
 
 ````
 
 ````{py:attribute} B
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.B
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSubsetEnum.B
 :value: >
    'Bbb'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.B
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSubsetEnum.B
 ```
 
 ````
@@ -444,136 +481,374 @@ Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 `````
 
 `````{py:class} EpicsTestSupersetEnum()
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSupersetEnum
 
 Bases: {py:obj}`ophyd_async.core.SupersetEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum
 ```
 
 ````{py:attribute} A
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.A
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.A
 :value: >
    'Aaa'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.A
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.A
 ```
 
 ````
 
 ````{py:attribute} B
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.B
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.B
 :value: >
    'Bbb'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.B
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.B
 ```
 
 ````
 
 ````{py:attribute} C
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.C
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.C
 :value: >
    'Ccc'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.C
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.C
 ```
 
 ````
 
 ````{py:attribute} D
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.D
+:canonical: ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.D
 :value: >
    'Ddd'
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSupersetEnum.D
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestSupersetEnum.D
 ```
 
 ````
 
 `````
 
-`````{py:class} EpicsTestPvaDevice(prefix: str, name: str = '')
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
+`````{py:class} EpicsTestPvaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice
 
-Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
+Bases: {py:obj}`ophyd_async.epics.testing._devices.EpicsTestCaDevice`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice
 ```
 
 ````{py:attribute} int8a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int8a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.int8a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.int8]], PvSuffix('int8a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int8a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.int8a
 ```
 
 ````
 
 ````{py:attribute} uint16a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint16a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint16a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.uint16]], PvSuffix('uint16a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint16a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint16a
 ```
 
 ````
 
 ````{py:attribute} uint32a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint32a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint32a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.uint32]], PvSuffix('uint32a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint32a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint32a
 ```
 
 ````
 
 ````{py:attribute} int64a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int64a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.int64a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.int64]], PvSuffix('int64a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int64a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.int64a
 ```
 
 ````
 
 ````{py:attribute} uint64a
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint64a
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint64a
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.uint64]], PvSuffix('uint64a')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint64a
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.uint64a
 ```
 
 ````
 
 ````{py:attribute} table
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.table
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestTable], PvSuffix('table')]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.table
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestTable], PvSuffix('table')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.table
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.table
 ```
 
 ````
 
 ````{py:attribute} ntndarray
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.ntndarray
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice.ntndarray
 :type: ~typing.Annotated[~ophyd_async.core.SignalR[~numpy.ndarray], PvSuffix('ntndarray')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.ntndarray
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice.ntndarray
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviDevice(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice
+```
+
+````{py:attribute} mbb_direct_bit_r
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.mbb_direct_bit_r
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.mbb_direct_bit_r
+```
+
+````
+
+````{py:attribute} a_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.a_float
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.a_float
+```
+
+````
+
+````{py:attribute} wo_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.wo_float
+:type: ~ophyd_async.core.SignalW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.wo_float
+```
+
+````
+
+````{py:attribute} overridden_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.overridden_float
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('float_prec_1')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.overridden_float
+```
+
+````
+
+````{py:attribute} table
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.table
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestTable]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.table
+```
+
+````
+
+````{py:attribute} ntndarray
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.ntndarray
+:type: ~ophyd_async.core.SignalR[~numpy.ndarray]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.ntndarray
+```
+
+````
+
+````{py:attribute} go
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.go
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.go
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviLeafDevice(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+```
+
+````{py:attribute} signal_rw
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice.signal_rw
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice.signal_rw
+```
+
+````
+
+````{py:attribute} signal_x
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice.signal_x
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice.signal_x
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviNestedDevice(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice
+```
+
+````{py:attribute} signal_rw
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_rw
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_rw
+```
+
+````
+
+````{py:attribute} signal_x
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_x
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_x
+```
+
+````
+
+````{py:attribute} child
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.child
+:type: ~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.child
+```
+
+````
+
+````{py:attribute} device_vector
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.device_vector
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.device_vector
+```
+
+````
+
+````{py:attribute} signal_vector
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_vector
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.core.SignalRW[float]]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.signal_vector
+```
+
+````
+
+````{py:attribute} command_vector
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.command_vector
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.core.TriggerableCommand]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.command_vector
+```
+
+````
+
+````{py:attribute} optional_signal
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_signal
+:type: ~ophyd_async.core.SignalRW[int] | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_signal
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviNestedDeviceMissingChild(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild
+```
+
+````{py:attribute} signal_rw
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild.signal_rw
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild.signal_rw
+```
+
+````
+
+````{py:attribute} missing_child
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild.missing_child
+:type: ~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild.missing_child
 ```
 
 ````
@@ -581,96 +856,64 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
 `````
 
 `````{py:class} EpicsTestTable(**kwargs)
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable
 
 Bases: {py:obj}`ophyd_async.core.Table`
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable
 ```
 
 ````{py:attribute} a_bool
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_bool
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable.a_bool
 :type: ~ophyd_async.core.Array1D[~numpy.bool_]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_bool
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable.a_bool
 ```
 
 ````
 
 ````{py:attribute} a_int
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_int
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable.a_int
 :type: ~ophyd_async.core.Array1D[~numpy.int32]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_int
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable.a_int
 ```
 
 ````
 
 ````{py:attribute} a_float
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable.a_float
 :type: ~ophyd_async.core.Array1D[~numpy.float64]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_float
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable.a_float
 ```
 
 ````
 
 ````{py:attribute} a_str
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_str
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable.a_str
 :type: ~collections.abc.Sequence[str]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_str
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable.a_str
 ```
 
 ````
 
 ````{py:attribute} a_enum
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_enum
-:type: ~collections.abc.Sequence[~ophyd_async.epics.testing._example_ioc.EpicsTestEnum]
+:canonical: ophyd_async.epics.testing._devices.EpicsTestTable.a_enum
+:type: ~collections.abc.Sequence[~ophyd_async.epics.testing._devices.EpicsTestEnum]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_enum
-```
-
-````
-
-`````
-
-`````{py:class} EpicsTestIocAndDevices()
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
-
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
-```
-
-````{py:method} get_device(protocol: str) -> ~ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice | ~ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_device
-
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_device
-```
-
-````
-
-````{py:method} get_signal(protocol: str, name: str) -> ~ophyd_async.core.SignalRW
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_signal
-
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_signal
-```
-
-````
-
-````{py:method} get_pv(protocol: str, name: str) -> str
-:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_pv
-
-```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_pv
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable.a_enum
 ```
 
 ````
