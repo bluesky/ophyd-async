@@ -1,6 +1,7 @@
-import textwrap
+import types
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Annotated as A
 from typing import Any, Generic, TypeVar
 
 import numpy as np
@@ -9,12 +10,32 @@ from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
     Array1D,
+    Command,
     DTypeScalar_co,
+    SignalR,
+    SignalRW,
+    StandardReadable,
     StrictEnum,
+    TriggerableCommand,
 )
+from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 from ophyd_async.testing import float_array_value, int_array_value
 
 T = TypeVar("T")
+
+
+def _make_echo_command(cmd_name: str):
+    """Build an identity/echo command function with the given Tango command name.
+
+    Tango's `command()` derives the served command name from `f.__name__`, so each
+    dynamically-registered echo command needs its own uniquely-named callable.
+    """
+
+    def echo(self, arg):
+        return arg
+
+    echo.__name__ = cmd_name
+    return echo
 
 
 class ExampleStrEnum(StrictEnum):
@@ -182,9 +203,10 @@ class OneOfEverythingTangoDevice(Device):
 
     def add_scalar_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SCALAR, dtype):
+            cmd_name = f"{name}_cmd"
             self.add_command(
                 command(
-                    f=getattr(self, f"{name}_cmd"),
+                    f=types.MethodType(_make_echo_command(cmd_name), self),
                     dtype_in=dtype,
                     dtype_out=dtype,
                     dformat_in=AttrDataFormat.SCALAR,
@@ -194,10 +216,11 @@ class OneOfEverythingTangoDevice(Device):
 
     def add_spectrum_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SPECTRUM, dtype):
+            cmd_name = f"{name}_spectrum_cmd"
             if name in ["int8", "uint8"]:
                 self.add_command(
                     command(
-                        f=getattr(self, f"{name}_spectrum_cmd"),
+                        f=types.MethodType(_make_echo_command(cmd_name), self),
                         dtype_in=CmdArgType.DevVarCharArray,
                         dtype_out=CmdArgType.DevVarCharArray,
                     ),
@@ -205,7 +228,7 @@ class OneOfEverythingTangoDevice(Device):
             else:
                 self.add_command(
                     command(
-                        f=getattr(self, f"{name}_spectrum_cmd"),
+                        f=types.MethodType(_make_echo_command(cmd_name), self),
                         dtype_in=dtype,
                         dtype_out=dtype,
                         dformat_in=AttrDataFormat.SPECTRUM,
@@ -243,15 +266,46 @@ class OneOfEverythingTangoDevice(Device):
         self.attr_values[attr.get_name()] = new_value
         self.push_change_event(attr.get_name(), new_value)
 
-    echo_command_code = textwrap.dedent(
-        """\
-            def {}(self, arg):
-                return arg
-            """
-    )
 
-    for attr_data in _all_attribute_definitions:
-        if _valid_command(AttrDataFormat.SCALAR, attr_data.tango_type):
-            exec(echo_command_code.format(f"{attr_data.name}_cmd"))
-        if _valid_command(AttrDataFormat.SPECTRUM, attr_data.tango_type):
-            exec(echo_command_code.format(f"{attr_data.name}_spectrum_cmd"))
+class TangoTestDevice(TangoDevice, StandardReadable):
+    """Declarative ophyd-async Device pairing 1:1 with `OneOfEverythingTangoDevice`.
+
+    Constructed with `auto_fill_signals=False`, so *only* these `Annotated` fields
+    are created — a purely declarative Device, unlike `TangoDevice(trl)` used on its
+    own (the default `auto_fill_signals=True` procedural/dynamic flavour, which
+    discovers every attribute/command on the live proxy with no annotations at all).
+    Both flavours connect to the exact same running `OneOfEverythingTangoDevice`
+    server instance and see identical values — see
+    `tests/system_tests_tango/test_tango_declarative_device.py`.
+
+    Field names must equal the server's real Tango attribute/command names (Tango
+    has no PvSuffix-equivalent indirection). A curated subset, not every datatype
+    `OneOfEverythingTangoDevice` serves (that full matrix is
+    `OneOfEverythingTangoDevice` itself plus the fully-dynamic `TangoDevice(trl)`
+    procedural flavour) — enough to demonstrate: scalar RW (`a_str`, `a_bool`), a
+    `StrictEnum` field (`strenum`), a read-only `DevState`-backed enum (`my_state`),
+    a numeric scalar with change-detect polling params (`float64`), a spectrum/array
+    field (`int32_spectrum`), a bare `np.ndarray` image field (`float64_image`), a
+    zero-arg `TriggerableCommand` (`void_cmd`), and a typed `Command[P, T]` with
+    mismatched in/out types (`float_to_bool_cmd`).
+
+    `TangoPolling` is given on every field even though `OneOfEverythingTangoDevice`
+    itself pushes Tango change events for all its attributes, because
+    `TangoDevice`'s default `support_events=False` means the connector polls unless
+    told otherwise — this mirrors `ophyd_async.tango.demo.DemoMotor`'s convention so
+    copied-and-pasted reference code keeps working against servers that don't push
+    events.
+    """
+
+    a_str: A[SignalRW[str], TangoPolling(0.1)]
+    a_bool: A[SignalRW[bool], TangoPolling(0.1)]
+    strenum: A[SignalRW[ExampleStrEnum], TangoPolling(0.1)]
+    my_state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
+    float64: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+    int32_spectrum: A[SignalRW[Array1D[np.int32]], TangoPolling(0.1)]
+    float64_image: A[SignalRW[np.ndarray], TangoPolling(0.1)]
+    void_cmd: TriggerableCommand
+    float_to_bool_cmd: Command[[float], bool]
+
+    def __init__(self, trl: str = "", name: str = "") -> None:
+        super().__init__(trl, name=name, auto_fill_signals=False)

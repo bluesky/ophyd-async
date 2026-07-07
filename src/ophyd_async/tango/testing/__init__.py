@@ -7,6 +7,7 @@ from ._device_server import (
 from ._one_of_everything import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
+    TangoTestDevice,
 )
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "TangoClassConfig",
     "TangoDeviceInfo",
     "TangoSubprocessDeviceServer",
+    "TangoTestDevice",
     "generate_random_trl_prefix",
 ]
