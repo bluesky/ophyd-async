@@ -40,6 +40,25 @@ jobs:
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
 
+      # Windows runners occasionally boot with the Docker service not yet
+      # running: on the second boot from the saved runner image, the
+      # service's Hyper-V virtual switch creation intermittently fails
+      # (hnsCall failed, "The system cannot find the file specified"), which
+      # is the root cause of the flaky
+      # "Cannot communicate with the container engine" failures in
+      # tests/conftest.py::check_docker_sock. GitHub's own runner-images
+      # team confirmed a manual service restart resolves it 100% of the
+      # time (see https://github.com/actions/runner-images/issues/13729#issuecomment-4183956802,
+      # https://github.com/docker/for-win/issues/4354) and recommend this
+      # exact workaround. See issue #1314.
+      - name: Ensure Docker service is running (Windows flaky-start workaround)
+        if: inputs.runs-on == 'windows-latest'
+        run: |
+          $dockerState = Get-Service -Name "docker"
+          if ($dockerState.Status -ne "Running") {
+            Start-Service -Name "docker"
+          }
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
