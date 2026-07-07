@@ -1221,13 +1221,13 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.PcompInfo
 ```
 
-````{py:attribute} start_postion
-:canonical: ophyd_async.fastcs.panda._fly_logic.PcompInfo.start_postion
+````{py:attribute} start_position
+:canonical: ophyd_async.fastcs.panda._fly_logic.PcompInfo.start_position
 :type: int
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.PcompInfo.start_postion
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.PcompInfo.start_position
 ```
 
 ````
