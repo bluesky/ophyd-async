@@ -38,7 +38,7 @@ from ophyd_async.tango.demo import (
     EnergyMode,
     start_device_server_subprocess,
 )
-from ophyd_async.tango.demo._tango._servers import (  # noqa: PLC2701
+from ophyd_async.tango.demo._tango import (  # noqa: PLC2701
     DemoMotorDevice,
     DemoMultiChannelDetectorDevice,
     DemoPointDetectorChannelDevice,

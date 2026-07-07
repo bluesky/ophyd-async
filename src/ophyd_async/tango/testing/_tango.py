@@ -1,3 +1,17 @@
+"""The `OneOfEverythingTangoDevice` Tango device server.
+
+Kept as a single, self-contained module (not a package) so it stays trivially
+importable/runnable on its own from a plain PyTango environment - it needs
+`tango`/`tango.server` but nothing from `ophyd_async.tango.core` (the ophyd-async
+client connection machinery, needed instead by the declarative `TangoTestDevice`
+in `ophyd_async.tango.testing._test_device`) and nothing from `ophyd_async.testing`
+(which pulls in `bluesky`/`event_model`/`pytest` - `int_array_value`/
+`float_array_value` are duplicated locally below rather than imported, for exactly
+this reason; `ophyd_async.testing.float_array_value`/`int_array_value` are the
+source of truth other transports' test devices should still prefer where they
+don't have this constraint).
+"""
+
 import types
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -8,11 +22,32 @@ from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
 from tango.server import Device, attribute, command
 
 from ophyd_async.core import Array1D, DTypeScalar_co
-from ophyd_async.testing import float_array_value, int_array_value
 
-from .._example_types import ExampleStrEnum
+from ._example_types import ExampleStrEnum
 
 T = TypeVar("T")
+
+
+def int_array_value(dtype: type[DTypeScalar_co]):
+    iinfo = np.iinfo(dtype)  # type: ignore
+    return np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
+
+
+def float_array_value(dtype: type[DTypeScalar_co]):
+    finfo = np.finfo(dtype)  # type: ignore
+    return np.array(
+        [
+            finfo.min,
+            finfo.max,
+            finfo.smallest_normal,
+            finfo.smallest_subnormal,
+            0,
+            1.234,
+            2.34e5,
+            3.45e-6,
+        ],
+        dtype=dtype,
+    )
 
 
 def _make_echo_command(cmd_name: str):
@@ -186,39 +221,48 @@ class OneOfEverythingTangoDevice(Device):
         self.add_command(long_string_table_cmd)
         self.add_command(double_string_table_cmd)
 
+    def _add_echo_command(
+        self,
+        cmd_name: str,
+        dtype_in,
+        dtype_out,
+        dformat_in: AttrDataFormat | None = None,
+        dformat_out: AttrDataFormat | None = None,
+    ):
+        self.add_command(
+            command(
+                f=types.MethodType(_make_echo_command(cmd_name), self),
+                dtype_in=dtype_in,
+                dtype_out=dtype_out,
+                dformat_in=dformat_in,
+                dformat_out=dformat_out,
+            ),
+        )
+
     def add_scalar_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SCALAR, dtype):
-            cmd_name = f"{name}_cmd"
-            self.add_command(
-                command(
-                    f=types.MethodType(_make_echo_command(cmd_name), self),
-                    dtype_in=dtype,
-                    dtype_out=dtype,
-                    dformat_in=AttrDataFormat.SCALAR,
-                    dformat_out=AttrDataFormat.SCALAR,
-                ),
+            self._add_echo_command(
+                f"{name}_cmd",
+                dtype,
+                dtype,
+                AttrDataFormat.SCALAR,
+                AttrDataFormat.SCALAR,
             )
 
     def add_spectrum_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SPECTRUM, dtype):
             cmd_name = f"{name}_spectrum_cmd"
             if name in ["int8", "uint8"]:
-                self.add_command(
-                    command(
-                        f=types.MethodType(_make_echo_command(cmd_name), self),
-                        dtype_in=CmdArgType.DevVarCharArray,
-                        dtype_out=CmdArgType.DevVarCharArray,
-                    ),
+                self._add_echo_command(
+                    cmd_name, CmdArgType.DevVarCharArray, CmdArgType.DevVarCharArray
                 )
             else:
-                self.add_command(
-                    command(
-                        f=types.MethodType(_make_echo_command(cmd_name), self),
-                        dtype_in=dtype,
-                        dtype_out=dtype,
-                        dformat_in=AttrDataFormat.SPECTRUM,
-                        dformat_out=AttrDataFormat.SPECTRUM,
-                    ),
+                self._add_echo_command(
+                    cmd_name,
+                    dtype,
+                    dtype,
+                    AttrDataFormat.SPECTRUM,
+                    AttrDataFormat.SPECTRUM,
                 )
 
     def initialize_dynamic_attributes(self):

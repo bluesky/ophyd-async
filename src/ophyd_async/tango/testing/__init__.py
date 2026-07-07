@@ -5,7 +5,7 @@ from ._device_server import (
     generate_random_trl_prefix,
 )
 from ._example_types import ExampleStrEnum
-from ._tango_test_device import TangoTestDevice
+from ._test_device import TangoTestDevice
 
 __all__ = [
     "ExampleStrEnum",
