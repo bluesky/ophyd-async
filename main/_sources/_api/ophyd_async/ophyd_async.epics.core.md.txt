@@ -203,7 +203,7 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 ````{py:attribute} vector_children
 :canonical: ophyd_async.epics.core._pvi_connector.PviTree.vector_children
-:type: ~collections.abc.Mapping[int, ~ophyd_async.epics.core._pvi_connector.PviTree | ~ophyd_async.epics.core._pvi_connector.SignalDetails]
+:type: ~collections.abc.Mapping[int, ~ophyd_async.epics.core._pvi_connector.PviTree | ~ophyd_async.epics.core._pvi_connector.SignalDetails | str]
 :value: >
    'Field(...)'
 
@@ -227,6 +227,15 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 :type: bool
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.is_signal_vector
+```
+
+````
+
+````{py:property} is_command_vector
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.is_command_vector
+:type: bool
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.is_command_vector
 ```
 
 ````

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device_filler &#8212; ophyd-async 0.19.4.dev4+ga2c64b894 documentation</title>
+    <title>ophyd_async.core._device_filler &#8212; ophyd-async 0.19.4.dev5+g006bfd0e9 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=a3985ed6"></script>
+    <script src="../../../_static/documentation_options.js?v=cd0aee58"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev4+ga2c64b894 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev4+ga2c64b894 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev5+g006bfd0e9 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev5+g006bfd0e9 documentation - Home"/>
   
   
 </a></div>
@@ -1391,7 +1391,13 @@ window.runMermaid = runMermaid;</script>
             <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_backend_factory</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
             <span class="n">expected_signal_type</span> <span class="o">=</span> <span class="n">signal_type</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">signal_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">expected_signal_type</span><span class="p">:</span>
+        <span class="c1"># Compare origin classes (e.g. SignalRW) rather than the raw objects:</span>
+        <span class="c1"># `expected_signal_type` may be a parameterized generic alias like</span>
+        <span class="c1"># `SignalRW[float]` (from a `DeviceVector[SignalRW[float]]` annotation),</span>
+        <span class="c1"># while a real (non-mock) connection reports `signal_type` as the bare</span>
+        <span class="c1"># class inferred from the &quot;r&quot;/&quot;w&quot;/&quot;rw&quot; PVI designator -- these should</span>
+        <span class="c1"># be considered equal as long as they agree on the Signal kind.</span>
+        <span class="k">if</span> <span class="n">get_origin_class</span><span class="p">(</span><span class="n">signal_type</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">get_origin_class</span><span class="p">(</span><span class="n">expected_signal_type</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_raise</span><span class="p">(</span>
                 <span class="n">name</span><span class="p">,</span>
                 <span class="sa">f</span><span class="s2">&quot;is a </span><span class="si">{</span><span class="n">signal_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> not a </span><span class="si">{</span><span class="n">expected_signal_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
