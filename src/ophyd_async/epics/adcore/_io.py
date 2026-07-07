@@ -7,11 +7,11 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
-    SubsetEnum,
     SupersetEnum,
     non_zero,
+    StandardReadableFormat as Format,
 )
-from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
+from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix, epics_signal_rw_rbv
 
 # Common classes for drivers and plugins
 
@@ -30,6 +30,9 @@ class ADBaseDataType(SupersetEnum):
     # Driver database override will blank the enum string if it doesn't
     # support a datatype
     UNDEFINED = ""
+    # The NDProcess plugin adds an automatic datatype option,
+    # which will set the data type to whatever is necessary to hold the data after processing.
+    AUTOMATIC = "Automatic"
 
 
 class ADBaseColorMode(SupersetEnum):
@@ -78,7 +81,7 @@ class NDArrayBaseIO(EpicsDevice):
 # Classes for drivers
 
 
-class ADImageMode(SubsetEnum):
+class ADImageMode(SupersetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
@@ -268,6 +271,126 @@ class NDCircularBuffIO(NDPluginBaseIO):
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")
     ]
 
+class NDProcessFilterCallbacks(StrictEnum):
+    EVERY_ARRAY = "Every array"
+    ARRAY_N_ONLY = "Array N only"
+
+class NDProcessFilterType(StrictEnum):
+    RECURSIVE_AVG = "RecursiveAve"
+    AVERAGE = "Average"
+    SUM = "Sum"
+    DIFFERENCE = "Difference"
+    RECURSIVE_AVG_DIFFERENCE = "RecursiveAveDifference"
+    COPY_TO_FILTER = "CopyToFilter"
+
+
+class NDProcessIO(NDPluginBaseIO):
+    """Plugin for processing NDArray data.
+
+    This mirrors the interface provided by ADCore/db/NDProcess.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html
+    """
+
+    data_type_out: A[SignalRW[ADBaseDataType], PvSuffix.rbv("DataTypeOut")]
+    save_background: A[SignalRW[bool], PvSuffix.rbv("SaveBackground")]
+    enable_background: A[SignalRW[bool], PvSuffix.rbv("EnableBackground")]
+    valid_background: A[SignalR[bool], PvSuffix("ValidBackground_RBV")]
+    save_flat_field: A[SignalRW[bool], PvSuffix.rbv("SaveFlatField")]
+    enable_flat_field: A[SignalRW[bool], PvSuffix.rbv("EnableFlatField")]
+    valid_flat_field: A[SignalR[bool], PvSuffix("ValidFlatField_RBV")]
+    scale_flat_field: A[SignalRW[float], PvSuffix.rbv("ScaleFlatField")]
+    enable_offset_scale: A[SignalRW[bool], PvSuffix.rbv("EnableOffsetScale")]
+    auto_offset_scale: A[SignalRW[bool], PvSuffix("AutoOffsetScale")]
+    offset: A[SignalRW[float], PvSuffix.rbv("Offset")]
+    scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
+    enable_low_clip: A[SignalRW[bool], PvSuffix.rbv("EnableLowClip")]
+    low_clip_thresh: A[SignalRW[float], PvSuffix.rbv("LowClipThresh")]
+    low_clip_value: A[SignalRW[float], PvSuffix.rbv("LowClipValue")]
+    enable_high_clip: A[SignalRW[bool], PvSuffix.rbv("EnableHighClip")]
+    high_clip_thresh: A[SignalRW[float], PvSuffix.rbv("HighClipThresh")]
+    high_clip_value: A[SignalRW[float], PvSuffix.rbv("HighClipValue")]
+    enable_filter: A[SignalRW[bool], PvSuffix.rbv("EnableFilter")]
+    reset_filter: A[SignalRW[bool], PvSuffix.rbv("ResetFilter")]
+    auto_reset_filter: A[SignalRW[bool], PvSuffix.rbv("AutoResetFilter")]
+    filter_type: A[SignalRW[NDProcessFilterType], PvSuffix.rbv("FilterType")]
+    filter_callbacks: A[SignalRW[NDProcessFilterCallbacks], PvSuffix.rbv("FilterCallbacks")]
+    num_filter: A[SignalRW[int], PvSuffix.rbv("NumFilter")]
+    num_filter_recip: A[SignalR[float], PvSuffix("NumFilterRecip")]
+    num_filtered: A[SignalR[int], PvSuffix("NumFiltered_RBV")]
+    o_offset: A[SignalRW[float], PvSuffix.rbv("OOffset")]
+    o_scale: A[SignalRW[float], PvSuffix.rbv("OScale")]
+    f_offset: A[SignalRW[float], PvSuffix.rbv("FOffset")]
+    f_scale: A[SignalRW[float], PvSuffix.rbv("FScale")]
+    r_offset: A[SignalRW[float], PvSuffix.rbv("ROffset")]
+
+    def __init__(self, prefix: str, name: str = ""):
+        self.output_coefficients = DeviceVector(
+            {i: epics_signal_rw_rbv(float, f"{prefix}OC{i}") for i in range(1, 5)}
+        )
+        self.filter_coefficients = DeviceVector(
+            {i: epics_signal_rw_rbv(float, f"{prefix}FC{i}") for i in range(1, 5)}
+        )
+        self.reset_state_coefficients = DeviceVector(
+            {i: epics_signal_rw_rbv(float, f"{prefix}RC{i}") for i in range(1, 3)}
+        )
+        super().__init__(prefix, name=name)
+
+
+# Codec/compression classes
+
+class ADBloscCompressor(StrictEnum):
+    BLOSCLZ = "BloscLZ"
+    LZ4 = "LZ4"
+    LZ4HC = "LZ4HC"
+    SNAPPY = "SNAPPY"
+    ZLIB = "ZLIB"
+    ZSTD = "ZSTD"
+
+
+class ADBloscShuffle(StrictEnum):
+    NONE = "None"
+    BYTE = "Byte"
+    BIT = "Bit"
+
+class ADCompressMode(StrictEnum):
+    COMPRESS = "Compress"
+    DECOMPRESS = "Decompress"
+
+# Compressor is superset enum, because LZ4HDF5 and ZLIB were added only in ADCore R3-15
+class ADCompressor(SupersetEnum):
+    NONE = "None"
+    JPEG = "JPEG"
+    ZLIB = "ZLIB"
+    BLOSC = "Blosc"
+    LZ4 = "LZ4"
+    LZ4HDF5 = "LZ4HDF5"
+    BSLZ4 = "BSLZ4"
+
+class NDCodecStatus(StrictEnum):
+    SUCCESS = "Success"
+    WARNING = "Warning"
+    ERROR = "Error"
+
+
+class NDCodecIO(NDPluginBaseIO):
+    """Plugin for compressing and decompressing NDArray data.
+
+    This mirrors the interface provided by ADCore/db/NDCodec.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCodec.html
+    """
+
+    compressor: A[SignalRW[ADCompressor], PvSuffix.rbv("Compressor"), Format.CONFIG_SIGNAL]
+    mode: A[SignalRW[ADCompressMode], PvSuffix.rbv("Mode"), Format.CONFIG_SIGNAL]
+    comp_factor: A[SignalR[float], PvSuffix("CompFactor_RBV"), Format.CONFIG_SIGNAL]
+    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality"), Format.CONFIG_SIGNAL]
+    zlib_c_level: A[SignalRW[int], PvSuffix.rbv("ZlibCLevel"), Format.CONFIG_SIGNAL]
+    blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor"), Format.CONFIG_SIGNAL]
+    blosc_c_level: A[SignalRW[int], PvSuffix.rbv("BloscCLevel"), Format.CONFIG_SIGNAL]
+    blosc_num_threads: A[SignalRW[int], PvSuffix.rbv("BloscNumThreads"), Format.CONFIG_SIGNAL]
+    lz4_hdf5_block_size: A[SignalRW[int], PvSuffix.rbv("LZ4HDF5BlockSize"), Format.CONFIG_SIGNAL]
+    codec_status: A[SignalR[NDCodecStatus], PvSuffix("CodecStatus")]
+    codec_error: A[SignalR[str], PvSuffix("CodecError")]
+
 
 # Classes for filewriters
 
@@ -315,7 +438,7 @@ class NDPluginFileIO(NDPluginBaseIO, NDFileIO):
     ...
 
 
-class ADCompression(StrictEnum):
+class NDFileHDF5Compression(StrictEnum):
     NONE = "None"
     NBIT = "N-bit"
     SZIP = "szip"
@@ -334,11 +457,22 @@ class NDFileHDF5IO(NDPluginFileIO):
     """
 
     position_mode: A[SignalRW[bool], PvSuffix.rbv("PositionMode")]
-    compression: A[SignalRW[ADCompression], PvSuffix.rbv("Compression")]
+    compression: A[SignalRW[NDFileHDF5Compression], PvSuffix.rbv("Compression")]
     num_extra_dims: A[SignalRW[int], PvSuffix.rbv("NumExtraDims")]
     swmr_mode: A[SignalRW[bool], PvSuffix.rbv("SWMRMode")]
     flush_now: A[SignalRW[bool], PvSuffix("FlushNow")]
+    num_frames_flush: A[SignalRW[int], PvSuffix.rbv("NumFramesFlush")]
     xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
     num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
     chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
+
+    # Compression options
+    szip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZIPNumPixels")]
+    z_level: A[SignalRW[int], PvSuffix.rbv("ZLevel")]
+    blosc_shuffle: A[SignalRW[ADBloscShuffle], PvSuffix.rbv("BloscShuffle")]
+    blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]
+    blosc_level: A[SignalRW[int], PvSuffix.rbv("BloscLevel")]
+    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality")]
+
+

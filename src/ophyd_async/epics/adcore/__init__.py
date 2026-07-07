@@ -17,7 +17,7 @@ from ._io import (
     ADBaseColorMode,
     ADBaseDataType,
     ADBaseIO,
-    ADCompression,
+    NDFileHDF5Compression,
     ADFileWriteMode,
     ADImageMode,
     ADState,
@@ -31,6 +31,13 @@ from ._io import (
     NDROIStatIO,
     NDROIStatNIO,
     NDStatsIO,
+    NDCodecIO,
+    NDProcessIO,
+    NDProcessFilterType,
+    NDProcessFilterCallbacks,
+    ADCompressor,
+    ADBloscCompressor,
+    ADBloscShuffle,
 )
 from ._ndattribute import (
     NDAttributeDataType,
@@ -43,6 +50,7 @@ from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
     prepare_exposures,
+    prepare_exposures_per_collection,
     trigger_info_from_num_images,
 )
 
@@ -64,10 +72,18 @@ __all__ = [
     "ADFileWriteMode",
     "NDFileIO",
     "NDPluginFileIO",
-    "ADCompression",
+    "NDFileHDF5Compression",
     "NDFileHDF5IO",
+    "NDCodecIO",
+    "NDProcessIO",
+    "NDProcessFilterType",
+    "NDProcessFilterCallbacks",
+    "ADCompressor",
+    "ADBloscCompressor",
+    "ADBloscShuffle",
     # TriggerLogic
     "prepare_exposures",
+    "prepare_exposures_per_collection",
     "ADContAcqTriggerLogic",
     "trigger_info_from_num_images",
     # AcquireLogic

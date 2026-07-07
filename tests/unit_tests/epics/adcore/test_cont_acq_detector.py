@@ -76,6 +76,24 @@ async def test_cont_acq_controller_invalid_exposure_time(
         await cont_acq_detector.prepare(TriggerInfo(livetime=1.0))
 
 
+@pytest.fixture
+async def cont_acq_detector_with_proc() -> adcore.AreaDetector[adcore.ADBaseIO]:
+    async with init_devices(mock=True):
+        det = adcore.ContAcqDetector(
+            prefix="PREFIX:",
+            plugins={"proc": adcore.NDProcessIO("PREFIX:PROC:")},
+        )
+
+    set_mock_value(
+        det.driver.image_mode,
+        adcore.ADImageMode.CONTINUOUS,
+    )
+    set_mock_value(det.driver.acquire_time, 0.8)
+    set_mock_value(det.driver.acquire_period, 1.0)
+    set_mock_value(det.driver.acquire, True)
+    return det
+
+
 async def test_cont_acq_controller_success(
     cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
@@ -89,7 +107,44 @@ async def test_cont_acq_controller_success(
             call.cb.pre_count.put(0),
             call.cb.post_count.put(1),
             call.cb.preset_trigger_count.put(1),
-            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+            call.cb.flush_on_soft_trg.put(
+                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
+            ),
             call.cb.capture.put(True),
         ],
     )
+
+
+@pytest.mark.parametrize("exposures_per_collection", [1, 5])
+async def test_cont_acq_controller_success_with_process_plugin(
+    cont_acq_detector_with_proc: adcore.AreaDetector[adcore.ADBaseIO],
+    exposures_per_collection,
+):
+    await cont_acq_detector_with_proc.stage()
+    await cont_acq_detector_with_proc.prepare(
+        TriggerInfo(exposures_per_collection=exposures_per_collection)
+    )
+    await cont_acq_detector_with_proc.trigger()
+    assert_has_calls(
+        cont_acq_detector_with_proc,
+        [
+            call.cb.capture.put(False),
+            call.proc.num_filter.put(exposures_per_collection),
+            call.proc.enable_filter.put(True),
+            call.proc.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
+            call.proc.auto_reset_filter.put(True),
+            call.proc.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
+            call.proc.filter_callbacks.put(
+                adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
+            ),
+            call.cb.enable_callbacks.put(EnableDisable.ENABLE),
+            call.cb.pre_count.put(0),
+            call.cb.post_count.put(exposures_per_collection),
+            call.cb.preset_trigger_count.put(1),
+            call.cb.flush_on_soft_trg.put(
+                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
+            ),
+            call.cb.capture.put(True),
+        ],
+    )
+

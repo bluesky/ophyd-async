@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from typing import Generic
 
 from ophyd_async.core import (
@@ -10,7 +10,7 @@ from ophyd_async.core import (
 
 from ._acquire_logic import ADContAcqAcquireLogic
 from ._data_logic import ADWriterFactory
-from ._io import ADBaseIO, ADBaseIOT, NDCircularBuffIO, NDPluginBaseIO, NDPluginBaseIOT
+from ._io import ADBaseIO, ADBaseIOT, NDCircularBuffIO, NDPluginBaseIO, NDPluginBaseIOT, NDProcessIO
 from ._trigger_logic import ADContAcqTriggerLogic
 
 
@@ -31,6 +31,11 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
         if trigger_logic:
+            # If the trigger logic has a process_plugin attribute, automatically 
+            # set it to the first NDProcessIO plugin found in the plugins dictionary (if any).
+            # This allows the trigger logic to use the process plugin for preparing exposures per collection.
+            if hasattr(trigger_logic, "process_plugin"):
+                setattr(trigger_logic, "process_plugin", next(self.get_plugins_by_type(NDProcessIO), None))
             self.add_detector_logics(trigger_logic)
         if acquire_logic:
             self.add_detector_logics(acquire_logic)
@@ -53,9 +58,19 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         )
         super().__init__(name=name)
 
-    def get_plugin(
+
+    def get_plugin_by_name(
         self, name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
     ) -> NDPluginBaseIOT:
+        """Get a plugin by name and type.
+        
+        :param name: Name of the plugin attribute
+        :param plugin_type: Expected type of the plugin
+        :return: The plugin instance
+        :raises AttributeError: If the plugin does not exist
+        :raises TypeError: If the plugin is not of the expected type
+        """
+
         plugin = getattr(self, name, None)
         if plugin is None:
             raise AttributeError(f"{self.name} has no plugin named '{name}'")
@@ -65,6 +80,40 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 f"got {type(plugin).__name__}"
             )
         return plugin
+
+
+    async def get_plugin_by_port_name(
+        self, port_name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
+    ) -> NDPluginBaseIOT:
+        """Get a plugin by its NDArray port name and type.
+
+        :param port_name: The NDArray port name to search for
+        :param plugin_type: Expected type of the plugin
+        :return: The plugin instance
+        :raises ValueError: If no plugin with the specified port name is found
+        """
+
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if isinstance(attr, plugin_type):
+                if await attr.port_name.get_value() == port_name:
+                    return attr
+        raise ValueError(f"No plugin found with port name '{port_name}'")
+
+
+    def get_plugins_by_type(
+        self, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
+    ) -> Iterator[NDPluginBaseIOT]:
+        """Yield all plugins of a specific type.
+
+        :param plugin_type: Expected type of the plugins
+        :return: Iterator of plugin instances
+        """
+
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if isinstance(attr, plugin_type):
+                yield attr
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):

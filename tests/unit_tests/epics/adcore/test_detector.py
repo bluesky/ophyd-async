@@ -52,25 +52,25 @@ def test_area_detector_rejects_duplicate_writer_names(
 # ---------------------------------------------------------------------------
 
 
-def test_get_plugin_missing_raises_attribute_error():
+def test_get_plugin_by_name_missing_raises_attribute_error():
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     det = adcore.AreaDetector(driver=driver, name="det")
     with pytest.raises(AttributeError, match="^det has no plugin named 'hdf'$"):
-        det.get_plugin("hdf")
+        det.get_plugin_by_name("hdf")
 
 
-def test_get_plugin_wrong_type_raises_type_error():
+def test_get_plugin_by_name_wrong_type_raises_type_error():
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     plugins = {"stats": adcore.NDStatsIO("PREFIX:STAT:")}
     det = adcore.AreaDetector(driver=driver, plugins=plugins, name="det")
 
-    assert isinstance(det.get_plugin("stats", adcore.NDStatsIO), adcore.NDStatsIO)
+    assert isinstance(det.get_plugin_by_name("stats", adcore.NDStatsIO), adcore.NDStatsIO)
 
     with pytest.raises(
         TypeError,
         match=r"^Expected det\.stats to be a NDPluginFileIO, got NDStatsIO$",
     ):
-        det.get_plugin("stats", adcore.NDPluginFileIO)
+        det.get_plugin_by_name("stats", adcore.NDPluginFileIO)
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ async def test_get_ndarray_resource_info_undefined_datatype(
             name="det",
         )
     set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UNDEFINED)
-    set_mock_value(det.get_plugin("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
+    set_mock_value(det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
     with pytest.raises(
         ValueError,
         match=r"^mock\+ca://PREFIX:DRV:DataType_RBV is blank, this is not supported$",
@@ -108,7 +108,7 @@ async def test_get_ndarray_resource_info_unsupported_color_mode(
             name="det",
         )
     set_mock_value(det.driver.color_mode, adcore.ADBaseColorMode.BAYER)
-    set_mock_value(det.get_plugin("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
+    set_mock_value(det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
     with pytest.raises(
         RuntimeError,
         match=r"^Unsupported ColorMode Bayer! Only Mono and RGB1 are supported\.$",

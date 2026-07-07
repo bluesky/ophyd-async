@@ -14,6 +14,7 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
 )
+from ophyd_async.epics.adcore._io import NDProcessIO
 
 from .adcore import (
     ADAcquireLogic,
@@ -22,6 +23,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    prepare_exposures_per_collection,
     trigger_info_from_num_images,
 )
 from .core import PvSuffix
@@ -64,6 +66,7 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
     driver: KinetixDriverIO
+    process_plugin: NDProcessIO | None = None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001
@@ -80,8 +83,12 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(KinetixTriggerMode.GATE)
         await prepare_exposures(self.driver, num)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        if self.process_plugin is not None:
+            await prepare_exposures_per_collection(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_num_images(self.driver, process_plugin = self.process_plugin)
 
 
 class KinetixDetector(AreaDetector[KinetixDriverIO]):
@@ -99,7 +106,7 @@ class KinetixDetector(AreaDetector[KinetixDriverIO]):
         self,
         prefix: str,
         *writer_factories: ADWriterFactory,
-        driver_suffix="cam1:",
+        driver_suffix: str = "cam1:",
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
