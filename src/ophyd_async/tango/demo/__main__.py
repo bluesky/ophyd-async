@@ -21,13 +21,13 @@ RE.subscribe(bec)
 
 # Start demo device servers in subprocess
 prefix = testing.generate_random_trl_prefix()
-servers = testing.start_tango_device_servers(testing.tango_device_servers_args(prefix))
+servers = testing.start_tango_device_servers(demo.tango_device_servers_args(prefix))
 atexit.register(servers.stop)
 
 
 def trl(device_name: str) -> str:
     """Predict the TRL of `device_name`, served by `servers` under `prefix`."""
-    return testing.predict_trl(prefix, device_name)
+    return demo.predict_trl(prefix, device_name)
 
 
 # All Devices created within this block will be

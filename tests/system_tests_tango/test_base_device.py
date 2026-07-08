@@ -26,6 +26,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoMotor,
@@ -33,11 +34,6 @@ from ophyd_async.tango.demo import (
     DemoPointDetectorChannel,
     DemoStage,
     EnergyMode,
-)
-from ophyd_async.tango.testing import (
-    predict_trl,
-    start_tango_device_servers,
-    tango_device_servers_args,
 )
 from ophyd_async.testing import assert_reading
 
@@ -207,19 +203,26 @@ async def test_with_bluesky(tango_test_device):
 @pytest.mark.asyncio
 @pytest.mark.timeout(60.0)
 async def test_tango_device_servers_launcher():
-    """Smoke test `ophyd_async.tango.testing._tango_device_servers` as a
-    standalone launcher, independent of the shared conftest.py subprocess -
-    proves it's self-sufficient (predictable TRL, no readback needed, clean
-    startup/shutdown) exactly as a user running it directly would rely on."""
-    from ophyd_async.tango.testing import generate_random_trl_prefix
-
-    prefix = generate_random_trl_prefix()
-    process = start_tango_device_servers(tango_device_servers_args(prefix))
+    """Smoke test `ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
+    `_tango_device_servers` as standalone launchers, independent of the shared
+    conftest.py subprocesses - proves each is self-sufficient (predictable TRL,
+    no readback needed, clean startup/shutdown) exactly as a user running one
+    directly would rely on."""
+    prefix = testing.generate_random_trl_prefix()
+    testing_process = testing.start_tango_device_servers(
+        testing.tango_device_servers_args(prefix)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.tango_device_servers_args(prefix)
+    )
     try:
-        proxy = await AsyncDeviceProxy(predict_trl(prefix, "basic"))
-        assert await proxy.read_attribute("readback")
+        basic_proxy = await AsyncDeviceProxy(testing.predict_trl(prefix, "basic"))
+        assert await basic_proxy.read_attribute("readback")
+        motor_proxy = await AsyncDeviceProxy(demo.predict_trl(prefix, "motor-x"))
+        assert await motor_proxy.read_attribute("readback")
     finally:
-        process.stop()
+        demo_process.stop()
+        testing_process.stop()
 
 
 # --------------------------------------------------------------------

@@ -10,14 +10,9 @@ import pytest
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
+from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import DevStateEnum
-from ophyd_async.tango.testing import (
-    ExampleStrEnum,
-    generate_random_trl_prefix,
-    predict_trl,
-    start_tango_device_servers,
-    tango_device_servers_args,
-)
+from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     float_array_value,
     int_array_value,
@@ -33,27 +28,35 @@ def reset_tango_asyncio():
 
 @pytest.fixture(scope="session")
 def tango_prefix():
-    """Start the one fixed catalog of Tango test/demo device servers this repo
-    ships (see `ophyd_async.tango.testing._tango_device_servers`), shared by every
-    test in this directory - there's only one topology now, so there's no reason
-    for individual test modules to each start their own subprocess."""
-    prefix = generate_random_trl_prefix()
-    process = start_tango_device_servers(tango_device_servers_args(prefix))
+    """Start both fixed catalogs of Tango test/demo device servers this repo
+    ships (`ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
+    `_tango_device_servers`), shared by every test in this directory - there's
+    only one topology now, so there's no reason for individual test modules to
+    each start their own subprocesses."""
+    prefix = testing.generate_random_trl_prefix()
+    testing_process = testing.start_tango_device_servers(
+        testing.tango_device_servers_args(prefix)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.tango_device_servers_args(prefix)
+    )
     yield prefix
-    process.stop()
-    print(process.output)
+    demo_process.stop()
+    testing_process.stop()
+    print(testing_process.output)
+    print(demo_process.output)
 
 
 @pytest.fixture(scope="session")
 def tango_test_device(tango_prefix) -> str:
     """TRL of the `TestDevice` server: signal-transport/edge-case coverage."""
-    return predict_trl(tango_prefix, "basic")
+    return testing.predict_trl(tango_prefix, "basic")
 
 
 @pytest.fixture(scope="session")
 def everything_device_trl(tango_prefix) -> str:
     """TRL of the `OneOfEverythingTangoDevice` server: datatype coverage."""
-    return predict_trl(tango_prefix, "everything")
+    return testing.predict_trl(tango_prefix, "everything")
 
 
 @pytest.fixture(scope="session")
@@ -62,7 +65,7 @@ def sim_test_context_trls(tango_prefix) -> dict[str, str]:
     `ophyd_async.tango.demo`, already cross-wired to each other by the
     subprocess itself."""
     return {
-        name: predict_trl(tango_prefix, name)
+        name: demo.predict_trl(tango_prefix, name)
         for name in (
             "motor-x",
             "motor-y",
