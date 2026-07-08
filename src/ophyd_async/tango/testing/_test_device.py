@@ -1,11 +1,11 @@
 from typing import Annotated as A
+from typing import Any
 
 import numpy as np
 
 from ophyd_async.core import (
     Array1D,
     Command,
-    SignalR,
     SignalRW,
     StandardReadable,
     TriggerableCommand,
@@ -31,11 +31,22 @@ class TangoTestDevice(TangoDevice, StandardReadable):
     `OneOfEverythingTangoDevice` serves (that full matrix is
     `OneOfEverythingTangoDevice` itself plus the fully-dynamic `TangoDevice(trl)`
     procedural flavour) — enough to demonstrate: scalar RW (`a_str`, `a_bool`), a
-    `StrictEnum` field (`strenum`), a read-only `DevState`-backed enum (`my_state`),
+    `StrictEnum` field (`strenum`), a `DevState`-backed enum (`my_state`),
     a numeric scalar with change-detect polling params (`float64`), a spectrum/array
-    field (`int32_spectrum`), a bare `np.ndarray` image field (`float64_image`), a
-    zero-arg `TriggerableCommand` (`void_cmd`), and a typed `Command[P, T]` with
-    mismatched in/out types (`float_to_bool_cmd`).
+    field (`int32_spectrum`), an image field (`float64_image`), a zero-arg
+    `TriggerableCommand` (`void_cmd`), and a typed `Command[P, T]` with mismatched
+    in/out types (`float_to_bool_cmd`).
+
+    `int32_spectrum` is typed `np.int_` (platform-native width, not `np.int32`) to
+    match what `get_python_type` (`ophyd_async.tango.core`) actually reports for
+    Tango SPECTRUM attributes - it maps every signed integer Tango type to plain
+    `int` regardless of width (unlike its own command return-type mapping, which
+    is width-specific), so a width-specific annotation here would fail the
+    connector's datatype check even though nothing is wrong. `np.int_`/`np.float64`
+    are used rather than bare `int`/`float` only because `Array1D`/`np.dtype` need
+    an `np.generic` subclass, not because the precision matters -
+    `np.dtype(np.int_) == np.dtype(int)` and `np.dtype(np.float64) == np.dtype(float)`
+    are both `True`.
 
     `TangoPolling` is given on every field even though `OneOfEverythingTangoDevice`
     itself pushes Tango change events for all its attributes, because
@@ -48,10 +59,10 @@ class TangoTestDevice(TangoDevice, StandardReadable):
     a_str: A[SignalRW[str], TangoPolling(0.1)]
     a_bool: A[SignalRW[bool], TangoPolling(0.1)]
     strenum: A[SignalRW[ExampleStrEnum], TangoPolling(0.1)]
-    my_state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
+    my_state: A[SignalRW[DevStateEnum], TangoPolling(0.1)]
     float64: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
-    int32_spectrum: A[SignalRW[Array1D[np.int32]], TangoPolling(0.1)]
-    float64_image: A[SignalRW[np.ndarray], TangoPolling(0.1)]
+    int32_spectrum: A[SignalRW[Array1D[np.int_]], TangoPolling(0.1)]
+    float64_image: A[SignalRW[np.ndarray[Any, np.dtype[np.float64]]], TangoPolling(0.1)]
     void_cmd: TriggerableCommand
     float_to_bool_cmd: Command[[float], bool]
 

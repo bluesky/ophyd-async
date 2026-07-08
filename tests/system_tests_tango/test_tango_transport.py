@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 from collections.abc import Sequence
 from typing import Any
 
@@ -13,7 +12,6 @@ from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
 )
-from test_base_device import TestDevice
 from test_tango_signals import make_backend
 
 from ophyd_async.core import (
@@ -36,22 +34,15 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
-from ophyd_async.tango.testing import TangoSubprocessDeviceServer
+
+# tango_test_device fixture comes from conftest.py, shared with every other
+# test module in this directory.
 
 
 # --------------------------------------------------------------------
 async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
     proxy = await DeviceProxy(trl)
     setattr(proxy, pv, put_value)
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def tango_test_device():
-    with TangoSubprocessDeviceServer(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
-    ) as context:
-        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
@@ -319,10 +310,9 @@ async def test_get_tango_trl(
     tango_test_device, attr_name, proxy_needed, expected_type, should_raise
 ):
     trl = get_full_attr_trl(tango_test_device, attr_name)
-    assert re.match(
-        r"tango://[a-zA-Z0-9\.-_:]*/test/device/1/" + attr_name + r"#dbase=no", trl
-    )
-    # tango_test_device is of form tango://127.0.0.1:<port>/test/device/1#dbase=no
+    device_trl, _, dbase_suffix = tango_test_device.partition("#")
+    assert trl == f"{device_trl}/{attr_name}#{dbase_suffix}"
+    # tango_test_device is of form tango://127.0.0.1:<port>/<prefix>/basic#dbase=no
     proxy = await DeviceProxy(tango_test_device) if proxy_needed else None
     if should_raise:
         with pytest.raises(RuntimeError):

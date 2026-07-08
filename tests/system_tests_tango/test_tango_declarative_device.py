@@ -9,13 +9,7 @@ import numpy as np
 import pytest
 
 from ophyd_async.tango.core import TangoDevice
-from ophyd_async.tango.testing import (
-    TangoSubprocessDeviceServer,
-    TangoTestDevice,
-)
-from ophyd_async.tango.testing._tango import (  # noqa: PLC2701
-    OneOfEverythingTangoDevice,
-)
+from ophyd_async.tango.testing import TangoTestDevice
 
 # Field names declared on TangoTestDevice that also exist on the fully-dynamic
 # TangoDevice(trl) procedural flavour, for value-parity comparison.
@@ -32,12 +26,8 @@ DECLARATIVE_SIGNAL_FIELDS = [
 ARRAY_FIELDS = {"int32_spectrum", "float64_image"}
 
 
-@pytest.fixture(scope="module")
-def everything_device_trl():
-    with TangoSubprocessDeviceServer(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/3"}]}]
-    ) as context:
-        yield context.trls["test/device/3"]
+# everything_device_trl fixture comes from conftest.py, shared with every other
+# test module in this directory.
 
 
 @pytest.mark.asyncio

@@ -1,3 +1,8 @@
+# SubprocessSpec/start_subprocess re-exported here (not used directly by this
+# module) so ophyd_async.epics.demo doesn't reach into core ophyd_async.testing
+# directly - see import-linter's layering contract.
+from ophyd_async.testing import SubprocessSpec, start_subprocess
+
 from ._devices import (
     CA_PVA_RECORDS,
     PVA_RECORDS,
@@ -31,6 +36,8 @@ __all__ = [
     "EpicsTestPviNestedDevice",
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",
+    "SubprocessSpec",
     "TestingIOC",
     "generate_random_pv_prefix",
+    "start_subprocess",
 ]

@@ -277,6 +277,14 @@ source_modules = [
     "ophyd_async.epics.*",
     "ophyd_async.tango.*",
 ]
+ignore_imports = [
+    # <transport>.testing's own __init__ re-exporting SubprocessSpec/start_subprocess
+    # (epics.testing) and <transport>.testing._tango_device_servers needing
+    # SubprocessSpec (tango.testing) - both need the shared subprocess-management
+    # helpers in ophyd_async.testing, which is otherwise off-limits at runtime.
+    "ophyd_async.*.testing -> ophyd_async.testing",
+    "ophyd_async.*.testing.* -> ophyd_async.testing",
+]
 
 [[tool.importlinter.contracts]]
 name = "ophyd_async.core private modules are not to be used outside ophyd_async.core"

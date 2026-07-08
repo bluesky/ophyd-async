@@ -1,5 +1,7 @@
 """Used for tutorial `Implementing Devices`."""
 
+import atexit
+
 # Import bluesky and ophyd
 import bluesky.plan_stubs as bps  # noqa: F401
 import bluesky.plans as bp  # noqa: F401
@@ -19,7 +21,8 @@ RE.subscribe(bec)
 
 # Start IOC with demo pvs in subprocess
 prefix = testing.generate_random_pv_prefix()
-ioc = demo.start_ioc_subprocess(prefix, num_channels=3)
+ioc = testing.start_subprocess(demo.ioc_subprocess_spec(prefix, num_channels=3))
+atexit.register(ioc.stop)
 
 # All Devices created within this block will be
 # connected and named at the end of the with block

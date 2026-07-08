@@ -11,7 +11,13 @@ from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
 from ophyd_async.tango.core import DevStateEnum
-from ophyd_async.tango.testing import ExampleStrEnum
+from ophyd_async.tango.testing import (
+    ExampleStrEnum,
+    generate_random_trl_prefix,
+    predict_trl,
+    start_subprocess,
+    tango_device_servers_spec,
+)
 from ophyd_async.testing import (
     float_array_value,
     int_array_value,
@@ -23,6 +29,49 @@ T = TypeVar("T")
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
+
+
+@pytest.fixture(scope="session")
+def tango_prefix():
+    """Start the one fixed catalog of Tango test/demo device servers this repo
+    ships (see `ophyd_async.tango.testing._tango_device_servers`), shared by every
+    test in this directory - there's only one topology now, so there's no reason
+    for individual test modules to each start their own subprocess."""
+    prefix = generate_random_trl_prefix()
+    process = start_subprocess(tango_device_servers_spec(prefix))
+    yield prefix
+    process.stop()
+    print(process.output)
+
+
+@pytest.fixture(scope="session")
+def tango_test_device(tango_prefix) -> str:
+    """TRL of the `TestDevice` server: signal-transport/edge-case coverage."""
+    return predict_trl(tango_prefix, "basic")
+
+
+@pytest.fixture(scope="session")
+def everything_device_trl(tango_prefix) -> str:
+    """TRL of the `OneOfEverythingTangoDevice` server: datatype coverage."""
+    return predict_trl(tango_prefix, "everything")
+
+
+@pytest.fixture(scope="session")
+def sim_test_context_trls(tango_prefix) -> dict[str, str]:
+    """TRLs of the demo motor/channel/detector servers backing
+    `ophyd_async.tango.demo`, already cross-wired to each other by the
+    subprocess itself."""
+    return {
+        name: predict_trl(tango_prefix, name)
+        for name in (
+            "motor-x",
+            "motor-y",
+            "channel-1",
+            "channel-2",
+            "channel-3",
+            "detector",
+        )
+    }
 
 
 def pytest_collection_modifyitems(config, items):

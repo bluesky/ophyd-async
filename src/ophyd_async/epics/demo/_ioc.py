@@ -1,13 +1,14 @@
-import atexit
 from pathlib import Path
 
-from ophyd_async.epics.testing import TestingIOC
+from ophyd_async.epics.testing import SubprocessSpec, TestingIOC
 
 HERE = Path(__file__).absolute().parent
 
 
-def start_ioc_subprocess(prefix: str, num_channels: int) -> TestingIOC:
-    """Start an IOC subprocess for sample stage and sensor.
+def ioc_subprocess_spec(prefix: str, num_channels: int) -> SubprocessSpec:
+    """Build the subprocess spec for an IOC serving a sample stage and sensor.
+
+    Doesn't start anything - pass the result to `ophyd_async.testing.start_subprocess`.
 
     :param prefix: The prefix for the IOC PVs.
     :param num_channels: The number of point detector channels to create.
@@ -26,7 +27,4 @@ def start_ioc_subprocess(prefix: str, num_channels: int) -> TestingIOC:
             X=f"{prefix}STAGE:X:",
             Y=f"{prefix}STAGE:Y:",
         )
-    # Start IOC and register it to be stopped at exit
-    ioc.start()
-    atexit.register(ioc.stop)
-    return ioc
+    return ioc.spec()
