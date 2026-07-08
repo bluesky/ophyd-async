@@ -21,7 +21,7 @@ RE.subscribe(bec)
 
 # Start IOC with demo pvs in subprocess
 prefix = testing.generate_random_pv_prefix()
-ioc = testing.start_ioc(demo.demo_ioc_args(prefix, num_channels=3))
+ioc = testing.start_ioc(demo.demo_ioc_database(prefix, num_channels=3))
 atexit.register(ioc.stop)
 
 # All Devices created within this block will be

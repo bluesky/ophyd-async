@@ -36,7 +36,7 @@ def start_ioc(
     """Start an EPICS IOC subprocess hosting `databases`.
 
     :param databases: One or more `.db` files to load, each under its own
-        macro prefix - e.g. built by `ophyd_async.epics.demo.demo_ioc_args`.
+        macro prefix - e.g. built by `ophyd_async.epics.demo.demo_ioc_database`.
         PV names are never reported back: they're fixed by the `.db` file(s)
         loaded, predictable directly from whatever macro prefix you choose,
         exactly as they would be if you ran `softIoc -d some.db -m "PREFIX:"`

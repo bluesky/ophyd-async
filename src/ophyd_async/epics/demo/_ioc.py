@@ -5,7 +5,7 @@ from ophyd_async.epics.testing import Database
 HERE = Path(__file__).absolute().parent
 
 
-def demo_ioc_args(prefix: str, num_channels: int) -> list[Database]:
+def demo_ioc_database(prefix: str, num_channels: int) -> list[Database]:
     """Build the `Database`s for an IOC serving a sample stage and sensor.
 
     Doesn't start anything - pass the result to
