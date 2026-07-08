@@ -17,8 +17,8 @@ from ._pvi_nested_devices import (
 )
 from ._utils import (
     DEFAULT_SOFTIOC_ARGS,
-    TestingIOC,
     generate_random_pv_prefix,
+    ioc_args,
     start_ioc,
 )
 
@@ -37,7 +37,7 @@ __all__ = [
     "EpicsTestPviNestedDevice",
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",
-    "TestingIOC",
     "generate_random_pv_prefix",
+    "ioc_args",
     "start_ioc",
 ]

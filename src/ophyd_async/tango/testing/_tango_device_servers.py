@@ -101,39 +101,39 @@ def predict_trl(prefix: str, device_name: str) -> str:
     return f"tango://127.0.0.1:{port}/{prefix}/{device_name}#dbase=no"
 
 
-def tango_device_servers_args(
-    prefix: str, python_args: Sequence[str] = DEFAULT_PYTHON_ARGS
-) -> list[str]:
-    """Build the argv for the fixed set of Tango device servers.
+def tango_device_servers_args(prefix: str) -> list[str]:
+    """Build the `-m ... <prefix>` argv for the fixed set of Tango device servers.
 
     Serves the repo's whole test/demo catalog under `prefix`.
 
-    Doesn't start anything - pass the result to `start_tango_device_servers`.
-    There's no per-call configuration: every device this ends up serving has a
-    name fixed by `predict_trl`.
+    Doesn't start anything - pass the result to `start_tango_device_servers`
+    (which is where you can override which interpreter actually hosts the
+    servers). There's no per-call configuration: every device this ends up
+    serving has a name fixed by `predict_trl`.
 
     :param prefix: The domain/family prefix every served device's name is
         built from, e.g. via `generate_random_trl_prefix()`.
+    """
+    return ["-m", "ophyd_async.tango.testing._tango_device_servers", prefix]
+
+
+def start_tango_device_servers(
+    subprocess_args: Sequence[str],
+    python_args: Sequence[str] = DEFAULT_PYTHON_ARGS,
+) -> ManagedSubprocess:
+    """Start a Tango device servers subprocess.
+
+    :param subprocess_args: The `-m ... <prefix>` argv, built by
+        `tango_device_servers_args`.
     :param python_args: Argv prefix used to host the device servers, defaulting
         to the current interpreter. Override to run against a separate
         PyTango-only venv's interpreter instead.
-    """
-    return [
-        *python_args,
-        "-m",
-        "ophyd_async.tango.testing._tango_device_servers",
-        prefix,
-    ]
-
-
-def start_tango_device_servers(subprocess_args: Sequence[str]) -> ManagedSubprocess:
-    """Start a Tango device servers subprocess, built by `tango_device_servers_args`.
 
     Pins the readiness marker/stop command every catalog this module serves
     uses, so callers only ever need to supply argv.
     """
     return start_subprocess(
-        subprocess_args,
+        [*python_args, *subprocess_args],
         _READY_MARKER,
         # MultiDeviceTestContext's own startup timeout below is 30s; give the
         # outer readiness wait some headroom above that rather than racing it.

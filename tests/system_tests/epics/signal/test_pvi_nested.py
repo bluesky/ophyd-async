@@ -9,10 +9,8 @@ from ophyd_async.epics.testing import (
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
     generate_random_pv_prefix,
+    ioc_args,
     start_ioc,
-)
-from ophyd_async.epics.testing import (
-    TestingIOC as _TestingIOC,
 )
 
 TIMEOUT = 30.0 if os.name == "nt" else 3.0
@@ -21,9 +19,7 @@ TIMEOUT = 30.0 if os.name == "nt" else 3.0
 @pytest.fixture(scope="module")
 def nested_ioc_and_prefix():
     prefix = generate_random_pv_prefix()
-    ioc = _TestingIOC()
-    ioc.add_database(PVI_NESTED_RECORDS, device=prefix)
-    process = start_ioc(ioc.args())
+    process = start_ioc(ioc_args([(PVI_NESTED_RECORDS, {"device": prefix})]))
     yield process, prefix
     process.stop()
     print(process.output)
