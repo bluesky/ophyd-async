@@ -17,14 +17,15 @@ from ._pvi_nested_devices import (
 )
 from ._utils import (
     DEFAULT_SOFTIOC_ARGS,
+    Database,
     generate_random_pv_prefix,
-    ioc_args,
     start_ioc,
 )
 
 __all__ = [
     "CA_PVA_RECORDS",
     "DEFAULT_SOFTIOC_ARGS",
+    "Database",
     "PVA_RECORDS",
     "PVI_NESTED_RECORDS",
     "EpicsTestCaDevice",
@@ -38,6 +39,5 @@ __all__ = [
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",
     "generate_random_pv_prefix",
-    "ioc_args",
     "start_ioc",
 ]

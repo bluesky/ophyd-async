@@ -2,6 +2,7 @@ import random
 import string
 import sys
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 from ophyd_async.testing import ManagedSubprocess, start_subprocess
@@ -20,41 +21,32 @@ def generate_random_pv_prefix() -> str:
     return "".join(random.choice(string.ascii_lowercase) for _ in range(12)) + ":"
 
 
+@dataclass
+class Database:
+    """One `.db` file to load into a test IOC, under its own macro prefix."""
+
+    path: Path | str
+    macros: dict[str, str]
+
+
 def start_ioc(
-    subprocess_args: Sequence[str],
+    databases: Sequence[Database],
     softioc_args: Sequence[str] = DEFAULT_SOFTIOC_ARGS,
 ) -> ManagedSubprocess:
-    """Start an EPICS IOC subprocess.
+    """Start an EPICS IOC subprocess hosting `databases`.
 
-    :param subprocess_args: The `-m macro -d db` argv, e.g. built by `ioc_args`/
-        `ophyd_async.epics.demo.demo_ioc_args`.
+    :param databases: One or more `.db` files to load, each under its own
+        macro prefix - e.g. built by `ophyd_async.epics.demo.demo_ioc_args`.
+        PV names are never reported back: they're fixed by the `.db` file(s)
+        loaded, predictable directly from whatever macro prefix you choose,
+        exactly as they would be if you ran `softIoc -d some.db -m "PREFIX:"`
+        yourself.
     :param softioc_args: Argv prefix used to host the IOC, defaulting to the
         bundled `epicscorelibs.ioc`. Override to run against a real EPICS
         installation's `softIoc` binary instead, e.g. `["softIoc"]`.
-
-    Pins the readiness marker/stop command every such shell uses, so callers
-    only ever need to supply the database/macro args.
     """
-    return start_subprocess(
-        [*softioc_args, *subprocess_args], _READY_MARKER, stop_input=_STOP_INPUT
-    )
-
-
-def ioc_args(databases: Sequence[tuple[Path | str, dict[str, str]]]) -> list[str]:
-    """Build the `-m macro -d db` argv for one or more `.db` files.
-
-    Hosts them under caller-chosen macro prefixes.
-
-    Doesn't start anything - pass the result to `start_ioc` (which is where you
-    can override which executable actually hosts the IOC). PV names are never
-    reported back: they're fixed by the `.db` file(s) loaded, predictable
-    directly from whatever macro prefix you pass in `databases`, exactly as they
-    would be if you ran `softIoc -d some.db -m "PREFIX:"` yourself.
-
-    :param databases: `(db_path, macros)` pairs - one per `.db` file to load.
-    """
-    args: list[str] = []
-    for db, macros in databases:
-        macro_str = ",".join(f"{k}={v}" for k, v in macros.items())
-        args += ["-m", macro_str, "-d", str(db)]
-    return args
+    args = list(softioc_args)
+    for db in databases:
+        macro_str = ",".join(f"{k}={v}" for k, v in db.macros.items())
+        args += ["-m", macro_str, "-d", str(db.path)]
+    return start_subprocess(args, _READY_MARKER, stop_input=_STOP_INPUT)

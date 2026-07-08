@@ -50,6 +50,7 @@ from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     CA_PVA_RECORDS,
     PVA_RECORDS,
+    Database,
     EpicsTestCaDevice,
     EpicsTestEnum,
     EpicsTestPvaDevice,
@@ -57,7 +58,6 @@ from ophyd_async.epics.testing import (
     EpicsTestSubsetEnum,
     EpicsTestTable,
     generate_random_pv_prefix,
-    ioc_args,
     start_ioc,
 )
 from ophyd_async.plan_stubs import (
@@ -87,17 +87,17 @@ class EpicsTestIocAndDevices:
 
     def __init__(self):
         self.prefix = generate_random_pv_prefix()
-        self.databases: list[tuple[Path, dict[str, str]]] = []
+        self.databases: list[Database] = []
         # Create supporting records and ExampleCaDevice
         ca_prefix = f"{self.prefix}ca:"
-        self.databases.append((CA_PVA_RECORDS, {"device": ca_prefix}))
+        self.databases.append(Database(CA_PVA_RECORDS, {"device": ca_prefix}))
         self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
         self.ca_device_via_pvi = EpicsTestCaDevice(ca_prefix, with_pvi=True)
         # Create supporting records and ExamplePvaDevice, plus a
         # PVI-discovered EpicsTestPviDevice sharing the same prefix
         pva_prefix = f"{self.prefix}pva:"
-        self.databases.append((CA_PVA_RECORDS, {"device": pva_prefix}))
-        self.databases.append((PVA_RECORDS, {"device": pva_prefix}))
+        self.databases.append(Database(CA_PVA_RECORDS, {"device": pva_prefix}))
+        self.databases.append(Database(PVA_RECORDS, {"device": pva_prefix}))
         self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
         self.pva_device_via_pvi = EpicsTestPvaDevice(pva_prefix, with_pvi=True)
         self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
@@ -115,7 +115,7 @@ class EpicsTestIocAndDevices:
 @pytest.fixture(scope="module")
 def ioc_devices():
     ioc_devices = EpicsTestIocAndDevices()
-    process = start_ioc(ioc_args(ioc_devices.databases))
+    process = start_ioc(ioc_devices.databases)
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown
