@@ -19,6 +19,7 @@ from ._utils import (
     DEFAULT_SOFTIOC_ARGS,
     Database,
     generate_random_pv_prefix,
+    ioc_argv,
     start_ioc,
 )
 
@@ -39,5 +40,6 @@ __all__ = [
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",
     "generate_random_pv_prefix",
+    "ioc_argv",
     "start_ioc",
 ]

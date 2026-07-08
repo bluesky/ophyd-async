@@ -34,12 +34,8 @@ def tango_prefix():
     only one topology now, so there's no reason for individual test modules to
     each start their own subprocesses."""
     prefix = testing.generate_random_trl_prefix()
-    testing_process = testing.start_tango_device_servers(
-        testing.tango_device_servers_args(prefix)
-    )
-    demo_process = testing.start_tango_device_servers(
-        demo.tango_device_servers_args(prefix)
-    )
+    testing_process = testing.start_tango_device_servers("testing", prefix)
+    demo_process = testing.start_tango_device_servers("demo", prefix)
     yield prefix
     demo_process.stop()
     testing_process.stop()

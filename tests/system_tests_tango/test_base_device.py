@@ -209,12 +209,8 @@ async def test_tango_device_servers_launcher():
     no readback needed, clean startup/shutdown) exactly as a user running one
     directly would rely on."""
     prefix = testing.generate_random_trl_prefix()
-    testing_process = testing.start_tango_device_servers(
-        testing.tango_device_servers_args(prefix)
-    )
-    demo_process = testing.start_tango_device_servers(
-        demo.tango_device_servers_args(prefix)
-    )
+    testing_process = testing.start_tango_device_servers("testing", prefix)
+    demo_process = testing.start_tango_device_servers("demo", prefix)
     try:
         basic_proxy = await AsyncDeviceProxy(testing.predict_trl(prefix, "basic"))
         assert await basic_proxy.read_attribute("readback")

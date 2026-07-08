@@ -21,7 +21,7 @@ RE.subscribe(bec)
 
 # Start demo device servers in subprocess
 prefix = testing.generate_random_trl_prefix()
-servers = testing.start_tango_device_servers(demo.tango_device_servers_args(prefix))
+servers = testing.start_tango_device_servers("demo", prefix)
 atexit.register(servers.stop)
 
 
