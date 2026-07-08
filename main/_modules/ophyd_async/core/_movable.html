@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._movable &#8212; ophyd-async 0.19.4.dev7+gb39ae739f documentation</title>
+    <title>ophyd_async.core._movable &#8212; ophyd-async 0.19.4.dev8+gf3df2f900 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=4a7be59d"></script>
+    <script src="../../../_static/documentation_options.js?v=f448c183"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev7+gb39ae739f documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev7+gb39ae739f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev8+gf3df2f900 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev8+gf3df2f900 documentation - Home"/>
   
   
 </a></div>
@@ -903,6 +903,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span>
 
@@ -1039,6 +1040,12 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">StopState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;NONE&quot;</span>
+    <span class="n">USER_SUCCESS</span> <span class="o">=</span> <span class="s2">&quot;USER_SUCCESS&quot;</span>
+    <span class="n">USER_FAILURE</span> <span class="o">=</span> <span class="s2">&quot;USER_FAILURE&quot;</span>
+
+
 <div class="viewcode-block" id="StandardMovable">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable">[docs]</a>
 <span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMovableMock</span><span class="p">)</span>
@@ -1053,10 +1060,13 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that provides standard logic for moving.</span>
 
 <span class="sd">    This class must be inherited and have a `movable_logic` @cached_property.</span>
+<span class="sd">    If stop is called while moving, it will raise a RuntimeError.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># Whether set() should complete successfully or not</span>
-    <span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># Whether set() should complete successfully or raise an error due to stop called or</span>
+    <span class="c1"># due to timeout.</span>
+    <span class="n">_stop_state</span><span class="p">:</span> <span class="n">Enum</span> <span class="o">=</span> <span class="n">StopState</span><span class="o">.</span><span class="n">NONE</span>
+    <span class="n">_move_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@cached_property</span>
     <span class="nd">@abstractmethod</span>
@@ -1085,7 +1095,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the given value.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_state</span> <span class="o">=</span> <span class="n">StopState</span><span class="o">.</span><span class="n">NONE</span>
         <span class="n">old_position</span><span class="p">,</span> <span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">get_units_precision</span><span class="p">(),</span>
@@ -1099,25 +1109,38 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">move_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
 
-        <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">move</span><span class="p">(</span>
-                <span class="n">new_position</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">MoveTimeout</span><span class="p">(</span><span class="n">move_timeout</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="p">)</span> <span class="k">as</span> <span class="n">move_status</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
-                <span class="n">done_status</span><span class="o">=</span><span class="n">move_status</span><span class="p">,</span>
-            <span class="p">):</span>
-                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
-                    <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
-                    <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-                    <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">move</span><span class="p">(</span>
+                    <span class="n">new_position</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">MoveTimeout</span><span class="p">(</span><span class="n">move_timeout</span><span class="p">)</span>
                 <span class="p">)</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="p">:</span>
+                <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
+                    <span class="n">done_status</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                        <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
+                        <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
+                        <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                        <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="c1"># Convert cancellation into the appropriate stop result.</span>
+        <span class="c1"># If stop(success=True) was called, complete without raising.</span>
+        <span class="c1"># If stop(success=False) was called, raise a RuntimeError below.</span>
+        <span class="c1"># If not stopped but times out, show the CancelledError from the timeout.</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_state</span> <span class="o">==</span> <span class="n">StopState</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+                <span class="k">raise</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
+        <span class="c1"># Raise error if needed, reset stop state.</span>
+        <span class="n">stop_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_state</span> <span class="o">=</span> <span class="n">StopState</span><span class="o">.</span><span class="n">NONE</span>
+        <span class="k">if</span> <span class="n">stop_state</span> <span class="o">==</span> <span class="n">StopState</span><span class="o">.</span><span class="n">USER_FAILURE</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Device </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> was stopped.&quot;</span><span class="p">)</span></div>
 
 
@@ -1125,8 +1148,10 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Request to stop moving and return immediately.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_state</span> <span class="o">=</span> <span class="n">StopState</span><span class="o">.</span><span class="n">USER_SUCCESS</span> <span class="k">if</span> <span class="n">success</span> <span class="k">else</span> <span class="n">StopState</span><span class="o">.</span><span class="n">USER_FAILURE</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="StandardMovable.set_name">
