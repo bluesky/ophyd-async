@@ -57,7 +57,7 @@ from ophyd_async.epics.testing import (
     EpicsTestSubsetEnum,
     EpicsTestTable,
     generate_random_pv_prefix,
-    start_subprocess,
+    start_ioc,
 )
 from ophyd_async.epics.testing import (
     TestingIOC as _TestingIOC,
@@ -117,7 +117,7 @@ class EpicsTestIocAndDevices:
 @pytest.fixture(scope="module")
 def ioc_devices():
     ioc_devices = EpicsTestIocAndDevices()
-    process = start_subprocess(ioc_devices.ioc.spec())
+    process = start_ioc(ioc_devices.ioc.args())
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown

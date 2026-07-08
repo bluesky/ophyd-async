@@ -15,8 +15,8 @@ from ophyd_async.tango.testing import (
     ExampleStrEnum,
     generate_random_trl_prefix,
     predict_trl,
-    start_subprocess,
-    tango_device_servers_spec,
+    start_tango_device_servers,
+    tango_device_servers_args,
 )
 from ophyd_async.testing import (
     float_array_value,
@@ -38,7 +38,7 @@ def tango_prefix():
     test in this directory - there's only one topology now, so there's no reason
     for individual test modules to each start their own subprocess."""
     prefix = generate_random_trl_prefix()
-    process = start_subprocess(tango_device_servers_spec(prefix))
+    process = start_tango_device_servers(tango_device_servers_args(prefix))
     yield prefix
     process.stop()
     print(process.output)

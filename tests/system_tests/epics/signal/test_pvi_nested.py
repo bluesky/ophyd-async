@@ -9,7 +9,7 @@ from ophyd_async.epics.testing import (
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
     generate_random_pv_prefix,
-    start_subprocess,
+    start_ioc,
 )
 from ophyd_async.epics.testing import (
     TestingIOC as _TestingIOC,
@@ -23,7 +23,7 @@ def nested_ioc_and_prefix():
     prefix = generate_random_pv_prefix()
     ioc = _TestingIOC()
     ioc.add_database(PVI_NESTED_RECORDS, device=prefix)
-    process = start_subprocess(ioc.spec())
+    process = start_ioc(ioc.args())
     yield process, prefix
     process.stop()
     print(process.output)

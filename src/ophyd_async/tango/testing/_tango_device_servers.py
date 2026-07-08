@@ -11,12 +11,12 @@ machinery or real Tango database required:
 
 It prints a readiness marker once serving, then blocks until stdin closes (or EOFs),
 at which point it exits - the same shutdown mechanism
-`ophyd_async.epics.testing.TestingIOC`'s IOC subprocess uses (there, an explicit
+`ophyd_async.epics.testing.start_ioc`'s IOC subprocess uses (there, an explicit
 `exit()` is written to the IOC shell's stdin first; here, nothing needs writing,
 closing stdin is enough).
 
 Used identically by the test suite and the `ophyd_async.tango.demo` tutorial, via
-`tango_device_servers_spec()` + `ophyd_async.testing.start_subprocess` - see
+`tango_device_servers_args()` + `start_tango_device_servers` - see
 `tests/system_tests_tango/conftest.py` and `ophyd_async.tango.demo.__main__`.
 
 Under the hood this spawns a second, grandchild OS process (`--async-devices`, below)
@@ -30,20 +30,25 @@ dynamically-created array attributes reported their dtype to clients, breaking t
 checks unrelated to green mode), and two `MultiDeviceTestContext`s in one process
 (segfaults - apparently genuinely unsupported by the underlying omniORB/cppTango
 bindings, not just a Python-level restriction). None of this is visible from outside
-this module - callers still get one prefix, one predictable set of TRLs, one
-`SubprocessSpec`.
+this module - callers still get one prefix, one predictable set of TRLs, one argv.
 """
 
 import subprocess
 import sys
 import zlib
+from collections.abc import Sequence
 
 import tango
 
-from ophyd_async.testing import SubprocessSpec
+from ophyd_async.testing import ManagedSubprocess, start_subprocess
 
 _READY_MARKER = "TANGO_DEVICE_SERVERS_READY"
 _ASYNC_DEVICES_FLAG = "--async-devices"
+
+#: Default argv prefix used to host the device servers - the current Python
+#: interpreter. Override to run against a separate PyTango-only venv's
+#: interpreter, e.g. `["/path/to/pytango-venv/bin/python"]`.
+DEFAULT_PYTHON_ARGS: Sequence[str] = (sys.executable,)
 
 # Deterministic port range: derived from the prefix so a caller can predict the
 # TRL without anything being read back (see _sync_port_for_prefix/predict_trl).
@@ -84,7 +89,7 @@ def _sync_port_for_prefix(prefix: str) -> int:
 
 
 def predict_trl(prefix: str, device_name: str) -> str:
-    """Predict the TRL `tango_device_servers_spec(prefix)` serves `device_name` at.
+    """Predict the TRL `tango_device_servers_args(prefix)` serves `device_name` at.
 
     `device_name` is one of the module-level constants above (e.g. `EVERYTHING`).
     Works without starting anything - the whole point of a fixed, prefix-derived
@@ -96,23 +101,40 @@ def predict_trl(prefix: str, device_name: str) -> str:
     return f"tango://127.0.0.1:{port}/{prefix}/{device_name}#dbase=no"
 
 
-def tango_device_servers_spec(prefix: str) -> SubprocessSpec:
-    """Build the subprocess spec for the fixed set of Tango device servers.
+def tango_device_servers_args(
+    prefix: str, python_args: Sequence[str] = DEFAULT_PYTHON_ARGS
+) -> list[str]:
+    """Build the argv for the fixed set of Tango device servers.
 
     Serves the repo's whole test/demo catalog under `prefix`.
 
-    Doesn't start anything - pass the result to
-    `ophyd_async.testing.start_subprocess`. There's no per-call configuration:
-    every device this ends up serving has a name fixed by `predict_trl`.
+    Doesn't start anything - pass the result to `start_tango_device_servers`.
+    There's no per-call configuration: every device this ends up serving has a
+    name fixed by `predict_trl`.
+
+    :param prefix: The domain/family prefix every served device's name is
+        built from, e.g. via `generate_random_trl_prefix()`.
+    :param python_args: Argv prefix used to host the device servers, defaulting
+        to the current interpreter. Override to run against a separate
+        PyTango-only venv's interpreter instead.
     """
-    return SubprocessSpec(
-        args=[
-            sys.executable,
-            "-m",
-            "ophyd_async.tango.testing._tango_device_servers",
-            prefix,
-        ],
-        ready_marker=_READY_MARKER,
+    return [
+        *python_args,
+        "-m",
+        "ophyd_async.tango.testing._tango_device_servers",
+        prefix,
+    ]
+
+
+def start_tango_device_servers(subprocess_args: Sequence[str]) -> ManagedSubprocess:
+    """Start a Tango device servers subprocess, built by `tango_device_servers_args`.
+
+    Pins the readiness marker/stop command every catalog this module serves
+    uses, so callers only ever need to supply argv.
+    """
+    return start_subprocess(
+        subprocess_args,
+        _READY_MARKER,
         # MultiDeviceTestContext's own startup timeout below is 30s; give the
         # outer readiness wait some headroom above that rather than racing it.
         startup_timeout=45.0,
@@ -123,7 +145,7 @@ def tango_device_servers_spec(prefix: str) -> SubprocessSpec:
 def _wire_demo_devices(prefix: str) -> None:
     """Connect the demo channel/detector devices to their motors/channels.
 
-    Done here, once, so `tango_device_servers_spec` is genuinely
+    Done here, once, so `tango_device_servers_args` is genuinely
     standalone-runnable with no external orchestration required (unlike the old
     per-caller wiring this replaced).
     """
@@ -172,6 +194,9 @@ def _serve_sync_devices(prefix: str) -> None:
 
     # Start the grandchild before entering our own MultiDeviceTestContext, so its
     # (independent) startup timeout runs concurrently with ours rather than after.
+    # sys.executable here is whatever interpreter is actually running this
+    # process, so a caller's python_args override to tango_device_servers_args
+    # is naturally inherited without needing to thread it through explicitly.
     grandchild = subprocess.Popen(
         [
             sys.executable,

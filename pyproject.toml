@@ -278,11 +278,10 @@ source_modules = [
     "ophyd_async.tango.*",
 ]
 ignore_imports = [
-    # <transport>.testing's own __init__ re-exporting SubprocessSpec/start_subprocess
-    # (epics.testing) and <transport>.testing._tango_device_servers needing
-    # SubprocessSpec (tango.testing) - both need the shared subprocess-management
-    # helpers in ophyd_async.testing, which is otherwise off-limits at runtime.
-    "ophyd_async.*.testing -> ophyd_async.testing",
+    # epics.testing._utils.start_ioc and tango.testing._tango_device_servers.
+    # start_tango_device_servers both wrap the shared ManagedSubprocess/
+    # start_subprocess helpers in ophyd_async.testing, which is otherwise
+    # off-limits at runtime.
     "ophyd_async.*.testing.* -> ophyd_async.testing",
 ]
 

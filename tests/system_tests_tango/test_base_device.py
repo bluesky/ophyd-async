@@ -36,8 +36,8 @@ from ophyd_async.tango.demo import (
 )
 from ophyd_async.tango.testing import (
     predict_trl,
-    start_subprocess,
-    tango_device_servers_spec,
+    start_tango_device_servers,
+    tango_device_servers_args,
 )
 from ophyd_async.testing import assert_reading
 
@@ -214,7 +214,7 @@ async def test_tango_device_servers_launcher():
     from ophyd_async.tango.testing import generate_random_trl_prefix
 
     prefix = generate_random_trl_prefix()
-    process = start_subprocess(tango_device_servers_spec(prefix))
+    process = start_tango_device_servers(tango_device_servers_args(prefix))
     try:
         proxy = await AsyncDeviceProxy(predict_trl(prefix, "basic"))
         assert await proxy.read_attribute("readback")

@@ -1,6 +1,6 @@
 """Demo EPICS Devices for the tutorial."""
 
-from ._ioc import ioc_subprocess_spec
+from ._ioc import demo_ioc_args
 from ._motor import DemoMotor
 from ._point_detector import DemoPointDetector
 from ._point_detector_channel import DemoPointDetectorChannel, EnergyMode
@@ -12,5 +12,5 @@ __all__ = [
     "EnergyMode",
     "DemoPointDetectorChannel",
     "DemoPointDetector",
-    "ioc_subprocess_spec",
+    "demo_ioc_args",
 ]
