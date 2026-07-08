@@ -138,6 +138,18 @@ class PviDeviceConnector(DeviceConnector):
                         "Failed to fill DeviceVector. "
                         f"Expected SignalDetails, got {type(vector_child)}"
                     )
+            elif self.pvi_tree.is_command_vector:
+                # DeviceVector of commands
+                if isinstance(vector_child, str):
+                    backend = self.filler.fill_child_command(
+                        device.name, TriggerableCommand, vector_index
+                    )
+                    backend.write_pv = vector_child
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceVector. "
+                        f"Expected str execute PV, got {type(vector_child)}"
+                    )
             else:
                 # DeviceVector of devices
                 if isinstance(vector_child, PviTree):
@@ -299,7 +311,11 @@ class PviTree(ConfinedModel):
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
     commands: Mapping[str, str] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
-    vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
+    # A `str` vector_child is the execute PV of a DeviceVector of commands
+    # (a "__N" entry whose only key is "x") -- see is_command_vector below.
+    vector_children: Mapping[int, PviTree | SignalDetails | str] = Field(
+        default_factory=dict
+    )
 
     @classmethod
     async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
@@ -342,10 +358,11 @@ class PviTree(ConfinedModel):
             }
         )
 
-        vector_children: dict[int, PviTree | SignalDetails] = {}
-        # Filter vector children out of stand-alone devices
-
-        for processed_entries in (sub_trees, signal_details):
+        vector_children: dict[int, PviTree | SignalDetails | str] = {}
+        # Filter vector children out of stand-alone devices/signals/commands
+        # ("commands" holds bare execute-PV strings for "__N" entries here,
+        # i.e. a DeviceVector of commands).
+        for processed_entries in (sub_trees, signal_details, commands):
             for child_name in list(processed_entries):
                 if m := re.match(r"^__(\d+)$", child_name):
                     sub_tree = processed_entries.pop(child_name)
@@ -394,6 +411,12 @@ class PviTree(ConfinedModel):
         """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
         return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
 
+    @computed_field
+    @property
+    def is_command_vector(self) -> bool:
+        """Flags if a PviTree represents a DeviceVector of Commands."""
+        return any(isinstance(v, str) for v in self.vector_children.values())
+
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
         children = {
@@ -432,7 +455,7 @@ class PviTree(ConfinedModel):
     @classmethod
     def _check_consistency_of_vector_children_type(
         cls,
-        vector_children: Mapping[int, PviTree | SignalDetails],
+        vector_children: Mapping[int, PviTree | SignalDetails | str],
     ):
         """Validates that parsed vector children are all of the same type."""
         if not (
@@ -444,10 +467,14 @@ class PviTree(ConfinedModel):
                 isinstance(vector_child, PviTree)
                 for vector_child in vector_children.values()
             )
+            or all(
+                isinstance(vector_child, str)
+                for vector_child in vector_children.values()
+            )
         ):
             raise ValueError(
                 "Failed to validate PviTree. "
-                "vector_children must all be of type `SignalDetails` or `PviTree`. "
-                f"Received mixed type: {vector_children=}"
+                "vector_children must all be of type `SignalDetails`, `PviTree` "
+                f"or `str`. Received mixed type: {vector_children=}"
             )
         return vector_children

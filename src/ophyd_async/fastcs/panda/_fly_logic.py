@@ -174,7 +174,7 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
 class PcompInfo(ConfinedModel):
     """Info for the PandA `PcompBlock` for fly scanning."""
 
-    start_postion: int = Field(description="start position in counts")
+    start_position: int = Field(description="start position in counts")
     pulse_width: int = Field(description="width of a single pulse in counts", gt=0)
     rising_edge_step: int = Field(
         description="step between rising edges of pulses in counts", gt=0
@@ -204,7 +204,7 @@ class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
     async def prepare(self, value: PcompInfo):
         await self.pcomp.enable.set(PandaBitMux.ZERO)
         await asyncio.gather(
-            self.pcomp.start.set(value.start_postion),
+            self.pcomp.start.set(value.start_position),
             self.pcomp.width.set(value.pulse_width),
             self.pcomp.step.set(value.rising_edge_step),
             self.pcomp.pulses.set(value.number_of_pulses),

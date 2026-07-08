@@ -1,0 +1,337 @@
+# Structural PVI test records for EpicsTestPviNestedDevice.
+#
+# This file is deliberately about *shape*, not datatype coverage (that's
+# _epics_test_ca_records.db / _epics_test_pva_records.db's job): it exists to
+# exercise PviDeviceConnector's handling of nested sub-devices, DeviceVector
+# of devices, DeviceVector of signals and DeviceVector of commands over a
+# real IOC, mirroring what tests/unit_tests/epics/pvi/test_pvi.py's
+# Block1-Block5 classes only exercise against a mocked PVI tree.
+#
+# The three-tier encoding used throughout this file:
+#
+#   parent ":PVI"  --(value.<name>.d)-->  intermediate ":PVI"  --(value.__N.d
+#                                          or value.__N.r/w/rw/x)-->  leaf
+#
+# A plain sub-device is just a two-tier version of this (parent -> leaf,
+# no intermediate group). A DeviceVector adds the intermediate "vector"
+# group whose own entries are named "__1", "__2", etc (recognised by
+# PviTree.build_device_tree's `^__(\d+)$` match) -- either "__N.d" pointers
+# to further leaf devices (DeviceVector of devices) or plain "__N.r/w/rw/x"
+# entries pointing straight at a record (DeviceVector of signals/commands).
+#
+# You cannot tag a Q:group directly onto a record literally named
+# "...:PVI": it would collide with QSRV's own auto-generated structure for
+# that name. So every "d" pointer (plain sub-device or DeviceVector) is
+# indirected through a stringin record whose VAL holds the *string* PV name
+# of the separate, independent PVI group, and it is that stringin record
+# which carries the Q:group tag (via "+channel": "VAL").
+#
+# This exact pattern is proven in production in
+# tests/unit_tests/fastcs/panda/db/panda.db: see its PULSE/PULSE:1 records,
+# where "value.pulse.d" in the top ":PVI" group points at ":PULSE:PVI", and
+# a separate stringin record tags "value.__1.d" onto ":PULSE:PVI" pointing
+# at ":PULSE:1:PVI", which is where "PULSE:1:DELAY"/"STEP"/etc actually
+# live.
+#
+# optional_signal has no db content at all here: its absence from the
+# served tree is the entire point (see
+# test_device_create_device_with_optional_signals in
+# tests/unit_tests/epics/pvi/test_pvi.py for the mocked equivalent).
+
+# --- Flat top-level signal/command, tagged directly into "$(device)PVI" ---
+
+record(longout, "$(device)signal_rw") {
+    field(VAL, "1")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)signal_rw") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)signal_x") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)signal_x") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# --- Plain sub-device "child": one level of "d" indirection ---
+
+record(stringin, "$(device)child:_pvi_ref") {
+    field(VAL, "$(device)child:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.child.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)child:signal_rw") {
+    field(VAL, "2")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)child:signal_rw") {
+    info(Q:group, {
+        "$(device)child:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)child:signal_x") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)child:signal_x") {
+    info(Q:group, {
+        "$(device)child:PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# --- DeviceVector of devices "device_vector": parent -> intermediate -> leaf ---
+
+record(stringin, "$(device)device_vector:_pvi_ref") {
+    field(VAL, "$(device)device_vector:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.device_vector.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)device_vector:1:_pvi_ref") {
+    field(VAL, "$(device)device_vector:1:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)device_vector:PVI": {
+            "value.__1.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)device_vector:2:_pvi_ref") {
+    field(VAL, "$(device)device_vector:2:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)device_vector:PVI": {
+            "value.__2.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)device_vector:1:signal_rw") {
+    field(VAL, "10")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)device_vector:1:signal_rw") {
+    info(Q:group, {
+        "$(device)device_vector:1:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)device_vector:1:signal_x") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)device_vector:1:signal_x") {
+    info(Q:group, {
+        "$(device)device_vector:1:PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)device_vector:2:signal_rw") {
+    field(VAL, "20")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)device_vector:2:signal_rw") {
+    info(Q:group, {
+        "$(device)device_vector:2:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)device_vector:2:signal_x") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)device_vector:2:signal_x") {
+    info(Q:group, {
+        "$(device)device_vector:2:PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# --- DeviceVector of plain signals "signal_vector": __N.rw points straight
+# at a data record, no extra leaf-group indirection needed (same reopen
+# trick used for flat signals above works fine at the __N level too). ---
+
+record(stringin, "$(device)signal_vector:_pvi_ref") {
+    field(VAL, "$(device)signal_vector:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.signal_vector.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(ao, "$(device)signal_vector:1") {
+    field(VAL, "1.5")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)signal_vector:1") {
+    info(Q:group, {
+        "$(device)signal_vector:PVI": {
+            "value.__1.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(ao, "$(device)signal_vector:2") {
+    field(VAL, "2.5")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)signal_vector:2") {
+    info(Q:group, {
+        "$(device)signal_vector:PVI": {
+            "value.__2.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# --- DeviceVector of commands "command_vector": same shape as
+# signal_vector but with "__N.x" entries. ---
+
+record(stringin, "$(device)command_vector:_pvi_ref") {
+    field(VAL, "$(device)command_vector:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.command_vector.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)command_vector:1") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)command_vector:1") {
+    info(Q:group, {
+        "$(device)command_vector:PVI": {
+            "value.__1.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)command_vector:2") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)command_vector:2") {
+    info(Q:group, {
+        "$(device)command_vector:PVI": {
+            "value.__2.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# --- Undeclared DeviceVector of devices "extra_devices": served here but
+# deliberately not annotated on EpicsTestPviNestedDevice, to prove that
+# PviDeviceConnector fills in undeclared DeviceVectors of devices
+# dynamically -- mirroring PandA's real ttlout/extra vectors, which are
+# also never annotated on the common Panda class. Same three-tier shape
+# as "device_vector" above. ---
+
+record(stringin, "$(device)extra_devices:_pvi_ref") {
+    field(VAL, "$(device)extra_devices:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.extra_devices.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)extra_devices:1:_pvi_ref") {
+    field(VAL, "$(device)extra_devices:1:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)extra_devices:PVI": {
+            "value.__1.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)extra_devices:2:_pvi_ref") {
+    field(VAL, "$(device)extra_devices:2:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)extra_devices:PVI": {
+            "value.__2.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)extra_devices:1:signal_rw") {
+    field(VAL, "30")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)extra_devices:1:signal_rw") {
+    info(Q:group, {
+        "$(device)extra_devices:1:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)extra_devices:2:signal_rw") {
+    field(VAL, "40")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)extra_devices:2:signal_rw") {
+    info(Q:group, {
+        "$(device)extra_devices:2:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}

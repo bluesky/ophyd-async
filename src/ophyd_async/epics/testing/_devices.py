@@ -8,20 +8,20 @@ from ophyd_async.core import (
     Array1D,
     SignalR,
     SignalRW,
+    SignalW,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     Table,
+    TriggerableCommand,
 )
 from ophyd_async.epics.core import (
     EpicsDevice,
     PvSuffix,
 )
 
-from ._utils import TestingIOC, generate_random_pv_prefix
-
-CA_PVA_RECORDS = Path(__file__).parent / "test_records.db"
-PVA_RECORDS = Path(__file__).parent / "test_records_pva.db"
+CA_PVA_RECORDS = Path(__file__).parent / "_epics_test_ca_records.db"
+PVA_RECORDS = Path(__file__).parent / "_epics_test_pva_records.db"
 
 
 class EpicsTestEnum(StrictEnum):
@@ -94,9 +94,7 @@ class EpicsTestCaDevice(EpicsDevice):
     stra: A[SignalRW[Sequence[str]], PvSuffix("stra")]
     mbb_direct_bit_r: A[SignalR[bool], PvSuffix("mbb_direct.B0")]
     mbb_direct_bit: A[SignalRW[bool], PvSuffix("mbb_direct_rw.B0")]
-
-    def __init__(self, prefix: str, name: str = ""):
-        super().__init__(prefix, name=name)
+    go: A[TriggerableCommand, PvSuffix("go")]
 
 
 class EpicsTestPvaDevice(EpicsTestCaDevice):
@@ -112,27 +110,27 @@ class EpicsTestPvaDevice(EpicsTestCaDevice):
     ntndarray: A[SignalR[np.ndarray], PvSuffix("ntndarray")]
 
 
-class EpicsTestIocAndDevices:
-    """Test IOC with ca and pva devices."""
+class EpicsTestPviDevice(EpicsDevice):
+    """Device for use in a generic PVI test IOC, independent of PandA/FastCS.
 
-    def __init__(self):
-        self.prefix = generate_random_pv_prefix()
-        self.ioc = TestingIOC()
-        # Create supporting records and ExampleCaDevice
-        ca_prefix = f"{self.prefix}ca:"
-        self.ioc.add_database(CA_PVA_RECORDS, device=ca_prefix)
-        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
-        # Create supporting records and ExamplePvaDevice
-        pva_prefix = f"{self.prefix}pva:"
-        self.ioc.add_database(CA_PVA_RECORDS, device=pva_prefix)
-        self.ioc.add_database(PVA_RECORDS, device=pva_prefix)
-        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
+    Construct with `with_pvi=True`: signals here are plain type annotations
+    with no `PvSuffix` (discovered and filled in from the IOC's PVI structure
+    by `PviDeviceConnector` at connect time), except `overridden_float`, which
+    deliberately also carries a `PvSuffix` pointing at a *different* record —
+    this checks that the PVI-supplied PV wins once connected.
 
-    def get_device(self, protocol: str) -> EpicsTestCaDevice | EpicsTestPvaDevice:
-        return getattr(self, f"{protocol}_device")
+    Most fields (`mbb_direct_bit_r`, `a_float`, `table`, `ntndarray`, `go`)
+    reuse the same attribute names, PVI entries and backing records as
+    `EpicsTestCaDevice`/`EpicsTestPvaDevice`, rather than declaring new
+    synthetic ones. Only `wo_float` (no write-only field exists on those
+    devices to reuse) and `overridden_float` (inherently synthetic by
+    design, see above) are bespoke to this device.
+    """
 
-    def get_signal(self, protocol: str, name: str) -> SignalRW:
-        return getattr(self.get_device(protocol), name)
-
-    def get_pv(self, protocol: str, name: str) -> str:
-        return f"{protocol}://{self.prefix}{protocol}:{name}"
+    mbb_direct_bit_r: SignalR[bool]
+    a_float: SignalRW[float]
+    wo_float: SignalW[float]
+    overridden_float: A[SignalRW[float], PvSuffix("float_prec_1")]
+    table: SignalRW[EpicsTestTable]
+    ntndarray: SignalR[np.ndarray]
+    go: TriggerableCommand

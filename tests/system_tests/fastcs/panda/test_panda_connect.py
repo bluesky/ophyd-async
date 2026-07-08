@@ -1,11 +1,10 @@
 """Used to test setting up signals for a PandA"""
 
 import os
-import re
 
 import pytest
 
-from ophyd_async.core import NO_ARG_VOID_SIGNATURE, Device, DeviceVector, Signal
+from ophyd_async.core import NO_ARG_VOID_SIGNATURE, Device, DeviceVector
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     PcapBlock,
@@ -29,38 +28,6 @@ async def panda_t():
             )
 
     yield Panda
-
-
-@pytest.mark.timeout(15.0 if os.name == "nt" else 4.0)
-async def test_panda_with_missing_blocks(panda_pva, panda_t):
-    panda = panda_t("PANDAQSRVI:", name="mypanda")
-
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape(
-            "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: "
-            "sub_devices={'pulse': 'PANDAQSRVI:PULSE:PVI', "
-            "'ttlout': 'PANDAQSRVI:TTLOUT:PVI', 'seq': 'PANDAQSRVI:SEQ:PVI'}"
-            "\nsignals={}"
-            "\nIs it ok?"
-        ),
-    ):
-        await panda.connect()
-
-
-@pytest.mark.timeout(15.0 if os.name == "nt" else 4.1)
-async def test_panda_with_extra_blocks_and_signals(panda_pva, panda_t):
-    panda = panda_t("PANDAQSRV:")
-    await panda.connect()
-    assert panda.ttlout
-    assert panda.ttlout[1]
-    assert panda.ttlout[2]
-    assert isinstance(panda.ttlout[1], Signal)
-    assert panda.extra
-    assert panda.extra[1]
-    assert panda.extra[2]
-    assert isinstance(panda.extra[1], Device)
-    assert panda.pcap.newsignal
 
 
 @pytest.mark.timeout(15.0 if os.name == "nt" else 5.1)

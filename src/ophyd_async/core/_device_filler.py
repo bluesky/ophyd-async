@@ -466,7 +466,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             backend = self._signal_backend_factory(None)
             expected_signal_type = signal_type
             setattr(self._device, name, signal_type(backend))
-        if signal_type is not expected_signal_type:
+        # Compare origin classes (e.g. SignalRW) rather than the raw objects:
+        # `expected_signal_type` may be a parameterized generic alias like
+        # `SignalRW[float]` (from a `DeviceVector[SignalRW[float]]` annotation),
+        # while a real (non-mock) connection reports `signal_type` as the bare
+        # class inferred from the "r"/"w"/"rw" PVI designator -- these should
+        # be considered equal as long as they agree on the Signal kind.
+        if get_origin_class(signal_type) is not get_origin_class(expected_signal_type):
             self._raise(
                 name,
                 f"is a {signal_type.__name__} not a {expected_signal_type.__name__}",

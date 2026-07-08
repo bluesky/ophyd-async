@@ -248,7 +248,7 @@ async def test_seq_scanspec_trigger_logic_equal(
 async def test_pcomp_trigger_logic(mock_panda):
     trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
     pcomp_info = PcompInfo(
-        start_postion=0,
+        start_position=0,
         pulse_width=1,
         rising_edge_step=1,
         number_of_pulses=5,
