@@ -172,6 +172,16 @@ commands = [
     [
         "pytest",
         "--cov=ophyd_async",
+        # Also path-based, alongside the package-name-based one above: pytest-cov
+        # passes each --cov= straight through as Coverage(source=[...]), and a
+        # package name only matches files that were actually *imported* under
+        # that dotted name in the measured process. _ioc.py/_tango_device_servers.py
+        # (ophyd_async.epics/tango .testing/.demo) are deliberately run *by file
+        # path* as standalone subprocess scripts - see their own docstrings - so
+        # they load as `__main__`, not under their ophyd_async.* name, and the
+        # package-name source spec alone can never match them. Path-based source
+        # matches by file location instead, so it isn't fooled by that.
+        "--cov=src",
         "--cov-report",
         "term",
         "--cov-report",
