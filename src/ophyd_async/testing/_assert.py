@@ -4,7 +4,6 @@ from contextlib import AbstractContextManager
 from typing import Any, cast
 from unittest.mock import Mock, call
 
-import pytest
 from bluesky.protocols import Reading
 from event_model import DataKey
 
@@ -22,6 +21,12 @@ from ophyd_async.core import (
 )
 
 from ._utils import T
+
+# pytest is imported locally in the few functions below that need it, rather
+# than at module level, so that merely importing this module (which
+# ophyd_async.testing does unconditionally, to keep its __all__ statically
+# resolvable for doc generation - see its own comment) doesn't require pytest
+# to be installed. Only actually calling one of these functions does.
 
 
 def partial_reading(val: Any) -> Mapping[str, Any]:
@@ -41,6 +46,8 @@ def approx_value(value: Any):
     arrays can be wrapped with `pytest.approx`, but this doesn't work for
     `Table` instances: in this case we use `ApproxTable`.
     """
+    import pytest
+
     return ApproxTable(value) if isinstance(value, Table) else pytest.approx(value)
 
 
@@ -72,6 +79,8 @@ async def assert_reading(
 
 
 def _approx_reading(expected: Mapping[str, Any], actual: Reading) -> Reading:
+    import pytest
+
     ret = dict(
         expected,
         value=approx_value(expected["value"]),
@@ -194,6 +203,8 @@ class ApproxTable:
         self.nan_ok = nan_ok
 
     def __eq__(self, value):
+        import pytest
+
         approx_fields = {
             k: pytest.approx(v, self.rel, self.abs, self.nan_ok)
             for k, v in self.expected

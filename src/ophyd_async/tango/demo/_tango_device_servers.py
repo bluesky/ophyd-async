@@ -120,8 +120,11 @@ class DemoMultiChannelDetectorDevice(Device):
     _acquiring = False
     _elapsed = 0.0
 
-    async def init_device(self):
-        await super().init_device()
+    # PyTango's stubs type Device.init_device as sync-only, but under
+    # GreenMode.Asyncio (this class) an async override is the documented,
+    # correct pattern - pyright just can't see that.
+    async def init_device(self):  # pyright: ignore[reportIncompatibleMethodOverride]
+        await super().init_device()  # pyright: ignore[reportGeneralTypeIssues]
         self._locators = []
         self._dps = []
 

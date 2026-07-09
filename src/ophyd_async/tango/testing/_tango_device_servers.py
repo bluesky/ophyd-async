@@ -341,7 +341,7 @@ class TestEnum(IntEnum):
 
 
 class TestDevice(Device):
-    _array = [[1, 2, 3], [4, 5, 6]]
+    _array: list[list[float]] = [[1, 2, 3], [4, 5, 6]]
 
     _justvalue = 5
     _writeonly = 6
@@ -489,7 +489,10 @@ class TestDevice(Device):
     @command(
         dtype_out=CmdArgType.DevVarDoubleStringArray,
     )
-    def get_doublestringarray(self) -> tuple[list[float], list[str]]:
+    def get_doublestringarray(self) -> tuple[list[int], list[str]]:
+        # Same underlying (int-valued) field as get_longstringarray, on purpose -
+        # backs a genuine DevVarDoubleStringArray-served value regardless of the
+        # Python-level type hint, since PyTango marshals by `dtype_out` above.
         return self._long_string_array
 
     @command
