@@ -16,9 +16,28 @@ you its PV names either: you already know them, since the db file is fixed and o
 the macro varies).
 """
 
+import socket
 import subprocess
 import time
 from collections.abc import Sequence
+
+
+def find_free_port() -> int:
+    """Find a currently-unused TCP port on localhost.
+
+    For callers that need to tell a subprocess which port to listen on up
+    front (e.g. `ophyd_async.tango.testing.start_tango_device_servers`,
+    which - unlike an EPICS IOC - can't rely on a fixed macro-based address
+    scheme, since a Tango TRL bakes the port straight into the URL). The
+    standard "bind to port 0, read back what the OS assigned, close it"
+    trick - the same one pytest/tox use. There's an unavoidable (tiny) race
+    between this returning and whatever you start next actually binding that
+    port - acceptable for test/demo subprocess launching, not a security
+    boundary.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
 
 
 class ManagedSubprocess:

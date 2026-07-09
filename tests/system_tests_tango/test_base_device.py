@@ -35,7 +35,7 @@ from ophyd_async.tango.demo import (
     DemoStage,
     EnergyMode,
 )
-from ophyd_async.testing import assert_reading
+from ophyd_async.testing import assert_reading, find_free_port
 
 T = TypeVar("T")
 
@@ -204,17 +204,23 @@ async def test_with_bluesky(tango_test_device):
 @pytest.mark.timeout(60.0)
 async def test_tango_device_servers_launcher():
     """Smoke test `ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
-    `_tango_device_servers` as standalone launchers, independent of the shared
+    `DEVICE_SERVERS` as standalone launchers, independent of the shared
     conftest.py subprocesses - proves each is self-sufficient (predictable TRL,
     no readback needed, clean startup/shutdown) exactly as a user running one
     directly would rely on."""
     prefix = testing.generate_random_trl_prefix()
-    testing_process = testing.start_tango_device_servers("testing", prefix)
-    demo_process = testing.start_tango_device_servers("demo", prefix)
+    testing_port = find_free_port()
+    demo_port = find_free_port()
+    testing_process = testing.start_tango_device_servers(
+        testing.DEVICE_SERVERS, prefix, str(testing_port)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.DEVICE_SERVERS, prefix, str(demo_port), "3"
+    )
     try:
-        basic_proxy = await AsyncDeviceProxy(testing.predict_trl(prefix, "basic"))
+        basic_proxy = await AsyncDeviceProxy(testing.trl(prefix, testing_port, "basic"))
         assert await basic_proxy.read_attribute("readback")
-        motor_proxy = await AsyncDeviceProxy(demo.predict_trl(prefix, "motor-x"))
+        motor_proxy = await AsyncDeviceProxy(testing.trl(prefix, demo_port, "motor-x"))
         assert await motor_proxy.read_attribute("readback")
     finally:
         demo_process.stop()

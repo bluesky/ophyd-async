@@ -18,7 +18,7 @@ from ._single_derived import (
     MovableBeamstop,
     ReadOnlyBeamstop,
 )
-from ._subprocess import ManagedSubprocess, start_subprocess
+from ._subprocess import ManagedSubprocess, find_free_port, start_subprocess
 from ._wait_for_pending import wait_for_pending_wakeups
 
 if TYPE_CHECKING:
@@ -123,6 +123,7 @@ __all__ = [
     "wait_for_pending_wakeups",
     # Subprocess management for backend test/demo servers
     "ManagedSubprocess",
+    "find_free_port",
     "start_subprocess",
     "ExampleEnum",
     "ExampleSubsetEnum",

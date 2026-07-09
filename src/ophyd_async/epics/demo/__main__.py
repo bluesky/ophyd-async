@@ -20,8 +20,9 @@ bec = BestEffortCallback()
 RE.subscribe(bec)
 
 # Start IOC with demo pvs in subprocess
+NUM_CHANNELS = 3
 prefix = testing.generate_random_pv_prefix()
-ioc = testing.start_ioc(demo.demo_ioc_database(prefix, num_channels=3))
+ioc = testing.start_ioc(demo.IOC, prefix, str(NUM_CHANNELS))
 atexit.register(ioc.stop)
 
 # All Devices created within this block will be
@@ -31,4 +32,4 @@ with init_devices():
     stage = demo.DemoStage(f"{prefix}STAGE:")
     # Create a multi channel counter with the same number
     # of counters as the IOC
-    pdet = demo.DemoPointDetector(f"{prefix}DET:", num_channels=3)
+    pdet = demo.DemoPointDetector(f"{prefix}DET:", num_channels=NUM_CHANNELS)

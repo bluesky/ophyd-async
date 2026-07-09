@@ -10,6 +10,7 @@ from bluesky.run_engine import RunEngine, autoawait_in_bluesky_event_loop
 
 from ophyd_async.core import init_devices
 from ophyd_async.tango import demo, testing
+from ophyd_async.testing import find_free_port
 
 # Create a run engine and make ipython use it for `await` commands
 RE = RunEngine(call_returns_result=True)
@@ -20,14 +21,18 @@ bec = BestEffortCallback()
 RE.subscribe(bec)
 
 # Start demo device servers in subprocess
+NUM_CHANNELS = 3
 prefix = testing.generate_random_trl_prefix()
-servers = testing.start_tango_device_servers("demo", prefix)
+port = find_free_port()
+servers = testing.start_tango_device_servers(
+    demo.DEVICE_SERVERS, prefix, str(port), str(NUM_CHANNELS)
+)
 atexit.register(servers.stop)
 
 
 def trl(device_name: str) -> str:
-    """Predict the TRL of `device_name`, served by `servers` under `prefix`."""
-    return demo.predict_trl(prefix, device_name)
+    """TRL of `device_name`, served by `servers` under `prefix`."""
+    return testing.trl(prefix, port, device_name)
 
 
 # All Devices created within this block will be
@@ -39,5 +44,5 @@ with init_devices():
     # of counters as the device servers
     pdet = demo.DemoPointDetector(
         trl("detector"),
-        [trl("channel-1"), trl("channel-2"), trl("channel-3")],
+        [trl(f"channel-{i}") for i in range(1, NUM_CHANNELS + 1)],
     )
