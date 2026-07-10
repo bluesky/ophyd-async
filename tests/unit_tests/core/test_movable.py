@@ -16,7 +16,13 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 
-# Allow these imports from private modules for tests
+# MoveTimeout is an internal helper StandardMovable constructs to track a
+# move's remaining timeout across repeated calculate_timeout() calls - the
+# public MovableLogic.calculate_timeout() hook returns a plain float | None,
+# never a MoveTimeout, so a caller never sees this type. Tested directly
+# here since the reducing-timeout behaviour across repeated calls isn't
+# otherwise observable from the public surface - checked, nothing here
+# looks missing from the public interface.
 from ophyd_async.core._movable import MoveTimeout  # noqa: PLC2701
 from ophyd_async.testing import wait_for_pending_wakeups
 

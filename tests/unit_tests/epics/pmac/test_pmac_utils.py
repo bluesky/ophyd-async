@@ -7,6 +7,13 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
     PmacIO,
 )
+
+# _PmacMotorInfo (internal per-motor accel/resolution dataclass) and
+# calculate_ramp_position_and_duration (internal ramp-math helper) are both
+# implementation details PmacTrajectoryTriggerLogic (the public façade,
+# `ophyd_async.epics.pmac`) uses internally, not things a caller would
+# invoke directly - checked, nothing here looks missing from the public
+# interface.
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
