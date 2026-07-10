@@ -17,12 +17,12 @@ from ophyd_async.testing import assert_has_calls
 async def adbase_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     async with init_devices(mock=True):
-        det = adcore.AreaDetector(driver=driver, writer_type=None)
-        det.add_detector_logics(adcore.ADArmLogic(driver))
+        det = adcore.AreaDetector(driver=driver)
+        det.add_detector_logics(adcore.ADAcquireLogic(driver))
     return det
 
 
-async def test_arm_logic_trigger_internal_calls_acquire(
+async def test_acquire_logic_trigger_internal_calls_acquire(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     await adbase_detector.trigger()
@@ -34,7 +34,7 @@ async def test_arm_logic_trigger_internal_calls_acquire(
     )
 
 
-async def test_arm_logic_when_arming_times_out(
+async def test_acquire_logic_when_arming_times_out(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     async def sleep_for_a_bit(value):
@@ -42,7 +42,7 @@ async def test_arm_logic_when_arming_times_out(
 
     callback_on_mock_put(adbase_detector.driver.acquire, sleep_for_a_bit)
 
-    with patch("ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT", 0.02):
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.02):
         with pytest.raises(
             TimeoutError,
             match=re.escape(
@@ -54,14 +54,14 @@ async def test_arm_logic_when_arming_times_out(
     await asyncio.sleep(0.03)  # Allow background tasks to complete
 
 
-async def test_arm_logic_wait_for_idle_in_bad_state(
+async def test_acquire_logic_wait_for_idle_in_bad_state(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     set_mock_value(
         adbase_detector.driver.detector_state,
         adcore.ADState.ERROR,
     )
-    with patch("ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT", 0.05):
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.05):
         with pytest.raises(ValueError) as exc_info:
             await adbase_detector.trigger()
 
@@ -98,7 +98,7 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     await asyncio.gather(adbase_detector.trigger(), complete_acquire())
 
 
-async def test_arm_logic_disarm(
+async def test_acquire_logic_disarm(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     await adbase_detector.unstage()

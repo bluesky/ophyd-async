@@ -1,11 +1,7 @@
 import asyncio
-import pickle
-import socket
-import subprocess
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from random import choice
 from typing import Any, Generic, TypeVar
 
@@ -14,19 +10,79 @@ import pytest
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
+from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import DevStateEnum
 from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
+    find_free_port,
     float_array_value,
     int_array_value,
 )
 
 T = TypeVar("T")
 
+NUM_CHANNELS = 3
+
 
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
+
+
+@pytest.fixture(scope="session")
+def tango_servers():
+    """Start both fixed catalogs of Tango test/demo device servers this repo
+    ships (`ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
+    `DEVICE_SERVERS`), shared by every test in this directory - there's
+    only one topology now, so there's no reason for individual test modules to
+    each start their own subprocesses. Each catalog gets its own free port -
+    picked here, since (unlike an EPICS IOC) a Tango TRL bakes the port
+    straight into the URL, so downstream fixtures need it to build TRLs."""
+    prefix = testing.generate_random_trl_prefix()
+    testing_port = find_free_port()
+    demo_port = find_free_port()
+    testing_process = testing.start_tango_device_servers(
+        testing.DEVICE_SERVERS, prefix, str(testing_port)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.DEVICE_SERVERS, prefix, str(demo_port), str(NUM_CHANNELS)
+    )
+    yield prefix, testing_port, demo_port
+    demo_process.stop()
+    testing_process.stop()
+    print(testing_process.output)
+    print(demo_process.output)
+
+
+@pytest.fixture(scope="session")
+def tango_test_device(tango_servers) -> str:
+    """TRL of the `TestDevice` server: signal-transport/edge-case coverage."""
+    prefix, testing_port, _ = tango_servers
+    return testing.trl(prefix, testing_port, "basic")
+
+
+@pytest.fixture(scope="session")
+def everything_device_trl(tango_servers) -> str:
+    """TRL of the `OneOfEverythingTangoDevice` server: datatype coverage."""
+    prefix, testing_port, _ = tango_servers
+    return testing.trl(prefix, testing_port, "everything")
+
+
+@pytest.fixture(scope="session")
+def sim_test_context_trls(tango_servers) -> dict[str, str]:
+    """TRLs of the demo motor/channel/detector servers backing
+    `ophyd_async.tango.demo`, already cross-wired to each other by the
+    subprocess itself."""
+    prefix, _, demo_port = tango_servers
+    return {
+        name: testing.trl(prefix, demo_port, name)
+        for name in (
+            "motor-x",
+            "motor-y",
+            *(f"channel-{i}" for i in range(1, NUM_CHANNELS + 1)),
+            "detector",
+        )
+    }
 
 
 def pytest_collection_modifyitems(config, items):
@@ -41,33 +97,6 @@ def pytest_collection_modifyitems(config, items):
                         reason="Ophyd-async is currently not tested on Windows + Tango"
                     )
                 )
-
-
-class TangoSubprocessHelper:
-    def __init__(self, args):
-        self._args = args
-
-    def __enter__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("", 0))
-        port = str(self.sock.getsockname()[1])
-        self.sock.listen(1)
-        subprocess_path = str(Path(__file__).parent / "context_subprocess.py")
-        self.process = subprocess.Popen([sys.executable, subprocess_path, port])
-        self.conn, _ = self.sock.accept()
-        self.conn.send(pickle.dumps(self._args))
-        self.trls = pickle.loads(self.conn.recv(1024))
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.close()
-        self.sock.close()
-        self.process.communicate()
-
-
-@pytest.fixture(scope="module")
-def subprocess_helper():
-    return TangoSubprocessHelper
 
 
 @dataclass
@@ -131,11 +160,11 @@ def everything_signal_info():
             None,
         )
 
-    signal_info["str"] = AttributeData(
-        "str", str, "test_string", ("four", "five", "six"), None
+    signal_info["a_str"] = AttributeData(
+        "a_str", str, "test_string", ("four", "five", "six"), None
     )
-    signal_info["str_spectrum"] = SequenceData(
-        "str_spectrum",
+    signal_info["a_str_spectrum"] = SequenceData(
+        "a_str_spectrum",
         Sequence[str],
         ("one", "two", "three"),
         ("four", "five", "six"),
@@ -152,23 +181,8 @@ def everything_signal_info():
         ],
         cmd_name=None,
     )
-    signal_info["strenum_spectrum"] = SequenceData(
-        name="strenum_spectrum",
-        py_type=Sequence[ExampleStrEnum],
-        initial=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        random_put_values=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        cmd_name=None,
-    )
     add_ads(
-        "bool",
+        "a_bool",
         "DevBoolean",
         bool,
         True,
@@ -203,14 +217,6 @@ def everything_signal_info():
         "my_state",
         DevStateEnum,
         DevStateEnum.INIT,
-        random_put_values=[e.name for e in DevStateEnum],
-        cmd_name=None,
-    )
-
-    signal_info["my_state_spectrum"] = SequenceData(
-        "my_state_spectrum",
-        Sequence[DevStateEnum],
-        initial=[e.name for e in DevStateEnum],
         random_put_values=[e.name for e in DevStateEnum],
         cmd_name=None,
     )

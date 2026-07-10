@@ -112,6 +112,7 @@ class Trajectory:
         motor_info: _PmacMotorInfo,
         entry_pvt: PVT | None = None,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a slice.
 
@@ -146,6 +147,35 @@ class Trajectory:
         ).reshape((-1, 2))
 
         collection_window_iter = iter(collection_windows)
+
+        for motor in motors:
+            lower = slice.lower[motor]
+            midpoint = slice.midpoints[motor]
+            upper = slice.upper[motor]
+            slice_min = min(lower.min(), midpoint.min(), upper.min())
+            slice_max = max(lower.max(), midpoint.max(), upper.max())
+            motor_lower_limit = motor_info.motor_lower_limit[motor]
+            motor_upper_limit = motor_info.motor_upper_limit[motor]
+
+            max_velocity = motor_info.motor_max_velocity[motor]
+            current_velocity = (
+                np.abs(slice.upper[motor] - slice.lower[motor]) / slice.duration
+            ).max()
+
+            if slice_min <= motor_lower_limit or slice_max >= motor_upper_limit:
+                raise ValueError(
+                    "Unable to generate trajectory due to motor limit."
+                    f" {motor.name} demand is {slice_min} to {slice_max},"
+                    f" motor limit is {motor_lower_limit} to {motor_upper_limit}"
+                )
+
+            if current_velocity > max_velocity:
+                raise ValueError(
+                    "Unable to generate trajectory due to velocity limit."
+                    f" Motor: {motor.name} velocity is {current_velocity},"
+                    f" velocity limit is {max_velocity}"
+                )
+
         sub_traj_funcs = []
 
         # Given we start at a collection window, insert it
@@ -167,6 +197,7 @@ class Trajectory:
             kwargs = {}
             if gap == 0 and ramp_up_time:
                 kwargs["ramp_up_time"] = ramp_up_time
+            kwargs["turnaround_time"] = turnaround_time
             sub_traj_funcs.append(
                 partial(
                     Trajectory.from_gap,
@@ -354,6 +385,7 @@ class Trajectory:
         slice: Slice,
         entry_pvt: PVT,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a gap.
 
@@ -441,6 +473,7 @@ class Trajectory:
             entry_velocities,
             exit_velocities,
             distances,
+            turnaround_time,
         )
 
         # Calculate gap PVTs
@@ -502,6 +535,7 @@ def _get_velocity_profile(
     start_velocities: dict[Motor, np.float64],
     end_velocities: dict[Motor, np.float64],
     distances: dict[Motor, float],
+    turnaround_time: float | None = None,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     """Generate time and velocity profiles for motors across a gap.
 
@@ -531,7 +565,11 @@ def _get_velocity_profile(
     time_arrays = {}
     velocity_arrays = {}
 
-    min_time = MIN_TURNAROUND
+    min_time = (
+        MIN_TURNAROUND
+        if turnaround_time is None
+        else (turnaround_time - 2 * MIN_INTERVAL)
+    )
 
     iterations = 2
 

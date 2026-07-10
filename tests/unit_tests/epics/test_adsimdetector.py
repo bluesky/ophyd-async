@@ -18,8 +18,10 @@ async def test_adsimdetector(
     static_path_provider: StaticPathProvider,
 ) -> adsimdetector.SimDetector:
     async with init_devices(mock=True):
-        detector = adsimdetector.SimDetector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
+        detector = adsimdetector.SimDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 

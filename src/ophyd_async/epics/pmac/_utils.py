@@ -35,6 +35,8 @@ class _PmacMotorInfo:
     motor_cs_index: dict[Motor, int]
     motor_acceleration_rate: dict[Motor, float]
     motor_max_velocity: dict[Motor, float]
+    motor_lower_limit: dict[Motor, float]
+    motor_upper_limit: dict[Motor, float]
 
     @classmethod
     async def from_motors(cls, pmac: PmacIO, motors: Sequence[Motor]) -> _PmacMotorInfo:
@@ -143,27 +145,44 @@ class _PmacMotorInfo:
                 f"{list(cs_numbers_set)}"
             )
 
-        # Get the velocities and acceleration rates for each motor
-        max_velocity, acceleration_time = await asyncio.gather(
+        # Get the velocities, acceleration rates, and limits for each motor
+        (
+            max_velocity,
+            acceleration_time,
+            motor_lower_limit,
+            motor_upper_limit,
+        ) = await asyncio.gather(
             gather_dict({motor: motor.max_velocity.get_value() for motor in motors}),
             gather_dict(
                 {motor: motor.acceleration_time.get_value() for motor in motors}
+            ),
+            gather_dict(
+                {motor: motor.low_limit_travel.get_value() for motor in motors}
+            ),
+            gather_dict(
+                {motor: motor.high_limit_travel.get_value() for motor in motors}
             ),
         )
         motor_acceleration_rate = {
             motor: max_velocity[motor] / acceleration_time[motor] for motor in motors
         }
+
         return _PmacMotorInfo(
             cs_port=cs_ports_set.pop(),
             cs_number=cs_numbers_set.pop(),
             motor_cs_index=motor_cs_index,
             motor_acceleration_rate=motor_acceleration_rate,
             motor_max_velocity=max_velocity,
+            motor_lower_limit=motor_lower_limit,
+            motor_upper_limit=motor_upper_limit,
         )
 
 
 def calculate_ramp_position_and_duration(
-    slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
+    slice: Slice[Motor],
+    motor_info: _PmacMotorInfo,
+    is_up: bool,
+    ramp_up_time: float | None = None,
 ) -> tuple[dict[Motor, np.float64], float]:
     """Calculate the the required ramp position and duration of a trajectory.
 
@@ -177,6 +196,7 @@ def calculate_ramp_position_and_duration(
     :param slice: Information about a series of scan frames along a number of axes
     :param motor_info: Instance of _PmacMotorInfo
     :param is_up: Boolean representing ramping up into a frame or down out of a frame
+    :param ramp_up_time: Information about how long the movement should take.
     :returns tuple: A tuple containing:
         dict: Motor to ramp positions
         float: Ramp time required for all motors
@@ -196,7 +216,7 @@ def calculate_ramp_position_and_duration(
         velocities[axis] = velocity
         ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
     ramp_times.append(
-        MIN_TURNAROUND
+        MIN_TURNAROUND if not ramp_up_time else ramp_up_time
     )  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
 

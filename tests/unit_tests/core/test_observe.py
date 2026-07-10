@@ -133,17 +133,27 @@ async def test_observe_value_times_out_with_no_external_task():
 
     start = time.monotonic()
 
-    async def watch(done_timeout):
-        async for val in observe_value(sig, done_timeout=done_timeout):
+    with pytest.raises(asyncio.TimeoutError):
+        async for val in observe_value(sig, done_timeout=0.3):
             recv.append(time.monotonic() - start)
             setter(val + 1)
 
-    with pytest.raises(asyncio.TimeoutError):
-        await watch(done_timeout=0.07)
-    # On a dev machine we can do >200 iterations in 0.1s, but CI is slower
-    assert len(recv) > 10
+    # On a dev machine we can do >4000 iterations in 0.3s, but CI is slower.
+    # abs=0.1 is needed to cover two platform-specific overshoots:
+    #
+    # Linux / Python 3.13: wait_for schedules the Queue.get() wakeup via
+    # call_soon, so each iteration yields once to the event loop. Under CI load
+    # that yield occasionally stalls for ~0.25s (the selector sleeping until the
+    # call_later deadline fires), so the last callback arrives just before the
+    # timeout fires, pushing elapsed close to but still within 0.3s.
+    #
+    # Windows / Python 3.12: time.monotonic() is quantised at ~15.6 ms (the
+    # default Windows timer tick). wait_for's cancellation and cleanup machinery
+    # requires several event-loop iterations to complete, each costing a full
+    # timer tick, causing up to ~75 ms of overshoot (observed: 0.375 s).
+    assert len(recv) > 50
     elapsed = time.monotonic() - start
-    assert elapsed == pytest.approx(0.07, abs=0.05), (
+    assert elapsed == pytest.approx(0.3, abs=0.1), (
         f"Elapsed: {elapsed} Received: {recv}"
     )
 

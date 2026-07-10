@@ -1,7 +1,7 @@
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     SignalR,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
@@ -11,7 +11,7 @@ from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
 from ._io import ADBaseIO, ADState, NDCircularBuffIO
 
 
-class ADArmLogic(DetectorArmLogic):
+class ADAcquireLogic(DetectorAcquireLogic):
     def __init__(
         self, driver: ADBaseIO, driver_armed_signal: SignalR[bool] | None = None
     ):
@@ -22,7 +22,7 @@ class ADArmLogic(DetectorArmLogic):
             self.driver_armed_signal = driver.acquire
         self.acquire_status: AsyncStatus | None = None
 
-    async def arm(self):
+    async def start_acquiring(self):
         self.acquire_status = await set_and_wait_for_other_value(
             set_signal=self.driver.acquire,
             set_value=True,
@@ -41,17 +41,17 @@ class ADArmLogic(DetectorArmLogic):
             timeout=DEFAULT_TIMEOUT,
         )
 
-    async def disarm(self):
+    async def ensure_stopped(self):
         await stop_busy_record(self.driver.acquire)
 
 
-class ADContAcqArmLogic(DetectorArmLogic):
+class ADContAcqAcquireLogic(DetectorAcquireLogic):
     def __init__(self, driver: ADBaseIO, cb_plugin: NDCircularBuffIO):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None
 
-    async def arm(self):
+    async def start_acquiring(self):
         self.acquire_status = await set_and_wait_for_value(
             self.cb_plugin.capture,
             True,
@@ -63,5 +63,5 @@ class ADContAcqArmLogic(DetectorArmLogic):
         if self.acquire_status:
             await self.acquire_status
 
-    async def disarm(self):
+    async def ensure_stopped(self):
         await stop_busy_record(self.cb_plugin.capture)

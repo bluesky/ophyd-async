@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
 from typing import Any
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 
-from ._signal import get_signal_backend_type, split_protocol_from_pv
-from ._util import EpicsOptions, EpicsSignalBackend
+from ._signal import (
+    get_command_backend_type,
+    get_signal_backend_type,
+    split_protocol_from_pv,
+)
+from ._util import EpicsCommandBackend, EpicsOptions, EpicsSignalBackend
 
 
 @dataclass
@@ -32,6 +37,22 @@ class PvSuffix:
     @classmethod
     def rbv(cls, write_suffix: str, rbv_suffix: str = "_RBV") -> PvSuffix:
         return cls(write_suffix + rbv_suffix, write_suffix)
+
+
+def fill_command_with_prefix(
+    prefix: str, backend: EpicsCommandBackend, annotations: list[Any]
+):
+    """Set the `write_pv` on an EPICS command backend from a [](#PvSuffix)."""
+    unhandled = []
+    while annotations:
+        annotation = annotations.pop(0)
+        if isinstance(annotation, PvSuffix):
+            backend.write_pv = prefix + (
+                annotation.write_suffix or annotation.read_suffix
+            )
+        else:
+            unhandled.append(annotation)
+    annotations.extend(unhandled)
 
 
 def fill_backend_with_prefix(
@@ -62,12 +83,28 @@ class EpicsDeviceConnector(DeviceConnector):
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
             protocol, prefix = split_protocol_from_pv(self.prefix)
+
+            def _command_backend_factory(
+                sig: inspect.Signature | None,
+            ) -> EpicsCommandBackend:
+                # EPICS only supports void/void commands (plain PV put); typed
+                # Command[P, T] annotations are a mistake on an EPICS device.
+                if sig is not None:
+                    raise TypeError(
+                        f"{device.name}: EPICS only supports TriggerableCommand /"
+                        " Command[[], None]; typed Command with parameters is not"
+                        " yet supported over EPICS"
+                    )
+                return get_command_backend_type(protocol)()
+
             self.filler = DeviceFiller(
                 device,
                 signal_backend_factory=get_signal_backend_type(protocol),
                 device_connector_factory=DeviceConnector,
+                command_backend_factory=_command_backend_factory,
             )
             for backend, annotations in self.filler.create_signals_from_annotations():
                 fill_backend_with_prefix(prefix, backend, annotations)
-
+            for backend, annotations in self.filler.create_commands_from_annotations():
+                fill_command_with_prefix(prefix, backend, annotations)
             list(self.filler.create_devices_from_annotations())

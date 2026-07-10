@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
 from enum import Enum
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    CommandBackend,
     SignalBackend,
     SignalDatatypeT,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
+    TriggerableCommand,
     get_unique,
 )
 
@@ -48,17 +51,19 @@ def _make_unavailable_class(
 
 
 try:
-    from ._p4p import PvaSignalBackend, pvget_with_timeout
+    from ._p4p import PvaCommandBackend, PvaSignalBackend, pvget_with_timeout
 except ImportError as pva_error:
     PvaSignalBackend = _make_unavailable_class("pva", pva_error)
+    PvaCommandBackend = _make_unavailable_class("pva", pva_error)
     pvget_with_timeout = _make_unavailable_function("pva", pva_error)
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
 try:
-    from ._aioca import CaSignalBackend
+    from ._aioca import CaCommandBackend, CaSignalBackend
 except ImportError as ca_error:
     CaSignalBackend = _make_unavailable_class("ca", ca_error)
+    CaCommandBackend = _make_unavailable_class("ca", ca_error)
 else:
     _default_epics_protocol = EpicsProtocol.CA
 
@@ -188,14 +193,57 @@ def epics_signal_w(
     return SignalW(backend, name=name, timeout=timeout, attempts=attempts)
 
 
+def get_command_backend_type(protocol: EpicsProtocol) -> type:
+    """Return the EPICS command backend class for the given protocol."""
+    match protocol:
+        case EpicsProtocol.CA:
+            return CaCommandBackend
+        case EpicsProtocol.PVA:
+            return PvaCommandBackend
+    raise TypeError(f"Unsupported protocol: {protocol}")
+
+
+def epics_triggerable_command(
+    write_pv: str,
+    execute_value: int = 1,
+    name: str = "",
+    timeout: float = DEFAULT_TIMEOUT,
+) -> TriggerableCommand:
+    """Create a [](#TriggerableCommand) backed by an EPICS PV.
+
+    On trigger, writes `execute_value` (default 1) to `write_pv`.
+
+    :param write_pv: The PV to write to when the command is triggered
+    :param execute_value: The value to write on trigger (default: 1)
+    :param name: The name of the command
+    :param timeout: A timeout to be used when triggering this command
+    """
+    protocol, pv = split_protocol_from_pv(write_pv)
+    backend: CommandBackend[[], None] = get_command_backend_type(protocol)(
+        pv, execute_value
+    )
+    return TriggerableCommand(backend, name=name, timeout=timeout)
+
+
 def epics_signal_x(
     write_pv: str, name: str = "", timeout: float = DEFAULT_TIMEOUT
 ) -> SignalX:
     """Create a `SignalX` backed by 1 EPICS PVs.
 
+    ```{version-deprecated} 0.19
+    Use [](#epics_triggerable_command) instead.
+    ```
+
     :param write_pv: The PV to write its initial value to on trigger
     :param name: The name of the signal
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
+    warnings.warn(
+        "epics_signal_x is deprecated, use epics_triggerable_command instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     backend = _epics_signal_backend(None, write_pv, write_pv)
-    return SignalX(backend, name=name, timeout=timeout)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        return SignalX(backend, name=name, timeout=timeout)

@@ -262,26 +262,34 @@ def check_docker_sock():
     Check if the Docker (or compatible container engine) socket is accessible.
 
     This function attempts to run `docker info` to verify that the current user
-    can communicate with the container engine. If the command fails, it raises
-    a RuntimeError with guidance on how to fix common connection issues.
+    can communicate with the container engine. Retries for up to 10 seconds before
+    raising a RuntimeError with guidance on how to fix common connection issues.
     """
-    try:
-        subprocess.run(
+    deadline = time.monotonic() + 10.0
+    last_output = ""
+    while time.monotonic() < deadline:
+        result = subprocess.run(
             ["docker", "info"],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
-    except subprocess.CalledProcessError as err:
-        message = """
-            Cannot communicate with the container engine on the host.
-            Please make sure $DOCKER_HOST points to the correct socket on the host.
-            NOTE:
-                For podman, $DOCKER_HOST is typically set by running
-                    export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
-                Also, if you are using podman please enable the socket by running
-                    systemctl --user enable podman --now"""
-        raise RuntimeError(message) from err
+        if result.returncode == 0:
+            return
+        last_output = result.stdout
+        time.sleep(0.5)
+
+    message = f"""
+        Cannot communicate with the container engine on the host.
+        Please make sure $DOCKER_HOST points to the correct socket on the host.
+        NOTE:
+            For podman, $DOCKER_HOST is typically set by running
+                export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+            Also, if you are using podman please enable the socket by running
+                systemctl --user enable podman --now
+        docker info output:
+            {last_output}"""
+    raise RuntimeError(message)
 
 
 @pytest.fixture(scope="module")

@@ -23,6 +23,10 @@ In the below example we see all 3 of these helpers in action:
 These examples show the low level Signals and Derived Signals in the same Device, but they could equally be separated into different Devices
 ```
 
+```{note}
+There is a known bug where derived signals will timeout if setting the underlying signal takes longer than 10s, see https://github.com/bluesky/ophyd-async/issues/1231.
+```
+
 ## Multi Derived Signal
 
 The more general API involves a two way mapping between many Derived Signals and many low level Signals. This is done by implementing a `Raw` [](#typing.TypedDict) subclass with the names and datatypes of the low level Signals, a `Derived` [](#typing.TypedDict) subclass with the names and datatypes of the derived Signals, and [](#Transform) class with `raw_to_derived` and `derived_to_raw` methods to convert between the two. Some transforms will also require parameters which get their values from other Signals for both methods. These should be put in as type hints on the `Transform` subclass.

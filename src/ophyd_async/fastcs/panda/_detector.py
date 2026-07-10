@@ -3,7 +3,7 @@ from __future__ import annotations
 from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.fastcs.core import fastcs_connector
 
-from ._arm_logic import PandaArmLogic
+from ._acquire_logic import PandaAcquireLogic
 from ._block import CommonPandaBlocks
 from ._data_logic import PandaHDFDataLogic
 from ._trigger_logic import PandaTriggerLogic
@@ -25,7 +25,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         connector = fastcs_connector(prefix, self, error_hint)
         self.add_detector_logics(
             PandaTriggerLogic(self.pcap),
-            PandaArmLogic(self.pcap),
+            PandaAcquireLogic(self.pcap),
             PandaHDFDataLogic(path_provider, self.data),
         )
         super().__init__(name=name, connector=connector)

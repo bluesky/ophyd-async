@@ -20,9 +20,11 @@ async def test_adpilatus(
     static_path_provider: StaticPathProvider,
 ) -> adpilatus.PilatusDetector:
     async with init_devices(mock=True):
-        detector = adpilatus.PilatusDetector("PREFIX:", static_path_provider)
+        detector = adpilatus.PilatusDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
     set_mock_value(detector.driver.armed, True)
-    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
@@ -38,7 +40,9 @@ def test_pvs_correct(test_adpilatus: adpilatus.PilatusDetector):
 )
 async def test_deadtime(readout_time: adpilatus.PilatusReadoutTime, tmp_path):
     path_provider = StaticPathProvider(StaticFilenameProvider("data"), tmp_path)
-    pilatus = adpilatus.PilatusDetector("PREFIX:", path_provider, readout_time)
+    pilatus = adpilatus.PilatusDetector(
+        "PREFIX:", adcore.ADWriterFactory.hdf(path_provider), readout_time=readout_time
+    )
     trigger_modes, deadtime = await pilatus.get_trigger_deadtime()
     assert trigger_modes == {
         DetectorTrigger.INTERNAL,
@@ -53,7 +57,7 @@ async def test_times_out_if_not_armed(
 ):
     set_mock_value(test_adpilatus.driver.armed, False)
     with patch(
-        "ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT",
+        "ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT",
         0.01,
     ):
         with pytest.raises(TimeoutError):
@@ -127,7 +131,7 @@ async def test_trigger_uses_num_images(
 ):
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     detector = test_adpilatus
-    writer = detector.get_plugin("writer", adcore.NDFileHDF5IO)
+    writer = detector.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(detector.driver.num_images, num_images)
     await detector.stage()
     callback_on_mock_put(

@@ -14,6 +14,7 @@ from ophyd_async.core import (
     NotConnectedError,
     SignalRW,
     AsyncStatus,
+    callback_on_mock_put,
     get_mock_put,
     set_mock_value,
     soft_signal_rw,
@@ -402,7 +403,7 @@ async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
     motor_device = MotorDevice("my_motor_device")
     await motor_device.connect(mock=True)
     _patch_motor(motor_device.omega)
-    get_mock_put(motor_device.omega.user_setpoint).side_effect = motor_device.set_omega
+    callback_on_mock_put(motor_device.omega.user_setpoint, motor_device.set_omega)
 
     gather_awaitable = asyncio.gather(
         plain_awaitable,

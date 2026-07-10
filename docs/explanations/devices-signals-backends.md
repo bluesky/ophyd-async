@@ -54,6 +54,7 @@ SignalW <|-- SignalRW
 SignalRW : locate()
 Signal <|-- SignalX
 SignalX : trigger()
+note for SignalX "deprecated"
 Signal *-- SignalConnector
 SignalConnector *-- SignalBackend
 SignalBackend <|-- CaSignalConnector
@@ -65,7 +66,7 @@ If a `Device` with children is like a branch in a tree, a `Signal` is like a lea
 - [](#SignalR) is a signal with a read-only value that supports the [Readable](#bluesky.protocols.Readable) and [Subscribable](#bluesky.protocols.Subscribable) protocols. It also adds the [](#SignalR.subscribe_reading) method that is used to interact with the Signal in the parent Device.
 - [](#SignalW) is a signal with a write-only value that supports the [Movable](#bluesky.protocols.Movable) protocol.
 - [](#SignalRW) is a signal with a read-write value that inherits from SignalR and SignalW and adds the [Locatable](#bluesky.protocols.Locatable) protocol
-- [](#SignalX) is a signal that performs an action, and supports the [Triggerable](#bluesky.protocols.Triggerable) protocol
+- [](#SignalX) is a signal that performs an action, and supports the [Triggerable](#bluesky.protocols.Triggerable) protocol. **Deprecated** — use [](#TriggerableCommand) instead.
 
 These are all concrete classes, but delegate their actions to a [](#SignalBackend):
 ```{literalinclude} ../../src/ophyd_async/core/_signal_backend.py
@@ -88,6 +89,52 @@ This is a little verbose, so instead we provide helpers like [](#soft_signal_rw)
 my_signal = my_cs_signal_r(int, "something")
 ```
 
+## Command and CommandBackend
+
+```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
+classDiagram
+Device <|-- Command
+Command : execute()
+Command *-- CommandConnector
+CommandConnector *-- CommandBackend
+CommandBackend <|-- SoftCommandBackend
+CommandBackend <|-- EpicsCommandBackend
+CommandBackend <|-- TangoCommandBackend
+Command <|-- TriggerableCommand
+TriggerableCommand : trigger()
+```
+
+[](#Command) is an alternative to `Signal` for representing a typed remote procedure call. Unlike signals, a command has a *call signature* rather than a datatype: it accepts typed arguments and returns a typed value.
+
+- [](#Command) is the base class, typed as `Command[P, T]` where `P` is the parameter spec and `T` is the return type. It provides `execute(*args, **kwargs)` returning `AsyncStatus[T]`.
+- [](#TriggerableCommand) is a `Command[[], None]` subclass that additionally satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol via a `trigger()` method. Use this wherever `SignalX` was previously used.
+
+Like `Signal`, `Command` delegates to a [](#CommandBackend):
+- [](#SoftCommandBackend) runs a plain Python callable — useful for pure-software commands and simulation.
+- `EpicsCommandBackend` (`CaCommandBackend` / `PvaCommandBackend`) triggers an EPICS PV write.
+- `TangoCommandBackend` executes a Tango device command, supporting typed input and output.
+
+At `connect()` time, [](#CommandConnector) either connects the real backend or swaps in a [](#MockCommandBackend) for testing.
+
+To construct a soft command:
+```python
+async def my_func(x: int) -> str:
+    return str(x)
+
+cmd = soft_command(my_func, name="my_cmd")
+```
+
+For EPICS:
+```python
+cmd = epics_triggerable_command("PREFIX:Cmd.PROC")
+```
+
+```{seealso}
+[](../how-to/choose-right-baseclass.md)
+```
+
 ## "Standard" Device subclasses
 
 ```{mermaid}
@@ -95,12 +142,14 @@ my_signal = my_cs_signal_r(int, "something")
 :align: center
 classDiagram
 Device <|-- StandardReadable
+Device <|-- StandardMovable
 Device <|-- StandardDetector
 Device <|-- StandardFlyer
 ```
 
 There are also some `Device` subclasses that provide helpers for implementing particular protocols, namely:
 - [](#StandardReadable) that supports the [Readable](#bluesky.protocols.Readable) protocol using the values of its children
+- [](#StandardMovable) that supports the [Movable](#bluesky.protocols.Movable), [Locatable](#bluesky.protocols.Locatable), [Stoppable](#bluesky.protocols.Stoppable), and [Subscribable](#bluesky.protocols.Subscribable) protocols by composing a [](#MovableLogic) instance
 - [](#StandardDetector) that supports the [WritesStreamAssets](#bluesky.protocols.WritesStreamAssets) protocol using logic classes for the detector driver and writer
 - [](#StandardFlyer) that supports the [Flyable](#bluesky.protocols.Flyable) protocol for motion and trigger systems
 

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 import typing
 from collections.abc import Awaitable, Callable
@@ -20,6 +21,7 @@ from ophyd.signal import EpicsSignal
 
 from ophyd_async.core import (
     Array1D,
+    Command,
     NotConnectedError,
     Signal,
     SignalDatatypeT,
@@ -34,20 +36,32 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
 )
 from ophyd_async.epics.core import (
+    CaCommandBackend,
     CaSignalBackend,
+    PvaCommandBackend,
     PvaSignalBackend,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
     epics_signal_w,
-    epics_signal_x,
+    epics_triggerable_command,
 )
+
+# format_datatype only renders a datatype for TypeError messages raised
+# internally on a mismatch - a caller never calls it themselves, just sees
+# its output inside an exception - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
+    IOC,
+    EpicsTestCaDevice,
     EpicsTestEnum,
-    EpicsTestIocAndDevices,
+    EpicsTestPvaDevice,
+    EpicsTestPviDevice,
     EpicsTestSubsetEnum,
     EpicsTestTable,
+    generate_random_pv_prefix,
+    start_ioc,
 )
 from ophyd_async.plan_stubs import (
     apply_settings,
@@ -64,18 +78,49 @@ Protocol = Literal["ca", "pva"]
 TIMEOUT = 30.0 if os.name == "nt" else 3.0
 
 
+class EpicsTestIocAndDevices:
+    """Devices for the ca:/pva: sub-topologies of the fixed EPICS test IOC catalog.
+
+    ca: and pva: prefixes each load the ca/pva db files, which now carry
+    PVI directory tags inline, so pvi_device connects at the same pva:
+    prefix as pva_device rather than needing a third IOC "device" instance.
+    Sharing one IOC process/prefix set across all three Devices keeps test
+    startup fast. See `ophyd_async.epics.testing._ioc._testing_ioc_args`
+    for how the IOC backing these prefixes is actually built.
+    """
+
+    def __init__(self):
+        self.prefix = generate_random_pv_prefix()
+        ca_prefix = f"{self.prefix}ca:"
+        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
+        self.ca_device_via_pvi = EpicsTestCaDevice(ca_prefix, with_pvi=True)
+        pva_prefix = f"{self.prefix}pva:"
+        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
+        self.pva_device_via_pvi = EpicsTestPvaDevice(pva_prefix, with_pvi=True)
+        self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
+
+    def get_device(self, protocol: str) -> EpicsTestCaDevice | EpicsTestPvaDevice:
+        return getattr(self, f"{protocol}_device")
+
+    def get_signal(self, protocol: str, name: str) -> SignalRW:
+        return getattr(self.get_device(protocol), name)
+
+    def get_pv(self, protocol: str, name: str) -> str:
+        return f"{protocol}://{self.prefix}{protocol}:{name}"
+
+
 @pytest.fixture(scope="module")
 def ioc_devices():
     ioc_devices = EpicsTestIocAndDevices()
-    ioc_devices.ioc.start()
+    process = start_ioc(IOC, ioc_devices.prefix)
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown
     purge_channel_caches()
-    ioc_devices.ioc.stop()
+    process.stop()
     # Print the IOC process output so in the case of a failing test
     # we will see if anything on the IOC side also failed
-    print(ioc_devices.ioc.output)
+    print(process.output)
 
 
 class ExpectedData(Generic[T]):
@@ -640,6 +685,12 @@ def _get_epics_backend(signal: Signal) -> CaSignalBackend | PvaSignalBackend:
     return backend
 
 
+def _get_command_backend(command: Command) -> CaCommandBackend | PvaCommandBackend:
+    backend = command._connector.backend
+    assert isinstance(backend, CaCommandBackend | PvaCommandBackend)
+    return backend
+
+
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
     assert _get_epics_backend(read_write).read_pv == "ReadWrite"
@@ -667,8 +718,8 @@ def test_signal_helpers():
     write = epics_signal_w(int, "Write")
     assert _get_epics_backend(write).write_pv == "Write"
 
-    execute = epics_signal_x("Execute")
-    assert _get_epics_backend(execute).write_pv == "Execute"
+    execute = epics_triggerable_command("Execute")
+    assert _get_command_backend(execute).write_pv == "Execute"
 
 
 def test_signal_helpers_explicit_read_timeout():
@@ -687,7 +738,7 @@ def test_signal_helpers_explicit_read_timeout():
     write = epics_signal_w(int, "Write", timeout=987)
     assert write._timeout == 987
 
-    execute = epics_signal_x("Execute", timeout=654)
+    execute = epics_triggerable_command("Execute", timeout=654)
     assert execute._timeout == 654
 
 
@@ -946,3 +997,157 @@ def test_subscribe_works_under_re_and_fails_outside(
         "are you trying to run subscribe outside a plan?",
     ):
         s2.subscribe_reading(print)
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_accept_enum(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_enum = epics_triggerable_command(ioc_devices.get_pv(protocol, "enum"))
+    await triggerable_enum.connect()
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_go_command_on_device(ioc_devices: EpicsTestIocAndDevices, protocol):
+    device = ioc_devices.get_device(protocol)
+    await device.go.connect()
+    await device.go.trigger()
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_raise_with_float(
+    ioc_devices: EpicsTestIocAndDevices, protocol
+):
+    triggerable_float = epics_triggerable_command(
+        ioc_devices.get_pv(protocol, "float_prec_1")
+    )
+    with pytest.raises(TypeError, match=re.escape("requires a scalar numeric PV")):
+        await triggerable_float.connect()
+
+
+# --- Generic PVI backend: PviDeviceConnector-discovered EpicsTestPviDevice ---
+# Full get/put/monitor/error-path coverage for every transport, including
+# PVI, lands with the Signal-level system test suite rewrite; these check
+# PVI-specific mechanics that the CA/PVA devices above don't exercise:
+# SignalR/SignalW/SignalRW construction from the "r"/"w"/"rw" PVI
+# designators, PVI winning over a statically-configured PvSuffix, and
+# undeclared PVI entries being added to the Device dynamically.
+
+
+@pytest.fixture
+async def pvi_device(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestPviDevice:
+    await ioc_devices.pvi_device.connect(timeout=TIMEOUT)
+    return ioc_devices.pvi_device
+
+
+async def test_pvi_scalar_signal_kinds(pvi_device: EpicsTestPviDevice):
+    # a_float/wo_float both resolve to the same underlying "float" record:
+    # the PVI r/w/rw designator only controls which Signal type gets built.
+    await pvi_device.a_float.set(1.5)
+    assert await pvi_device.a_float.get_value() == 1.5
+    await pvi_device.wo_float.set(2.5)
+    # mbb_direct_bit_r is a genuine SignalR-only field, reused directly from
+    # EpicsTestCaDevice's own PVI mirror entry (not a synthetic PVI-only one).
+    assert isinstance(await pvi_device.mbb_direct_bit_r.get_value(), bool)
+
+
+async def test_pvi_wins_over_static_pv_suffix(pvi_device: EpicsTestPviDevice):
+    # overridden_float carries PvSuffix("float_prec_1"), but the real PVI
+    # directory points it at the same record as a_float: the PVI-supplied
+    # PV should win once connected.
+    await pvi_device.a_float.set(4.5)
+    assert await pvi_device.overridden_float.get_value() == 4.5
+
+
+async def test_pvi_table(pvi_device: EpicsTestPviDevice):
+    table = await pvi_device.table.get_value()
+    assert isinstance(table, EpicsTestTable)
+    np.testing.assert_array_equal(table.a_bool, [False, False, True, True])
+    np.testing.assert_array_equal(table.a_int, [1, 8, -9, 32])
+    np.testing.assert_array_equal(table.a_float, [1.8, 8.2, -6, 32.9887])
+    assert list(table.a_str) == ["Hello", "World", "Foo", "Bar"]
+    assert list(table.a_enum) == [
+        EpicsTestEnum.A,
+        EpicsTestEnum.B,
+        EpicsTestEnum.A,
+        EpicsTestEnum.C,
+    ]
+
+
+async def test_pvi_ntndarray(pvi_device: EpicsTestPviDevice):
+    value = await pvi_device.ntndarray.get_value()
+    assert isinstance(value, np.ndarray)
+    assert value.shape == (2, 3)
+
+
+async def test_pvi_command(pvi_device: EpicsTestPviDevice):
+    await pvi_device.go.trigger()
+
+
+async def test_pvi_adds_undeclared_signal_dynamically(pvi_device: EpicsTestPviDevice):
+    # extra_int has a PVI entry but is not an annotation on EpicsTestPviDevice
+    assert "extra_int" not in EpicsTestPviDevice.__annotations__
+    extra_int = pvi_device.extra_int  # type: ignore[attr-defined]
+    assert isinstance(extra_int, SignalRW)
+    assert await extra_int.get_value() == 42
+
+
+# --- PVI as a full mirror of EpicsTestCaDevice/EpicsTestPvaDevice ---
+# Every field of the statically PvSuffix-declared devices also has a PVI
+# directory entry keyed by its Python attribute name, so connecting via
+# with_pvi=True should succeed and resolve to the same signals.
+
+
+@pytest.fixture
+async def ca_device_via_pvi(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestCaDevice:
+    await ioc_devices.ca_device_via_pvi.connect(timeout=TIMEOUT)
+    return ioc_devices.ca_device_via_pvi
+
+
+@pytest.fixture
+async def pva_device_via_pvi(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestPvaDevice:
+    await ioc_devices.pva_device_via_pvi.connect(timeout=TIMEOUT)
+    return ioc_devices.pva_device_via_pvi
+
+
+async def test_ca_device_full_pvi_mirror(ca_device_via_pvi: EpicsTestCaDevice):
+    # Successfully connecting already proves every annotated field resolved
+    # via PVI (DeviceFiller.check_filled requires 100% coverage) -- spot
+    # check a representative handful of values for confidence. These PVs are
+    # shared with other tests in this module-scoped IOC, so round-trip known
+    # values rather than asserting untouched initial ones.
+    await ca_device_via_pvi.a_int.set(50)
+    assert await ca_device_via_pvi.a_int.get_value() == 50
+    await ca_device_via_pvi.a_bool.set(False)
+    assert await ca_device_via_pvi.a_bool.get_value() is False
+    await ca_device_via_pvi.a_str.set("goodbye")
+    assert await ca_device_via_pvi.a_str.get_value() == "goodbye"
+    uint8a_value = np.array([12, 34], dtype=np.uint8)
+    await ca_device_via_pvi.uint8a.set(uint8a_value)
+    np.testing.assert_array_equal(
+        await ca_device_via_pvi.uint8a.get_value(), uint8a_value
+    )
+    await ca_device_via_pvi.subset_enum.set(EpicsTestSubsetEnum.A)
+    assert await ca_device_via_pvi.subset_enum.get_value() == EpicsTestSubsetEnum.A
+    assert (
+        await ca_device_via_pvi.mbb_direct_bit_r.get_value()
+        == await ca_device_via_pvi.mbb_direct_bit.get_value()
+    )
+    await ca_device_via_pvi.go.trigger()
+
+
+async def test_pva_device_full_pvi_mirror(pva_device_via_pvi: EpicsTestPvaDevice):
+    table = await pva_device_via_pvi.table.get_value()
+    assert isinstance(table, EpicsTestTable)
+    ntndarray = await pva_device_via_pvi.ntndarray.get_value()
+    assert ntndarray.shape == (2, 3)
+    # int8a/a_int are shared with other tests in this module-scoped IOC, so
+    # round-trip a known value rather than asserting the untouched initial
+    # one (which other tests may have already overwritten by this point).
+    await pva_device_via_pvi.a_int.set(50)
+    assert await pva_device_via_pvi.a_int.get_value() == 50
+    int8a_value = np.array([-8, 3, 44], dtype=np.int8)
+    await pva_device_via_pvi.int8a.set(int8a_value)
+    np.testing.assert_array_equal(
+        await pva_device_via_pvi.int8a.get_value(), int8a_value
+    )

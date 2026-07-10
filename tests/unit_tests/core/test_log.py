@@ -4,10 +4,21 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import Device, _log, config_ophyd_async_logging  # noqa: PLC2701
-
-# Allow this importing of _log for now to test the internal interface
-# But this needs resolving.
+# _log itself is still imported privately (below): _validate_level,
+# current_handler, ColoredFormatterWithDeviceName and the DEFAULT_* format
+# constants are implementation details of config_ophyd_async_logging, not
+# things a downstream user would construct or call directly (they configure
+# logging via config_ophyd_async_logging's own kwargs instead) - checked,
+# nothing here looks missing from the public interface. `logger` itself
+# *was* missing though (already in _log.__all__, just never re-exported
+# from ophyd_async.core) - fixed as part of this same check, so it's
+# imported directly (not via _log) alongside it now.
+from ophyd_async.core import (
+    Device,
+    _log,  # noqa: PLC2701
+    config_ophyd_async_logging,
+    logger,
+)
 
 
 def test_validate_level():
@@ -25,13 +36,13 @@ def test_validate_level():
 def test_default_config_ophyd_async_logging():
     config_ophyd_async_logging()
     assert isinstance(_log.current_handler, logging.StreamHandler)
-    assert _log.logger.getEffectiveLevel() <= logging.WARNING
+    assert logger.getEffectiveLevel() <= logging.WARNING
 
 
 def test_config_ophyd_async_logging_with_file_handler(tmp_path):
     config_ophyd_async_logging(file=tmp_path / "file")
     assert isinstance(_log.current_handler, logging.StreamHandler)
-    assert _log.logger.getEffectiveLevel() <= logging.WARNING
+    assert logger.getEffectiveLevel() <= logging.WARNING
 
 
 def test_config_ophyd_async_logging_removes_extra_handlers():
@@ -50,6 +61,9 @@ def test_config_ophyd_async_logging_removes_extra_handlers():
 
     fake_logger = FakeLogger()
     with (
+        # Patch the module attribute, not the re-exported name: config_
+        # ophyd_async_logging's own body looks up `logger` via _log's
+        # module namespace at call time, so that's what needs replacing.
         patch("ophyd_async.core._log.logger", fake_logger),
     ):
         config_ophyd_async_logging()
@@ -68,7 +82,7 @@ def test_logger_adapter_ophyd_async_device():
             fmt=_log.DEFAULT_FORMAT, datefmt=_log.DEFAULT_DATE_FORMAT, no_color=True
         )
     )
-    _log.logger.addHandler(log_stream)
+    logger.addHandler(log_stream)
 
     device = Device(name="test_device")
     device._log = logging.LoggerAdapter(

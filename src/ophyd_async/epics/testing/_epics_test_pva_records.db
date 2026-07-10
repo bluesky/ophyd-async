@@ -176,3 +176,79 @@ record(waveform, "$(device)ntndarray:data")
         }
     })
 }
+
+# ntndarray/table are QSRV-only virtual PVs (built from the ntndarray:*/
+# table:* records above), so they have no single record of their own to
+# reopen for PVI. Alias each into the PVI directory via a stringin record
+# whose VAL holds its PV name, the same trick PandA uses for its QSRV-only
+# SEQ:n:TABLE structure.
+record(stringin, "$(device)ntndarray:_pvi_ref") {
+    field(VAL, "$(device)ntndarray")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.ntndarray.r": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)table:_pvi_ref") {
+    field(VAL, "$(device)table")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.table.rw": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+
+# Remaining EpicsTestPvaDevice-only array fields, keyed by attribute name,
+# so EpicsTestPvaDevice(prefix, with_pvi=True) resolves the same signals as
+# the statically PvSuffix-declared version.
+# int8a is FTVL=CHAR: QSRV's default "CHAR waveform = C-string" conversion
+# kicks in for any record that carries a Q:group tag directly (truncating
+# the array at the first zero byte), so alias it via a stringin ref instead
+# of reopening it in place -- same indirection already used for
+# ntndarray/table above.
+record(stringin, "$(device)int8a:_pvi_ref") {
+    field(VAL, "$(device)int8a")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.int8a.rw": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)uint16a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.uint16a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)uint32a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.uint32a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)int64a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.int64a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)uint64a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.uint64a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}

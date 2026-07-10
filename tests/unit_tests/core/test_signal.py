@@ -37,13 +37,27 @@ from ophyd_async.core import (
 from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
+
+# _SignalCache is the internal object behind Signal.subscribe()/caching -
+# a caller gets one automatically, never constructs it directly. Tested
+# here (test_get_reading_runtime_error/test_notify_runtime_error) to
+# exercise internal error paths that aren't otherwise reachable from the
+# public Signal surface - checked, nothing here looks missing from the
+# public interface.
 from ophyd_async.core._signal import (  # noqa: PLC2701
     _SignalCache,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+
+# get_signal_backend_type is the internal ca:/pva: prefix-to-backend-class
+# dispatch epics_signal_rw uses under the hood - a caller only ever sees
+# the prefix-based PV string, never the protocol/backend-class mapping
+# directly - checked, nothing here looks missing from the public interface.
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
     ExampleEnum,
+    ExampleSubsetEnum,
+    ExampleSupersetEnum,
     ExampleTable,
     OneOfEverythingDevice,
     assert_configuration,
@@ -585,6 +599,8 @@ async def test_assert_configuration_everything(
             "everything-device-a_str": partial_reading("test_string"),
             "everything-device-a_bool": partial_reading(True),
             "everything-device-a_enum": partial_reading("Bbb"),
+            "everything-device-a_subset_enum": partial_reading("Bbb"),
+            "everything-device-a_superset_enum": partial_reading("Bbb"),
             "everything-device-boola": partial_reading(_array_vals["boola"]),
             "everything-device-int8a": partial_reading(_array_vals["int8a"]),
             "everything-device-uint8a": partial_reading(_array_vals["uint8a"]),
@@ -635,6 +651,18 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.a_bool,
         {"everything-device-a_bool": partial_reading(True)},
+    )
+    await assert_reading(
+        one_of_everything_device.a_subset_enum,
+        {
+            "everything-device-a_subset_enum": partial_reading(ExampleSubsetEnum.B),
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.a_superset_enum,
+        {
+            "everything-device-a_superset_enum": partial_reading(ExampleSupersetEnum.B),
+        },
     )
     await assert_reading(
         one_of_everything_device.boola,
@@ -872,6 +900,8 @@ async def test_assert_value_everything(
     await assert_value(one_of_everything_device.a_bool, True)
     # for bools we must provide an array not a list for approx comparison to work
     await assert_value(one_of_everything_device.a_enum, ExampleEnum.B)
+    await assert_value(one_of_everything_device.a_subset_enum, ExampleSubsetEnum.B)
+    await assert_value(one_of_everything_device.a_superset_enum, ExampleSupersetEnum.B)
     await assert_value(one_of_everything_device.boola, _array_vals["boola"])
     await assert_value(
         one_of_everything_device.int8a,
@@ -1099,3 +1129,89 @@ async def test_can_unsubscribe_from_subscribe_callback():
         call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
         call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
     ]
+
+
+async def test_soft_signal_rw_with_getter():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+
+
+async def test_soft_signal_rw_with_setter():
+    store = [0.0]
+    signal = soft_signal_rw(float, setter=lambda v: store.__setitem__(0, v))
+    await signal.connect()
+    await signal.set(7.0)
+    assert store[0] == pytest.approx(7.0)
+
+
+async def test_soft_signal_rw_with_getter_and_setter():
+    store = [0.0]
+    signal = soft_signal_rw(
+        float,
+        setter=lambda v: store.__setitem__(0, v),
+        getter=lambda: store[0],
+    )
+    await signal.connect()
+    await signal.set(3.0)
+    store[0] = 99.0  # external change
+    assert await signal.get_value() == pytest.approx(99.0)
+
+
+async def test_soft_signal_rw_with_poll_period():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0], poll_period=0.05)
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 5.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(5.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_rw_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_rw(float, poll_period=0.1)
+
+
+async def test_soft_signal_r_and_setter_with_getter():
+    store = [0.0]
+    signal, set_value = soft_signal_r_and_setter(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+    # set_value still works independently of the getter
+    set_value(99.0)
+    assert signal._connector.backend.reading["value"] == pytest.approx(99.0)
+
+
+async def test_soft_signal_r_and_setter_with_poll_period():
+    store = [0.0]
+    signal, _ = soft_signal_r_and_setter(
+        float, getter=lambda: store[0], poll_period=0.05
+    )
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 7.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(7.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_r_and_setter_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_r_and_setter(float, poll_period=0.1)

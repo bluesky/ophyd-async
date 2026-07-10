@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import re
 from collections.abc import Mapping
 
@@ -20,12 +21,13 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalW,
-    SignalX,
+    TriggerableCommand,
     gather_dict,
 )
 
-from ._epics_connector import fill_backend_with_prefix
-from ._signal import PvaSignalBackend, pvget_with_timeout
+from ._epics_connector import fill_backend_with_prefix, fill_command_with_prefix
+from ._signal import PvaCommandBackend, PvaSignalBackend, pvget_with_timeout
+from ._util import EpicsCommandBackend
 
 
 class PviDeviceConnector(DeviceConnector):
@@ -53,18 +55,38 @@ class PviDeviceConnector(DeviceConnector):
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
+
+            def _command_backend_factory(
+                sig: inspect.Signature | None,
+            ) -> EpicsCommandBackend:
+                # EPICS only supports void/void commands (plain PV put); typed
+                # Command[P, T] annotations are a mistake on an EPICS device.
+                if sig is not None:
+                    raise TypeError(
+                        f"{device.name}: EPICS only supports TriggerableCommand /"
+                        " Command[[], None]; typed Command with parameters is not"
+                        " yet supported over EPICS"
+                    )
+                return PvaCommandBackend()
+
             self.filler = DeviceFiller(
                 device=device,
                 signal_backend_factory=PvaSignalBackend,
                 device_connector_factory=PviDeviceConnector,
+                command_backend_factory=_command_backend_factory,
             )
-            # Devices will be created with unfilled PviDeviceConnectors
-            list(self.filler.create_devices_from_annotations(filled=False))
             # Signals can be filled in with EpicsSignalSuffix and checked at runtime
             for backend, annotations in self.filler.create_signals_from_annotations(
                 filled=False
             ):
                 fill_backend_with_prefix(self.prefix, backend, annotations)
+            # Commands are filled from PVI tree at connect time
+            for backend, annotations in self.filler.create_commands_from_annotations(
+                filled=False
+            ):
+                fill_command_with_prefix(self.prefix, backend, annotations)
+            # Devices will be created with unfilled PviDeviceConnectors
+            list(self.filler.create_devices_from_annotations(filled=False))
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
@@ -116,6 +138,18 @@ class PviDeviceConnector(DeviceConnector):
                         "Failed to fill DeviceVector. "
                         f"Expected SignalDetails, got {type(vector_child)}"
                     )
+            elif self.pvi_tree.is_command_vector:
+                # DeviceVector of commands
+                if isinstance(vector_child, str):
+                    backend = self.filler.fill_child_command(
+                        device.name, TriggerableCommand, vector_index
+                    )
+                    backend.write_pv = vector_child
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceVector. "
+                        f"Expected str execute PV, got {type(vector_child)}"
+                    )
             else:
                 # DeviceVector of devices
                 if isinstance(vector_child, PviTree):
@@ -137,6 +171,11 @@ class PviDeviceConnector(DeviceConnector):
             )
             backend.read_pv = signal_details.read_pv
             backend.write_pv = signal_details.write_pv
+
+        # Fill all commands ("x" entries from PVI tree)
+        for command_name, execute_pv in self.pvi_tree.commands.items():
+            backend = self.filler.fill_child_command(command_name, TriggerableCommand)
+            backend.write_pv = execute_pv
 
         # Check that all the requested children have been filled
         suffix = f"\n{self.error_hint}" if self.error_hint else ""
@@ -167,9 +206,6 @@ class SignalDetails(ConfinedModel):
 
             case {"w": write_pv}:
                 return cls(signal_type=SignalW, read_pv=write_pv, write_pv=write_pv)
-
-            case {"x": execute_pv}:
-                return cls(signal_type=SignalX, read_pv=execute_pv, write_pv=execute_pv)
 
             case _:
                 raise TypeError(f"Can't process entry {entry}")
@@ -256,6 +292,9 @@ class PviTree(ConfinedModel):
     :param signals:
         A mapping of signal names to `SignalDetails` objects.
 
+    :param commands:
+        A mapping of command names to their execute PV strings (from "x" PVI entries).
+
     :param sub_devices:
         A mapping of sub-device names to their corresponding `PviTree` objects.
 
@@ -270,8 +309,13 @@ class PviTree(ConfinedModel):
 
     pvi_pv: str = Field(default="")
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
+    commands: Mapping[str, str] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
-    vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
+    # A `str` vector_child is the execute PV of a DeviceVector of commands
+    # (a "__N" entry whose only key is "x") -- see is_command_vector below.
+    vector_children: Mapping[int, PviTree | SignalDetails | str] = Field(
+        default_factory=dict
+    )
 
     @classmethod
     async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
@@ -291,6 +335,13 @@ class PviTree(ConfinedModel):
         # these entries are stored under the parent PVI structure name
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
+        # Separate "x" (command) entries before processing signals
+        commands: dict[str, str] = {
+            entry_name: entries.pop(entry_name)["x"]
+            for entry_name in list(entries)
+            if not isinstance(entries[entry_name], list)
+            and set(entries[entry_name]) == {"x"}
+        }
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
             for entry_name in list(entries)
@@ -307,10 +358,11 @@ class PviTree(ConfinedModel):
             }
         )
 
-        vector_children: dict[int, PviTree | SignalDetails] = {}
-        # Filter vector children out of stand-alone devices
-
-        for processed_entries in (sub_trees, signal_details):
+        vector_children: dict[int, PviTree | SignalDetails | str] = {}
+        # Filter vector children out of stand-alone devices/signals/commands
+        # ("commands" holds bare execute-PV strings for "__N" entries here,
+        # i.e. a DeviceVector of commands).
+        for processed_entries in (sub_trees, signal_details, commands):
             for child_name in list(processed_entries):
                 if m := re.match(r"^__(\d+)$", child_name):
                     sub_tree = processed_entries.pop(child_name)
@@ -319,6 +371,7 @@ class PviTree(ConfinedModel):
         return PviTree(
             pvi_pv=pvi_pv,
             signals=signal_details,
+            commands=commands,
             sub_devices=sub_trees,
             vector_children=vector_children,
         )
@@ -358,6 +411,12 @@ class PviTree(ConfinedModel):
         """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
         return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
 
+    @computed_field
+    @property
+    def is_command_vector(self) -> bool:
+        """Flags if a PviTree represents a DeviceVector of Commands."""
+        return any(isinstance(v, str) for v in self.vector_children.values())
+
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
         children = {
@@ -396,7 +455,7 @@ class PviTree(ConfinedModel):
     @classmethod
     def _check_consistency_of_vector_children_type(
         cls,
-        vector_children: Mapping[int, PviTree | SignalDetails],
+        vector_children: Mapping[int, PviTree | SignalDetails | str],
     ):
         """Validates that parsed vector children are all of the same type."""
         if not (
@@ -408,10 +467,14 @@ class PviTree(ConfinedModel):
                 isinstance(vector_child, PviTree)
                 for vector_child in vector_children.values()
             )
+            or all(
+                isinstance(vector_child, str)
+                for vector_child in vector_children.values()
+            )
         ):
             raise ValueError(
                 "Failed to validate PviTree. "
-                "vector_children must all be of type `SignalDetails` or `PviTree`. "
-                f"Received mixed type: {vector_children=}"
+                "vector_children must all be of type `SignalDetails`, `PviTree` "
+                f"or `str`. Received mixed type: {vector_children=}"
             )
         return vector_children

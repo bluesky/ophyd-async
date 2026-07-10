@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceFiller,
+    DeviceProcessor,
     DeviceVector,
     NotConnectedError,
     Reference,
@@ -107,8 +108,19 @@ def test_device_children(parent: DummyDeviceGroup):
 def test_device_vector_children():
     parent = DummyDeviceGroup("root")
 
-    device_vector_children = list(parent.dict_with_children.items())
-    assert device_vector_children == [(123, parent.dict_with_children[123])]
+    vector_signal = soft_signal_rw(int, name="vector_signal")
+    parent.dict_with_children.vector_signal = vector_signal
+
+    indexed_children = list(parent.dict_with_children.items())
+    all_children = list(parent.dict_with_children.children())
+
+    # Indexed children
+    assert indexed_children == [(123, parent.dict_with_children[123])]
+    # Signals and indexed children
+    assert all_children == [
+        ("123", parent.dict_with_children[123]),
+        ("vector_signal", vector_signal),
+    ]
 
 
 async def test_children_of_device_have_set_names_and_get_connected(
@@ -290,11 +302,17 @@ def test_device_filler_check_filled_with_optional_signals():
     def mock_connector_factory():
         return Mock()
 
+    def mock_command_backend_factory(signature):
+        backend = Mock()
+        backend.signature = signature
+        return backend
+
     device = TestDevice()
     filler = DeviceFiller(
         device=device,
         signal_backend_factory=mock_backend_factory,
         device_connector_factory=mock_connector_factory,
+        command_backend_factory=mock_command_backend_factory,
     )
 
     # Create signals from annotations (unfilled)
@@ -318,3 +336,40 @@ def test_device_filler_check_filled_with_optional_signals():
     assert isinstance(device.mandatory_signal, SignalRW)
     assert hasattr(device, "optional_signal")
     assert device.optional_signal is None
+    assert "optional_signal" not in dict(device.children())
+
+
+class DummyDisconnectDevice(Device):
+    async def connect(
+        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+    ):
+        raise NotConnectedError("This device never connects.")
+
+
+async def test_device_processor_customization():
+    registry = {}
+
+    async def process_devices(devices: dict[str, Device]):
+        nonlocal registry
+
+        coros = {name: device.connect(True, 1.0) for name, device in devices.items()}
+
+        try:
+            await wait_for_connection(**coros)
+
+            for device in devices.values():
+                registry[device.name] = device
+        except NotConnectedError as exc:
+            for name, device in devices.items():
+                if name not in exc.sub_errors:
+                    registry[device.name] = device
+
+            raise
+
+    with pytest.raises(NotConnectedError):
+        async with DeviceProcessor(process_devices):
+            ok = DummyDeviceGroup("parent")
+            not_ok = DummyDisconnectDevice("not_ok")
+
+    assert ok.name in registry
+    assert not_ok.name not in registry

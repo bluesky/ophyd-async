@@ -7,9 +7,13 @@ from typing import TypeVar, get_origin
 import numpy as np
 import pytest
 from tango.asyncio import DeviceProxy
-from test_base_device import TestDevice
 
-from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
+from ophyd_async.core import (
+    NotConnectedError,
+    SignalRW,
+    StandardReadable,
+    StrictEnum,
+)
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
@@ -21,12 +25,9 @@ from ophyd_async.tango.core import (
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
-    tango_signal_x,
+    tango_triggerable_command,
 )
-from ophyd_async.tango.testing import (
-    ExampleStrEnum,
-    OneOfEverythingTangoDevice,
-)
+from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     MonitorQueue,
     assert_reading,
@@ -38,17 +39,8 @@ T = TypeVar("T")
 
 
 # --------------------------------------------------------------------
-#               TestDevice
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def tango_test_device(subprocess_helper):
-    with subprocess_helper(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
-    ) as context:
-        yield context.trls["test/device/1"]
-
-
+# tango_test_device fixture comes from conftest.py, shared with every other
+# test module in this directory.
 # --------------------------------------------------------------------
 def assert_enum(initial_value, readout_value):
     if type(readout_value) in [list, tuple]:
@@ -61,19 +53,11 @@ def assert_enum(initial_value, readout_value):
 
 
 # --------------------------------------------------------------------
-#               fixtures to run Echo device
+# everything_device_trl fixture comes from conftest.py, shared with every other
+# test module in this directory.
 # --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def everything_device_trl(subprocess_helper):
-    with subprocess_helper(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
-    ) as context:
-        yield context.trls["test/device/2"]
-
-
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
-    # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    pass
 
 
 @pytest.fixture()
@@ -196,27 +180,6 @@ async def assert_put_read(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_cmd(
-    everything_device: TangoDevice, everything_signal_info
-):
-    await everything_device.connect()
-    for cmd_data in everything_signal_info.values():
-        if cmd_data.cmd_name is None:
-            continue
-        put_value = cmd_data.random_value()
-        # With the given datatype, check we have the correct initial value
-        # and putting works
-        signal = getattr(everything_device, cmd_data.cmd_name)
-        source = get_full_attr_trl(everything_device._connector.trl, cmd_data.cmd_name)
-        await assert_put_read(signal, source, put_value, cmd_data.py_type)
-        # # With guessed datatype, check we can set it back to the initial value
-        await assert_put_read(signal, source, put_value)
-        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-        await asyncio.gather(*tasks)
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 async def test_tango_signal_r(everything_device_trl: str, everything_signal_info):
     timeout = 0.2
     for attr_data in everything_signal_info.values():
@@ -291,17 +254,15 @@ async def test_tango_signal_rw(everything_device_trl: str, everything_signal_inf
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.timeout(2.0)
-async def test_tango_signal_x(tango_test_device: str):
+async def test_tango_triggerable_command(tango_test_device: str):
     timeout = 0.2
-    signal = tango_signal_x(
-        write_trl=get_full_attr_trl(tango_test_device, "clear"),
+    signal = tango_triggerable_command(
+        trl=get_full_attr_trl(tango_test_device, "clear"),
         timeout=timeout,
         name="test_signal",
     )
     await signal.connect()
-    status = signal.trigger()
-    await status
-    assert status.done is True and status.success is True
+    await signal.execute()
 
 
 async def assert_val_reading(signal, value, name=""):
@@ -320,37 +281,8 @@ async def test_set_with_converter(everything_device_trl):
     await everything_device.strenum.set(ExampleStrEnum.B)
     await everything_device.strenum.set(ExampleStrEnum.C.value)
     # setting enum spectrum works with lists and arrays
-    await everything_device.strenum_spectrum.set(["AAA", "BBB"])
-    await everything_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
-    await everything_device.strenum_spectrum.set(
-        [
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ]
-    )
-    await everything_device.strenum_spectrum.set(
-        np.array(
-            [
-                ExampleStrEnum.A,
-                ExampleStrEnum.B,
-            ],
-            dtype=ExampleStrEnum,
-            # when using enum instances, must use array with correct dtype
-            # passing this as a list will cast the strings incorrectly
-        )
-    )
 
     await everything_device.my_state.set(DevStateEnum.EXTRACT)
-    await everything_device.my_state_spectrum.set(
-        np.array(
-            [
-                DevStateEnum.OPEN,
-                DevStateEnum.CLOSE,
-                DevStateEnum.MOVING,
-            ],
-            dtype=DevStateEnum,
-        )
-    )
 
 
 @pytest.mark.timeout(18.8)
@@ -362,8 +294,8 @@ async def test_assert_val_reading_everything_tango(
     await everything_device.connect()
     await everything_device.reset_values.trigger()
     await asyncio.sleep(1)
-    await assert_val_reading(everything_device.str, esi["str"].initial)
-    await assert_val_reading(everything_device.bool, esi["bool"].initial)
+    await assert_val_reading(everything_device.a_str, esi["a_str"].initial)
+    await assert_val_reading(everything_device.a_bool, esi["a_bool"].initial)
     await assert_val_reading(everything_device.strenum, esi["strenum"].initial)
     await assert_val_reading(everything_device.int8, esi["int8"].initial)
     await assert_val_reading(everything_device.uint8, esi["uint8"].initial)
@@ -378,13 +310,10 @@ async def test_assert_val_reading_everything_tango(
     await assert_val_reading(everything_device.my_state, esi["my_state"].initial)
 
     await assert_val_reading(
-        everything_device.str_spectrum, esi["str_spectrum"].initial
+        everything_device.a_str_spectrum, esi["a_str_spectrum"].initial
     )
     await assert_val_reading(
-        everything_device.bool_spectrum, esi["bool_spectrum"].initial
-    )
-    await assert_val_reading(
-        everything_device.strenum_spectrum, esi["strenum_spectrum"].initial
+        everything_device.a_bool_spectrum, esi["a_bool_spectrum"].initial
     )
     await assert_val_reading(
         everything_device.int8_spectrum, esi["int8_spectrum"].initial
@@ -416,11 +345,10 @@ async def test_assert_val_reading_everything_tango(
     await assert_val_reading(
         everything_device.float64_spectrum, esi["float64_spectrum"].initial
     )
-    await assert_val_reading(
-        everything_device.my_state_spectrum, esi["my_state_spectrum"].initial
-    )
 
-    await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
+    await assert_val_reading(
+        everything_device.a_bool_image, esi["a_bool_image"].initial
+    )
     await assert_val_reading(everything_device.int8_image, esi["int8_image"].initial)
     await assert_val_reading(everything_device.uint8_image, esi["uint8_image"].initial)
     await assert_val_reading(everything_device.int16_image, esi["int16_image"].initial)
@@ -580,7 +508,7 @@ async def test_infer_python_type(everything_device_trl):
 
 class TangoEverythingOphydDeviceBadAnnotation(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
+    strenum: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
 
 
 @pytest.fixture()
