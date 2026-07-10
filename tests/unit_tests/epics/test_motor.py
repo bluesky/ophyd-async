@@ -21,7 +21,7 @@ from ophyd_async.core import (
     set_mock_value,
     soft_signal_rw,
 )
-from ophyd_async.epics.motor import Motor, MotorLimitsError
+from ophyd_async.epics.motor import Motor, MotorLimitsError, VelocityRespectingMotorMock
 from ophyd_async.testing import (
     StatusWatcher,
     wait_for_pending_wakeups,
@@ -44,6 +44,13 @@ async def motor():
     set_mock_value(motor.high_limit_travel, 21)
     set_mock_value(motor.dial_low_limit_travel, -11)
     set_mock_value(motor.dial_high_limit_travel, 21)
+    yield motor
+
+
+@pytest.fixture
+async def velocity_respecting_motor():
+    motor = Motor("BLxxI-MO-TABLE-01:X", name="motor")
+    await motor.connect(mock=VelocityRespectingMotorMock())
     yield motor
 
 
@@ -565,3 +572,27 @@ async def test_instant_motor_mock_preserves_parent_mock_tracking():
     # Verify the mock calls include the child operations
     assert any("x" in str(call) for call in parent_mock_obj.mock_calls)
     assert any("y" in str(call) for call in parent_mock_obj.mock_calls)
+
+
+async def test_velocity_respecting_motor_mock_behavior(
+    velocity_respecting_motor: Motor,
+):
+    """Test that move time matches distance / velocity + 2 * acceleration_time."""
+    await velocity_respecting_motor.velocity.set(50.0)
+    await velocity_respecting_motor.acceleration_time.set(0.05)
+
+    # Expected: abs(10 - 0) / 50 + 2 * 0.05 = 0.3s
+    start = asyncio.get_event_loop().time()
+    status = velocity_respecting_motor.set(10.0)
+    await status
+    assert status.success
+    assert await velocity_respecting_motor.user_readback.get_value() == 10.0
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.3, abs=0.01)
+
+    # Expected: abs(-5 - 10) / 50 + 2 * 0.05 = 0.4s
+    start = asyncio.get_event_loop().time()
+    status = velocity_respecting_motor.set(-5.0)
+    await status
+    assert status.success
+    assert await velocity_respecting_motor.user_readback.get_value() == -5.0
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.4, abs=0.01)
