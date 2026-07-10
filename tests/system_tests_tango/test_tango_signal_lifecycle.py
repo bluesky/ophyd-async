@@ -27,7 +27,7 @@ import pytest
 import tango
 from bluesky.protocols import Location
 
-from ophyd_async.core import Array1D, SignalRW, StandardReadable
+from ophyd_async.core import Array1D, DeviceVector, SignalRW, StandardReadable
 from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 from ophyd_async.tango.testing import ExampleStrEnum, TangoTestDevice
 from ophyd_async.testing import MonitorQueue, approx_value
@@ -204,6 +204,46 @@ async def test_signal_mock_parity(
         put_value = await real_signal.get_value()
         await mock_signal.set(put_value)
         assert approx_value(put_value) == await mock_signal.get_value()
+
+
+class _DeviceVectorTestDevice(TangoDevice, StandardReadable):
+    """Minimal declarative Device with a `DeviceVector` field.
+
+    Neither `TangoTestDevice` nor `OneOfEverythingTangoDevice` (the real
+    server it pairs with) declares a `DeviceVector` field, so mock-connecting
+    the real curated device never exercises
+    `TangoDeviceConnector.connect_mock`'s `isinstance(device, DeviceVector)`
+    branch (added on this same PR to fix a bug where it unconditionally
+    called `create_device_vector_entries_to_mock` for *every* device, vector
+    or not). This one-off Device exists purely to mock-connect and exercise
+    that branch - it's never connected for real, so `items` isn't backed by
+    any actual Tango attribute.
+    """
+
+    items: DeviceVector[SignalRW[int]]
+
+    def __init__(self, name: str = "") -> None:
+        super().__init__(name=name, auto_fill_signals=False)
+
+
+@pytest.mark.timeout(5.0)
+async def test_device_vector_mock_connect():
+    """`connect(mock=True)` fills a `DeviceVector` field with mock entries.
+
+    See `_DeviceVectorTestDevice`'s docstring for why this needs its own
+    throwaway Device rather than reusing `TangoTestDevice`.
+    """
+    device = _DeviceVectorTestDevice(name="vector")
+    await device.connect(mock=True)
+
+    assert set(device.items) == {1, 2}
+    for signal in device.items.values():
+        assert isinstance(signal, SignalRW)
+
+    # Each entry behaves like any other mock signal - settable, gettable,
+    # never touching the network.
+    await device.items[1].set(5)
+    assert await device.items[1].get_value() == 5
 
 
 @pytest.mark.timeout(5.0)
