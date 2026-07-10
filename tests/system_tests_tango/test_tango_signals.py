@@ -7,7 +7,6 @@ from typing import TypeVar, get_origin
 import numpy as np
 import pytest
 from tango.asyncio import DeviceProxy
-from test_base_device import TestDevice
 
 from ophyd_async.core import (
     NotConnectedError,
@@ -28,11 +27,7 @@ from ophyd_async.tango.core import (
     tango_signal_w,
     tango_triggerable_command,
 )
-from ophyd_async.tango.testing import (
-    ExampleStrEnum,
-    OneOfEverythingTangoDevice,
-    TangoSubprocessDeviceServer,
-)
+from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     MonitorQueue,
     assert_reading,
@@ -44,17 +39,8 @@ T = TypeVar("T")
 
 
 # --------------------------------------------------------------------
-#               TestDevice
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def tango_test_device():
-    with TangoSubprocessDeviceServer(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
-    ) as context:
-        yield context.trls["test/device/1"]
-
-
+# tango_test_device fixture comes from conftest.py, shared with every other
+# test module in this directory.
 # --------------------------------------------------------------------
 def assert_enum(initial_value, readout_value):
     if type(readout_value) in [list, tuple]:
@@ -67,16 +53,9 @@ def assert_enum(initial_value, readout_value):
 
 
 # --------------------------------------------------------------------
-#               fixtures to run Echo device
+# everything_device_trl fixture comes from conftest.py, shared with every other
+# test module in this directory.
 # --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def everything_device_trl():
-    with TangoSubprocessDeviceServer(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
-    ) as context:
-        yield context.trls["test/device/2"]
-
-
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     pass
 

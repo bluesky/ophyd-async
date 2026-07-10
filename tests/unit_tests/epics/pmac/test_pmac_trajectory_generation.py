@@ -6,14 +6,19 @@ from scanspec.specs import Fly, Line, Spiral
 from ophyd_async.core import set_mock_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
+
+# MIN_INTERVAL/PVT/Trajectory (intermediate trajectory-math artifacts) and
+# _PmacMotorInfo (an internal per-motor accel/resolution dataclass, built
+# via its own from_motors() classmethod) are all consumed entirely inside
+# PmacTrajectoryTriggerLogic (the public façade, `ophyd_async.epics.pmac`)
+# and never returned to a caller - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (  # noqa: PLC2701
     MIN_INTERVAL,
     PVT,
     Trajectory,
 )
-from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
-    _PmacMotorInfo,
-)
+from ophyd_async.epics.pmac._utils import _PmacMotorInfo  # noqa: PLC2701
 
 
 @pytest.fixture

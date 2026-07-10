@@ -18,11 +18,7 @@ from ophyd_async.tango.core import (
     tango_command,
     tango_triggerable_command,
 )
-from ophyd_async.tango.testing import (
-    ExampleStrEnum,
-    OneOfEverythingTangoDevice,
-    TangoSubprocessDeviceServer,
-)
+from ophyd_async.tango.testing import ExampleStrEnum
 
 TEST_PARAMS = [
     (None, None, "void_cmd"),
@@ -66,16 +62,9 @@ TEST_PARAMS = [
 
 
 # --------------------------------------------------------------------
-#               fixtures to run Echo device
+# everything_device_trl fixture comes from conftest.py, shared with every
+# other test module in this directory.
 # --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def everything_device_trl():
-    with TangoSubprocessDeviceServer(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
-    ) as context:
-        yield context.trls["test/device/2"]
-
-
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
     strenum_cmd: Command[[ExampleStrEnum], ExampleStrEnum]

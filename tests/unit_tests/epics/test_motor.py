@@ -10,7 +10,6 @@ from ophyd_async.core import (
     Device,
     DeviceMock,
     FlyMotorInfo,
-    LazyMock,
     callback_on_mock_put,
     default_mock_class,
     get_mock_put,
@@ -22,7 +21,7 @@ from ophyd_async.core import (
     set_mock_value,
     soft_signal_rw,
 )
-from ophyd_async.epics import motor
+from ophyd_async.epics.motor import Motor, MotorLimitsError
 from ophyd_async.testing import (
     StatusWatcher,
     wait_for_pending_wakeups,
@@ -30,30 +29,30 @@ from ophyd_async.testing import (
 
 
 @pytest.fixture
-async def sim_motor():
+async def motor():
     # Opt out of the default mocking behaviour so we can test it
     # better below
-    sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
-    await sim_motor.connect(mock=LazyMock())
+    motor = Motor("BLxxI-MO-TABLE-01:X", name="motor")
+    await motor.connect(mock=DeviceMock())
 
-    set_mock_units(sim_motor.user_readback, "mm")
-    set_mock_precision(sim_motor.user_readback, 3)
-    set_mock_value(sim_motor.velocity, 1)
+    set_mock_units(motor.user_readback, "mm")
+    set_mock_precision(motor.user_readback, 3)
+    set_mock_value(motor.velocity, 1)
     # Widen limits to accommodate ramp distances in fly scan trajectories
     # (Previously dial limits were 0,0 which skipped all limit checks)
-    set_mock_value(sim_motor.low_limit_travel, -11)
-    set_mock_value(sim_motor.high_limit_travel, 21)
-    set_mock_value(sim_motor.dial_low_limit_travel, -11)
-    set_mock_value(sim_motor.dial_high_limit_travel, 21)
-    yield sim_motor
+    set_mock_value(motor.low_limit_travel, -11)
+    set_mock_value(motor.high_limit_travel, 21)
+    set_mock_value(motor.dial_low_limit_travel, -11)
+    set_mock_value(motor.dial_high_limit_travel, 21)
+    yield motor
 
 
-async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
-    set_mock_put_proceeds(sim_motor.user_setpoint, False)
-    s = sim_motor.set(0.55)
+async def test_motor_moving_well(motor: Motor) -> None:
+    set_mock_put_proceeds(motor.user_setpoint, False)
+    s = motor.set(0.55)
     watcher = StatusWatcher(s)
     await watcher.wait_for_call(
-        name="sim_motor",
+        name="motor",
         current=0.0,
         initial=0.0,
         target=0.55,
@@ -62,12 +61,12 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         time_elapsed=pytest.approx(0.0, abs=0.2),
     )
     await wait_for_pending_wakeups()
-    assert 0.55 == await sim_motor.user_setpoint.get_value()
+    assert 0.55 == await motor.user_setpoint.get_value()
     assert not s.done
     await asyncio.sleep(0.2)
-    set_mock_value(sim_motor.user_readback, 0.1)
+    set_mock_value(motor.user_readback, 0.1)
     await watcher.wait_for_call(
-        name="sim_motor",
+        name="motor",
         current=0.1,
         initial=0.0,
         target=0.55,
@@ -75,12 +74,12 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.2, abs=0.2),
     )
-    set_mock_put_proceeds(sim_motor.user_setpoint, True)
+    set_mock_put_proceeds(motor.user_setpoint, True)
     await wait_for_pending_wakeups()
     assert s.done
 
 
-async def test_motor_move_timeout(sim_motor: motor.Motor):
+async def test_motor_move_timeout(motor: Motor):
     class MyError(Exception):
         pass
 
@@ -88,14 +87,14 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
         # Raise custom exception to be clear it bubbles up
         raise MyError()
 
-    callback_on_mock_put(sim_motor.user_setpoint, do_timeout)
-    s = sim_motor.set(0.3)
+    callback_on_mock_put(motor.user_setpoint, do_timeout)
+    s = motor.set(0.3)
     watcher = Mock()
     s.watch(watcher)
     with pytest.raises(MyError):
         await s
     watcher.assert_called_once_with(
-        name="sim_motor",
+        name="motor",
         current=0.0,
         initial=0.0,
         target=0.3,
@@ -105,60 +104,60 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     )
 
 
-async def test_motor_moving_stopped(sim_motor: motor.Motor):
-    set_mock_value(sim_motor.motor_done_move, False)
-    set_mock_put_proceeds(sim_motor.user_setpoint, False)
-    s = sim_motor.set(1.5)
-    s.add_callback(Mock())
+async def test_motor_moving_stopped(motor: Motor):
+    set_mock_value(motor.motor_done_move, False)
+    set_mock_put_proceeds(motor.user_setpoint, False)
+    move_status = motor.set(1.5)
+    move_status.add_callback(Mock())
     await asyncio.sleep(0.001)
 
-    assert not s.done
-    await sim_motor.stop()
+    assert not move_status.done
+    await motor.stop()
 
     # Note: needs to explicitly be called with 1, not just processed.
     # See https://epics.anl.gov/bcda/synApps/motor/motorRecord.html#Fields_command
-    get_mock_put(sim_motor.motor_stop).assert_called_once_with(1)
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
 
-    set_mock_put_proceeds(sim_motor.user_setpoint, True)
+    set_mock_put_proceeds(motor.user_setpoint, True)
     await wait_for_pending_wakeups(max_yields=25)
 
-    assert s.done
-    assert s.success is False
+    assert not move_status.success
+    with pytest.raises(RuntimeError, match=f"Device {motor.name} was stopped"):
+        await move_status
+    assert move_status.done
 
 
-async def test_read_motor(sim_motor: motor.Motor):
-    await sim_motor.stage()
-    assert (await sim_motor.read())["sim_motor"]["value"] == 0.0
-    assert (await sim_motor.read_configuration())["sim_motor-velocity"]["value"] == 1
-    assert (await sim_motor.describe_configuration())["sim_motor-motor_egu"][
-        "shape"
-    ] == []
-    set_mock_value(sim_motor.user_readback, 0.5)
-    assert (await sim_motor.read())["sim_motor"]["value"] == 0.5
-    await sim_motor.unstage()
+async def test_read_motor(motor: Motor):
+    await motor.stage()
+    assert (await motor.read())["motor"]["value"] == 0.0
+    assert (await motor.read_configuration())["motor-velocity"]["value"] == 1
+    assert (await motor.describe_configuration())["motor-motor_egu"]["shape"] == []
+    set_mock_value(motor.user_readback, 0.5)
+    assert (await motor.read())["motor"]["value"] == 0.5
+    await motor.unstage()
     # Check we can still read and describe when not staged
-    set_mock_value(sim_motor.user_readback, 0.1)
-    assert (await sim_motor.read())["sim_motor"]["value"] == 0.1
-    assert await sim_motor.describe()
+    set_mock_value(motor.user_readback, 0.1)
+    assert (await motor.read())["motor"]["value"] == 0.1
+    assert await motor.describe()
 
 
-async def test_set_velocity(sim_motor: motor.Motor) -> None:
-    v = sim_motor.velocity
+async def test_set_velocity(motor: Motor) -> None:
+    v = motor.velocity
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     v.subscribe_reading(q.put_nowait)
-    assert (await q.get())["sim_motor-velocity"]["value"] == 1.0
+    assert (await q.get())["motor-velocity"]["value"] == 1.0
     await v.set(-2.0)
-    assert (await q.get())["sim_motor-velocity"]["value"] == -2.0
+    assert (await q.get())["motor-velocity"]["value"] == -2.0
     v.clear_sub(q.put_nowait)
     await v.set(3.0)
-    assert (await v.read())["sim_motor-velocity"]["value"] == 3.0
+    assert (await v.read())["motor-velocity"]["value"] == 3.0
     assert q.empty()
 
 
-async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
-    await sim_motor.velocity.set(0)
-    with pytest.raises(ValueError, match=f"Motor {sim_motor.name} has zero velocity"):
-        await sim_motor.set(3.14)
+async def test_set_with_zero_velocity(motor: Motor) -> None:
+    await motor.velocity.set(0)
+    with pytest.raises(ValueError, match=f"Motor {motor.name} has zero velocity"):
+        await motor.set(3.14)
 
 
 @pytest.mark.parametrize(
@@ -169,30 +168,30 @@ async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
     ],
 )
 async def test_move_outside_motor_limits_causes_error(
-    sim_motor: motor.Motor,
+    motor: Motor,
     position,
     upper_limit,
     lower_limit,
 ):
-    set_mock_value(sim_motor.velocity, 10)
-    set_mock_value(sim_motor.dial_low_limit_travel, lower_limit)
-    set_mock_value(sim_motor.dial_high_limit_travel, upper_limit)
-    set_mock_value(sim_motor.low_limit_travel, lower_limit)
-    set_mock_value(sim_motor.high_limit_travel, upper_limit)
-    with pytest.raises(motor.MotorLimitsError):
-        await sim_motor.set(position)
+    set_mock_value(motor.velocity, 10)
+    set_mock_value(motor.dial_low_limit_travel, lower_limit)
+    set_mock_value(motor.dial_high_limit_travel, upper_limit)
+    set_mock_value(motor.low_limit_travel, lower_limit)
+    set_mock_value(motor.high_limit_travel, upper_limit)
+    with pytest.raises(MotorLimitsError):
+        await motor.set(position)
 
 
 async def test_given_limits_of_0_0_then_move_causes_no_error(
-    sim_motor: motor.Motor,
+    motor: Motor,
 ):
-    set_mock_value(sim_motor.velocity, 10)
-    set_mock_value(sim_motor.dial_low_limit_travel, 0)
-    set_mock_value(sim_motor.dial_high_limit_travel, 0)
-    set_mock_value(sim_motor.low_limit_travel, -0.001)
-    set_mock_value(sim_motor.high_limit_travel, 0.001)
-    await sim_motor.set(100)
-    assert (await sim_motor.user_setpoint.get_value()) == 100
+    set_mock_value(motor.velocity, 10)
+    set_mock_value(motor.dial_low_limit_travel, 0)
+    set_mock_value(motor.dial_high_limit_travel, 0)
+    set_mock_value(motor.low_limit_travel, -0.001)
+    set_mock_value(motor.high_limit_travel, 0.001)
+    await motor.set(100)
+    assert (await motor.user_setpoint.get_value()) == 100
 
 
 @pytest.mark.parametrize(
@@ -208,29 +207,27 @@ async def test_given_limits_of_0_0_then_move_causes_no_error(
         (-1, 1, 1),
     ],
 )
-async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
-    await sim_motor.velocity.set(velocity)
-    await sim_motor.set(setpoint, timeout=timeout)
-    assert (await sim_motor.locate()).get("setpoint") == setpoint
+async def test_set(motor: Motor, setpoint, velocity, timeout) -> None:
+    await motor.velocity.set(velocity)
+    await motor.set(setpoint, timeout=timeout)
+    assert (await motor.locate()).get("setpoint") == setpoint
 
 
-async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):
-    set_mock_value(sim_motor.max_velocity, 10)
-    with pytest.raises(motor.MotorLimitsError):
+async def test_prepare_velocity_limit_error(motor: Motor):
+    set_mock_value(motor.max_velocity, 10)
+    with pytest.raises(MotorLimitsError):
         fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
-        await sim_motor.prepare(fly_info)
+        await motor.prepare(fly_info)
 
 
-async def test_valid_prepare_velocity(sim_motor: motor.Motor):
+async def test_valid_prepare_velocity(motor: Motor):
     # Widen user limits to accommodate ramp distances (trajectory goes to -10.5)
-    set_mock_value(sim_motor.low_limit_travel, -11)
-    set_mock_value(sim_motor.high_limit_travel, 21)
-    set_mock_value(sim_motor.max_velocity, 10)
+    set_mock_value(motor.low_limit_travel, -11)
+    set_mock_value(motor.high_limit_travel, 21)
+    set_mock_value(motor.max_velocity, 10)
     fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
-    await sim_motor.prepare(fly_info)
-    assert (
-        await sim_motor.velocity.get_value() == await sim_motor.max_velocity.get_value()
-    )
+    await motor.prepare(fly_info)
+    assert await motor.velocity.get_value() == await motor.max_velocity.get_value()
 
 
 @pytest.mark.parametrize(
@@ -244,7 +241,7 @@ async def test_valid_prepare_velocity(sim_motor: motor.Motor):
     ],
 )
 async def test_prepare_motor_limits_error(
-    sim_motor: motor.Motor,
+    motor: Motor,
     acceleration_time,
     velocity,
     start_position,
@@ -252,45 +249,41 @@ async def test_prepare_motor_limits_error(
     upper_limit,
     lower_limit,
 ):
-    set_mock_value(sim_motor.acceleration_time, acceleration_time)
-    set_mock_value(sim_motor.low_limit_travel, lower_limit)
-    set_mock_value(sim_motor.high_limit_travel, upper_limit)
+    set_mock_value(motor.acceleration_time, acceleration_time)
+    set_mock_value(motor.low_limit_travel, lower_limit)
+    set_mock_value(motor.high_limit_travel, upper_limit)
     time_for_move = abs(end_position - start_position) / velocity
     fly_info = FlyMotorInfo(
         start_position=start_position,
         end_position=end_position,
         time_for_move=time_for_move,
     )
-    with pytest.raises(motor.MotorLimitsError):
-        await sim_motor.prepare(fly_info)
+    with pytest.raises(MotorLimitsError):
+        await motor.prepare(fly_info)
 
 
-async def test_prepare_valid_limits(sim_motor: motor.Motor):
-    set_mock_value(sim_motor.acceleration_time, 1)
-    set_mock_value(sim_motor.low_limit_travel, -10.01)
-    set_mock_value(sim_motor.high_limit_travel, 20.01)
-    set_mock_value(sim_motor.max_velocity, 10)
-    fly_info = motor.FlyMotorInfo(
+async def test_prepare_valid_limits(motor: Motor):
+    set_mock_value(motor.acceleration_time, 1)
+    set_mock_value(motor.low_limit_travel, -10.01)
+    set_mock_value(motor.high_limit_travel, 20.01)
+    set_mock_value(motor.max_velocity, 10)
+    fly_info = FlyMotorInfo(
         start_position=0,
         end_position=10,
         time_for_move=1,
     )
-    await sim_motor.prepare(fly_info)
-    assert await sim_motor.user_setpoint.get_value() == -5
+    await motor.prepare(fly_info)
+    assert await motor.user_setpoint.get_value() == -5
 
-    assert (
-        fly_info.ramp_down_end_pos(await sim_motor.acceleration_time.get_value()) == 15
-    )
-    fly_info = motor.FlyMotorInfo(
+    assert fly_info.ramp_down_end_pos(await motor.acceleration_time.get_value()) == 15
+    fly_info = FlyMotorInfo(
         start_position=12,
         end_position=2,
         time_for_move=1,
     )
-    await sim_motor.prepare(fly_info)
-    assert await sim_motor.user_setpoint.get_value() == 17
-    assert (
-        fly_info.ramp_down_end_pos(await sim_motor.acceleration_time.get_value()) == -3
-    )
+    await motor.prepare(fly_info)
+    assert await motor.user_setpoint.get_value() == 17
+    assert fly_info.ramp_down_end_pos(await motor.acceleration_time.get_value()) == -3
 
 
 @pytest.mark.parametrize(
@@ -300,13 +293,11 @@ async def test_prepare_valid_limits(sim_motor: motor.Motor):
         (8, 8),
     ],
 )
-async def test_prepare(
-    sim_motor: motor.Motor, target_position: float, expected_velocity: float
-):
-    set_mock_value(sim_motor.acceleration_time, 1)
-    set_mock_value(sim_motor.low_limit_travel, -15)
-    set_mock_value(sim_motor.high_limit_travel, 20)
-    set_mock_value(sim_motor.max_velocity, 10)
+async def test_prepare(motor: Motor, target_position: float, expected_velocity: float):
+    set_mock_value(motor.acceleration_time, 1)
+    set_mock_value(motor.low_limit_travel, -15)
+    set_mock_value(motor.high_limit_travel, 20)
+    set_mock_value(motor.max_velocity, 10)
     fake_set_signal = soft_signal_rw(float)
     await fake_set_signal.connect()
 
@@ -315,7 +306,7 @@ async def test_prepare(
             if value == target_position:
                 break
 
-    sim_motor.set = AsyncMock(side_effect=wait_for_set)
+    motor.set = AsyncMock(side_effect=wait_for_set)
 
     async def do_set(status: AsyncStatus):
         assert not status.done
@@ -324,8 +315,8 @@ async def test_prepare(
     async def wait_for_status(status: AsyncStatus):
         await status
 
-    status = sim_motor.prepare(
-        motor.FlyMotorInfo(
+    status = motor.prepare(
+        FlyMotorInfo(
             start_position=0,
             end_position=target_position,
             time_for_move=1,
@@ -333,39 +324,39 @@ async def test_prepare(
     )
     # Test that prepare is not marked as complete until correct position is reached
     await asyncio.gather(do_set(status), wait_for_status(status))
-    assert await sim_motor.velocity.get_value() == expected_velocity
+    assert await motor.velocity.get_value() == expected_velocity
     assert status.done
 
 
-async def test_kickoff(sim_motor: motor.Motor):
-    sim_motor.set = MagicMock()
+async def test_kickoff(motor: Motor):
+    motor.set = MagicMock()
     with pytest.raises(
         RuntimeError,
-        match=f"Motor {sim_motor.name} must be prepared before attempting to kickoff",
+        match=f"Motor {motor.name} must be prepared before attempting to kickoff",
     ):
-        await sim_motor.kickoff()
+        await motor.kickoff()
     # TODO: why was this called _twice_?
     # with pytest.raises(RuntimeError):
-    #     await sim_motor.kickoff()
-    set_mock_value(sim_motor.acceleration_time, 1)
-    sim_motor._fly_info = motor.FlyMotorInfo(
+    #     await motor.kickoff()
+    set_mock_value(motor.acceleration_time, 1)
+    motor._fly_info = FlyMotorInfo(
         start_position=12,
         end_position=2,
         time_for_move=1,
     )
-    await sim_motor.kickoff()
-    sim_motor.set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
+    await motor.kickoff()
+    motor.set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
 
 
-async def test_complete(sim_motor: motor.Motor) -> None:
+async def test_complete(motor: Motor) -> None:
     with pytest.raises(
-        RuntimeError, match=f"kickoff for motor {sim_motor.name} not called"
+        RuntimeError, match=f"kickoff for motor {motor.name} not called"
     ):
-        sim_motor.complete()
-    sim_motor._fly_status = sim_motor.set(20)
-    assert not sim_motor._fly_status.done
-    await sim_motor.complete()
-    assert sim_motor._fly_status.done
+        motor.complete()
+    motor._fly_status = motor.set(20)
+    assert not motor._fly_status.done
+    await motor.complete()
+    assert motor._fly_status.done
 
 
 def test_core_notconnected_emits_deprecation_warning():
@@ -382,7 +373,7 @@ async def test_instant_motor_mock_auto_injection():
     """
     # Create a motor without manually setting up mock callbacks
     async with init_devices(mock=True):
-        test_motor = motor.Motor("TEST:MOTOR")
+        test_motor = Motor("TEST:MOTOR")
 
     # The InstantMotorMock should have been automatically applied
     # Verify that setting the setpoint automatically updates the readback
@@ -399,7 +390,7 @@ async def test_instant_motor_mock_auto_injection():
 async def test_instant_motor_mock_sets_done_flag():
     """Test that InstantMotorMock sets up motor_done_move flag correctly."""
     async with init_devices(mock=True):
-        test_motor = motor.Motor("TEST:MOTOR")
+        test_motor = Motor("TEST:MOTOR")
 
     # Verify motor starts in "done" state
     assert await test_motor.motor_done_move.get_value() == 1
@@ -419,7 +410,7 @@ async def test_motor_set_with_instant_mock():
     (velocity, limits, etc.) so motor.set() works without errors.
     """
     async with init_devices(mock=True):
-        test_motor = motor.Motor("BL01I-MO-TABLE-01:X")
+        test_motor = Motor("BL01I-MO-TABLE-01:X")
 
     # Verify sensible defaults are set
     assert await test_motor.velocity.get_value() == 1000.0
@@ -444,7 +435,7 @@ async def test_device_mock_with_registered_subclass():
     """Test automatic mock with registered subclass using decorator."""
     # Motor has InstantMotorMock registered via @default_device_mock_for_class
     async with init_devices(mock=True):
-        test_motor = motor.Motor("TEST:MOTOR")
+        test_motor = Motor("TEST:MOTOR")
 
     # Should use InstantMotorMock automatically
     await test_motor.user_setpoint.set(50.0)
@@ -475,7 +466,7 @@ async def test_device_mock_explicit_instance():
 
     # Use explicit mock instance (should be used as-is)
     explicit_mock = DeviceMock()  # Plain mock, no custom behavior
-    test_motor = motor.Motor("TEST:MOTOR")
+    test_motor = Motor("TEST:MOTOR")
     await test_motor.connect(mock=explicit_mock)
 
     # Verify the explicit mock was used (not InstantMotorMock)
@@ -485,7 +476,7 @@ async def test_device_mock_explicit_instance():
     assert await test_motor.user_readback.get_value() == 0.0
 
     # Verify that InstantMotorMock would have worked if we hadn't passed explicit mock
-    test_motor2 = motor.Motor("TEST:MOTOR2")
+    test_motor2 = Motor("TEST:MOTOR2")
     await test_motor2.connect(mock=True)  # Use default InstantMotorMock
     await test_motor2.user_setpoint.set(20.0)
     assert await test_motor2.user_readback.get_value() == 20.0
@@ -525,8 +516,8 @@ async def test_instant_motor_mock_recursive_in_composite_device():
         """A composite device containing two motors."""
 
         def __init__(self, prefix: str, name: str = ""):
-            self.x = motor.Motor(prefix + "X")
-            self.y = motor.Motor(prefix + "Y")
+            self.x = Motor(prefix + "X")
+            self.y = Motor(prefix + "Y")
             super().__init__(name=name)
 
     # Connect composite device in mock mode
@@ -554,8 +545,8 @@ async def test_instant_motor_mock_preserves_parent_mock_tracking():
 
     class XYStage(Device):
         def __init__(self, prefix: str, name: str = ""):
-            self.x = motor.Motor(prefix + "X")
-            self.y = motor.Motor(prefix + "Y")
+            self.x = Motor(prefix + "X")
+            self.y = Motor(prefix + "Y")
             super().__init__(name=name)
 
     stage = XYStage("BL01I-MO-STAGE-01:")

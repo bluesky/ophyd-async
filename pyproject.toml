@@ -35,7 +35,7 @@ sim = ["h5py"]
 ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
 tango = ["pytango>=10.1.3"]
-demo = ["ipython", "matplotlib", "pyqt6"]
+demo = ["ipython", "matplotlib", "pyqt6", "pytest"]
 
 [dependency-groups]
 dev = [
@@ -172,6 +172,16 @@ commands = [
     [
         "pytest",
         "--cov=ophyd_async",
+        # Also path-based, alongside the package-name-based one above: pytest-cov
+        # passes each --cov= straight through as Coverage(source=[...]), and a
+        # package name only matches files that were actually *imported* under
+        # that dotted name in the measured process. _ioc.py/_tango_device_servers.py
+        # (ophyd_async.epics/tango .testing/.demo) are deliberately run *by file
+        # path* as standalone subprocess scripts - see their own docstrings - so
+        # they load as `__main__`, not under their ophyd_async.* name, and the
+        # package-name source spec alone can never match them. Path-based source
+        # matches by file location instead, so it isn't fooled by that.
+        "--cov=src",
         "--cov-report",
         "term",
         "--cov-report",
@@ -277,7 +287,17 @@ source_modules = [
     "ophyd_async.epics.*",
     "ophyd_async.tango.*",
 ]
-ignore_imports = ["ophyd_async.*.testing.* -> ophyd_async.testing"]
+ignore_imports = [
+    # epics.testing._launch.start_ioc and tango.testing._launch.
+    # start_tango_device_servers both wrap the shared ManagedSubprocess/
+    # start_subprocess helpers in ophyd_async.testing, which is otherwise
+    # off-limits at runtime.
+    "ophyd_async.*.testing.* -> ophyd_async.testing",
+    # epics.demo.__main__ and tango.demo.__main__ are tutorial entry points,
+    # not real runtime code - they use ophyd_async.testing to spin up a fake
+    # IOC/device servers to demo against, same as the testing modules above.
+    "ophyd_async.*.demo.* -> ophyd_async.testing",
+]
 
 [[tool.importlinter.contracts]]
 name = "ophyd_async.core private modules are not to be used outside ophyd_async.core"

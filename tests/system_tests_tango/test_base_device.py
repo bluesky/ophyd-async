@@ -1,6 +1,6 @@
 import asyncio
 import time
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import Annotated as A
 from typing import TypeVar
 
@@ -13,12 +13,9 @@ from bluesky import RunEngine
 from tango import (
     AttrDataFormat,
     AttrQuality,
-    AttrWriteType,
-    CmdArgType,
     DevState,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
-from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
     Array1D,
@@ -29,6 +26,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoMotor,
@@ -36,233 +34,16 @@ from ophyd_async.tango.demo import (
     DemoPointDetectorChannel,
     DemoStage,
     EnergyMode,
-    start_device_server_subprocess,
 )
-from ophyd_async.tango.demo._tango._servers import (  # noqa: PLC2701
-    DemoMotorDevice,
-    DemoMultiChannelDetectorDevice,
-    DemoPointDetectorChannelDevice,
-)
-from ophyd_async.tango.testing import TangoSubprocessDeviceServer
-from ophyd_async.testing import assert_reading
+from ophyd_async.testing import assert_reading, find_free_port
 
 T = TypeVar("T")
-
-
-class TestEnum(IntEnum):
-    __test__ = False
-    A = 0
-    B = 1
-
 
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 
 TESTED_FEATURES = ["array", "limitedvalue", "justvalue"]
-
-
-# --------------------------------------------------------------------
-class TestDevice(Device):
-    __test__ = False
-
-    _array = [[1, 2, 3], [4, 5, 6]]
-
-    _justvalue = 5
-    _writeonly = 6
-    _readonly = 7
-    _slow_attribute = 1.0
-
-    _floatvalue = 1.0
-
-    _readback = 1.0
-    _setpoint = 1.0
-
-    _label = "Test Device"
-
-    _limitedvalue = 3
-
-    _ignored_attr = 1.0
-
-    _msg = "Hello"
-
-    _test_enum = TestEnum.A
-    _string_image = [["one", "two", "three"], ["four", "five", "six"]]
-    _long_string_array = ([1, 2, 3], ["one", "two", "three"])
-    _sequence = ["one", "two", "three"]
-
-    @attribute(dtype=float, access=AttrWriteType.READ)
-    def readback(self):
-        return self._readback
-
-    @attribute(dtype=float, access=AttrWriteType.WRITE)
-    def setpoint(self):
-        return self._setpoint
-
-    def write_setpoint(self, value: float):
-        self._setpoint = value
-        self._readback = value
-
-    @attribute(dtype=str, access=AttrWriteType.READ_WRITE)
-    def label(self):
-        return self._label
-
-    def write_label(self, value: str):
-        self._label = value
-
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
-    def floatvalue(self):
-        return self._floatvalue
-
-    def write_floatvalue(self, value: float):
-        self._floatvalue = value
-
-    @attribute(dtype=int, access=AttrWriteType.READ_WRITE, polling_period=100)
-    def justvalue(self):
-        return self._justvalue
-
-    def write_justvalue(self, value: int):
-        self._justvalue = value
-
-    @attribute(dtype=int, access=AttrWriteType.WRITE, polling_period=100)
-    def writeonly(self):
-        return self._writeonly
-
-    def write_writeonly(self, value: int):
-        self._writeonly = value
-
-    @attribute(dtype=int, access=AttrWriteType.READ, polling_period=100)
-    def readonly(self):
-        return self._readonly
-
-    @attribute(
-        dtype=float,
-        access=AttrWriteType.READ_WRITE,
-        dformat=AttrDataFormat.IMAGE,
-        max_dim_x=3,
-        max_dim_y=2,
-    )
-    def array(self) -> list[list[float]]:
-        return self._array
-
-    def write_array(self, array: list[list[float]]):
-        self._array = array
-
-    @attribute(
-        dtype=CmdArgType.DevString,
-        access=AttrWriteType.READ_WRITE,
-        dformat=AttrDataFormat.SPECTRUM,
-        max_dim_x=3,
-    )
-    def sequence(self):
-        return self._sequence
-
-    def write_sequence(self, sequence: list[str]):
-        self._sequence = sequence
-
-    @attribute(
-        access=AttrWriteType.READ_WRITE,
-        min_value=0.0,
-        min_alarm=1.0,
-        min_warning=2.0,
-        max_warning=4.0,
-        max_alarm=5.0,
-        max_value=6.0,
-        unit="cm",
-        delta_val="1",
-        delta_t="1",
-    )
-    def limitedvalue(self) -> float:
-        return self._limitedvalue
-
-    def write_limitedvalue(self, value: float):
-        self._limitedvalue = value
-
-    @attribute(dtype=float, access=AttrWriteType.WRITE)
-    def slow_attribute(self) -> float:
-        return self._slow_attribute
-
-    def write_slow_attribute(self, value: float):
-        time.sleep(0.2)
-        self._slow_attribute = value
-
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
-    def raise_exception_attr(self) -> float:
-        raise
-
-    def write_raise_exception_attr(self, value: float):
-        raise
-
-    @attribute(dtype=float, access=AttrWriteType.READ)
-    def ignored_attr(self) -> float:
-        return self._ignored_attr
-
-    @attribute(
-        dtype=tango.CmdArgType.DevEnum,
-        enum_labels=["A", "B"],
-        access=AttrWriteType.READ,
-    )
-    def test_enum(self) -> TestEnum:
-        return self._test_enum
-
-    # # Attribute for string image
-    # @attribute(
-    #     dtype=tango.CmdArgType.DevString,
-    #     dformat=AttrDataFormat.IMAGE,
-    #     access=AttrWriteType.READ_WRITE,
-    #     max_dim_x=3,
-    #     max_dim_y=2,
-    # )
-    # def stringimage(self) -> List[List[str]]:
-    #     return self._string_image
-    #
-    # def write_stringimage(self, value: List[List[str]]):
-    #     self._string_image = value
-
-    # Attribute for a long string array
-    @command(
-        dtype_out=CmdArgType.DevVarLongStringArray,
-    )
-    def get_longstringarray(self) -> tuple[list[int], list[str]]:
-        return self._long_string_array
-
-    @command(
-        dtype_out=CmdArgType.DevVarDoubleStringArray,
-    )
-    def get_doublestringarray(self) -> tuple[list[float], list[str]]:
-        return self._long_string_array
-
-    @command
-    def clear(self):
-        pass
-
-    @command
-    def slow_command(self) -> str:
-        time.sleep(0.2)
-        return "Completed slow command"
-
-    @command
-    def echo(self, value: str) -> str:
-        return value
-
-    @command
-    def get_msg(self) -> str:
-        return self._msg
-
-    @command
-    def set_msg(self, value: str):
-        self._msg = value
-
-    @command
-    def raise_exception_cmd(self):
-        raise
-
-    @command(
-        dtype_in=CmdArgType.DevEnum,
-        dtype_out=CmdArgType.DevEnum,
-    )
-    def enum_cmd(self, value: TestEnum) -> TestEnum:
-        return value
 
 
 # --------------------------------------------------------------------
@@ -358,49 +139,8 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
 
 # --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def tango_test_device():
-    with TangoSubprocessDeviceServer(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
-    ) as context:
-        yield context.trls["test/device/1"]
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def sim_test_context_trls():
-    with TangoSubprocessDeviceServer(
-        [
-            {"class": DemoMotorDevice, "devices": [{"name": "sim/motor/1"}]},
-            {
-                "class": DemoPointDetectorChannelDevice,
-                "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
-            },
-            {
-                "class": DemoMultiChannelDetectorDevice,
-                "devices": [{"name": "sim/detector/1"}],
-            },
-        ]
-    ) as context:
-        # Now connect the channel devices to the motor devices
-        device_proxy = tango.DeviceProxy(context.trls["sim/counter/1"])
-        device_proxy.locator_x = context.trls["sim/motor/1"]
-        device_proxy.locator_y = context.trls["sim/motor/1"]
-        device_proxy.connect_devices()
-        device_proxy = tango.DeviceProxy(context.trls["sim/counter/2"])
-        device_proxy.locator_x = context.trls["sim/motor/1"]
-        device_proxy.locator_y = context.trls["sim/motor/1"]
-        device_proxy.connect_devices()
-        device_proxy = tango.DeviceProxy(context.trls["sim/detector/1"])
-        device_proxy.locators = [
-            context.trls["sim/counter/1"],
-            context.trls["sim/counter/2"],
-        ]
-        device_proxy.connect_devices()
-
-        yield context.trls
-
-
+# tango_test_device and sim_test_context_trls fixtures come from conftest.py -
+# every test module in this directory shares the one fixed device server catalog.
 # --------------------------------------------------------------------
 
 
@@ -461,9 +201,30 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_demo():
-    server = start_device_server_subprocess("test/device", 3)
-    server.disconnect()
+@pytest.mark.timeout(60.0)
+async def test_tango_device_servers_launcher():
+    """Smoke test `ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
+    `DEVICE_SERVERS` as standalone launchers, independent of the shared
+    conftest.py subprocesses - proves each is self-sufficient (predictable TRL,
+    no readback needed, clean startup/shutdown) exactly as a user running one
+    directly would rely on."""
+    prefix = testing.generate_random_trl_prefix()
+    testing_port = find_free_port()
+    demo_port = find_free_port()
+    testing_process = testing.start_tango_device_servers(
+        testing.DEVICE_SERVERS, prefix, str(testing_port)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.DEVICE_SERVERS, prefix, str(demo_port), "3"
+    )
+    try:
+        basic_proxy = await AsyncDeviceProxy(testing.trl(prefix, testing_port, "basic"))
+        assert await basic_proxy.read_attribute("readback")
+        motor_proxy = await AsyncDeviceProxy(testing.trl(prefix, demo_port, "motor-x"))
+        assert await motor_proxy.read_attribute("readback")
+    finally:
+        demo_process.stop()
+        testing_process.stop()
 
 
 # --------------------------------------------------------------------
@@ -472,7 +233,7 @@ async def test_tango_demo():
 async def test_tango_enum_roundtrip(sim_test_context_trls):
     channel = DemoPointDetectorChannel(
         name="channel",
-        trl=sim_test_context_trls["sim/counter/1"],
+        trl=sim_test_context_trls["channel-1"],
     )
     await channel.connect()
 
@@ -491,8 +252,8 @@ async def test_tango_enum_roundtrip(sim_test_context_trls):
 async def test_tango_stage(sim_test_context_trls):
     stage = DemoStage(
         name="stage",
-        x_trl=sim_test_context_trls["sim/motor/1"],
-        y_trl=sim_test_context_trls["sim/motor/1"],
+        x_trl=sim_test_context_trls["motor-x"],
+        y_trl=sim_test_context_trls["motor-y"],
     )
     await stage.connect()
     assert stage.x.name == "stage-x"
@@ -508,10 +269,10 @@ async def test_tango_stage(sim_test_context_trls):
 async def test_tango_sim(sim_test_context_trls):
     detector = DemoPointDetector(
         name="detector",
-        trl=sim_test_context_trls["sim/detector/1"],
+        trl=sim_test_context_trls["detector"],
         channel_trls=[
-            sim_test_context_trls["sim/counter/1"],
-            sim_test_context_trls["sim/counter/2"],
+            sim_test_context_trls["channel-1"],
+            sim_test_context_trls["channel-2"],
         ],
     )
     await detector.connect()
@@ -520,7 +281,7 @@ async def test_tango_sim(sim_test_context_trls):
     await detector.acquiring.read()
     await detector.acquire_time.read()
 
-    motor = DemoMotor(name="motor", trl=sim_test_context_trls["sim/motor/1"])
+    motor = DemoMotor(name="motor", trl=sim_test_context_trls["motor-x"])
     await motor.connect()
     await motor.velocity.set(0.5)
 

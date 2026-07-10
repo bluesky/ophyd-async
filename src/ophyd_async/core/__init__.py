@@ -52,7 +52,7 @@ from ._enums import (
     YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
-from ._log import config_ophyd_async_logging
+from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     callback_on_mock_execute,
@@ -292,6 +292,8 @@ __all__ = [
     "YamlSettingsProvider",
     # Utils
     "config_ophyd_async_logging",
+    "logger",
+    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",

@@ -10,19 +10,79 @@ import pytest
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
+from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import DevStateEnum
 from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
+    find_free_port,
     float_array_value,
     int_array_value,
 )
 
 T = TypeVar("T")
 
+NUM_CHANNELS = 3
+
 
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
+
+
+@pytest.fixture(scope="session")
+def tango_servers():
+    """Start both fixed catalogs of Tango test/demo device servers this repo
+    ships (`ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
+    `DEVICE_SERVERS`), shared by every test in this directory - there's
+    only one topology now, so there's no reason for individual test modules to
+    each start their own subprocesses. Each catalog gets its own free port -
+    picked here, since (unlike an EPICS IOC) a Tango TRL bakes the port
+    straight into the URL, so downstream fixtures need it to build TRLs."""
+    prefix = testing.generate_random_trl_prefix()
+    testing_port = find_free_port()
+    demo_port = find_free_port()
+    testing_process = testing.start_tango_device_servers(
+        testing.DEVICE_SERVERS, prefix, str(testing_port)
+    )
+    demo_process = testing.start_tango_device_servers(
+        demo.DEVICE_SERVERS, prefix, str(demo_port), str(NUM_CHANNELS)
+    )
+    yield prefix, testing_port, demo_port
+    demo_process.stop()
+    testing_process.stop()
+    print(testing_process.output)
+    print(demo_process.output)
+
+
+@pytest.fixture(scope="session")
+def tango_test_device(tango_servers) -> str:
+    """TRL of the `TestDevice` server: signal-transport/edge-case coverage."""
+    prefix, testing_port, _ = tango_servers
+    return testing.trl(prefix, testing_port, "basic")
+
+
+@pytest.fixture(scope="session")
+def everything_device_trl(tango_servers) -> str:
+    """TRL of the `OneOfEverythingTangoDevice` server: datatype coverage."""
+    prefix, testing_port, _ = tango_servers
+    return testing.trl(prefix, testing_port, "everything")
+
+
+@pytest.fixture(scope="session")
+def sim_test_context_trls(tango_servers) -> dict[str, str]:
+    """TRLs of the demo motor/channel/detector servers backing
+    `ophyd_async.tango.demo`, already cross-wired to each other by the
+    subprocess itself."""
+    prefix, _, demo_port = tango_servers
+    return {
+        name: testing.trl(prefix, demo_port, name)
+        for name in (
+            "motor-x",
+            "motor-y",
+            *(f"channel-{i}" for i in range(1, NUM_CHANNELS + 1)),
+            "detector",
+        )
+    }
 
 
 def pytest_collection_modifyitems(config, items):

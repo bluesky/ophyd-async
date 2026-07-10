@@ -46,10 +46,14 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_triggerable_command,
 )
+
+# format_datatype only renders a datatype for TypeError messages raised
+# internally on a mismatch - a caller never calls it themselves, just sees
+# its output inside an exception - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
-    CA_PVA_RECORDS,
-    PVA_RECORDS,
+    IOC,
     EpicsTestCaDevice,
     EpicsTestEnum,
     EpicsTestPvaDevice,
@@ -57,9 +61,7 @@ from ophyd_async.epics.testing import (
     EpicsTestSubsetEnum,
     EpicsTestTable,
     generate_random_pv_prefix,
-)
-from ophyd_async.epics.testing import (
-    TestingIOC as _TestingIOC,
+    start_ioc,
 )
 from ophyd_async.plan_stubs import (
     apply_settings,
@@ -77,28 +79,22 @@ TIMEOUT = 30.0 if os.name == "nt" else 3.0
 
 
 class EpicsTestIocAndDevices:
-    """Test IOC with ca, pva and PVI-discovered devices.
+    """Devices for the ca:/pva: sub-topologies of the fixed EPICS test IOC catalog.
 
     ca: and pva: prefixes each load the ca/pva db files, which now carry
     PVI directory tags inline, so pvi_device connects at the same pva:
     prefix as pva_device rather than needing a third IOC "device" instance.
     Sharing one IOC process/prefix set across all three Devices keeps test
-    startup fast.
+    startup fast. See `ophyd_async.epics.testing._ioc._testing_ioc_args`
+    for how the IOC backing these prefixes is actually built.
     """
 
     def __init__(self):
         self.prefix = generate_random_pv_prefix()
-        self.ioc = _TestingIOC()
-        # Create supporting records and ExampleCaDevice
         ca_prefix = f"{self.prefix}ca:"
-        self.ioc.add_database(CA_PVA_RECORDS, device=ca_prefix)
         self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
         self.ca_device_via_pvi = EpicsTestCaDevice(ca_prefix, with_pvi=True)
-        # Create supporting records and ExamplePvaDevice, plus a
-        # PVI-discovered EpicsTestPviDevice sharing the same prefix
         pva_prefix = f"{self.prefix}pva:"
-        self.ioc.add_database(CA_PVA_RECORDS, device=pva_prefix)
-        self.ioc.add_database(PVA_RECORDS, device=pva_prefix)
         self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
         self.pva_device_via_pvi = EpicsTestPvaDevice(pva_prefix, with_pvi=True)
         self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
@@ -116,15 +112,15 @@ class EpicsTestIocAndDevices:
 @pytest.fixture(scope="module")
 def ioc_devices():
     ioc_devices = EpicsTestIocAndDevices()
-    ioc_devices.ioc.start()
+    process = start_ioc(IOC, ioc_devices.prefix)
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown
     purge_channel_caches()
-    ioc_devices.ioc.stop()
+    process.stop()
     # Print the IOC process output so in the case of a failing test
     # we will see if anything on the IOC side also failed
-    print(ioc_devices.ioc.output)
+    print(process.output)
 
 
 class ExpectedData(Generic[T]):

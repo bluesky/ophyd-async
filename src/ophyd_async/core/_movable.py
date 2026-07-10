@@ -3,6 +3,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import cached_property
 from typing import Generic
 
@@ -115,6 +116,12 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
         callback_on_mock_put(device.movable_logic.setpoint, _instant_move)
 
 
+class StopState(Enum):
+    NONE = "NONE"
+    USER_SUCCESS = "USER_SUCCESS"
+    USER_FAILURE = "USER_FAILURE"
+
+
 @default_mock_class(InstantMovableMock)
 class StandardMovable(
     Device,
@@ -127,10 +134,13 @@ class StandardMovable(
     """Device that provides standard logic for moving.
 
     This class must be inherited and have a `movable_logic` @cached_property.
+    If stop is called while moving, it will raise a RuntimeError.
     """
 
-    # Whether set() should complete successfully or not
-    _set_success = True
+    # Whether set() should complete successfully or raise an error due to stop called or
+    # due to timeout.
+    _stop_state: Enum = StopState.NONE
+    _move_status: AsyncStatus | None = None
 
     @cached_property
     @abstractmethod
@@ -154,7 +164,7 @@ class StandardMovable(
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ):
         """Move to the given value."""
-        self._set_success = True
+        self._stop_state = StopState.NONE
         old_position, (units, precision) = await asyncio.gather(
             self.movable_logic.readback.get_value(),
             self.movable_logic.get_units_precision(),
@@ -168,31 +178,46 @@ class StandardMovable(
         else:
             move_timeout = timeout
 
-        async with AsyncStatus(
-            self.movable_logic.move(
-                new_position=new_position, timeout=MoveTimeout(move_timeout)
-            )
-        ) as move_status:
-            async for current_position in observe_value(
-                self.movable_logic.readback,
-                done_status=move_status,
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                    precision=precision,
+        try:
+            async with AsyncStatus(
+                self.movable_logic.move(
+                    new_position=new_position, timeout=MoveTimeout(move_timeout)
                 )
+            ) as self._move_status:
+                async for current_position in observe_value(
+                    self.movable_logic.readback,
+                    done_status=self._move_status,
+                ):
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.name,
+                        unit=units,
+                        precision=precision,
+                    )
+        # Convert cancellation into the appropriate stop result.
+        # If stop(success=True) was called, complete without raising.
+        # If stop(success=False) was called, raise a RuntimeError below.
+        # If not stopped but times out, show the CancelledError from the timeout.
+        except asyncio.CancelledError:
+            if self._stop_state == StopState.NONE:
+                raise
+        finally:
+            self._move_status = None
 
-        if not self._set_success:
+        # Raise error if needed, reset stop state.
+        stop_state = self._stop_state
+        self._stop_state = StopState.NONE
+        if stop_state == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
-        self._set_success = success
+        self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
         await self.movable_logic.stop()
+        if self._move_status:
+            self._move_status.task.cancel()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)

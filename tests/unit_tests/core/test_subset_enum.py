@@ -5,7 +5,11 @@ from p4p.nt import NTEnum
 from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.core import epics_signal_rw
 
-# Allow these imports from private modules for tests
+# make_converter (CA/PVA) picks the internal wire-(de)serialization
+# converter for a given datatype - epics_signal_rw chooses one
+# automatically from the datatype/PV prefix, a caller never selects or
+# constructs a converter directly - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.core._aioca import (  # noqa: PLC2701
     make_converter as ca_make_converter,
 )
