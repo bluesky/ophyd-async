@@ -254,7 +254,7 @@ convention = "google" # not really, but close enough...
 # By default, private member access is allowed in tests
 # See https://github.com/DiamondLightSource/python-copier-template/issues/154
 # Remove this line to forbid private member access in tests
-"tests/**/*" = ["SLF001", "S101", "D", "PLC2701"]
+"tests/**/*" = ["SLF001", "S101", "D"]
 "src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
 "system_tests/**/*" = ["SLF001", "S101", "D"]
 

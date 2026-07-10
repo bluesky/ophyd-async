@@ -46,6 +46,11 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_triggerable_command,
 )
+
+# format_datatype only renders a datatype for TypeError messages raised
+# internally on a mismatch - a caller never calls it themselves, just sees
+# its output inside an exception - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     IOC,

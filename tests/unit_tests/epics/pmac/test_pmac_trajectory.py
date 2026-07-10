@@ -11,15 +11,20 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac import PmacIO
-from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
-    PmacExecuteState,
-    PmacScanInfo,
-    PmacTrajectoryTriggerLogic,
-)
-from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
-    _PmacMotorInfo,
-)
+
+# PmacScanInfo/PmacTrajectoryTriggerLogic are already public - use the
+# public path rather than the private module they happen to be defined in.
+from ophyd_async.epics.pmac import PmacIO, PmacScanInfo, PmacTrajectoryTriggerLogic
+
+# PmacExecuteState (a status enum PmacTrajectoryTriggerLogic compares
+# against internally) and _PmacMotorInfo (an internal dataclass of
+# computed per-motor accel/resolution numbers, built via its own
+# from_motors() classmethod - not something a caller constructs) are both
+# genuinely internal to trajectory generation, not part of the public
+# get/set/prepare surface PmacTrajectoryTriggerLogic exposes - checked,
+# nothing here looks missing from the public interface.
+from ophyd_async.epics.pmac._pmac_trajectory import PmacExecuteState  # noqa: PLC2701
+from ophyd_async.epics.pmac._utils import _PmacMotorInfo  # noqa: PLC2701
 
 
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):

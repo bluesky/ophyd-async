@@ -37,10 +37,22 @@ from ophyd_async.core import (
 from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
+
+# _SignalCache is the internal object behind Signal.subscribe()/caching -
+# a caller gets one automatically, never constructs it directly. Tested
+# here (test_get_reading_runtime_error/test_notify_runtime_error) to
+# exercise internal error paths that aren't otherwise reachable from the
+# public Signal surface - checked, nothing here looks missing from the
+# public interface.
 from ophyd_async.core._signal import (  # noqa: PLC2701
     _SignalCache,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+
+# get_signal_backend_type is the internal ca:/pva: prefix-to-backend-class
+# dispatch epics_signal_rw uses under the hood - a caller only ever sees
+# the prefix-based PV string, never the protocol/backend-class mapping
+# directly - checked, nothing here looks missing from the public interface.
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
     ExampleEnum,
