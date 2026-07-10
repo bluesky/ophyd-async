@@ -163,13 +163,6 @@ def _fail_if_overwriting_parent(self: Device, name: str, value: Any):
     object.__setattr__(self, name, value)
 
 
-def _fail_if_reserved_attr(self: Device, name: str, value: Any):
-    raise NameError(
-        f"`{name}` is used in one of the bluesky protocols. "
-        f"Please use `{name}_` instead."
-    )
-
-
 def _set_device_child(self: Device, name: str, value: Device | None):
     if value is None:
         # Remove optional devices that have resolved to None
@@ -211,7 +204,6 @@ class Device(HasName):
         setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
             # parent needs special handling
             "parent": _fail_if_overwriting_parent,
-            **dict.fromkeys(DEVICE_RESERVED_ATTRS, _fail_if_reserved_attr),
         }
         # Assign _setattr_methods in __new__ instead of __init__,
         # as this is called before any __setattr__ calls are made
@@ -277,6 +269,11 @@ class Device(HasName):
         # dictionary of setattr functions
         func = self._setattr_methods.get(name, None)
         if func is None:
+            if name in DEVICE_RESERVED_ATTRS:
+                raise NameError(
+                    f"`{name}` is used in one of the bluesky protocols. "
+                    f"Please use `{name}_` instead."
+                )
             # First encounter, so assign correct
             # __setattr__ method depending on `value` type
             if isinstance(value, Device):

@@ -281,6 +281,7 @@ async def test_many_individual_device_connects_not_slow(parallel, execution_numb
     # Windows runners on GitHub are slow...
     expected_duration = 2.0 if os.name == "nt" else 1.0
     assert duration < expected_duration
+    pass
 
 
 async def test_device_with_children_lazily_connects(RE):
