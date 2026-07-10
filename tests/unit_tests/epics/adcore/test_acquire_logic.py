@@ -37,21 +37,31 @@ async def test_acquire_logic_trigger_internal_calls_acquire(
 async def test_acquire_logic_when_arming_times_out(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
+    # This test is meant to exercise wait_task's own internal timeout inside
+    # set_and_wait_for_other_value (the one with the "didn't match ... last
+    # value ..." message), not the outer wait for a first value from
+    # match_signal (which resolves almost immediately regardless of this
+    # callback, since it just reports the signal's already-present current
+    # value). Give the callback's delay a large margin over DEFAULT_TIMEOUT
+    # so the match reliably doesn't happen in time (rather than racing to
+    # land right on the boundary), and keep DEFAULT_TIMEOUT itself generous
+    # so the "did we see a first value yet" phase has plenty of headroom
+    # against CI scheduling jitter and doesn't itself time out first.
     async def sleep_for_a_bit(value):
-        await asyncio.sleep(0.02)
+        await asyncio.sleep(0.2)
 
     callback_on_mock_put(adbase_detector.driver.acquire, sleep_for_a_bit)
 
-    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.02):
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.05):
         with pytest.raises(
             TimeoutError,
             match=re.escape(
-                "det-driver-acquire didn't match True in 0.02s, last value False"
+                "det-driver-acquire didn't match True in 0.05s, last value False"
             ),
         ):
             await adbase_detector.trigger()
 
-    await asyncio.sleep(0.03)  # Allow background tasks to complete
+    await asyncio.sleep(0.25)  # Allow background tasks to complete
 
 
 async def test_acquire_logic_wait_for_idle_in_bad_state(

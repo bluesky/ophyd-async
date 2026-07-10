@@ -596,6 +596,21 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             if self._matcher(value):
                 return
 
+    def timeout_error(
+        self, signal: SignalR[SignalDatatypeT], timeout: float | None
+    ) -> TimeoutError:
+        """Build the helpful, formatted `TimeoutError` for this checker.
+
+        Shared by every place that gives up waiting on this checker's
+        signal, so a bare, message-less `TimeoutError` never leaks out -
+        whichever of them fires first still reports `signal.name`, the
+        matcher, the timeout and the last observed value.
+        """
+        return TimeoutError(
+            f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
+            f"last value {self._last_value!r}"
+        )
+
     async def wait_for_value(
         self, signal: SignalR[SignalDatatypeT], timeout: float | None
     ):
@@ -603,10 +618,7 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             async with asyncio.timeout(timeout):
                 await self._wait_for_value(signal)
         except TimeoutError as exc:
-            raise TimeoutError(
-                f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
-                f"last value {self._last_value!r}"
-            ) from exc
+            raise self.timeout_error(signal, timeout) from exc
 
 
 async def wait_for_value(
@@ -676,8 +688,16 @@ async def set_and_wait_for_other_value(
 
     # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
-        async with asyncio.timeout(timeout):
-            await checker.got_first_value.wait()
+        # NOTE: this timeout races wait_task's own internal timeout (same
+        # duration, started moments earlier) - whichever elapses first wins.
+        # That race is harmless *as long as* both outcomes report a helpful
+        # message, so we catch a bare timeout here and reformat it rather
+        # than restructuring the control flow to avoid the race outright.
+        try:
+            async with asyncio.timeout(timeout):
+                await checker.got_first_value.wait()
+        except TimeoutError as exc:
+            raise checker.timeout_error(match_signal, timeout) from exc
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
