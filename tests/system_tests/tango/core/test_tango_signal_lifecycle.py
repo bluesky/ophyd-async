@@ -1,33 +1,69 @@
-"""Generic Signal-level lifecycle coverage for the declarative `TangoTestDevice`.
+"""Generic Signal-level lifecycle coverage for Tango, both device flavours.
 
-First slice of issue #1321 item 4 ("New Signal-level system test suites
-(get/put/monitor/describe/locate/mock-parity/error-paths) per transport,
-replacing the old ones"): rather than a large hand-curated per-field metadata
-table like `test_tango_signals.py` uses (one `ExpectedData`-shaped entry per
-attribute, repeated per transport), `assert_signal_lifecycle` below is a
-single generic check run once per field, parametrized over
-`TangoTestDevice`'s own curated field list (built in item 3) - the same
-pattern is intended to be replicated for EPICS CA/PVA/PVI and `core` in
-follow-up PRs, and for the "old" `test_tango_signals.py` to eventually be
-deleted in favour of it (issue #1321 item 6).
+Second slice of issue #1321 item 5 ("Tango wholesale Signal-level test
+replacement"), extending the first slice (#1332, curated-declarative-only)
+with two more pieces:
+
+- An exhaustive procedural-device tier (`test_exhaustive_signal_lifecycle`):
+  the same `assert_signal_lifecycle` helper as the curated tier below, but
+  parametrized over *every* field `OneOfEverythingTangoDevice` serves (37,
+  from `everything_signal_info`/`conftest.py`), via the plain procedural
+  `TangoDevice(trl)` (default `auto_fill_signals=True`) rather than the
+  curated declarative `TangoTestDevice`. Originally assumed too slow to be
+  exhaustive (hence the first slice's curated 7-field subset) - measured
+  instead of assumed: a prototype running the full lifecycle check
+  (monitor+locate+describe, not just get/put) against all 37 fields took
+  0.47s total. The curated declarative tier below stays curated regardless
+  (that's a *different* constraint - mock-parity needs declared
+  annotations, so it's inherently limited to whatever `TangoTestDevice`
+  declares - not a coverage decision).
+- A settings YAML round-trip test (`test_retrieve_apply_store_settings`),
+  net-new for this transport, using the curated `TangoTestDevice` (settings
+  save/apply is about a device's *declared* signal set, so curated is
+  correct here, matching how EPICS's equivalent test uses its own
+  declarative device).
+
+`assert_signal_lifecycle` itself (below) is a single generic check run once
+per field, replacing the large hand-curated per-field metadata table
+`test_tango_signals.py` used (one `ExpectedData`-shaped entry per attribute)
+- the same pattern already replicated for EPICS CA/PVA
+(`tests/system_tests/epics/signal/test_epics_signal_lifecycle.py`).
+`test_tango_signals.py` itself has now been deleted (issue #1321 item 5) -
+see this PR's description for what was folded forward vs. dropped as
+redundant.
 
 Initial values/valid put values for each field are pulled from
-`everything_signal_info` (`conftest.py`), same as `test_tango_signals.py` -
-and like that module, every test here resets `OneOfEverythingTangoDevice` to
-its documented defaults first (`reset_everything_device` fixture below),
-since it's a session-scoped server shared with every other test module in
-this directory.
+`everything_signal_info` (`conftest.py`), and every test here resets
+`OneOfEverythingTangoDevice` to its documented defaults first
+(`reset_everything_device` fixture below), since it's a session-scoped
+server shared with every other test module in this directory.
 """
 
 import asyncio
+from pathlib import Path
 from typing import Annotated as A
 
+import conftest
 import numpy as np
 import pytest
 import tango
+import yaml
 from bluesky.protocols import Location
+from tango.asyncio_executor import set_global_executor
 
-from ophyd_async.core import Array1D, DeviceVector, SignalRW, StandardReadable
+from ophyd_async.core import (
+    Array1D,
+    DeviceVector,
+    SignalRW,
+    StandardReadable,
+    YamlSettingsProvider,
+)
+from ophyd_async.plan_stubs import (
+    apply_settings,
+    ensure_connected,
+    retrieve_settings,
+    store_settings,
+)
 from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 from ophyd_async.tango.testing import ExampleStrEnum, TangoTestDevice
 from ophyd_async.testing import MonitorQueue, approx_value
@@ -139,6 +175,25 @@ async def assert_signal_lifecycle(signal: SignalRW, initial_value, put_value) ->
         await signal.set(initial_value)
 
 
+def _distinct_put_value(attr_data: conftest.AttributeData, field: str):
+    """A put value that's guaranteed to differ from `attr_data.initial`.
+
+    `random_value()` picks from a small fixed choice list (e.g. 3 enum
+    members) with no exclusion for "same as initial" - on a large enough
+    test run that coincidence happens often enough to matter. A no-op set
+    never fires a change event, so the monitor assertion inside
+    `assert_signal_lifecycle` would hang until its own timeout instead of
+    failing fast, rather than actually be wrong - so guarantee a genuine
+    transition instead of trusting the coin flip.
+    """
+    put_value = attr_data.random_value()
+    for _ in range(10):
+        if not np.array_equal(put_value, attr_data.initial):
+            return put_value
+        put_value = attr_data.random_value()
+    pytest.fail(f"Could not find a value for {field} that differs from initial")
+
+
 @pytest.mark.timeout(10.0)
 @pytest.mark.parametrize("field", LIFECYCLE_FIELDS)
 async def test_signal_lifecycle(
@@ -152,20 +207,51 @@ async def test_signal_lifecycle(
     signal = getattr(device, field)
     attr_data = everything_signal_info[field]
     initial_value = attr_data.initial
-    # random_value() picks from a small fixed choice list (e.g. 3 enum
-    # members) with no exclusion for "same as initial" - on a large enough
-    # test run that coincidence happens often enough to matter. A no-op set
-    # never fires a change event, so the monitor assertion inside
-    # `assert_signal_lifecycle` would hang until its own timeout instead of
-    # failing fast, rather than actually be wrong - so guarantee a genuine
-    # transition instead of trusting the coin flip.
-    put_value = attr_data.random_value()
-    for _ in range(10):
-        if not np.array_equal(put_value, initial_value):
-            break
-        put_value = attr_data.random_value()
-    else:
-        pytest.fail(f"Could not find a value for {field} that differs from initial")
+    put_value = _distinct_put_value(attr_data, field)
+    await assert_signal_lifecycle(signal, initial_value, put_value)
+
+
+# Every field OneOfEverythingTangoDevice serves (37), not just LIFECYCLE_FIELDS'
+# curated 7 - built from the same plain function `everything_signal_info`
+# itself wraps, since a `pytest.mark.parametrize` list has to exist at
+# collection time, before any fixture (including `everything_signal_info`)
+# has run. See `conftest.build_everything_signal_info`'s own docstring.
+EXHAUSTIVE_FIELDS = sorted(conftest.build_everything_signal_info())
+
+
+@pytest.mark.timeout(10.0)
+@pytest.mark.parametrize("field", EXHAUSTIVE_FIELDS)
+async def test_exhaustive_signal_lifecycle(
+    everything_device_trl: str,
+    everything_signal_info,
+    reset_everything_device: None,
+    field: str,
+):
+    """Same lifecycle check as `test_signal_lifecycle` above, but exhaustive.
+
+    Uses the plain procedural `TangoDevice(trl)` (`auto_fill_signals=True`)
+    rather than `TangoTestDevice`, since a declarative Device would need a
+    hand-written `Annotated` field for every one of the 37 fields to get
+    this exhaustive - which the procedural flavour gets for free by
+    discovering every attribute on the live proxy. See this module's
+    docstring for why exhaustive coverage here is cheap enough to just do,
+    rather than needing its own curated subset.
+    """
+    device = TangoDevice(everything_device_trl, name="exhaustive")
+    await device.connect()
+    signal = getattr(device, field)
+    # Confirmed empirically (see this module's docstring): every one of the
+    # 37 fields discovered by auto_fill_signals=True comes back as a
+    # SignalRW, since OneOfEverythingTangoDevice declares every attribute
+    # READ_WRITE - so this never actually skips anything today. Kept as a
+    # guard rather than assumed, the same way EPICS's lifecycle suite
+    # documents its own quirk-field carve-outs, in case a future field is
+    # ever added read-only.
+    if not hasattr(signal, "set"):
+        pytest.skip(f"{field} is not a settable Signal")
+    attr_data = everything_signal_info[field]
+    initial_value = attr_data.initial
+    put_value = _distinct_put_value(attr_data, field)
     await assert_signal_lifecycle(signal, initial_value, put_value)
 
 
@@ -277,3 +363,89 @@ async def test_signal_error_paths(everything_device_trl: str):
     missing = TangoTestDevice(missing_trl, name="missing")
     with pytest.raises(tango.DevFailed):
         await missing.connect(timeout=0.5)
+
+
+@pytest.mark.timeout(5.0)
+async def test_enum_set_accepts_name_value_and_member(
+    everything_device_trl: str, reset_everything_device: None
+):
+    """An enum-backed `SignalRW.set()` accepts a raw string (the Tango-served
+    label) or the enum member itself, not just one canonical form.
+
+    Folded forward from the now-deleted `test_tango_signals.py::
+    test_set_with_converter` - its `TypeError`/`ValueError` assertions were
+    exact duplicates of `test_signal_error_paths` above (same field, same
+    calls) so were dropped rather than folded forward; this is the
+    genuinely distinct remainder. `LIFECYCLE_FIELDS`'/`EXHAUSTIVE_FIELDS`'
+    `random_value()` only ever exercises the raw-string form (see
+    `AttributeData.random_value` in conftest.py), never an actual enum
+    member, so this converter-acceptance path has no other coverage.
+    """
+    device = TangoTestDevice(everything_device_trl, name="enum_converter")
+    await device.connect()
+    try:
+        await device.strenum.set("AAA")
+        await device.strenum.set(ExampleStrEnum.B)
+        await device.strenum.set(ExampleStrEnum.C.value)
+        await device.my_state.set(DevStateEnum.EXTRACT)
+    finally:
+        # Leave the server as documented-default for the next test/module.
+        await device.strenum.set(ExampleStrEnum.B)
+        await device.my_state.set(DevStateEnum.INIT)
+
+
+HERE = Path(__file__).absolute().parent
+
+
+@pytest.mark.timeout(10.0)
+async def test_retrieve_apply_store_settings(
+    RE, everything_device_trl: str, reset_everything_device: None, tmp_path
+):
+    """Settings YAML round-trip, net-new for Tango (issue #1321 item 5) -
+    no equivalent existed under the old `test_tango_signals.py`. Follows the
+    same shape as EPICS's `test_retrieve_apply_store_settings`
+    (`tests/system_tests/epics/signal/test_signals.py`): retrieve a golden
+    set of values from a YAML fixture, apply them to a real device, store
+    the device's current values back out, and assert the two files agree.
+
+    Uses the curated `TangoTestDevice`, not the exhaustive procedural tier
+    above - `walk_rw_signals` (what `retrieve_settings`/`store_settings`
+    walk) only ever sees a device's *declared* signals, so settings
+    save/apply is inherently about the declarative flavour, the same way
+    mock-parity is (see this module's docstring) - there's no equivalent
+    "exhaustive" version of this test to write.
+    """
+    tmp_provider = YamlSettingsProvider(tmp_path)
+    expected_provider = YamlSettingsProvider(HERE)
+    device = TangoTestDevice(everything_device_trl, name="settings")
+
+    # PyTango's asyncio green-mode machinery caches a single global executor
+    # bound to whichever event loop first asks for one (see
+    # tango.asyncio_executor.get_global_executor) - `reset_everything_device`
+    # above already connected a device on *this* test's own (pytest-asyncio)
+    # loop, which lazily bound that global executor here. `RE` runs its plan
+    # on a second, separate event loop in its own background thread (see
+    # tests/conftest.py's `RE` fixture) - without resetting, the first Tango
+    # connect attempted from inside that thread reuses the wrong loop's
+    # executor and fails with a raw `TypeError` ("... can't be used in
+    # 'await' expression") instead of actually connecting. `reset_tango_asyncio`
+    # (conftest.py, autouse) only resets once per test, before this happens -
+    # doing it again immediately before handing off to `RE` is the same fix,
+    # scoped to exactly the moment it's needed.
+    set_global_executor(None)
+
+    def a_plan():
+        yield from ensure_connected(device)
+        settings = yield from retrieve_settings(
+            expected_provider, "test_yaml_save", device
+        )
+        yield from apply_settings(settings)
+        yield from store_settings(tmp_provider, "test_file", device)
+        with open(tmp_path / "test_file.yaml") as actual_file:
+            with open(HERE / "test_yaml_save.yaml") as expected_file:
+                # If this test fails because you added/removed a field on
+                # TangoTestDevice, regenerate the golden file with:
+                # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_st0/test_file.yaml tests/system_tests/tango/core/test_yaml_save.yaml  # noqa: E501
+                assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
+
+    RE(a_plan())

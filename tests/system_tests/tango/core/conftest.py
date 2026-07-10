@@ -2,6 +2,7 @@ import asyncio
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import PurePath
 from random import choice
 from typing import Any, Generic, TypeVar
 
@@ -86,9 +87,20 @@ def sim_test_context_trls(tango_servers) -> dict[str, str]:
 
 
 def pytest_collection_modifyitems(config, items):
-    tango_dir = "system_tests_tango"
+    # Post-move (issue #1321's directory-layout decision:
+    # tests/system_tests_tango/ -> tests/system_tests/tango/core/), match on
+    # the adjacent ("tango", "core") path parts rather than a substring of
+    # the raw path string - a plain "tango/core" in str(item.fspath) would
+    # silently stop matching on Windows, where fspath renders with
+    # backslashes. Using PurePath.parts (OS-appropriate splitting either
+    # way) keeps this correct regardless of platform. Belt-and-braces: the
+    # dedicated Tango CI matrix include never runs on Windows anyway, and
+    # the general job's tests/system_tests invocation now `--ignore`s this
+    # subdirectory (see .github/workflows/ci.yml) so it isn't even collected
+    # there - this skip is defense in depth in case that ever changes.
     for item in items:
-        if tango_dir in str(item.fspath):
+        parts = PurePath(str(item.fspath)).parts
+        if any(parts[i : i + 2] == ("tango", "core") for i in range(len(parts) - 1)):
             if sys.platform.startswith(
                 "win"
             ):  # expect "win32", but open to a future change: https://mail.python.org/pipermail/patches/2000-May/000648.html
@@ -124,8 +136,16 @@ class SequenceData(AttributeData):
         return [choice(self.random_put_values) for _ in range(len(self.initial))]
 
 
-@pytest.fixture(scope="module")
-def everything_signal_info():
+def build_everything_signal_info() -> dict[str, AttributeData]:
+    """Every field `OneOfEverythingTangoDevice` serves, keyed by attribute name.
+
+    A plain function, not just the body of `everything_signal_info` below, so
+    the exhaustive procedural-tier test module (`test_tango_signal_lifecycle.py`)
+    can build its `pytest.mark.parametrize` field list at collection time -
+    pytest fixtures can't be called directly outside a test, but collection
+    needs the field *names* before any fixture would normally run. No device
+    server is touched here, so this is safe to call at import time.
+    """
     signal_info = {}
 
     def add_ads(
@@ -222,6 +242,11 @@ def everything_signal_info():
     )
 
     return signal_info
+
+
+@pytest.fixture(scope="module")
+def everything_signal_info() -> dict[str, AttributeData]:
+    return build_everything_signal_info()
 
 
 @pytest.fixture
