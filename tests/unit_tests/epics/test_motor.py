@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from bluesky.protocols import Reading
@@ -329,7 +329,7 @@ async def test_prepare(motor: Motor, target_position: float, expected_velocity: 
 
 
 async def test_kickoff(motor: Motor):
-    mock_set = AsyncMock()
+    mock_set = MagicMock()
     object.__setattr__(motor, "set", mock_set)
     with pytest.raises(
         RuntimeError,
