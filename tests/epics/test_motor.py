@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from bluesky.protocols import Reading
@@ -265,7 +265,7 @@ async def test_prepare(
             if value == target_position:
                 break
 
-    sim_motor.set = AsyncMock(side_effect=wait_for_set)
+    object.__setattr__(sim_motor, "set", AsyncMock(side_effect=wait_for_set))
 
     async def do_set(status: AsyncStatus):
         assert not status.done
@@ -288,7 +288,8 @@ async def test_prepare(
 
 
 async def test_kickoff(sim_motor: motor.Motor):
-    sim_motor.set = MagicMock()
+    mock_set = AsyncMock()
+    object.__setattr__(sim_motor, "set", mock_set)
     with pytest.raises(
         RuntimeError, match="Motor must be prepared before attempting to kickoff"
     ):
@@ -303,7 +304,7 @@ async def test_kickoff(sim_motor: motor.Motor):
         time_for_move=1,
     )
     await sim_motor.kickoff()
-    sim_motor.set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
+    mock_set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:
