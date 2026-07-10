@@ -1,10 +1,3 @@
-# Includes _epics_test_ca_records.db so the "pva:" topology only needs
-# one -d load (see ophyd_async.epics.testing._ioc._testing_ioc_args) -
-# resolved via the EPICS_DB_INCLUDE_PATH env var that launcher sets,
-# since a bare relative include is otherwise resolved against the IOC
-# process's cwd, not this file's own directory.
-include "_epics_test_ca_records.db"
-
 record(waveform, "$(device)int8a") {
   field(NELM, "7")
   field(FTVL, "CHAR")

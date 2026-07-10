@@ -15,7 +15,6 @@ it (see `_testing_ioc_args`). Run directly with a plain Python interpreter:
 """
 
 import argparse
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -34,9 +33,10 @@ def _testing_ioc_args(prefix: str) -> list[str]:
     Serves `ca:`/`pva:`/`nested:` sub-topologies under `prefix`:
 
     - `ca:`: `_epics_test_ca_records.db`, backing `EpicsTestCaDevice`.
-    - `pva:`: `_epics_test_pva_records.db` (which itself `include`s
-      `_epics_test_ca_records.db`), backing `EpicsTestPvaDevice`/
-      `EpicsTestPviDevice`.
+    - `pva:`: `_epics_test_ca_records.db` *and* `_epics_test_pva_records.db`
+      (loaded as two separate `-d`s under the same macro, rather than having
+      the pva db `include` the ca one - easier to see what's actually being
+      loaded), backing `EpicsTestPvaDevice`/`EpicsTestPviDevice`.
     - `nested:`: `_pvi_nested_records.db`, backing `EpicsTestPviNestedDevice`/
       `EpicsTestPviLeafDevice`/`EpicsTestPviNestedDeviceMissingChild`.
     """
@@ -48,6 +48,7 @@ def _testing_ioc_args(prefix: str) -> list[str]:
     nested_db = str(HERE / "_pvi_nested_records.db")
     return [
         "-m", f"device={ca_prefix}", "-d", ca_db,
+        "-m", f"device={pva_prefix}", "-d", ca_db,
         "-m", f"device={pva_prefix}", "-d", pva_db,
         "-m", f"device={nested_prefix}", "-d", nested_db,
     ]  # fmt: skip
@@ -69,9 +70,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     softioc_args = args.softioc or DEFAULT_SOFTIOC_ARGS
     ioc_args = _testing_ioc_args(args.prefix)
-    # _epics_test_pva_records.db's `include "_epics_test_ca_records.db"` is a
-    # bare relative path, resolved against EPICS_DB_INCLUDE_PATH (falling
-    # back to cwd) rather than this file's own directory - set it explicitly
-    # so this works regardless of what cwd we were launched from.
-    env = {**os.environ, "EPICS_DB_INCLUDE_PATH": str(HERE)}
-    sys.exit(subprocess.run([*softioc_args, *ioc_args], env=env).returncode)
+    sys.exit(subprocess.run([*softioc_args, *ioc_args]).returncode)
