@@ -663,7 +663,7 @@ class StandardDetector(
             trigger_info=ctx.trigger_info,
             initial_collections_written=ctx.collections_written,
             collections_requested=ctx.trigger_info.collections_per_event,
-            watch_divisor=1,
+            watcher_divisor=1,
             wait_for_idle=True,
         ):
             yield update
