@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.19.4.dev12+g116a68ea1 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=779a2b48"></script>
+    <script src="../../../_static/documentation_options.js?v=700824af"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev12+g116a68ea1 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev12+g116a68ea1 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation - Home"/>
   
   
 </a></div>
@@ -1494,13 +1494,13 @@ window.runMermaid = runMermaid;</script>
         <span class="n">initial_collections_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">collections_requested</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">wait_for_idle</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">watcher_divisor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">]:</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="n">current_collections_written</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">dp</span><span class="o">.</span><span class="n">collections_written_signal</span><span class="p">:</span> <span class="n">initial_collections_written</span>
             <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">data_providers</span>
         <span class="p">}</span>
-        <span class="n">collections_per_event</span> <span class="o">=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span>
         <span class="n">target_collections_written</span> <span class="o">=</span> <span class="n">initial_collections_written</span> <span class="o">+</span> <span class="n">collections_requested</span>
         <span class="k">if</span> <span class="n">data_providers</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
@@ -1511,9 +1511,9 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">collections_written</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_collections_written</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
                 <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
                     <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">current</span><span class="o">=</span><span class="n">collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
-                    <span class="n">initial</span><span class="o">=</span><span class="n">initial_collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="n">target_collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
+                    <span class="n">current</span><span class="o">=</span><span class="n">collections_written</span> <span class="o">//</span> <span class="n">watcher_divisor</span><span class="p">,</span>
+                    <span class="n">initial</span><span class="o">=</span><span class="n">initial_collections_written</span> <span class="o">//</span> <span class="n">watcher_divisor</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">target_collections_written</span> <span class="o">//</span> <span class="n">watcher_divisor</span><span class="p">,</span>
                     <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
                     <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                     <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
@@ -1641,7 +1641,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">data_providers</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">,</span>
             <span class="n">trigger_info</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">,</span>
             <span class="n">initial_collections_written</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_written</span><span class="p">,</span>
-            <span class="n">collections_requested</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">collections_requested</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">,</span>
+            <span class="n">watcher_divisor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">wait_for_idle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">update</span></div>
@@ -1696,6 +1697,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">initial_collections_written</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_written</span><span class="p">,</span>
             <span class="n">collections_requested</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_requested</span><span class="p">,</span>
             <span class="n">wait_for_idle</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">is_last_kickoff</span><span class="p">,</span>
+            <span class="n">watcher_divisor</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">update</span></div>
 
