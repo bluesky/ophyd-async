@@ -673,29 +673,11 @@ async def set_and_wait_for_other_value(
     wait_task = asyncio.create_task(
         checker.wait_for_value(match_signal, timeout=timeout)
     )
-    # Wait until we see the first value from the monitor (so we know it is
-    # live before we blindly issue the set), or until wait_task finishes on
-    # its own - e.g. because match_signal already had the target value, the
-    # monitor failed outright, or wait_task's own timeout elapsed. We
-    # deliberately wait on wait_task itself here rather than using a second,
-    # independent `asyncio.timeout(timeout)`: two clocks racing over the same
-    # duration can let this outer timer fire microseconds before wait_task's
-    # internal one (especially under scheduling jitter on loaded CI runners),
-    # which would raise a bare, unhelpful `TimeoutError` instead of
-    # wait_task's nicely formatted one.
-    first_value_task = asyncio.ensure_future(checker.got_first_value.wait())
 
-    # Put this in a try/except to ensure both tasks are cancelled when we exit
+    # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
-        await asyncio.wait(
-            {first_value_task, wait_task}, return_when=asyncio.FIRST_COMPLETED
-        )
-        if not checker.got_first_value.is_set():
-            # wait_task ended before match_signal produced any value at all,
-            # so it must have raised - propagate that (well-formatted) error
-            # instead of hanging around for a first value that will never
-            # come.
-            wait_task.result()
+        async with asyncio.timeout(timeout):
+            await checker.got_first_value.wait()
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
@@ -715,10 +697,6 @@ async def set_and_wait_for_other_value(
         with contextlib.suppress(asyncio.CancelledError):
             await wait_task
         raise
-    finally:
-        first_value_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await first_value_task
 
 
 async def set_and_wait_for_value(
