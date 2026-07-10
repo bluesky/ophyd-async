@@ -59,7 +59,7 @@ class PmacTrajectoryIO(StandardReadable):
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_triggerable_command(prefix + "ProfileBuild")
         self.build_status = epics_signal_r(
-            PmacStatus, prefix + "ProfileBuilsStatus_RBV"
+            PmacStatus, prefix + "ProfileBuildStatus_RBV"
         )
         self.build_message = epics_signal_r(str, prefix + "ProfileBuildMessage_RBV")
         self.append_profile = epics_triggerable_command(prefix + "ProfileAppend")

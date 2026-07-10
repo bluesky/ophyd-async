@@ -26,15 +26,11 @@ from ophyd_async.epics.pmac import PmacIO, PmacScanInfo, PmacTrajectoryTriggerLo
 # nothing here looks missing from the public interface.
 from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
     PmacExecuteState,  # noqa: PLC2701
-    PmacExecuteStatus,
+    PmacStatus,
 )
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
     _PmacMotorInfo,  # noqa: PLC2701
 )
-
-
-async def null_observe_value(args, **kwargs):
-    yield None
 
 
 async def bad_observe_value(*args, **kwargs):
@@ -227,7 +223,7 @@ async def test_pmac_trajectory_kickoff(
         pmac_io.trajectory.append_profile,
         lambda: set_mock_value(pmac_io.trajectory.execute_profile, False),
     )
-    set_mock_value(pmac_io.trajectory.execute_status, PmacExecuteStatus.SUCCESS)
+    set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.SUCCESS)
 
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
@@ -342,47 +338,6 @@ async def test_pmac_trajectory_kickoff(
     )
 
 
-async def test_pmac_trajectory_ensure_trajectory_complete_raises_if_invalid_final_state(
-    sim_motors: tuple[PmacIO, Motor, Motor],
-):
-    pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    set_mock_value(pmac_io.trajectory.execute_profile, True)
-    with (
-        patch("ophyd_async.epics.pmac._pmac_trajectory.DEFAULT_TIMEOUT", 0.02),
-    ):
-        with pytest.raises(ValueError, match="not in valid end state of 'False'."):
-            await pmac_trajectory._ensure_trajectory_complete()
-
-
-async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
-    sim_motors: tuple[PmacIO, Motor, Motor],
-):
-    pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    with (
-        patch(
-            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", bad_observe_value
-        ),
-    ):
-        with pytest.raises(TimeoutError, match="Could not monitor PMAC state"):
-            await pmac_trajectory._ensure_trajectory_complete()
-
-
-async def test_pmac_execute_trajectory_raises_if_no_success_status(
-    sim_motors: tuple[PmacIO, Motor, Motor],
-):
-    pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    with (
-        patch(
-            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", null_observe_value
-        ),
-    ):
-        with pytest.raises(ValueError, match="Failed PMAC trajectory execution"):
-            await pmac_trajectory._execute_trajectory(AsyncMock(), AsyncMock())
-
-
 async def test_pmac_trajectory_kickoff_trajectory_raises_exception_if_no_prepare(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
@@ -448,3 +403,39 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
     # Method called as there is now a running trajectory
     await pmac_trajectory._stop_if_running()
     execute_mock.assert_awaited_once_with()
+
+
+async def test_trajectory_raises_if_profile_status_not_in_good_state(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    with patch("ophyd_async.epics.pmac._pmac_trajectory.DEFAULT_TIMEOUT", 0.02):
+        pmac_io, _, _ = sim_motors
+        set_mock_value(pmac_io.trajectory.execute_message, "Failed to execute")
+        set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.FAILURE)
+        pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+        with pytest.raises(
+            ValueError,
+            match="PMAC profile sim_pmac-trajectory-execute_status "
+            "'Failure' is not in good end state of "
+            "'Success'. Message reported from pmac is: "
+            "'Failed to execute'",
+        ):
+            await pmac_trajectory._check_profile_status(
+                pmac_io.trajectory.execute_status, pmac_io.trajectory.execute_message
+            )
+
+
+async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, _, _ = sim_motors
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    with (
+        patch(
+            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", bad_observe_value
+        ),
+    ):
+        with pytest.raises(TimeoutError, match="Could not monitor PMAC status:"):
+            await pmac_trajectory._check_profile_status(
+                pmac_io.trajectory.execute_status, pmac_io.trajectory.execute_message
+            )
