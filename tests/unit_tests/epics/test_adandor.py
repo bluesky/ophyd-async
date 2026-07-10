@@ -1,0 +1,100 @@
+from unittest.mock import call
+
+import pytest
+
+from ophyd_async.core import (
+    DetectorTrigger,
+    StaticPathProvider,
+    TriggerInfo,
+    callback_on_mock_put,
+    init_devices,
+    set_mock_value,
+)
+from ophyd_async.epics import adandor, adcore
+from ophyd_async.testing import assert_has_calls
+
+
+@pytest.fixture
+async def test_adandor(
+    static_path_provider: StaticPathProvider,
+) -> adandor.AndorDetector:
+    async with init_devices(mock=True):
+        detector = adandor.AndorDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    return detector
+
+
+def test_pvs_correct(test_adandor: adandor.AndorDetector):
+    assert test_adandor.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
+    assert (
+        test_adandor.driver.andor_accumulate_period.source
+        == "mock+ca://PREFIX:cam1:AndorAccumulatePeriod_RBV"
+    )
+
+
+async def test_deadtime(
+    test_adandor: adandor.AndorDetector,
+):
+    trigger_modes, deadtime = await test_adandor.get_trigger_deadtime()
+    assert trigger_modes == {DetectorTrigger.INTERNAL, DetectorTrigger.EXTERNAL_EDGE}
+    assert deadtime == 0.1
+
+
+async def test_prepare_external_edge(
+    test_adandor: adandor.AndorDetector,
+):
+    await test_adandor.prepare(
+        TriggerInfo(
+            trigger=DetectorTrigger.EXTERNAL_EDGE,
+            number_of_events=5,
+            livetime=0.5,
+        )
+    )
+    assert_has_calls(
+        test_adandor.driver,
+        [
+            call.trigger_mode.put(adandor.Andor2TriggerMode.EXT_TRIGGER),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(5),
+            call.acquire_time.put(0.5),
+            call.acquire.put(True),
+        ],
+    )
+
+
+async def test_prepare_forever(
+    test_adandor: adandor.AndorDetector,
+):
+    await test_adandor.prepare(TriggerInfo(number_of_events=0))
+    assert_has_calls(
+        test_adandor.driver,
+        [
+            call.trigger_mode.put(adandor.Andor2TriggerMode.INTERNAL),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(999_999),
+        ],
+    )
+
+
+@pytest.mark.parametrize("num_images,expected_first_dim", [(3, 3), (0, 1)])
+async def test_trigger_uses_num_images(
+    test_adandor: adandor.AndorDetector,
+    monkeypatch: pytest.MonkeyPatch,
+    num_images: int,
+    expected_first_dim: int,
+):
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    detector = test_adandor
+    writer = detector.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(detector.driver.num_images, num_images)
+    await detector.stage()
+    callback_on_mock_put(
+        detector.driver.acquire,
+        lambda v: set_mock_value(writer.num_captured, expected_first_dim),
+    )
+    await detector.trigger()
+    description = await detector.describe()
+    assert description["detector"]["shape"][0] == expected_first_dim

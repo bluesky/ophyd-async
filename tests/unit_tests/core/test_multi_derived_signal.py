@@ -1,0 +1,300 @@
+import asyncio
+import math
+import re
+from typing import TypeVar
+from unittest.mock import ANY, call
+
+import pytest
+from bluesky.protocols import Reading
+
+from ophyd_async.core import (
+    DerivedSignalFactory,
+    EnableDisable,
+    EnumTypes,
+    SignalRW,
+    StandardMovable,
+    StrictEnum,
+    Table,
+    Transform,
+    derived_signal_rw,
+    get_mock,
+    set_mock_value,
+    soft_signal_rw,
+)
+from ophyd_async.epics.demo import DemoMotor
+from ophyd_async.epics.motor import Motor
+from ophyd_async.sim import (
+    HorizontalMirror,
+    HorizontalMirrorDerived,
+    SimMotor,
+    TwoJackDerived,
+    TwoJackTransform,
+    VerticalMirror,
+)
+from ophyd_async.testing import (
+    assert_describe_signal,
+    assert_reading,
+    assert_value,
+)
+
+
+@pytest.mark.parametrize(
+    "x1, x2, x, roll",
+    [
+        (0, 0, 0, 0),
+        (0, 1, 0.5, math.pi / 4),
+        (2, 1, 1.5, -math.pi / 4),
+    ],
+)
+async def test_get_returns_right_position(x1: float, x2: float, x: float, roll: float):
+    inst = HorizontalMirror("mirror")
+    await inst.x1.set(x1)
+    await inst.x2.set(x2)
+    assert inst.x.name == "mirror-x"
+    assert inst.roll.name == "mirror-roll"
+    for sig, value in [(inst.x, x), (inst.roll, roll)]:
+        await assert_value(sig, value)
+        await assert_reading(sig, {sig.name: {"value": value}})
+        await assert_describe_signal(sig, dtype="number", dtype_numpy="<f8", shape=[])
+        location = await sig.locate()
+        assert location == {"setpoint": value, "readback": value}
+
+
+async def assert_mirror_readings(
+    results: asyncio.Queue[dict[str, Reading[float]]], x: float, roll: float
+):
+    for name, value in [("mirror-x", x), ("mirror-roll", roll)]:
+        reading = await results.get()
+        assert reading == {
+            name: {"value": value, "timestamp": ANY, "alarm_severity": 0}
+        }
+    assert results.empty()
+
+
+async def test_monitoring_position():
+    results = asyncio.Queue[dict[str, Reading[float]]]()
+    inst = HorizontalMirror("mirror")
+    inst.x.subscribe_reading(results.put_nowait)
+    inst.roll.subscribe_reading(results.put_nowait)
+    await assert_mirror_readings(results, 0, 0)
+    await inst.x2.set(1)
+    await assert_mirror_readings(results, 0.5, math.pi / 4)
+    inst.x.clear_sub(results.put_nowait)
+    inst.roll.clear_sub(results.put_nowait)
+    await inst.x1.set(1)
+    assert results.empty()
+
+
+async def test_setting_position_straight_through():
+    inst = VerticalMirror("mirror")
+    # Connect in mock mode so we can see what would have been set
+    await inst.connect(mock=True)
+    m = get_mock(inst)
+    await inst.set(TwoJackDerived(height=1.5, angle=-math.pi / 4))
+    assert m.mock_calls == [
+        call.y1.user_setpoint.put(2.0),
+        call.y2.user_setpoint.put(1.0),
+    ]
+    m.reset_mock()
+    # Try to move just one axis
+    await inst.height.set(0.5)
+    assert m.mock_calls == [
+        call.height.put(0.5),
+        call.y1.user_setpoint.put(1.0),
+        call.y2.user_setpoint.put(pytest.approx(0.0)),
+    ]
+    m.reset_mock()
+
+
+async def test_setting_position_extra_indirection():
+    inst = HorizontalMirror("mirror")
+    # Connect in mock mode so we can see what would have been set
+    await inst.connect(mock=True)
+    m = get_mock(inst)
+    await inst.set(HorizontalMirrorDerived(x=1.5, roll=-math.pi / 4))
+    assert m.mock_calls == [
+        call.x1.user_setpoint.put(2.0),
+        call.x2.user_setpoint.put(1.0),
+    ]
+    m.reset_mock()
+    # Try to move just one axis
+    await inst.x.set(0.5)
+    assert m.mock_calls == [
+        call.x.put(0.5),
+        call.x1.user_setpoint.put(1.0),
+        call.x2.user_setpoint.put(pytest.approx(0.0)),
+    ]
+    m.reset_mock()
+
+
+def test_mismatching_args():
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Expected the following to be passed as keyword arguments"
+            " {'distance': <class 'float'>, 'jack1': <class 'float'>, "
+            "'jack2': <class 'float'>}, "
+            "got {'jack1': <class 'float'>, 'jack22': <class 'float'>, "
+            "'distance': <class 'float'>}"
+        ),
+    ):
+        DerivedSignalFactory(
+            TwoJackTransform,
+            jack1=soft_signal_rw(float),
+            jack22=soft_signal_rw(float),
+            distance=soft_signal_rw(float),
+        )
+
+
+@pytest.fixture
+def derived_signal() -> SignalRW[float]:
+    signal_r = soft_signal_rw(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    return derived_signal_rw(_get, _put, ts=signal_r)
+
+
+async def test_derived_signal_backend_connect_pass(
+    derived_signal: SignalRW,
+):
+    result = await derived_signal.connect()
+    assert result is None
+
+
+async def test_derived_signal_backend_set_value(
+    derived_signal: SignalRW,
+) -> None:
+    await derived_signal.connect(mock=True)
+    with pytest.raises(RuntimeError):
+        set_mock_value(derived_signal, 1.0)
+
+
+async def test_derived_signal_backend_put_wait_fails(
+    derived_signal: SignalRW,
+) -> None:
+    with pytest.raises(RuntimeError):
+        await derived_signal.set(value=None)
+    with pytest.raises(RuntimeError):
+        await derived_signal.set(value=None)
+
+
+def test_make_rw_signal_type_mismatch():
+    factory = DerivedSignalFactory(
+        TwoJackTransform,
+        set_derived=None,
+        distance=soft_signal_rw(float),
+        jack1=soft_signal_rw(float),
+        jack2=soft_signal_rw(float),
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Must define a set_derived method to support derived"),
+    ):
+        factory.derived_signal_rw(datatype=Table, name="")
+
+
+def test_missing_type_hint_in_raw_to_derived_transform():
+    class UnTypedTransform(Transform):
+        def raw_to_derived(self, x) -> float:
+            return x
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['x']"),
+    ):
+        DerivedSignalFactory(
+            UnTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+        )
+
+
+def test_sub_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: StrictEnum) -> StrictEnum:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Expected the following to be passed as keyword arguments "
+            "{'x': <enum 'StrictEnum'>}, "
+            "got {'x': <class 'float'>}"
+        ),
+    ):
+        DerivedSignalFactory(
+            SubTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+        )
+
+
+EnumTypesT = TypeVar("EnumTypesT", bound=EnumTypes)
+
+
+def test_protocol_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: EnumTypesT) -> EnumTypesT:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )
+
+
+@pytest.mark.parametrize(
+    ("m1", "m2"),
+    [
+        (Motor("PREFIX1:", "epics1"), Motor("PREFIX2:", "epics2")),
+        (
+            SimMotor(name="sim1", instant=True),
+            SimMotor(name="sim2", instant=True),
+        ),
+        (
+            SimMotor(name="sim1", instant=False),
+            SimMotor(name="sim2", instant=False),
+        ),
+        (DemoMotor("PREFIX1:", name="demo1"), DemoMotor("PREFIX2:", name="demo2")),
+    ],
+    ids=[
+        "epics_motor",
+        "sim_motor[instant=True]",
+        "sim_motor[instant=Fasle]",
+        "demo_motor",
+    ],
+)
+async def test_derived_signal_with_motor_devices(
+    m1: StandardMovable[float], m2: StandardMovable[float]
+):
+    await asyncio.gather(m1.connect(mock=True), m2.connect(mock=True))
+
+    # Needed for demo motor
+    set_mock_value(m1.velocity, 10000)  # type: ignore
+    set_mock_value(m2.velocity, 10000)  # type: ignore
+
+    def _get(m1: float, m2: float) -> float:
+        return m1 + m2
+
+    async def _put(val: float) -> None:
+        await m1.set(val / 2)
+        await m2.set(val / 2)
+
+    derived_sig = derived_signal_rw(_get, _put, m1=m1, m2=m2)
+
+    await derived_sig.set(6)
+    assert await m1.movable_logic.readback.get_value() == 3
+    assert await m2.movable_logic.readback.get_value() == 3
+    assert await derived_sig.get_value() == 6

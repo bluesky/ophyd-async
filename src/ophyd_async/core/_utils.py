@@ -5,6 +5,8 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
+from functools import lru_cache
+from inspect import isawaitable
 from typing import (
     Any,
     Generic,
@@ -13,13 +15,14 @@ from typing import (
     TypeVar,
     get_args,
     get_origin,
+    get_type_hints,
 )
-from unittest.mock import Mock
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
+T_co = TypeVar("T_co", covariant=True)
 V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
@@ -38,7 +41,7 @@ class UppercaseNameEnumMeta(EnumMeta):
 
 
 class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
-    def __call__(self, value, *args, **kwargs):  # type: ignore
+    def __call__(cls, value, *args, **kwargs):  # type: ignore
         """Return given value if it is a string and not a member of the enum.
 
         If the value is not a string or is an enum member, default enum behavior
@@ -54,7 +57,7 @@ class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
             member.
 
         """
-        if isinstance(value, str) and not isinstance(value, self):
+        if isinstance(value, str) and not isinstance(value, cls):
             return value
         return super().__call__(value, *args, **kwargs)
 
@@ -85,11 +88,11 @@ timeout itself
 CalculatableTimeout = float | None | Literal["CALCULATE_TIMEOUT"]
 
 
-class NotConnected(Exception):
+class NotConnectedError(Exception):
     """Exception to be raised if a `Device.connect` is cancelled.
 
     :param errors:
-        Mapping of device name to Exception or another NotConnected.
+        Mapping of device name to Exception or another NotConnectedError.
         Alternatively a string with the signal error text.
     """
 
@@ -106,7 +109,7 @@ class NotConnected(Exception):
             return {}
 
     def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
-        if isinstance(error, NotConnected):
+        if isinstance(error, NotConnectedError):
             error_txt = ":" + error.format_error_string(indent + self._indent_width)
         elif isinstance(error, Exception):
             error_txt = ": " + err_str + "\n" if (err_str := str(error)) else "\n"
@@ -138,15 +141,15 @@ class NotConnected(Exception):
     @classmethod
     def with_other_exceptions_logged(
         cls, exceptions: Mapping[str, Exception]
-    ) -> NotConnected:
+    ) -> NotConnectedError:
         for name, exception in exceptions.items():
-            if not isinstance(exception, NotConnected):
+            if not isinstance(exception, NotConnectedError):
                 logger.exception(
                     f"device `{name}` raised unexpected exception "
                     f"{type(exception).__name__}",
                     exc_info=exception,
                 )
-        return NotConnected(exceptions)
+        return NotConnectedError(exceptions)
 
 
 @dataclass(frozen=True)
@@ -192,8 +195,8 @@ async def wait_for_connection(**coros: Awaitable[None]):
         name, coro = coros.popitem()
         try:
             await coro
-        except Exception as e:
-            exceptions[name] = e
+        except Exception as exc:
+            exceptions[name] = exc
     else:
         # Use gather to connect in parallel
         results = await asyncio.gather(*coros.values(), return_exceptions=True)
@@ -202,7 +205,21 @@ async def wait_for_connection(**coros: Awaitable[None]):
                 exceptions[name] = result
 
     if exceptions:
-        raise NotConnected.with_other_exceptions_logged(exceptions)
+        raise NotConnectedError.with_other_exceptions_logged(exceptions)
+
+
+# Cache get_type_hints calls to avoid expensive introspection across the codebase
+@lru_cache(maxsize=512)
+def cached_get_type_hints(cls: type, include_extras: bool = False) -> dict[str, Any]:
+    """Get type hints with caching to avoid expensive introspection."""
+    return get_type_hints(cls, include_extras=include_extras)
+
+
+# Cache get_origin calls to avoid expensive type introspection
+@lru_cache(maxsize=512)
+def cached_get_origin(tp: Any) -> Any:
+    """Get the origin of a type with caching."""
+    return get_origin(tp)
 
 
 def get_dtype(datatype: type) -> np.dtype:
@@ -216,7 +233,7 @@ def get_dtype(datatype: type) -> np.dtype:
 
     ```
     """
-    if not get_origin(datatype) == np.ndarray:
+    if not cached_get_origin(datatype) == np.ndarray:
         raise TypeError(f"Expected Array1D[dtype], got {datatype}")
     # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
     # so extract numpy.float64 from it
@@ -241,7 +258,7 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
 
     ```
     """
-    if get_origin(datatype) is Sequence:
+    if cached_get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
     datatype = get_origin_class(datatype)
     if datatype and issubclass(datatype, Enum):
@@ -293,10 +310,36 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_dict(coros: Mapping[T, Awaitable[V]]) -> dict[T, V]:
-    """Take named coros and return a dict of their name to their return value."""
-    values = await asyncio.gather(*coros.values())
-    return dict(zip(coros, values, strict=True))
+def _partition_awaitable(
+    maybe_awaitables: Iterable[T | Awaitable[T]],
+) -> tuple[dict[int, Awaitable[T]], dict[int, T]]:
+    awaitable: dict[int, Awaitable[T]] = {}
+    not_awaitable: dict[int, T] = {}
+    for i, x in enumerate(maybe_awaitables):
+        if isawaitable(x):
+            awaitable[i] = x
+        else:
+            not_awaitable[i] = x
+    return awaitable, not_awaitable
+
+
+async def gather_dict(coros: dict[T | Awaitable[T], V | Awaitable[V]]) -> dict[T, V]:
+    """Await any coros in the keys or values of a dictionary."""
+    k_awaitable, k_not_awaitable = _partition_awaitable(coros.keys())
+    v_awaitable, v_not_awaitable = _partition_awaitable(coros.values())
+
+    # Await all awaitables in parallel
+    k_results, v_results = await asyncio.gather(
+        asyncio.gather(*k_awaitable.values()),
+        asyncio.gather(*v_awaitable.values()),
+    )
+
+    # Combine awaited and non-awaited values by index
+    k_map = k_not_awaitable | dict(zip(k_awaitable, k_results, strict=True))
+    v_map = v_not_awaitable | dict(zip(v_awaitable, v_results, strict=True))
+
+    # Reconstruct dict in original index order
+    return {k_map[i]: v_map[i] for i in range(len(coros))}
 
 
 def in_micros(t: float) -> int:
@@ -311,8 +354,10 @@ def in_micros(t: float) -> int:
     return int(np.ceil(t * 1e6))
 
 
+@lru_cache(maxsize=512)
 def get_origin_class(annotatation: Any) -> type | None:
-    origin = get_origin(annotatation) or annotatation
+    """Get the origin class of a type annotation with caching."""
+    origin = cached_get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
     return None
@@ -342,45 +387,6 @@ class Reference(Generic[T]):
         return self._obj
 
 
-class LazyMock:
-    """A lazily created Mock to be used when connecting in mock mode.
-
-    Creating Mocks is reasonably expensive when each Device (and Signal)
-    requires its own, and the tree is only used when ``Signal.set()`` is
-    called. This class allows a tree of lazily connected Mocks to be
-    constructed so that when the leaf is created, so are its parents.
-    Any calls to the child are then accessible from the parent mock.
-
-    ```python
-    >>> parent = LazyMock()
-    >>> child = parent.child("child")
-    >>> child_mock = child()
-    >>> child_mock()  # doctest: +ELLIPSIS
-    <Mock name='mock.child()' id='...'>
-    >>> parent_mock = parent()
-    >>> parent_mock.mock_calls
-    [call.child()]
-
-    ```
-    """
-
-    def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
-        self.parent = parent
-        self.name = name
-        self._mock: Mock | None = None
-
-    def child(self, name: str) -> LazyMock:
-        """Return a child of this LazyMock with the given name."""
-        return LazyMock(name, self)
-
-    def __call__(self) -> Mock:
-        if self._mock is None:
-            self._mock = Mock(spec=object)
-            if self.parent is not None:
-                self.parent().attach_mock(self._mock, self.name)
-        return self._mock
-
-
 class ConfinedModel(BaseModel):
     """A base class confined to explicitly defined fields in the model schema."""
 
@@ -403,3 +409,15 @@ def error_if_none(value: T | None, msg: str) -> T:
     if value is None:
         raise RuntimeError(msg)
     return value
+
+
+def non_zero(value):
+    """Return True if the value cast to an int is not zero."""
+    return int(value) != 0
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc

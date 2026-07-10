@@ -1,0 +1,115 @@
+"""Support for the ADAndor areaDetector driver.
+
+https://github.com/areaDetector/ADAndor.
+"""
+
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Annotated as A
+
+from ophyd_async.core import (
+    DetectorTriggerLogic,
+    SignalDict,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+)
+from ophyd_async.epics.adcore import (
+    ADAcquireLogic,
+    ADBaseIO,
+    ADWriterFactory,
+    AreaDetector,
+    NDPluginBaseIO,
+    prepare_exposures,
+    trigger_info_from_num_images,
+)
+from ophyd_async.epics.core import PvSuffix
+
+__all__ = [
+    "AndorDetector",
+    "Andor2DriverIO",
+    "Andor2TriggerLogic",
+    "Andor2TriggerMode",
+]
+
+_MIN_DEAD_TIME = 0.1
+_MAX_NUM_IMAGE = 999_999
+
+
+class Andor2TriggerMode(StrictEnum):
+    """Trigger modes for ADAndor detector."""
+
+    INTERNAL = "Internal"
+    EXT_TRIGGER = "External"
+    EXT_START = "External Start"
+    EXT_EXPOSURE = "External Exposure"
+    EXT_FVP = "External FVP"
+    SOFTWARE = "Software"
+
+
+class Andor2DriverIO(ADBaseIO):
+    """Driver for andor model:DU897_BV as deployed on p99.
+
+    This mirrors the interface provided by AdAndor/db/andor.template.
+    https://areadetector.github.io/areaDetector/ADAndor/andorDoc.html
+    """
+
+    trigger_mode: A[SignalRW[Andor2TriggerMode], PvSuffix.rbv("TriggerMode")]
+    andor_accumulate_period: A[SignalR[float], PvSuffix("AndorAccumulatePeriod_RBV")]
+
+
+# The deadtime of an Andor2 controller varies depending on the exact model of camera.
+# Ideally we would maximize performance by dynamically retrieving the deadtime at
+# runtime. See https://github.com/bluesky/ophyd-async/issues/308
+@dataclass
+class Andor2TriggerLogic(DetectorTriggerLogic):
+    """Trigger logic for Andor2DriverIO."""
+
+    driver: Andor2DriverIO
+
+    def get_deadtime(self, config_values: SignalDict) -> float:
+        return _MIN_DEAD_TIME
+
+    async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+        await self.driver.trigger_mode.set(Andor2TriggerMode.INTERNAL)
+        await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime, deadtime)
+
+    async def prepare_edge(self, num: int, livetime: float):
+        await self.driver.trigger_mode.set(Andor2TriggerMode.EXT_TRIGGER)
+        await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
+
+
+class AndorDetector(AreaDetector[Andor2DriverIO]):
+    """Create an ADAndor AreaDetector instance.
+
+    :param prefix: EPICS PV prefix for the detector
+    :param writer_factories: Factories for file writer plugins and their data logics
+    :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param plugins: Additional areaDetector plugins to include
+    :param config_sigs: Additional signals to include in configuration
+    :param name: Name for the detector device
+    """
+
+    def __init__(
+        self,
+        prefix: str,
+        *writer_factories: ADWriterFactory,
+        driver_suffix="cam1:",
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+    ) -> None:
+        driver = Andor2DriverIO(prefix + driver_suffix)
+        super().__init__(
+            driver,
+            prefix,
+            *writer_factories,
+            acquire_logic=ADAcquireLogic(driver),
+            trigger_logic=Andor2TriggerLogic(driver),
+            plugins=plugins,
+            config_sigs=config_sigs,
+            name=name,
+        )

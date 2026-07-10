@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import time
+from asyncio import CancelledError
 from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
 from typing import Generic
@@ -16,14 +18,34 @@ from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
 
 
-class AsyncStatusBase(Status, Awaitable[None]):
-    """Convert asyncio awaitable to bluesky Status interface."""
+class AsyncStatusBase(Status, Awaitable[T]):
+    """Convert asyncio awaitable to bluesky Status interface.
+
+    Can be used as an async context manager to cancel the status task when the
+    context is exited. Use this to ensure the status task is cancelled if the
+    loop exits before the status completes, to avoid leaving dangling tasks that
+    generate warnings in test cleanup.
+    """
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
-            self.task = asyncio.create_task(awaitable)
+
+            async def wait_with_error_message(awaitable):
+                try:
+                    return await awaitable
+                except CancelledError as e:
+                    raise CancelledError(
+                        f"CancelledError while awaiting {awaitable} on {name}"
+                    ) from e
+
+            self.task = asyncio.create_task(wait_with_error_message(awaitable))
+            # There is a small chance we could be cancelled before
+            # wait_with_error_message starts.
+            # Avoid complaints about awaitable not awaited if task is
+            # pre-emptively cancelled, by ensuring it is always disposed
+            self.task.add_done_callback(lambda _: awaitable.close())
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name
@@ -55,8 +77,8 @@ class AsyncStatusBase(Status, Awaitable[None]):
         if self.task.done():
             try:
                 return self.task.exception()
-            except asyncio.CancelledError as e:
-                return e
+            except asyncio.CancelledError as exc:
+                return exc
         return None
 
     @property
@@ -70,6 +92,11 @@ class AsyncStatusBase(Status, Awaitable[None]):
             and not self.task.cancelled()
             and self.task.exception() is None
         )
+
+    @property
+    def result(self) -> T:
+        """Return the result of the awaitable. Only valid after the status is done."""
+        return self.task.result()
 
     def __repr__(self) -> str:
         if self.done:
@@ -85,6 +112,18 @@ class AsyncStatusBase(Status, Awaitable[None]):
             f"task: {self.task.get_coro()}, {status}>"
         )
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        self.task.cancel()
+        # Need to await the task to suppress teardown warnings, but
+        # we know it will raise CancelledError as we just cancelled it
+        with contextlib.suppress(CancelledError):
+            await self.task
+        # Raise any errors from the block, but not cancellation errors from the status
+        return False
+
     __str__ = __repr__
 
 
@@ -94,12 +133,35 @@ class AsyncStatus(AsyncStatusBase):
     :param awaitable: The coroutine or task to await.
     :param name: The name of the device, if available.
 
-    For example:
+    Can be awaited like a standard Task:
+
     ```python
     status = AsyncStatus(asyncio.sleep(1))
     assert not status.done
-    await status # waits for 1 second
+    await status  # waits for 1 second
     assert status.done
+    ```
+
+    Can also be used as a context manager to cancel the status task when the
+    block exits. This is useful when the loop completes before the status and
+    you want to clean up the status task rather than leaving it dangling:
+
+    ```python
+    async with AsyncStatus(long_operation()):
+        for i in range(3):
+            await process_step(i)
+        # Loop completes, long_operation() is cancelled
+    ```
+
+    To exit a loop when the status completes, pass the status as `done_status`
+    to [](#observe_value). When the status finishes, the iterator will stop;
+    if the status raised an exception it will be re-raised by the iterator:
+
+    ```python
+    async with motor.set(target_position) as status:
+        async for value in observe_value(detector, done_status=status):
+            process_reading(value)
+            # Iterator exits automatically when motor reaches position
     ```
     """
 

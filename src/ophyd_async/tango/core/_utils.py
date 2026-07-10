@@ -1,6 +1,15 @@
+import inspect
 import re
+from collections.abc import Sequence
+from typing import Any, ParamSpec, Protocol, TypeVar, runtime_checkable
 
-from ophyd_async.core import StrictEnum
+import numpy as np
+from tango import AttrDataFormat, AttributeAlarmInfo, CmdArgType, StdStringVector
+
+from ophyd_async.core import Array1D, SignalDatatype, StrictEnum, Table
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class DevStateEnum(StrictEnum):
@@ -20,9 +29,10 @@ class DevStateEnum(StrictEnum):
     UNKNOWN = "UNKNOWN"
 
 
-def get_full_attr_trl(device_trl: str, attr_name: str):
+def get_full_attr_trl(device_trl: str, attr_name: str) -> str:
     device_parts = device_trl.split("#", 1)
-    # my/device/name#dbase=no splits into my/device/name and dbase=no
+    # my/device/name#dbase=no splits into my/device/name and
+    # dbase=no
     full_trl = device_parts[0] + "/" + attr_name
     if len(device_parts) > 1:
         full_trl += "#" + device_parts[1]
@@ -45,3 +55,68 @@ def get_device_trl_and_attr(name: str):
     groups[2] = groups[2].removesuffix("/")  # remove trailing slash from device name
     device = "".join(groups)
     return device, attr
+
+
+def try_to_cast_as_float(value: Any) -> float | None:
+    """Attempt to cast a value to float, returning None on failure."""
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+class TangoLongStringTable(Table):
+    long: Array1D[np.int32]
+    string: Sequence[str]
+
+    def __eq__(self, other):
+        if not isinstance(other, TangoLongStringTable):
+            return False
+        long_equal = np.array_equal(self.long, other.long)
+        string_equal = self.string == other.string
+        return long_equal and string_equal
+
+
+class TangoDoubleStringTable(Table):
+    double: Array1D[np.float64]
+    string: Sequence[str]
+
+    def __eq__(self, other):
+        if not isinstance(other, TangoDoubleStringTable):
+            return False
+        double_equal = np.array_equal(self.double, other.double)
+        string_equal = self.string == other.string
+        return double_equal and string_equal
+
+
+def sig_from_types(
+    in_type: type[SignalDatatype] | None, out_type: type[SignalDatatype] | None
+):
+    params = (
+        [
+            inspect.Parameter(
+                "arg", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=in_type
+            )
+        ]
+        if in_type not in (None, type(None))
+        else []
+    )
+    return inspect.Signature(params, return_annotation=out_type)
+
+
+@runtime_checkable
+class AttributeConfig(Protocol):
+    data_type: int
+    data_format: AttrDataFormat
+    enum_labels: StdStringVector | list[str]
+    format: str
+    min_value: str
+    max_value: str
+    alarms: AttributeAlarmInfo
+    unit: str
+
+
+@runtime_checkable
+class CommandConfig(Protocol):
+    in_type: CmdArgType
+    out_type: CmdArgType

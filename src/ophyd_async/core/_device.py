@@ -5,70 +5,20 @@ import sys
 from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
+from unittest.mock import Mock
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._utils import (
     DEFAULT_TIMEOUT,
-    LazyMock,
-    NotConnected,
+    NotConnectedError,
     error_if_none,
     wait_for_connection,
 )
 
-
-class DeviceConnector:
-    """Defines how a `Device` should be connected and type hints processed."""
-
-    def create_children_from_annotations(self, device: Device):
-        """Use when children can be created from introspecting the hardware.
-
-        Some control systems allow introspection of a device to determine what
-        children it has. To allow this to work nicely with typing we add these
-        hints to the Device like so::
-
-            my_signal: SignalRW[int]
-            my_device: MyDevice
-
-        This method will be run during `Device.__init__`, and is responsible
-        for turning all of those type hints into real Signal and Device instances.
-
-        Subsequent runs of this function should do nothing, to allow it to be
-        called early in Devices that need to pass references to their children
-        during `__init__`.
-        """
-
-    async def connect_mock(self, device: Device, mock: LazyMock):
-        """Use during [](#Device.connect) with `mock=True`.
-
-        This is called when there is no cached connect done in `mock=True`
-        mode. It connects the Device and all its children in mock mode.
-        """
-        # Connect serially, no errors to gather up as in mock mode
-        exceptions: dict[str, Exception] = {}
-        for name, child_device in device.children():
-            try:
-                await child_device.connect(mock=mock.child(name))
-            except Exception as e:
-                exceptions[name] = e
-        if exceptions:
-            raise NotConnected.with_other_exceptions_logged(exceptions)
-
-    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        """Use during [](#Device.connect) with `mock=False`.
-
-        This is called when there is no cached connect done in `mock=False`
-        mode. It connects the Device and all its children in real mode in parallel.
-        """
-        # Connect in parallel, gathering up NotConnected errors
-        coros = {
-            name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
-            for name, child_device in device.children()
-        }
-        await wait_for_connection(**coros)
-
+DeviceT = TypeVar("DeviceT", bound="Device")
 
 DEVICE_RESERVED_ATTRS = {
     "name",
@@ -99,6 +49,141 @@ DEVICE_RESERVED_ATTRS = {
 }
 
 
+class DeviceMock(Generic[DeviceT]):
+    """A lazily created Mock to be used when connecting in mock mode.
+
+    Creating Mocks is reasonably expensive when each Device (and Signal)
+    requires its own, and the tree is only used when ``Signal.set()`` is
+    called. This class allows a tree of lazily connected Mocks to be
+    constructed so that when the leaf is created, so are its parents.
+    Any calls to the child are then accessible from the parent mock.
+
+    Subclasses can override the `connect()` method to inject custom logic
+    when mock devices are connected.
+
+    ```python
+    >>> parent = DeviceMock()
+    >>> child = DeviceMock("child", parent)
+    >>> child_mock = child()
+    >>> child_mock()  # doctest: +ELLIPSIS
+    <Mock name='mock.child()' id='...'>
+    >>> parent_mock = parent()
+    >>> parent_mock.mock_calls
+    [call.child()]
+
+    ```
+    """
+
+    def __init__(self, name: str = "", parent: DeviceMock | None = None) -> None:
+        self.name = name
+        self.parent = parent
+        self._mock: Mock | None = None
+
+    def __call__(self) -> Mock:
+        if self._mock is None:
+            self._mock = Mock(spec=object)
+            if self.parent is not None:
+                self.parent().attach_mock(self._mock, self.name)
+        return self._mock
+
+    async def connect(self, device: DeviceT) -> None:
+        """Will be called when the device is connected in mock mode.
+
+        This allows mock values to be set and callbacks to be added
+        to the mock device so it behaves more like the real device.
+        """
+
+
+# Keep LazyMock as an alias for backwards compatibility
+# Remove for ophyd-async 1.0
+LazyMock = DeviceMock
+
+
+class DeviceConnector:
+    """Defines how a `Device` should be connected and type hints processed."""
+
+    def create_children_from_annotations(self, device: Device):
+        """Use when children can be created from introspecting the hardware.
+
+        Some control systems allow introspection of a device to determine what
+        children it has. To allow this to work nicely with typing we add these
+        hints to the Device like so::
+
+            my_signal: SignalRW[int]
+            my_device: MyDevice
+
+        This method will be run during `Device.__init__`, and is responsible
+        for turning all of those type hints into real Signal and Device instances.
+
+        Subsequent runs of this function should do nothing, to allow it to be
+        called early in Devices that need to pass references to their children
+        during `__init__`.
+        """
+
+    async def connect_mock(self, device: Device, mock: DeviceMock):
+        """Use during [](#Device.connect) with `mock=True`.
+
+        This is called when there is no cached connect done in `mock=True`
+        mode. It connects the Device and all its children in mock mode.
+        """
+        # Connect serially, no errors to gather up as in mock mode
+        exceptions: dict[str, Exception] = {}
+        for name, child_device in device.children():
+            try:
+                child_mock_class = child_device._mock_class  # noqa: SLF001
+                await child_device.connect(mock=child_mock_class(name, mock))
+            except Exception as exc:
+                exceptions[name] = exc
+        if exceptions:
+            raise NotConnectedError.with_other_exceptions_logged(exceptions)
+
+        # Call the DeviceMock's connect method to inject custom logic
+        await mock.connect(device)
+
+    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
+        """Use during [](#Device.connect) with `mock=False`.
+
+        This is called when there is no cached connect done in `mock=False`
+        mode. It connects the Device and all its children in real mode in parallel.
+        """
+        # Connect in parallel, gathering up NotConnectedErrors
+        coros = {
+            name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
+            for name, child_device in device.children()
+        }
+        await wait_for_connection(**coros)
+
+
+def _fail_if_overwriting_parent(self: Device, name: str, value: Any):
+    if self.parent not in (value, None):
+        raise TypeError(
+            f"Cannot set the parent of {self} to be {value}: "
+            f"it is already a child of {self.parent}"
+        )
+    object.__setattr__(self, name, value)
+
+
+def _fail_if_reserved_attr(self: Device, name: str, value: Any):
+    raise NameError(
+        f"`{name}` is used in one of the bluesky protocols. "
+        f"Please use `{name}_` instead."
+    )
+
+
+def _set_device_child(self: Device, name: str, value: Device | None):
+    if value is None:
+        # Remove optional devices that have resolved to None
+        self._child_devices.pop(name, None)
+    else:
+        value.parent = self
+        self._child_devices[name] = value
+        # And if the name is set, then set the name of all children,
+        # including the child
+        if self._name:
+            self.set_name(self._name)
+    object.__setattr__(self, name, value)
+
+
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -111,10 +196,27 @@ class Device(HasName):
     _name: str = ""
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
+    # The mock class to be used if we connect in mock mode
+    _mock_class: type[DeviceMock] = DeviceMock
     # The mock if we have connected in mock mode
-    _mock: LazyMock | None = None
+    _mock: DeviceMock | None = None
     # The separator to use when making child names
     _child_name_separator: str = "-"
+    # Methods to call on setattr
+    _setattr_methods: dict[str, Callable[[Device, str, Any], None]]
+
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+        # These are guaranteed not to be devices, so don't check them
+        setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
+            # parent needs special handling
+            "parent": _fail_if_overwriting_parent,
+            **dict.fromkeys(DEVICE_RESERVED_ATTRS, _fail_if_reserved_attr),
+        }
+        # Assign _setattr_methods in __new__ instead of __init__,
+        # as this is called before any __setattr__ calls are made
+        object.__setattr__(self, "_setattr_methods", setattr_methods)
+        return self
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -171,35 +273,23 @@ class Device(HasName):
 
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
-        # we need to make sure nothing expensive happens in it...
-        if name in _not_device_attrs:
-            pass
-        elif name in DEVICE_RESERVED_ATTRS:
-            raise NameError(
-                f"`{name}` is used in one of the bluesky protocols. "
-                f"Please use `{name}_` instead."
-            )
-        elif name == "parent":
-            if self.parent not in (value, None):
-                raise TypeError(
-                    f"Cannot set the parent of {self} to be {value}: "
-                    f"it is already a child of {self.parent}"
-                )
-        # ...hence not doing an isinstance check for attributes we
-        # know not to be Devices
-        elif isinstance(value, Device):
-            value.parent = self
-            self._child_devices[name] = value
-            # And if the name is set, then set the name of all children,
-            # including the child
-            if self._name:
-                self.set_name(self._name)
-        # ...and avoiding the super call as we know it resolves to `object`
-        return object.__setattr__(self, name, value)
+        # we need to make sure nothing expensive happens in it, hence the
+        # dictionary of setattr functions
+        func = self._setattr_methods.get(name, None)
+        if func is None:
+            # First encounter, so assign correct
+            # __setattr__ method depending on `value` type
+            if isinstance(value, Device):
+                func = _set_device_child
+            else:
+                func = object.__setattr__
+            self._setattr_methods[name] = func
+        # Dispatch the correct __setattr__ method
+        func(self, name, value)
 
     async def connect(
         self,
-        mock: bool | LazyMock = False,
+        mock: bool | DeviceMock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ) -> None:
@@ -211,25 +301,26 @@ class Device(HasName):
 
         :param mock:
             If True then use [](#MockSignalBackend) for all Signals. If passed a
-            [](#LazyMock) then pass this down for use within the Signals,
-            otherwise create one.
+            [](#DeviceMock) then pass this down for use within the Signals,
+            otherwise create one using the registered default mock for this device
+            type, or a plain [](#DeviceMock) if no default is registered.
         :param timeout: Time to wait before failing with a TimeoutError.
         :param force_reconnect:
             If True, force a reconnect even if the last connect succeeded.
         """
-        connector = error_if_none(
+        connector: DeviceConnector = error_if_none(
             getattr(self, "_connector", None),
             f"{self}: doesn't have attribute `_connector`,"
             f" did you call `super().__init__` in your `__init__` method?",
         )
         if mock:
             # Always connect in mock mode serially
-            if isinstance(mock, LazyMock):
-                # Use the provided mock
+            if isinstance(mock, DeviceMock):
+                # Use the user supplied mock
                 self._mock = mock
             elif not self._mock:
-                # Make one
-                self._mock = LazyMock()
+                # Make a new mock of the registered type
+                self._mock = self._mock_class()
             await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode
@@ -256,10 +347,9 @@ _not_device_attrs = {
     "_timeout",
     "_mock",
     "_connect_task",
+    "_child_name_separator",
+    "_attempts",
 }
-
-
-DeviceT = TypeVar("DeviceT", bound=Device)
 
 
 class DeviceVector(MutableMapping[int, DeviceT], Device):
@@ -270,20 +360,13 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
 
     def __init__(
         self,
-        children: Mapping[int, DeviceT],
+        children: Mapping[int, DeviceT] | None = None,
         name: str = "",
+        connector: DeviceConnector | None = None,
     ) -> None:
         self._children: dict[int, DeviceT] = {}
-        self.update(children)
-        super().__init__(name=name)
-
-    def __setattr__(self, name: str, child: Any) -> None:
-        if name != "parent" and isinstance(child, Device):
-            raise AttributeError(
-                "DeviceVector can only have integer named children, "
-                "set via device_vector[i] = child"
-            )
-        super().__setattr__(name, child)
+        self.update(children or {})
+        super().__init__(name=name, connector=connector)
 
     def __getitem__(self, key: int) -> DeviceT:
         return self._children[key]
@@ -312,6 +395,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def children(self) -> Iterator[tuple[str, Device]]:
         for key, child in self._children.items():
             yield str(key), child
+        yield from super().children()
 
     def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
         return hash(id(self))
@@ -370,12 +454,12 @@ class DeviceProcessor:
         self._locals_on_exit = self._caller_locals()
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
-        except RuntimeError as e:
-            raise NotConnected(
+        except RuntimeError as exc:
+            raise NotConnectedError(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
-            ) from e
+            ) from exc
         return fut
 
     async def _on_exit(self) -> None:
@@ -408,7 +492,7 @@ def init_devices(
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
-    :raises NotConnected: If devices could not be connected.
+    :raises NotConnectedError: If devices could not be connected.
 
     For example, to connect and name 2 motors in parallel:
     ```python
@@ -432,3 +516,23 @@ def init_devices(
             await wait_for_connection(**coros)
 
     return DeviceProcessor(process_devices)
+
+
+def default_mock_class(
+    mock_cls: type[DeviceMock],
+) -> Callable[[type[DeviceT]], type[DeviceT]]:
+    """Register a DeviceMock subclass as the default mock for a Device class.
+
+    This decorator allows automatic injection of mock logic when devices are
+    connected in mock mode. The decorated DeviceMock class should override
+    the `connect()` method to define custom mock behavior.
+
+    :param mock_cls: A DeviceMock subclass to register.
+    :returns: A decorator that registers the mock class for a Device subclass.
+    """
+
+    def wrapper(device_cls: type[DeviceT]) -> type[DeviceT]:
+        device_cls._mock_class = mock_cls  # noqa: SLF001
+        return device_cls
+
+    return wrapper

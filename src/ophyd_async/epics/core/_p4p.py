@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from ophyd_async.core import (
     Array1D,
     Callback,
-    NotConnected,
+    NotConnectedError,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -29,7 +29,13 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._util import EpicsSignalBackend, format_datatype, get_supported_values
+from ._util import (
+    EpicsCommandBackend,
+    EpicsOptions,
+    EpicsSignalBackend,
+    format_datatype,
+    get_supported_values,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -183,6 +189,14 @@ class PvaEnumBoolConverter(PvaConverter[bool]):
         return bool(value["value"]["index"])
 
 
+class PvaScalarBoolConverter(PvaConverter[bool]):
+    def __init__(self):
+        super().__init__(bool)
+
+    def value(self, value: Any) -> bool:
+        return bool(value["value"])
+
+
 class PvaTableConverter(PvaConverter[Table]):
     def value(self, value) -> Table:
         return self.datatype(**value["value"].todict())
@@ -263,6 +277,14 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
         if pv_num_choices != 2:
             raise TypeError(f"{pv} has {pv_num_choices} choices, can't map to bool")
         return PvaEnumBoolConverter()
+    elif (
+        datatype is bool
+        and typeid == "epics:nt/NTScalar:1.0"
+        and specifier in ("?", "b", "B", "i", "I")
+    ):
+        # If we specifically ask for bool and the type is a byte or short
+        # then we can treat this as a bool where 0 is False and 1 is True
+        return PvaScalarBoolConverter()
     elif typeid == "epics:nt/NTEnum:1.0":
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
@@ -328,7 +350,7 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
     except TimeoutError as exc:
         logger.debug(f"signal pva://{pv} timed out", exc_info=True)
-        raise NotConnected(f"pva://{pv}") from exc
+        raise NotConnectedError(f"pva://{pv}") from exc
 
 
 def _pva_request_string(fields: Sequence[str]) -> str:
@@ -347,11 +369,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
-        super().__init__(datatype, read_pv, write_pv)
+        super().__init__(datatype, read_pv, write_pv, options)
 
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"
@@ -380,11 +403,15 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             "alarm_severity": -1 if sv > 2 else sv,
         }
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
+    async def put(self, value: SignalDatatypeT | None):
         if value is None:
             write_value = self.initial_values[self.write_pv]["value"]
         else:
             write_value = self.converter.write_value(value)
+        if callable(self.options.wait):
+            wait = self.options.wait(value)
+        else:
+            wait = self.options.wait
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     async def get_datakey(self, source: str) -> DataKey:
@@ -431,3 +458,40 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = context().monitor(
                 self.read_pv, async_callback, request=request
             )
+
+
+class PvaCommandBackend(EpicsCommandBackend):
+    """Backend for a [](#TriggerableCommand) over PV Access.
+
+    On `execute()`, writes `execute_value` to `write_pv`.
+    In a future release this class will accept a `call_spec` to perform an RPC
+    with keyword arguments instead of a plain put.
+
+    :param write_pv: The PVA PV to write to. Can be set after construction
+        via `fill_command_with_prefix()`.
+    :param execute_value: The value to write when the command is triggered (default: 1).
+    """
+
+    def __init__(self, write_pv: str = "", execute_value: int = 1):
+        super().__init__(write_pv, execute_value)
+
+    def source(self, name: str) -> str:
+        return f"pva://{self.write_pv}"
+
+    async def connect(self, timeout: float) -> None:
+        value = await pvget_with_timeout(self.write_pv, timeout)
+        typeid = value.getID()
+        specifier = _get_specifier(value)
+
+        is_int = typeid == "epics:nt/NTScalar:1.0" and specifier in _int_specifiers
+        is_enum = typeid == "epics:nt/NTEnum:1.0"
+
+        if not (is_int or is_enum):
+            raise TypeError(
+                f"pva://{self.write_pv} is not a scalar numeric PV "
+                f"(typeid={typeid!r}, specifier={specifier!r}); "
+                "PvaCommandBackend requires a scalar numeric PV"
+            )
+
+    async def execute(self) -> None:
+        await context().put(self.write_pv, {"value": self._execute_value}, wait=True)

@@ -1,11 +1,45 @@
 (interact-with-signals)=
-# How to interact with signals while implementing bluesky verbs
+# How to interact with signals and commands while implementing bluesky verbs
 
-To implement bluesky verbs, you typically need to interact with Signals. This guide will show you how to do the following operations on a Signal:
-- Get the value
-- Set the value
+To implement bluesky verbs, you typically need to interact with Signals and Commands. This guide will show you how to do the following operations:
+- Execute a command
+- Get the value of a signal
+- Set the value of a signal
 - Observe every value change
 - Wait for the value to match some expected value
+
+## Execute a command
+
+A [](#TriggerableCommand) or typed [](#Command) is executed via [](#Command.execute), which returns an `AsyncStatus[T]`. Awaiting the status waits for completion and re-raises any exception:
+
+```python
+# Fire-and-forget style (begin execution, capture the status)
+status = device.start.execute()
+# ... do other work ...
+await status  # wait for completion
+
+# Or just await directly:
+await device.start.execute()
+```
+
+For a typed command, arguments are passed positionally:
+```python
+result = await device.move_to.execute(0.5)
+```
+
+The return value is also accessible from the status after it completes:
+
+```python
+status = device.move_to.execute(0.5)
+await status
+value = status.result
+```
+
+[](#TriggerableCommand) also has a [](#TriggerableCommand.trigger) method that satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol used by bluesky scan machinery:
+```python
+status = device.acquire.trigger()
+await status
+```
 
 ## Get the value
 
@@ -31,10 +65,6 @@ status = signal.set(value, timeout)
 # do something else here
 await status
 ```
-Rarely there are operations (like telling an EPICS motor to stop) where you have to tell the control system not to wait for the operation to complete, otherwise it will deadlock with the operation that started it moving in the first place:
-```python
-await stop_signal.set(value, wait=False)
-```
 
 ## Observe every value change
 
@@ -43,16 +73,9 @@ To observe every value change and run a function on that value you can use [](#o
 async for value in observe_value(signal):
     do_something_with(value)
 ```
-This will run until you `break` out of the loop. If you would like to break out of the loop when some other operation is complete you can pass an [](#AsyncStatus) that you create yourself or from the result of setting a signal, which will break out of the loop:
+This will run until you `break` out of the loop.
 
-```python
-status = signal.set(value)
-async for value in observe_value(signal2, done_status=status):
-    do_something_with(value)
-    # when signal.set() completes the loop will break out here
-```
-
-You can pass `timeout` to specify how the maximum time to wait for a single update, and `done_timeout` to specify the maximum time to wait for `done_status`.
+You can pass `timeout` to specify the maximum time to wait for a single update.
 
 If you want to wait for multiple signals you can use [](#observe_signals_value):
 ```python
@@ -61,6 +84,42 @@ async for signal, value in observe_value(signal1, signal2):
         do_something_with(value)
     if signal is signal2:
         do_something_else_with(value)
+```
+
+## Use `done_status` to exit a loop when an operation completes
+
+If you want a loop to run until some operation completes, pass the status as
+`done_status` to [](#observe_value). When the status finishes, the iterator
+stops automatically. If the status raised an exception it is re-raised by
+the iterator:
+
+```python
+# Process updates while a motor is moving
+async with motor.set(target_position) as status:
+    async for value in observe_value(detector, done_status=status):
+        process_reading(value)
+        # Iterator exits automatically when motor reaches position
+```
+
+If the loop completes before the status, the status task is automatically
+cancelled when the `async with` block exits:
+
+```python
+async with signal1.set(new_value):
+    for i in range(3):
+        value = await signal.get_value()
+        process(value)
+        # Loop completes after 3 iterations, cancelling the wait for signal1 to finish being set
+```
+
+If an exception is raised in the loop body, it propagates out normally:
+
+```python
+async with signal1.set(new_value) as status:
+    async for value in observe_value(signal2, done_status=status):
+        if value > threshold:
+            raise ValueError("Threshold exceeded")
+        # Exception propagates, status is cancelled
 ```
 
 ## Wait for the value to match some expected value

@@ -10,6 +10,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
@@ -21,7 +22,8 @@ dependencies = [
     "pydantic>=2.0",
     "pydantic-numpy",
     "stamina>=23.1.0",
-    "scanspec>=1.0a1",
+    "scanspec>=0.8",
+    "velocity-profile",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -32,8 +34,10 @@ requires-python = ">=3.11"
 sim = ["h5py"]
 ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
-tango = ["pytango==10.0.2"]
-demo = ["ipython", "matplotlib", "pyqt6"]
+tango = ["pytango>=10.1.3"]
+demo = ["ipython", "matplotlib", "pyqt6", "pytest"]
+
+[dependency-groups]
 dev = [
     "ophyd_async[sim]",
     "ophyd_async[ca]",
@@ -56,15 +60,17 @@ dev = [
     "pytest-cov",
     "pytest-faulthandler",
     "pytest-forked",
+    "pytest-insubprocess",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
+    "scanspec>=1.0a1",
     "sphinx-autobuild",
     "sphinx-autodoc2",
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
-    "tox-direct",
+    "tox-uv-bare",
     "types-mock",
     "types-pyyaml",
 ]
@@ -91,9 +97,12 @@ addopts = """
     --ignore=docs/examples --ignore=src/ophyd_async/epics/signal.py
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = "error"
+filterwarnings = [
+    "error",
+    "ignore:.*asyncio.iscoroutinefunction.*:DeprecationWarning", # https://github.com/epics-base/p4p/issues/210
+]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
-testpaths = "docs src tests"
+testpaths = "docs src tests/unit_tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
 log_date_format = "%H:%M:%S"
 
@@ -103,37 +112,115 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-timeout = 1
+timeout = 60
+
 [tool.coverage.run]
+patch = ["subprocess"]
 data_file = "/tmp/ophyd_async.coverage"
+# branch = true
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory
 source = ["src", "**/site-packages/"]
 
-# tox must currently be configured via an embedded ini string
-# See: https://github.com/tox-dev/tox/issues/999
 [tool.tox]
-legacy_tox_ini = """
-[tox]
-skipsdist=True
+skipsdist = true
+# envs to runs automatically with tox -p
+env_list = ["pre-commit", "type-checking", "tests", "docs"]
 
-[testenv:{pre-commit,type-checking,tests,docs}]
-# Don't create a virtualenv for the command, requires tox-direct plugin
-direct = True
-passenv = *
-allowlist_externals =
-    pytest
-    pre-commit
-    pyright
-    sphinx-build
-    sphinx-autobuild
-commands =
-    pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
-    type-checking: pyright src {posargs}
-    tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
-"""
+[tool.tox.env_run_base]
+# Pass all environment variables to the test environments
+passenv = ["*"]
+# Allow binaries from the base env to be run
+allowlist_externals = [
+    "pytest",
+    "pre-commit",
+    "sphinx-build",
+    "sphinx-autobuild",
+    "pyright",
+]
+
+[tool.tox.env.pre-commit]
+description = "Run pre-commit on all files"
+commands = [
+    [
+        "pre-commit",
+        "run",
+        "--all-files",
+        "--show-diff-on-failure",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.tox.env.type-checking]
+description = "Run pyright"
+commands = [
+    [
+        "pyright",
+        "src",
+        "--pythonpath",
+        "{env:VIRTUAL_ENV}/bin/python",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.tox.env.tests]
+description = "Run tests with coverage"
+commands = [
+    [
+        "pytest",
+        "--cov=ophyd_async",
+        # Also path-based, alongside the package-name-based one above: pytest-cov
+        # passes each --cov= straight through as Coverage(source=[...]), and a
+        # package name only matches files that were actually *imported* under
+        # that dotted name in the measured process. _ioc.py/_tango_device_servers.py
+        # (ophyd_async.epics/tango .testing/.demo) are deliberately run *by file
+        # path* as standalone subprocess scripts - see their own docstrings - so
+        # they load as `__main__`, not under their ophyd_async.* name, and the
+        # package-name source spec alone can never match them. Path-based source
+        # matches by file location instead, so it isn't fooled by that.
+        "--cov=src",
+        "--cov-report",
+        "term",
+        "--cov-report",
+        "xml:cov.xml",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.tox.env.docs]
+description = "Run docs build with clean environment"
+commands = [
+    [
+        "sphinx-build",
+        "--fresh-env",
+        "--show-traceback",
+        "--fail-on-warning",
+        "--keep-going",
+        "docs",
+        "build/html",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.tox.env.docs-autobuild]
+description = "Run docs with autobuild on change"
+commands = [
+    [
+        "sphinx-autobuild",
+        "--show-traceback",
+        "--watch",
+        "README.md",
+        "docs",
+        "build/html",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
 
 [tool.ruff]
 line-length = 88
@@ -142,6 +229,7 @@ lint.select = [
     "C4",      # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
     "E",       # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
     "F",       # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "N",       # pep8-naming - https://docs.astral.sh/ruff/rules/#pep8-naming-n
     "W",       # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
     "I",       # isort - https://docs.astral.sh/ruff/rules/#isort-i
     "UP",      # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
@@ -154,6 +242,7 @@ lint.select = [
 lint.ignore = [
     "B901", # Return in a generator is needed for plans
     "D107", # We squash __init__ docstrings into the class docstring
+    "D102", # We don't need to override docstrings that are inherited from abstract methods
     "D104", # TODO: remove this after https://github.com/bluesky/ophyd-async/issues/754
 ]
 lint.preview = true # so that preview mode PLC2701 is enabled
@@ -169,6 +258,13 @@ convention = "google" # not really, but close enough...
 "src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
 "system_tests/**/*" = ["SLF001", "S101", "D"]
 
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+# We often shorten "Annotated" to "A" for brevity
+"typing.Annotated" = "A"
+
+[tool.ruff.lint.pep8-naming]
+# The fixture RE is commonly used in tests
+extend-ignore-names = ["RE"]
 
 [tool.importlinter]
 root_package = "ophyd_async"
@@ -177,7 +273,7 @@ root_package = "ophyd_async"
 name = "All runtime modules are in layers"
 type = "layers"
 containers = ["ophyd_async"]
-layers = ["plan_stubs", "fastcs", "epics | tango | sim", "core"]
+layers = ["fastcs", "epics | tango | sim", "plan_stubs", "core"]
 exhaustive = true
 exhaustive_ignores = ["testing", "_version", "__main__", "_docs_parser"]
 
@@ -191,7 +287,17 @@ source_modules = [
     "ophyd_async.epics.*",
     "ophyd_async.tango.*",
 ]
-ignore_imports = ["ophyd_async.*.testing.* -> ophyd_async.testing"]
+ignore_imports = [
+    # epics.testing._launch.start_ioc and tango.testing._launch.
+    # start_tango_device_servers both wrap the shared ManagedSubprocess/
+    # start_subprocess helpers in ophyd_async.testing, which is otherwise
+    # off-limits at runtime.
+    "ophyd_async.*.testing.* -> ophyd_async.testing",
+    # epics.demo.__main__ and tango.demo.__main__ are tutorial entry points,
+    # not real runtime code - they use ophyd_async.testing to spin up a fake
+    # IOC/device servers to demo against, same as the testing modules above.
+    "ophyd_async.*.demo.* -> ophyd_async.testing",
+]
 
 [[tool.importlinter.contracts]]
 name = "ophyd_async.core private modules are not to be used outside ophyd_async.core"

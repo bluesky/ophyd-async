@@ -1,0 +1,434 @@
+record(bo, "$(device)bool") {
+  field(ZNAM, "No")
+  field(ONAM, "Yes")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(bo, "$(device)bool_unnamed") {
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)int") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(LSV, "MINOR") # LOW is warning
+  field(HSV, "MINOR") # HIGH is warning
+  field(HHSV, "MAJOR") # HIHI is alarm
+  field(HOPR, "100")
+  field(HIHI, "98")
+  field(HIGH, "96")
+  field(DRVH, "90")
+  field(DRVL, "10")
+  field(LOW, "5")
+  field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)partialint") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(HHSV, "MAJOR") # HIHI is alarm
+  field(HOPR, "100")
+  field(HIHI, "98")
+  field(DRVH, "90")
+  field(DRVL, "10")
+  field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)lessint") {
+  field(HSV, "MINOR") # LOW is warning
+  field(LSV, "MINOR") # HIGH is warning
+  field(HOPR, "100")
+  field(HIGH, "98")
+  field(LOW, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float") {
+  field(PREC, "1")
+  field(EGU, "mm")
+  field(VAL, "3.141")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float_prec_0") {
+  field(PREC, "0")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float_prec_1") {
+  field(PREC, "1")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
+record(stringout, "$(device)str") {
+  field(VAL, "hello")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)enum") {
+  field(ZRST, "Aaa")
+  field(ZRVL, "5")
+  field(ONST, "Bbb")
+  field(ONVL, "6")
+  field(TWST, "Ccc")
+  field(TWVL, "7")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)enum2") {
+  field(ZRST, "Aaa")
+  field(ONST, "Bbb")
+  field(TWST, "Ccc")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)subset_enum") {
+  field(ZRST, "Aaa")
+  field(ONST, "Bbb")
+  field(TWST, "Ccc")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)enum_str_fallback") {
+  field(ZRST, "Aaa")
+  field(ONST, "Bbb")
+  field(TWST, "Ccc")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(seq, "$(device)slowseq") {
+  field(DLY1, "0.5")
+  field(LNK1, "$(device)slowseq.DESC")
+}
+
+record(waveform, "$(device)uint8a") {
+  field(NELM, "3")
+  field(FTVL, "UCHAR")
+  field(INP, {const:[0, 255]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)int16a") {
+  field(NELM, "3")
+  field(FTVL, "SHORT")
+  field(INP, {const:[-32768, 32767]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)int32a") {
+  field(NELM, "3")
+  field(FTVL, "LONG")
+  field(INP, {const:[-2147483648, 2147483647]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)float32a") {
+  field(NELM, "3")
+  field(FTVL, "FLOAT")
+  field(INP, {const:[0.000002, -123.123]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)float64a") {
+  field(NELM, "3")
+  field(FTVL, "DOUBLE")
+  field(INP, {const:[0.1, -12345678.123]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)stra") {
+  field(NELM, "3")
+  field(FTVL, "STRING")
+  field(INP, {const:["five", "six", "seven"]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)longstr") {
+  field(NELM, "80")
+  field(FTVL, "CHAR")
+  field(INP, {const:"a string that is just longer than forty characters"})
+  field(PINI, "YES")
+}
+
+record(lsi, "$(device)longstr2") {
+  field(SIZV, "80")
+  field(INP, {const:"a string that is just longer than forty characters"})
+  field(PINI, "YES")
+}
+
+record(calc, "$(device)ticking") {
+  field(INPA, "$(device)ticking")
+  field(CALC, "A+1")
+  field(SCAN, ".1 second")
+}
+
+record(mbbiDirect, "$(device)mbb_direct") {
+  field(VAL, "0")
+  field(PINI, "YES")
+}
+
+record(mbboDirect, "$(device)mbb_direct_rw") {
+  field(VAL, "0")
+  field(PINI, "YES")
+}
+
+record(bo, "$(device)go") {
+  field(ZNAM, "Done")
+  field(ONAM, "Go")
+  field(PINI, "YES")
+}
+
+# PVI directory tags for the generic (non-PandA) PVI test backend, sitting
+# directly alongside the records they describe (mirrors how a real EPICS
+# C++ IOC generates PVI from QSRV2 directives in the same db, not a
+# bolted-on separate file). Reopens each record with the special "*" record
+# type so we don't need to know/repeat its real record type. "+channel":
+# "NAME" publishes the target record's own PV name as the PVI directory
+# string, exactly as PviDeviceConnector expects to then pvget.
+#
+# Every EpicsTestCaDevice/EpicsTestPvaDevice field also gets a PVI directory
+# entry keyed by its *Python attribute name* (not its record name, where
+# they differ, e.g. a_int -> "int"), so EpicsTestCaDevice(prefix,
+# with_pvi=True) / EpicsTestPvaDevice(prefix, with_pvi=True) resolve to
+# exactly the same signals as the statically PvSuffix-declared versions.
+#
+# wo_float/overridden_float/a_float all resolve to the *same* "float"
+# record regardless of PVI key: the r/w/rw designator only affects which
+# SignalR/SignalW/SignalRW type the client constructs. overridden_float
+# also carries a PvSuffix("float_prec_1") on the Python side, pointing at
+# a *different* record: connecting should show the PVI-supplied "float"
+# value winning over the statically-configured one. The SignalR-from-PVI
+# case is instead demonstrated by EpicsTestPviDevice.mbb_direct_bit_r,
+# which reuses EpicsTestCaDevice's own "mbb_direct_bit_r" PVI entry below
+# directly rather than a synthetic one on this record.
+record("*", "$(device)float") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.wo_float.w": {"+channel": "NAME", "+type": "plain"},
+            "value.overridden_float.rw": {"+channel": "NAME", "+type": "plain"},
+            "value.a_float.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# extra_int is a PVI entry for a signal that is *not* declared as an
+# annotation on EpicsTestPviDevice at all: PviDeviceConnector should still
+# add it as a dynamically-discovered child once connected. a_int is
+# EpicsTestCaDevice's own declared name for this same record.
+record("*", "$(device)int") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.extra_int.rw": {"+channel": "NAME", "+type": "plain"},
+            "value.a_int.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)float_prec_0") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.float_prec_0.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)str") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.a_str.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)longstr") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.longstr.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)longstr2") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.longstr2.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)bool") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.a_bool.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)slowseq") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.slowseq.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)enum") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.enum.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)enum2") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.enum2.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# subset_enum/superset_enum deliberately share the same backing record (see
+# EpicsTestSupersetEnum's docstring in _devices.py).
+record("*", "$(device)subset_enum") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.subset_enum.rw": {"+channel": "NAME", "+type": "plain"},
+            "value.superset_enum.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)enum_str_fallback") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.enum_str_fallback.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)bool_unnamed") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.bool_unnamed.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)partialint") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.partialint.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)lessint") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.lessint.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)uint8a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.uint8a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)int16a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.int16a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)int32a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.int32a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)float32a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.float32a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)float64a") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.float64a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)stra") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.stra.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# mbb_direct_bit_r/mbb_direct_bit read/write a single bit (B0) of the
+# mbbiDirect/mbboDirect records, not the whole record: NAME self-reference
+# only gives the base record name, so alias the exact bit-field PV via a
+# stringin ref (same trick used for the QSRV-only ntndarray/table PVs in
+# _epics_test_pva_records.db). This mirrors EpicsTestCaDevice/
+# EpicsTestPvaDevice's own "mbb_direct_bit_r"/"mbb_direct_bit" fields;
+# EpicsTestPviDevice.mbb_direct_bit_r reuses the "value.mbb_direct_bit_r.r"
+# entry below directly, no separate PVI structure needed for it.
+record(stringin, "$(device)mbb_direct:_pvi_ref") {
+    field(VAL, "$(device)mbb_direct.B0")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.mbb_direct_bit_r.r": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)mbb_direct_rw:_pvi_ref") {
+    field(VAL, "$(device)mbb_direct_rw.B0")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.mbb_direct_bit.rw": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+# Zero-arg command ("x" PVI entry). Also EpicsTestCaDevice's own "go"
+# TriggerableCommand field, same attribute name.
+record("*", "$(device)go") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.go.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}

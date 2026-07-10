@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from functools import cached_property
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
 from bluesky.protocols import Reading
@@ -9,7 +12,15 @@ from event_model import DataKey
 from ._derived_signal_backend import DerivedSignalBackend
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
-from ._utils import Callback, LazyMock
+from ._utils import Callback
+
+if TYPE_CHECKING:
+    from ._device import LazyMock
+
+MockPutCallback = (
+    Callable[[SignalDatatypeT], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
+)
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -36,18 +47,37 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
         # use existing Mock if provided
         self.mock = mock
+        self._mock_put_callback: MockPutCallback | None = None
         super().__init__(datatype=self.initial_backend.datatype)
+
+    def set_mock_put_callback(self, callback: MockPutCallback | None):
+        self._mock_put_callback = callback
+        if "put_mock" in self.__dict__:
+            # put_mock cached property exists, so set the side effect on it
+            self.put_mock.side_effect = callback
 
     @cached_property
     def put_mock(self) -> AsyncMock:
         """Return the mock that will track calls to `put()`."""
-        put_mock = AsyncMock(name="put", spec=Callable)
+        put_mock = AsyncMock(
+            name="put",
+            spec=Callable,
+            side_effect=self._mock_put_callback
+            if self._mock_put_callback
+            else lambda v: None,
+        )
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
     def set_value(self, value: SignalDatatypeT):
         """Set the value of the signal."""
         self.soft_backend.set_value(value)
+
+    def set_units(self, units: str):
+        self.soft_backend.metadata["units"] = units
+
+    def set_precision(self, precision: int):
+        self.soft_backend.metadata["precision"] = precision
 
     def source(self, name: str, read: bool) -> str:
         return f"mock+{self.initial_backend.source(name, read)}"
@@ -65,11 +95,12 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         put_proceeds.set()
         return put_proceeds
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
-        await self.put_mock(value, wait=wait)
-        await self.soft_backend.put(value, wait=wait)
-        if wait:
-            await self.put_proceeds.wait()
+    async def put(self, value: SignalDatatypeT | None):
+        new_value = await self.put_mock(value)
+        if new_value is None:
+            new_value = value
+        await self.soft_backend.put(new_value)
+        await self.put_proceeds.wait()
 
     async def get_reading(self) -> Reading:
         return await self.soft_backend.get_reading()

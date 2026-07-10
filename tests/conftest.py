@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pprint
+import signal
 import subprocess
 import sys
 import time
@@ -10,29 +11,60 @@ from typing import Any
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
-from bluesky.utils import new_uid
 from pytest import FixtureRequest
 
 from ophyd_async.core import (
-    DetectorTrigger,
     FilenameProvider,
     StaticFilenameProvider,
     StaticPathProvider,
-    TriggerInfo,
-    init_devices,
 )
-from ophyd_async.epics import adsimdetector
 
-PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(
+    Path(__file__).parent / "unit_tests" / "fastcs" / "panda" / "db" / "panda.db"
+)
 INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_block_panda.db"
 )
 INCOMPLETE_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_panda.db"
 )
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "extra_blocks_panda.db"
 )
+
+
+def fixture_is_used(fixture_name, session):
+    """
+    Helper function to check if a fixture is used in a pytest session
+    """
+    for item in session.items:
+        for f in item.fixturenames:
+            if f == fixture_name:
+                return True
+    return False
+
+
+def pytest_collection_modifyitems(session, config, items):
+    # Raise a runtime error if docker cannot communicate to the host
+    # This is needed when we want to run docker fixtures in subprocesses
+    # as pytest-insubprocess doesn't report fixture errors
+    if fixture_is_used("docker_composer", session):
+        check_docker_sock()
 
 
 # Autouse fixture that will set all EPICS networking env vars to use lo interface
@@ -97,11 +129,9 @@ def _error_and_kill_pending_tasks(
 
 @pytest.fixture(autouse=True, scope="function")
 async def fail_test_on_unclosed_tasks(request: FixtureRequest):
-    """
-    Used on every test to ensure failure if there are pending tasks
+    """Used on every test to ensure failure if there are pending tasks
     by the end of the test.
     """
-
     try:
         fail_count = request.session.testsfailed
         loop = asyncio.get_running_loop()
@@ -185,11 +215,14 @@ def panda_pva():
 
 
 @pytest.fixture
-async def normal_coroutine() -> Callable[[], Any]:
+async def normal_coroutine() -> tuple[Callable[[], Any], asyncio.Event]:
+    is_running = asyncio.Event()
+
     async def inner_coroutine():
+        is_running.set()
         await asyncio.sleep(0.01)
 
-    return inner_coroutine
+    return inner_coroutine, is_running
 
 
 @pytest.fixture
@@ -224,40 +257,151 @@ def static_path_provider(
     return static_path_provider_factory(static_filename_provider)
 
 
-@pytest.fixture
-def one_shot_trigger_info(request: FixtureRequest) -> TriggerInfo:
-    # If the fixture is called with a parameter, use it as the exposures_per_event
-    # otherwise use 1
-    param = getattr(request, "param", 1)
-    return TriggerInfo(
-        number_of_events=1,
-        trigger=DetectorTrigger.INTERNAL,
-        livetime=None,
-        exposures_per_event=param if isinstance(param, int) else 1,
-    )
-
-
-@pytest.fixture
-async def sim_detector(request: FixtureRequest):
-    """Fixture that creates a simulated detector.
-
-    Args:
-        prefix (str): The PV prefix for the detector
-        name (str): Name for the detector instance
-        tmp_path (Path): Temporary directory for file writing
+def check_docker_sock():
     """
-    prefix = (
-        request.param[0] if isinstance(request.param, list | tuple) else request.param
-    )
-    name = request.param[1] if isinstance(request.param, list | tuple) else "test"
-    tmp_path = request.getfixturevalue("tmp_path")
+    Check if the Docker (or compatible container engine) socket is accessible.
 
-    fp = StaticFilenameProvider(f"test-{new_uid()}")
-    dp = StaticPathProvider(fp, tmp_path)
+    This function attempts to run `docker info` to verify that the current user
+    can communicate with the container engine. Retries for up to 10 seconds before
+    raising a RuntimeError with guidance on how to fix common connection issues.
+    """
+    deadline = time.monotonic() + 10.0
+    last_output = ""
+    while time.monotonic() < deadline:
+        result = subprocess.run(
+            ["docker", "info"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        if result.returncode == 0:
+            return
+        last_output = result.stdout
+        time.sleep(0.5)
 
-    async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(prefix, dp, name=name)
+    message = f"""
+        Cannot communicate with the container engine on the host.
+        Please make sure $DOCKER_HOST points to the correct socket on the host.
+        NOTE:
+            For podman, $DOCKER_HOST is typically set by running
+                export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+            Also, if you are using podman please enable the socket by running
+                systemctl --user enable podman --now
+        docker info output:
+            {last_output}"""
+    raise RuntimeError(message)
 
-    det._config_sigs = [det.driver.acquire_time, det.driver.acquire]
 
-    return det
+@pytest.fixture(scope="module")
+def docker_composer():
+    def inner_docker_composer(
+        docker_args: list[str] | None = None,
+        docker_services: list[str] | str | None = None,
+        ready_log_line: str | None = None,
+        start_timeout: float | None = None,
+        stop_timeout: float | None = None,
+        wait_time: float | None = None,
+    ):
+        """
+        Run a docker compose based service, optionally do the following:
+        - wait a fixed time for the service to become ready
+        - wait for the service to become ready by monitoring the STDOUT
+        - run specific service(s)
+        - raise for timeout
+        E.g.:
+            # run docker compose up and tear down after yielding
+            docker_composer()
+            # same as above but with additional args passed to docker
+            docker_composer(docker_args=["-f", "./compose.yaml"])
+            # run and wait for line in STDOUT before yielding
+            docker_composer(ready_log_line="Listening on port ", start_timeout=10.0)
+            # wait a fixed time for the service to become ready
+            docker_composer(wait_time=1.0)
+            # run specific sercices
+            docker_composer(docker_services=["svc1","svc2"])
+        """
+
+        if docker_args is None:
+            docker_args = []
+
+        if docker_services is None:
+            docker_services = []
+        elif type(docker_services) is str:
+            docker_services = [docker_services]
+
+        # start docker compose as a background process
+        process = subprocess.Popen(
+            ["docker", "compose", *docker_args, "up", *docker_services],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            preexec_fn=os.setsid,  # To kill the whole group later
+        )
+
+        start_time = time.time()
+        if ready_log_line is not None:
+            try:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    print(line, end="")
+                    if ready_log_line in line:
+                        break
+                    if (
+                        start_timeout is not None
+                        and time.time() - start_time > start_timeout
+                    ):
+                        raise TimeoutError(
+                            f"docker compose with args {docker_args} timed out"
+                        )
+            except Exception:
+                process.terminate()
+                raise
+
+        if wait_time is not None:
+            time.sleep(wait_time)
+
+        yield  # at this point service is expected to have started
+
+        try:
+            subprocess.run(
+                ["docker", "compose", *docker_args, "down", *docker_services]
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to bring down docker services: {e}")
+
+        # Terminate background process group
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        except ProcessLookupError:
+            pass  # Already exited
+
+        # Close stdout to avoid ResourceWarning
+        if process.stdout:
+            process.stdout.close()
+
+        # Ensure process has exited
+        process.wait(timeout=stop_timeout)
+
+    yield inner_docker_composer
+
+
+@pytest.fixture(scope="module")
+def ca_gateway(docker_composer):
+    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
+    if example_services_path is not None:  # user may start services manually
+        yield from docker_composer(
+            ["-f", f"{example_services_path}/compose.yaml"],
+            docker_services="ca-gateway",
+            ready_log_line="Running as user ",
+        )
+
+
+@pytest.fixture(scope="module")
+def bl01t_di_cam_01(ca_gateway, docker_composer):
+    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
+    if example_services_path is not None:  # user may start services manually
+        yield from docker_composer(
+            ["-f", f"{example_services_path}/compose.yaml"],
+            docker_services="bl01t-di-cam-01",
+            ready_log_line="iocRun: All initialization complete",
+        )

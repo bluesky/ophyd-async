@@ -1,22 +1,44 @@
-from collections.abc import Mapping, Sequence
-from typing import Any, TypeVar, get_args, get_origin
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar, get_args, get_origin
 
 import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    NO_ARG_VOID_SIGNATURE,
+    CommandBackend,
     SignalBackend,
     SignalDatatypeT,
+    SignalR,
     SignalRW,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     get_dtype,
     get_enum_cls,
+    observe_value,
     wait_for_value,
 )
 
 T = TypeVar("T")
+
+
+@dataclass
+class EpicsOptions(Generic[SignalDatatypeT]):
+    """Options for EPICS Signals."""
+
+    wait: bool | Callable[[SignalDatatypeT], bool] = True
+    """Whether to wait for server-side completion of the operation:
+
+    - `True`: Return when server-side operation has completed
+    - `False`: Return when server-side operation has started
+    - `callable`: Call with the value being put to decide whether to wait
+
+    For example, use `EpicsOption(wait=non_zero)` for busy records like
+    areaDetector acquire PVs that should not wait when being set to zero
+    as it causes a deadlock.
+    """
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
@@ -75,16 +97,64 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.read_pv = read_pv
         self.write_pv = write_pv
+        self.options = options or EpicsOptions()
         super().__init__(datatype)
 
 
+class EpicsCommandBackend(CommandBackend[[], None]):
+    """Base class for EPICS command backends over CA or PVA.
+
+    Holds the mutable `write_pv` attribute set by
+    `fill_command_with_prefix()` after construction, and the
+    `execute_value` written to the PV on trigger.
+
+    :param write_pv: The PV to write to. Set after construction by
+        `fill_command_with_prefix()`.
+    :param execute_value: The integer value written to the PV on trigger
+        (default: 1).
+    """
+
+    def __init__(self, write_pv: str = "", execute_value: int = 1):
+        self.write_pv = write_pv
+        self._execute_value = execute_value
+        super().__init__(signature=NO_ARG_VOID_SIGNATURE)
+
+
 async def stop_busy_record(
-    signal: SignalRW[SignalDatatypeT],
-    value: SignalDatatypeT,
+    signal: SignalRW[bool],
     timeout: float = DEFAULT_TIMEOUT,
 ) -> None:
-    await signal.set(value, wait=False)
-    await wait_for_value(signal, value, timeout=timeout)
+    await signal.set(False)
+    await wait_for_value(signal, False, timeout=timeout)
+
+
+async def wait_for_good_state(
+    state_signal: SignalR[SignalDatatypeT],
+    good_states: set[SignalDatatypeT],
+    message_signal: SignalR[str] | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> None:
+    """Wait for state_signal to be one of good_states within timeout."""
+    state: SignalDatatypeT | None = None
+    try:
+        async for state in observe_value(state_signal, done_timeout=timeout):
+            if state in good_states:
+                return
+    except TimeoutError as exc:
+        if state is None:
+            # No updates from the detector, maybe it is disconnected
+            raise TimeoutError(
+                f"Could not monitor state: {state_signal.source}"
+            ) from exc
+        else:
+            # No good state in time, report message if given
+            msg = f"{state_signal.source} not in a good state: {state}: "
+            if message_signal:
+                msg += await message_signal.get_value()
+            else:
+                msg += f"expected one of {good_states}"
+            raise ValueError(msg) from exc

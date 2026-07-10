@@ -3,70 +3,70 @@ on:
     inputs:
       python-version:
         type: string
-        description: The version of python to install
-        required: true
+        description: The version of python to install, default is from .python-version file
+        default: ""
       runs-on:
         type: string
         description: The runner to run this job on
         required: true
-    secrets:
-      CODECOV_TOKEN:
+      tests-path:
+        type: string
+        description: The path to look for tests
         required: true
 
 env:
   # https://github.com/pytest-dev/pytest/issues/2042
   PY_IGNORE_IMPORTMISMATCH: "1"
+  UV_PYTHON: ${{ inputs.python-version }}
 
 jobs:
   run:
     runs-on: ${{ inputs.runs-on }}
 
+    env:
+      COVERAGE_PROCESS_START: .coveragerc
+      EXAMPLE_SERVICES_PATH: ./example-services
+
     steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
       - name: Set TEMP to D:/Temp
         if: inputs.runs-on == 'windows-latest'
         run: |
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # Need this to get version number from last tag
-          fetch-depth: 0
 
-      - if: inputs.python-version == 'dev'
-        name: Install dev versions of python packages
-        uses: ./.github/actions/install_requirements
-
-      - if: inputs.python-version == 'dev'
-        name: Write the requirements as an artifact
-        run: pip freeze --exclude-editable > /tmp/dev-requirements.txt
-
-      - if: inputs.python-version == 'dev'
-        name: Upload dev-requirements.txt
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-requirements
-          path: /tmp/dev-requirements.txt
-
-      - if: inputs.python-version != 'dev'
-        name: Install latest versions of python packages
-        uses: ./.github/actions/install_requirements
-        with:
-          python-version: ${{ inputs.python-version }}
-          pip-install: ".[dev]"
-          
-      - name: Run tests win
+      # Windows runners occasionally boot with the Docker service not yet
+      # running: on the second boot from the saved runner image, the
+      # service's Hyper-V virtual switch creation intermittently fails
+      # (hnsCall failed, "The system cannot find the file specified"), which
+      # is the root cause of the flaky
+      # "Cannot communicate with the container engine" failures in
+      # tests/conftest.py::check_docker_sock. GitHub's own runner-images
+      # team confirmed a manual service restart resolves it 100% of the
+      # time (see https://github.com/actions/runner-images/issues/13729#issuecomment-4183956802,
+      # https://github.com/docker/for-win/issues/4354) and recommend this
+      # exact workaround. See issue #1314.
+      - name: Ensure Docker service is running (Windows flaky-start workaround)
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=6
+        run: |
+          $dockerState = Get-Service -Name "docker"
+          if ($dockerState.Status -ne "Running") {
+            Start-Service -Name "docker"
+          }
 
-      - name: Non win tests
-        if: inputs.runs-on != 'windows-latest'
-        run: tox -e tests -- --timeout=2
-      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Run tests
+        run: uv run --locked tox -e tests -- --durations=20 ${{ inputs.tests-path}}
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}
+          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}/${{ inputs.tests-path }}
           files: cov.xml
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

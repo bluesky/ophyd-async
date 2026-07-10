@@ -3,29 +3,28 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum, IntEnum
+import warnings
 
-import numpy.typing as npt
-from tango import (
-    AttrDataFormat,
-    AttrWriteType,
-    CmdArgType,
-    DeviceProxy,
-    DevState,
-)
+from tango import AttrWriteType, CmdArgType, DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Command,
     Signal,
+    SignalDatatype,
     SignalDatatypeT,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
+    TriggerableCommand,
 )
 
-from ._tango_transport import TangoSignalBackend, get_python_type
+from ._tango_transport import (
+    TangoSignalBackend,
+    get_python_type,
+)
 from ._utils import get_device_trl_and_attr
 
 logger = logging.getLogger("ophyd_async")
@@ -121,6 +120,10 @@ def tango_signal_x(
 ) -> SignalX:
     """Create a `SignalX` backed by 1 Tango Attribute/Command.
 
+    ```{version-deprecated} 0.19
+    Use `tango_triggerable_command` instead.
+    ```
+
     Parameters
     ----------
     write_trl:
@@ -131,47 +134,49 @@ def tango_signal_x(
         The name of the Signal
 
     """
+    warnings.warn(
+        "tango_signal_x is deprecated, use tango_triggerable_command instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     backend = make_backend(None, write_trl, write_trl)
-    return SignalX(backend, timeout=timeout, name=name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        return SignalX(backend, timeout=timeout, name=name)
 
 
 async def infer_python_type(
     trl: str = "", proxy: DeviceProxy | None = None
-) -> object | npt.NDArray | type[DevState] | IntEnum:
+) -> tuple[type[SignalDatatype] | None, type[SignalDatatype] | None]:
     """Infers the python type from the TRL."""
     # TODO: work out if this is still needed
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
-        dev_proxy = await AsyncDeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
     else:
         dev_proxy = proxy
-
+    input_type = None
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.in_type)
+        # A Device proxy instantiated by awaiting
+        # tango.asyncio.DeviceProxy is typed the same as the sync
+        # despite having awaitable methods.
+        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
+        return_type = get_python_type(config)
+        input_type = get_python_type(config, return_input_type=True)
     elif tr_name in dev_proxy.get_attribute_list():
-        config = await dev_proxy.get_attribute_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.data_type)
-        if py_type is Enum:
-            enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
-            py_type = IntEnum("TangoEnum", enum_dict)
-        if config.data_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
-            isarray = True
+        config = await dev_proxy.get_attribute_config(tr_name)  # type: ignore
+        return_type = get_python_type(config)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
-
-    if py_type is CmdArgType.DevState:
-        py_type = DevState
-
-    return npt.NDArray[py_type] if isarray else py_type
+    return input_type, return_type
 
 
 async def infer_signal_type(
     trl, proxy: DeviceProxy | None = None
-) -> type[Signal] | None:
+) -> type[Signal] | type[Command] | None:
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
-        dev_proxy = await AsyncDeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
     else:
         dev_proxy = proxy
 
@@ -180,7 +185,7 @@ async def infer_signal_type(
             raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 
     if tr_name in dev_proxy.get_attribute_list():
-        config = await dev_proxy.get_attribute_config(tr_name)
+        config = await dev_proxy.get_attribute_config(tr_name)  # type: ignore
         if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
             return SignalRW
         elif config.writable == AttrWriteType.READ:
@@ -189,12 +194,11 @@ async def infer_signal_type(
             return SignalW
 
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name)
-        if config.in_type == CmdArgType.DevVoid:
-            return SignalX
-        elif config.in_type != config.out_type:
-            logger.debug("Commands with different in and out dtypes are not supported")
-            return None
-        else:
-            return SignalRW
+        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
+        if (
+            config.in_type is CmdArgType.DevVoid
+            and config.out_type is CmdArgType.DevVoid
+        ):
+            return TriggerableCommand
+        return Command
     raise RuntimeError(f"Unable to infer signal character for {trl}")

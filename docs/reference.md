@@ -7,6 +7,7 @@ Technical reference material including APIs and release notes.
 :glob:
 
 API <_api/index>
+reference/*
 genindex
 Release Notes <https://github.com/bluesky/ophyd-async/releases>
 ```

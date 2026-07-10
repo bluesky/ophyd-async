@@ -11,14 +11,15 @@ When writing a new Device there are several base classes to choose from that wil
 There are some utility baseclasses that allow you to create a Device pre-populated with the right verbs to work in bluesky plans:
 
 - [](#StandardReadable) allows you to compose the values of child Signals and Devices together so that you can `read()` the Device during a step scan.
-- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. An instance of a [](#DetectorController) and a [](#DetectorWriter) are required to provide this functionality.
+- [](#StandardMovable) allows devices that move to a target value and wait for a readback to confirm arrival (motors, temperature controllers, piezo stages, and similar) to be implemented by composing a [](#MovableLogic) instance, rather than directly implementing the `Locatable`, `Stoppable`, and `Subscribable` protocols. See [](../explanations/when-to-extend-movable.md) for more details.
+- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. Instances of [](#DetectorTriggerLogic), [](#DetectorAcquireLogic), and [](#DetectorDataLogic) are composed together to provide this functionality. This separation of concerns makes it easy to mix and match different trigger modes, acquisition strategies, and data outputs.
 - [](#StandardFlyer) allows actuators (like a motor controller) to be used within a fly scan. Implementing a [](#FlyerController) is required to provide this functionality.
 
 ## Adding verbs via protocols
 
 There are some [bluesky protocols](inv:bluesky#hardware) that show the verbs you can implement to add functionality in standard plans. For example:
 
-- [](#bluesky.protocols.Movable) to add behavior during `bps.mv` and `bps.abs_set`
+- [](#bluesky.protocols.Movable) to add behavior during `bps.mv` and `bps.abs_set`. See [here](../explanations/when-to-extend-movable.md) for deciding if a device should extend movable.
 - [](#bluesky.protocols.Triggerable) to add behavior before `read()` in `bps.scan`
 
 It is not strictly required to add the protocol class as a baseclass (the presence of a method with the right signature is all that is required) but generally this is done so that the IDE gives you help when filling in the method, and the type checker knows to check that you have filled it in correctly.

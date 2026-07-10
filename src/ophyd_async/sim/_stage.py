@@ -1,3 +1,5 @@
+from bluesky.protocols import Reading
+
 from ophyd_async.core import StandardReadable
 from ophyd_async.sim._pattern_generator import PatternGenerator
 
@@ -16,15 +18,23 @@ class SimStage(StandardReadable):
         # Set name of device and child devices
         super().__init__(name=name)
 
+    def _set_x_from_reading(self, readings: dict[str, Reading[float]]):
+        (x_reading,) = readings.values()
+        self.pattern_generator.set_x(x_reading["value"])
+
+    def _set_y_from_reading(self, readings: dict[str, Reading[float]]):
+        (y_reading,) = readings.values()
+        self.pattern_generator.set_y(y_reading["value"])
+
     def stage(self):
         """Stage the motors and report the position to the pattern generator."""
         # Tell the pattern generator about the motor positions
-        self.x.user_readback.subscribe_value(self.pattern_generator.set_x)
-        self.y.user_readback.subscribe_value(self.pattern_generator.set_y)
+        self.x.user_readback.subscribe_reading(self._set_x_from_reading)
+        self.y.user_readback.subscribe_reading(self._set_y_from_reading)
         return super().stage()
 
     def unstage(self):
         """Unstage the motors and remove the position subscription."""
-        self.x.user_readback.clear_sub(self.pattern_generator.set_x)
-        self.y.user_readback.clear_sub(self.pattern_generator.set_y)
+        self.x.user_readback.clear_sub(self._set_x_from_reading)
+        self.y.user_readback.clear_sub(self._set_y_from_reading)
         return super().unstage()

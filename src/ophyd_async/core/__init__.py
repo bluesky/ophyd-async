@@ -1,36 +1,82 @@
 """The building blocks for making devices."""
 
+from ._command import (
+    NO_ARG_VOID_SIGNATURE,
+    Command,
+    CommandBackend,
+    CommandConnector,
+    MockCommandBackend,
+    SoftCommandBackend,
+    TriggerableCommand,
+    soft_command,
+)
+from ._data_providers import (
+    ReadableDataProvider,
+    SignalDataProvider,
+    StreamableDataProvider,
+    StreamResourceDataProvider,
+    StreamResourceInfo,
+)
+from ._datatypes import Array1D, DTypeScalar_co, Table, TableSubclass
 from ._derived_signal import (
     DerivedSignalFactory,
     derived_signal_r,
     derived_signal_rw,
     derived_signal_w,
 )
-from ._derived_signal_backend import Transform
+from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
-    DetectorController,
+    DetectorAcquireLogic,
+    DetectorDataLogic,
     DetectorTrigger,
-    DetectorWriter,
+    DetectorTriggerLogic,
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceConnector, DeviceVector, init_devices
-from ._device_filler import DeviceFiller
+from ._device import (
+    Device,
+    DeviceConnector,
+    DeviceMock,
+    DeviceProcessor,
+    DeviceVector,
+    LazyMock,
+    default_mock_class,
+    init_devices,
+)
+from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
     EnabledDisabled,
     EnableDisable,
     InOut,
     OnOff,
+    YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
-from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
-from ._log import config_ophyd_async_logging
+from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
-from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
-from ._providers import (
+from ._mock_signal_utils import (
+    callback_on_mock_execute,
+    callback_on_mock_put,
+    get_mock,
+    get_mock_execute,
+    get_mock_put,
+    mock_puts_blocked,
+    set_mock_precision,
+    set_mock_put_proceeds,
+    set_mock_units,
+    set_mock_value,
+    set_mock_values,
+)
+from ._movable import (
+    InstantMovableMock,
+    MovableLogic,
+    StandardMovable,
+    TimeoutCalculator,
+)
+from ._path_providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
-    DatasetDescriber,
+    AutoMaxIncrementingPathProvider,
     FilenameProvider,
     PathInfo,
     PathProvider,
@@ -38,6 +84,15 @@ from ._providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+)
+from ._protocol import (
+    AsyncConfigurable,
+    AsyncLocatable,
+    AsyncMovable,
+    AsyncPausable,
+    AsyncReadable,
+    AsyncStageable,
+    Watcher,
 )
 from ._readable import (
     ConfigSignal,
@@ -50,6 +105,7 @@ from ._signal import (
     Ignore,
     Signal,
     SignalConnector,
+    SignalDict,
     SignalR,
     SignalRW,
     SignalW,
@@ -67,8 +123,6 @@ from ._signal import (
     walk_signal_sources,
 )
 from ._signal_backend import (
-    Array1D,
-    DTypeScalar_co,
     Primitive,
     SignalBackend,
     SignalDatatype,
@@ -78,7 +132,6 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
-from ._table import Table
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -86,8 +139,7 @@ from ._utils import (
     Callback,
     ConfinedModel,
     EnumTypes,
-    LazyMock,
-    NotConnected,
+    NotConnectedError,
     Reference,
     StrictEnum,
     SubsetEnum,
@@ -99,20 +151,51 @@ from ._utils import (
     get_enum_cls,
     get_unique,
     in_micros,
+    non_zero,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
+
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "NotConnected": NotConnectedError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # Device
     "Device",
     "DeviceConnector",
     "DeviceFiller",
+    "DeviceAnnotation",
     "DeviceVector",
+    "DeviceProcessor",
     "init_devices",
+    # Movable
+    "MovableLogic",
+    "StandardMovable",
+    "InstantMovableMock",
+    "TimeoutCalculator",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
+    "AsyncLocatable",
+    "AsyncMovable",
+    "AsyncPausable",
     "AsyncStageable",
     "Watcher",
     # Status
@@ -145,8 +228,22 @@ __all__ = [
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     # Mock signal
+    "DeviceMock",
     "LazyMock",
     "MockSignalBackend",
+    "default_mock_class",
+    # Mocking utilities
+    "get_mock",
+    "set_mock_value",
+    "set_mock_values",
+    "get_mock_put",
+    "get_mock_execute",
+    "callback_on_mock_put",
+    "callback_on_mock_execute",
+    "mock_puts_blocked",
+    "set_mock_put_proceeds",
+    "set_mock_units",
+    "set_mock_precision",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
@@ -157,15 +254,17 @@ __all__ = [
     "walk_config_signals",
     "walk_devices",
     "walk_signal_sources",
+    "SignalDict",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
     # Detector
-    "StandardDetector",
-    "TriggerInfo",
     "DetectorTrigger",
-    "DetectorController",
-    "DetectorWriter",
+    "TriggerInfo",
+    "DetectorTriggerLogic",
+    "DetectorAcquireLogic",
+    "DetectorDataLogic",
+    "StandardDetector",
     # Path
     "PathInfo",
     "PathProvider",
@@ -175,11 +274,14 @@ __all__ = [
     "FilenameProvider",
     "StaticFilenameProvider",
     "AutoIncrementFilenameProvider",
+    "AutoMaxIncrementingPathProvider",
     "UUIDFilenameProvider",
-    # Datatset
-    "DatasetDescriber",
-    "HDFDatasetDescription",
-    "HDFDocumentComposer",
+    # Data Providers
+    "ReadableDataProvider",
+    "StreamableDataProvider",
+    "SignalDataProvider",
+    "StreamResourceInfo",
+    "StreamResourceDataProvider",
     # Flyer
     "StandardFlyer",
     "FlyMotorInfo",
@@ -190,12 +292,14 @@ __all__ = [
     "YamlSettingsProvider",
     # Utils
     "config_ophyd_async_logging",
+    "logger",
+    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
     "Callback",
     "ConfinedModel",
-    "NotConnected",
+    "NotConnectedError",
     "Reference",
     "error_if_none",
     "gather_dict",
@@ -206,12 +310,14 @@ __all__ = [
     "make_datakey",
     "wait_for_connection",
     "Ignore",
+    "non_zero",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
     "derived_signal_w",
     "Transform",
     "DerivedSignalFactory",
+    "merge_gathered_dicts",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
@@ -220,4 +326,15 @@ __all__ = [
     "EnableDisable",
     "InOut",
     "OnOff",
+    "YesNo",
+    "TableSubclass",
+    # Commands
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "MockCommandBackend",
+    "NO_ARG_VOID_SIGNATURE",
+    "SoftCommandBackend",
+    "soft_command",
+    "TriggerableCommand",
 ]
