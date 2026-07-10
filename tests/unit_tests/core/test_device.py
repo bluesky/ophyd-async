@@ -24,6 +24,37 @@ from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
 
 
+@pytest.fixture
+def mock_device_and_filler() -> tuple[Device, DeviceFiller]:
+    class TestDevice(Device):
+        mandatory_signal: SignalRW[int]
+        optional_signal: SignalRW[int] | None
+
+    # Create a mock backend factory
+    def mock_backend_factory(datatype):
+        backend = Mock()
+        backend.datatype = datatype
+        return backend
+
+    # Create a mock connector factory
+    def mock_connector_factory():
+        return Mock()
+
+    def mock_command_backend_factory(signature):
+        backend = Mock()
+        backend.signature = signature
+        return backend
+
+    device = TestDevice()
+    filler = DeviceFiller(
+        device=device,
+        signal_backend_factory=mock_backend_factory,
+        device_connector_factory=mock_connector_factory,
+        command_backend_factory=mock_command_backend_factory,
+    )
+    return device, filler
+
+
 class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
@@ -299,35 +330,10 @@ def test_setitem_with_non_device_value():
         device_vector[1] = "not_a_device"
 
 
-def test_device_filler_check_filled_with_optional_signals():
+def test_device_filler_check_filled_with_optional_signals(mock_device_and_filler):
     """Test DeviceFiller.check_filled with both mandatory and optional Signals."""
 
-    class TestDevice(Device):
-        mandatory_signal: SignalRW[int]
-        optional_signal: SignalRW[int] | None
-
-    # Create a mock backend factory
-    def mock_backend_factory(datatype):
-        backend = Mock()
-        backend.datatype = datatype
-        return backend
-
-    # Create a mock connector factory
-    def mock_connector_factory():
-        return Mock()
-
-    def mock_command_backend_factory(signature):
-        backend = Mock()
-        backend.signature = signature
-        return backend
-
-    device = TestDevice()
-    filler = DeviceFiller(
-        device=device,
-        signal_backend_factory=mock_backend_factory,
-        device_connector_factory=mock_connector_factory,
-        command_backend_factory=mock_command_backend_factory,
-    )
+    device, filler = mock_device_and_filler
 
     # Create signals from annotations (unfilled)
     list(filler.create_signals_from_annotations(filled=False))
@@ -351,6 +357,17 @@ def test_device_filler_check_filled_with_optional_signals():
     assert hasattr(device, "optional_signal")
     assert device.optional_signal is None
     assert "optional_signal" not in dict(device.children())
+
+
+def test_device_filler_appends_underscore_if_signal_shadows_protocol(
+    mock_device_and_filler,
+):
+    device, filler = mock_device_and_filler
+
+    filler.fill_child_signal("collect", SignalRW, None)
+
+    # collect shadows bluesky protocol, so should have a trailing underscore
+    assert hasattr(device, "collect_")
 
 
 class DummyDisconnectDevice(Device):
