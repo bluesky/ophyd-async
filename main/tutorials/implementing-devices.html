@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.19.4.dev9+ge395573f5 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b7e79e53"></script>
+    <script src="../_static/documentation_options.js?v=6f85fcaa"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
   
   
 </a></div>
@@ -1022,6 +1022,8 @@ FastCS</label><div class="sd-tab-content docutils">
 EPICS</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
+
 <span class="c1"># Import bluesky and ophyd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>  <span class="c1"># noqa: F401</span>
@@ -1035,13 +1037,15 @@ EPICS</label><div class="sd-tab-content docutils">
 <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">(</span><span class="n">call_returns_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">autoawait_in_bluesky_event_loop</span><span class="p">()</span>
 
-<span class="c1"># Add a callback for plotting</span>
-<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
-<span class="hll"><span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+<span class="hll"><span class="c1"># Add a callback for plotting</span>
+</span><span class="hll"><span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+</span><span class="hll"><span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
 </span><span class="hll">
 </span><span class="hll"><span class="c1"># Start IOC with demo pvs in subprocess</span>
+</span><span class="hll"><span class="n">NUM_CHANNELS</span> <span class="o">=</span> <span class="mi">3</span>
 </span><span class="hll"><span class="n">prefix</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">generate_random_pv_prefix</span><span class="p">()</span>
-</span><span class="hll"><span class="n">ioc</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span class="hll"><span class="n">ioc</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">start_ioc</span><span class="p">(</span><span class="n">demo</span><span class="o">.</span><span class="n">IOC</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">NUM_CHANNELS</span><span class="p">))</span>
+</span><span class="hll"><span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ioc</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
 </span><span class="hll">
 </span><span class="hll"><span class="c1"># All Devices created within this block will be</span>
 </span><span class="hll"><span class="c1"># connected and named at the end of the with block</span>
@@ -1050,7 +1054,7 @@ EPICS</label><div class="sd-tab-content docutils">
 </span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">STAGE:&quot;</span><span class="p">)</span>
 </span><span class="hll">    <span class="c1"># Create a multi channel counter with the same number</span>
 </span><span class="hll">    <span class="c1"># of counters as the IOC</span>
-</span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">DET:&quot;</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">DET:&quot;</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="n">NUM_CHANNELS</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>EPICS PVs are normally broadcast to your entire network subnet. To avoid PV name clashes, we pick a random prefix, then start the demo IOC using this PV  prefix. Starting an IOC here is done just for the demo, in production the IOC would already be running before you started bluesky.</p>
@@ -1065,6 +1069,8 @@ EPICS</label><div class="sd-tab-content docutils">
 Tango</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
+
 <span class="c1"># Import bluesky and ophyd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>  <span class="c1"># noqa: F401</span>
@@ -1072,35 +1078,42 @@ Tango</label><div class="sd-tab-content docutils">
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.run_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">autoawait_in_bluesky_event_loop</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_devices</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">demo</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_random_trl_prefix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">demo</span><span class="p">,</span> <span class="n">testing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_free_port</span>
 
 <span class="c1"># Create a run engine and make ipython use it for `await` commands</span>
 <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">(</span><span class="n">call_returns_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">autoawait_in_bluesky_event_loop</span><span class="p">()</span>
 
 <span class="c1"># Add a callback for plotting</span>
-<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
-<span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
-<span class="hll">
-</span><span class="hll"><span class="c1"># Start demo DeviceServer in subprocess</span>
-</span><span class="hll"><span class="n">prefix</span> <span class="o">=</span> <span class="n">generate_random_trl_prefix</span><span class="p">()</span>
-</span><span class="hll"><span class="n">ds</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_device_server_subprocess</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="hll"><span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+</span><span class="hll"><span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="hll"><span class="c1"># Start demo device servers in subprocess</span>
+</span><span class="hll"><span class="n">NUM_CHANNELS</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span class="hll"><span class="n">prefix</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">generate_random_trl_prefix</span><span class="p">()</span>
+</span><span class="hll"><span class="n">port</span> <span class="o">=</span> <span class="n">find_free_port</span><span class="p">()</span>
+</span><span class="hll"><span class="n">servers</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">start_tango_device_servers</span><span class="p">(</span>
+</span><span class="hll">    <span class="n">demo</span><span class="o">.</span><span class="n">DEVICE_SERVERS</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">NUM_CHANNELS</span><span class="p">)</span>
+</span><span class="hll"><span class="p">)</span>
+</span><span class="hll"><span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">servers</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="hll">
+</span><span class="hll"><span class="k">def</span><span class="w"> </span><span class="nf">trl</span><span class="p">(</span><span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span class="hll"><span class="w">    </span><span class="sd">&quot;&quot;&quot;TRL of `device_name`, served by `servers` under `prefix`.&quot;&quot;&quot;</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">testing</span><span class="o">.</span><span class="n">trl</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">device_name</span><span class="p">)</span>
+</span><span class="hll">
 </span><span class="hll">
 </span><span class="hll"><span class="c1"># All Devices created within this block will be</span>
 </span><span class="hll"><span class="c1"># connected and named at the end of the with block</span>
 </span><span class="hll"><span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
 </span><span class="hll">    <span class="c1"># Create a sample stage with X and Y motors</span>
-</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/X&quot;</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/Y&quot;</span><span class="p">])</span>
+</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="n">trl</span><span class="p">(</span><span class="s2">&quot;motor-x&quot;</span><span class="p">),</span> <span class="n">trl</span><span class="p">(</span><span class="s2">&quot;motor-y&quot;</span><span class="p">))</span>
 </span><span class="hll">    <span class="c1"># Create a multi channel counter with the same number</span>
-</span><span class="hll">    <span class="c1"># of counters as the IOC</span>
+</span><span class="hll">    <span class="c1"># of counters as the device servers</span>
 </span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span>
-</span><span class="hll">        <span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/DET&quot;</span><span class="p">],</span>
-</span><span class="hll">        <span class="p">[</span>
-</span><span class="hll">            <span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/C1&quot;</span><span class="p">],</span>
-</span><span class="hll">            <span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/C2&quot;</span><span class="p">],</span>
-</span><span class="hll">            <span class="n">ds</span><span class="o">.</span><span class="n">trls</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">/C3&quot;</span><span class="p">],</span>
-</span><span class="hll">        <span class="p">],</span>
+</span><span class="hll">        <span class="n">trl</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">),</span>
+</span><span class="hll">        <span class="p">[</span><span class="n">trl</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;channel-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_CHANNELS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
 </span><span class="hll">    <span class="p">)</span>
 </span></pre></div>
 </div>

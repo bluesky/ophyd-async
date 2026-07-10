@@ -15,6 +15,10 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`ManagedSubprocess <ophyd_async.testing._subprocess.ManagedSubprocess>`
+  - ```{autodoc2-docstring} ophyd_async.testing._subprocess.ManagedSubprocess
+    :summary:
+    ```
 * - {py:obj}`ExampleEnum <ophyd_async.testing._one_of_everything.ExampleEnum>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
     :summary:
@@ -107,6 +111,14 @@
   - ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
     :summary:
     ```
+* - {py:obj}`find_free_port <ophyd_async.testing._subprocess.find_free_port>`
+  - ```{autodoc2-docstring} ophyd_async.testing._subprocess.find_free_port
+    :summary:
+    ```
+* - {py:obj}`start_subprocess <ophyd_async.testing._subprocess.start_subprocess>`
+  - ```{autodoc2-docstring} ophyd_async.testing._subprocess.start_subprocess
+    :summary:
+    ```
 * - {py:obj}`int_array_value <ophyd_async.testing._one_of_everything.int_array_value>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.int_array_value
     :summary:
@@ -181,6 +193,44 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
+```
+````
+
+`````{py:class} ManagedSubprocess(subprocess_args: ~collections.abc.Sequence[str], ready_marker: str, *, startup_timeout: float = 15.0, stop_input: str | None = None, shutdown_timeout: float = 10.0)
+:canonical: ophyd_async.testing._subprocess.ManagedSubprocess
+
+```{autodoc2-docstring} ophyd_async.testing._subprocess.ManagedSubprocess
+```
+
+````{py:method} start() -> None
+:canonical: ophyd_async.testing._subprocess.ManagedSubprocess.start
+
+```{autodoc2-docstring} ophyd_async.testing._subprocess.ManagedSubprocess.start
+```
+
+````
+
+````{py:method} stop() -> None
+:canonical: ophyd_async.testing._subprocess.ManagedSubprocess.stop
+
+```{autodoc2-docstring} ophyd_async.testing._subprocess.ManagedSubprocess.stop
+```
+
+````
+
+`````
+
+````{py:function} find_free_port() -> int
+:canonical: ophyd_async.testing._subprocess.find_free_port
+
+```{autodoc2-docstring} ophyd_async.testing._subprocess.find_free_port
+```
+````
+
+````{py:function} start_subprocess(subprocess_args: ~collections.abc.Sequence[str], ready_marker: str, *, startup_timeout: float = 15.0, stop_input: str | None = None, shutdown_timeout: float = 10.0) -> ~ophyd_async.testing._subprocess.ManagedSubprocess
+:canonical: ophyd_async.testing._subprocess.start_subprocess
+
+```{autodoc2-docstring} ophyd_async.testing._subprocess.start_subprocess
 ```
 ````
 

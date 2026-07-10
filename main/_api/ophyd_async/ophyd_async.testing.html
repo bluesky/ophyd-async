@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.testing &#8212; ophyd-async 0.19.4.dev9+ge395573f5 documentation</title>
+    <title>ophyd_async.testing &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=b7e79e53"></script>
+    <script src="../../_static/documentation_options.js?v=6f85fcaa"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
   
   
 </a></div>
@@ -544,43 +544,46 @@
 <h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleEnum" title="ophyd_async.testing._one_of_everything.ExampleEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ManagedSubprocess" title="ophyd_async.testing._subprocess.ManagedSubprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ManagedSubprocess</span></code></a></p></td>
+<td><p>A started subprocess, owning its <code class="docutils literal notranslate"><span class="pre">Popen</span></code> and able to stop it cleanly.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleEnum" title="ophyd_async.testing._one_of_everything.ExampleEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleEnum</span></code></a></p></td>
 <td><p>Example of a strict Enum datatype.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSubsetEnum" title="ophyd_async.testing._one_of_everything.ExampleSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSubsetEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSubsetEnum" title="ophyd_async.testing._one_of_everything.ExampleSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSubsetEnum</span></code></a></p></td>
 <td><p>Example of a subset Enum datatype: the backend may have extra choices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSupersetEnum" title="ophyd_async.testing._one_of_everything.ExampleSupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSupersetEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleSupersetEnum" title="ophyd_async.testing._one_of_everything.ExampleSupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleSupersetEnum</span></code></a></p></td>
 <td><p>Example of a superset Enum datatype: not all choices need exist in backend.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleTable" title="ophyd_async.testing._one_of_everything.ExampleTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleTable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleTable" title="ophyd_async.testing._one_of_everything.ExampleTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.OneOfEverythingDevice" title="ophyd_async.testing._one_of_everything.OneOfEverythingDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OneOfEverythingDevice</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.OneOfEverythingDevice" title="ophyd_async.testing._one_of_everything.OneOfEverythingDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OneOfEverythingDevice</span></code></a></p></td>
 <td><p>A device with one of every datatype allowed on signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ParentOfEverythingDevice" title="ophyd_async.testing._one_of_everything.ParentOfEverythingDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParentOfEverythingDevice</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ParentOfEverythingDevice" title="ophyd_async.testing._one_of_everything.ParentOfEverythingDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParentOfEverythingDevice</span></code></a></p></td>
 <td><p>Device containing subdevices with one of every datatype allowed on signals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.MonitorQueue" title="ophyd_async.testing._assert.MonitorQueue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MonitorQueue</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.MonitorQueue" title="ophyd_async.testing._assert.MonitorQueue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MonitorQueue</span></code></a></p></td>
 <td><p>Monitors a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> and stores its updates.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ApproxTable" title="ophyd_async.testing._assert.ApproxTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApproxTable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ApproxTable" title="ophyd_async.testing._assert.ApproxTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApproxTable</span></code></a></p></td>
 <td><p>For approximating two tables are equivalent.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.StatusWatcher" title="ophyd_async.testing._assert.StatusWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.StatusWatcher" title="ophyd_async.testing._assert.StatusWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a></p></td>
 <td><p>Watches an <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code>, storing the calls within.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.BeamstopPosition" title="ophyd_async.testing._single_derived.BeamstopPosition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BeamstopPosition</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.BeamstopPosition" title="ophyd_async.testing._single_derived.BeamstopPosition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BeamstopPosition</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.Exploder" title="ophyd_async.testing._single_derived.Exploder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exploder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.Exploder" title="ophyd_async.testing._single_derived.Exploder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exploder</span></code></a></p></td>
 <td><p>This one takes a value and sets all its signal to that value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.MovableBeamstop" title="ophyd_async.testing._single_derived.MovableBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MovableBeamstop</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.MovableBeamstop" title="ophyd_async.testing._single_derived.MovableBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MovableBeamstop</span></code></a></p></td>
 <td><p>As well as reads, this one allows you to move it.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ReadOnlyBeamstop" title="ophyd_async.testing._single_derived.ReadOnlyBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadOnlyBeamstop</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ReadOnlyBeamstop" title="ophyd_async.testing._single_derived.ReadOnlyBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadOnlyBeamstop</span></code></a></p></td>
 <td><p>Reads from 2 motors to work out if the beamstop is in position.</p></td>
 </tr>
 </tbody>
@@ -614,6 +617,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.wait_for_pending_wakeups" title="ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_pending_wakeups</span></code></a></p></td>
 <td><p>Allow any ready asyncio tasks to be woken up.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.find_free_port" title="ophyd_async.testing._subprocess.find_free_port"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_free_port</span></code></a></p></td>
+<td><p>Find a currently-unused TCP port on localhost.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.start_subprocess" title="ophyd_async.testing._subprocess.start_subprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_subprocess</span></code></a></p></td>
+<td><p>Start a backend server subprocess.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.int_array_value" title="ophyd_async.testing._one_of_everything.int_array_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int_array_value</span></code></a></p></td>
 <td></td>
@@ -750,6 +759,64 @@ puts can be tested</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">observe_value</span></code> to allow it to be wrapped in <code class="docutils literal notranslate"><span class="pre">asyncio.wait_for</span></code>
 with a timeout</p></li>
 </ul>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.ManagedSubprocess">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ManagedSubprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subprocess_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ready_marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_subprocess.html#ManagedSubprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ManagedSubprocess" title="Link to this definition">#</a></dt>
+<dd><p>A started subprocess, owning its <code class="docutils literal notranslate"><span class="pre">Popen</span></code> and able to stop it cleanly.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.testing.ManagedSubprocess.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_subprocess.html#ManagedSubprocess.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ManagedSubprocess.start" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.testing.ManagedSubprocess.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_subprocess.html#ManagedSubprocess.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ManagedSubprocess.stop" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.testing.find_free_port">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">find_free_port</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_subprocess.html#find_free_port"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.find_free_port" title="Link to this definition">#</a></dt>
+<dd><p>Find a currently-unused TCP port on localhost.</p>
+<p>For callers that need to tell a subprocess which port to listen on up
+front (e.g. <code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.testing.start_tango_device_servers</span></code>,
+which - unlike an EPICS IOC - can’t rely on a fixed macro-based address
+scheme, since a Tango TRL bakes the port straight into the URL). The
+standard “bind to port 0, read back what the OS assigned, close it”
+trick - the same one pytest/tox use. There’s an unavoidable (tiny) race
+between this returning and whatever you start next actually binding that
+port - acceptable for test/demo subprocess launching, not a security
+boundary.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.testing.start_subprocess">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">start_subprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subprocess_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ready_marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.testing.ManagedSubprocess" title="ophyd_async.testing._subprocess.ManagedSubprocess"><span class="pre">ManagedSubprocess</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_subprocess.html#start_subprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.start_subprocess" title="Link to this definition">#</a></dt>
+<dd><p>Start a backend server subprocess.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subprocess_args</strong> – Full argv to spawn,
+e.g. <code class="docutils literal notranslate"><span class="pre">[sys.executable,</span> <span class="pre">&quot;-m&quot;,</span> <span class="pre">&quot;epicscorelibs.ioc&quot;,</span> <span class="pre">...]</span></code>.</p></li>
+<li><p><strong>ready_marker</strong> – Substring to watch for on the subprocess’s stdout
+(stderr is merged into stdout) indicating it’s ready to accept
+connections. Blocks until this appears.</p></li>
+<li><p><strong>startup_timeout</strong> – Seconds to wait for <code class="docutils literal notranslate"><span class="pre">ready_marker</span></code> before giving up.</p></li>
+<li><p><strong>stop_input</strong> – Written to the subprocess’s stdin (then stdin is closed)
+by <code class="docutils literal notranslate"><span class="pre">.stop()</span></code> to request a clean shutdown, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;exit()&quot;</span></code> for an EPICS
+IOC shell. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, stdin is just closed with nothing written first -
+the shutdown mechanism the Tango device server scripts in this repo use
+(they block reading stdin and exit on EOF).</p></li>
+<li><p><strong>shutdown_timeout</strong> – Seconds to wait for a clean exit after requesting
+shutdown before killing.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns a handle whose <code class="docutils literal notranslate"><span class="pre">.stop()</span></code> requests that clean shutdown (killing it if
+it doesn’t exit in time); also usable as a context manager.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -1098,6 +1165,13 @@ the same calls again.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.assert_emitted"><code class="docutils literal notranslate"><span class="pre">assert_emitted()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.partial_reading"><code class="docutils literal notranslate"><span class="pre">partial_reading()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.wait_for_pending_wakeups"><code class="docutils literal notranslate"><span class="pre">wait_for_pending_wakeups()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ManagedSubprocess"><code class="docutils literal notranslate"><span class="pre">ManagedSubprocess</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ManagedSubprocess.start"><code class="docutils literal notranslate"><span class="pre">ManagedSubprocess.start()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ManagedSubprocess.stop"><code class="docutils literal notranslate"><span class="pre">ManagedSubprocess.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.find_free_port"><code class="docutils literal notranslate"><span class="pre">find_free_port()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.start_subprocess"><code class="docutils literal notranslate"><span class="pre">start_subprocess()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum"><code class="docutils literal notranslate"><span class="pre">ExampleEnum</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum.A"><code class="docutils literal notranslate"><span class="pre">ExampleEnum.A</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ExampleEnum.B"><code class="docutils literal notranslate"><span class="pre">ExampleEnum.B</span></code></a></li>

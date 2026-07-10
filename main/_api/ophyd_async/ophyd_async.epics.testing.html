@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.testing &#8212; ophyd-async 0.19.4.dev9+ge395573f5 documentation</title>
+    <title>ophyd_async.epics.testing &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=b7e79e53"></script>
+    <script src="../../_static/documentation_options.js?v=6f85fcaa"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
   
   
 </a></div>
@@ -576,9 +576,6 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.EpicsTestTable" title="ophyd_async.epics.testing._devices.EpicsTestTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsTestTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.TestingIOC" title="ophyd_async.epics.testing._utils.TestingIOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestingIOC</span></code></a></p></td>
-<td><p>For initialising an IOC in tests.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -587,8 +584,11 @@
 <h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.generate_random_pv_prefix" title="ophyd_async.epics.testing._utils.generate_random_pv_prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_random_pv_prefix</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.generate_random_pv_prefix" title="ophyd_async.epics.testing._launch.generate_random_pv_prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_random_pv_prefix</span></code></a></p></td>
 <td><p>For generating random PV names in test devices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.start_ioc" title="ophyd_async.epics.testing._launch.start_ioc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_ioc</span></code></a></p></td>
+<td><p>Start an EPICS IOC subprocess by running <code class="docutils literal notranslate"><span class="pre">script</span></code> with <code class="docutils literal notranslate"><span class="pre">args</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -601,10 +601,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.CA_PVA_RECORDS" title="ophyd_async.epics.testing._devices.CA_PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CA_PVA_RECORDS</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVA_RECORDS" title="ophyd_async.epics.testing._devices.PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.IOC" title="ophyd_async.epics.testing.IOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IOC</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS" title="ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVI_NESTED_RECORDS</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVA_RECORDS" title="ophyd_async.epics.testing._devices.PVA_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS" title="ophyd_async.epics.testing._pvi_nested_devices.PVI_NESTED_RECORDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVI_NESTED_RECORDS</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -616,6 +619,12 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="ophyd_async.epics.testing.CA_PVA_RECORDS">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">CA_PVA_RECORDS</span></span><a class="headerlink" href="#ophyd_async.epics.testing.CA_PVA_RECORDS" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.IOC">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">IOC</span></span><a class="headerlink" href="#ophyd_async.epics.testing.IOC" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -1143,31 +1152,35 @@ absent).</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.TestingIOC">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">TestingIOC</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_utils.html#TestingIOC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.TestingIOC" title="Link to this definition">#</a></dt>
-<dd><p>For initialising an IOC in tests.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.TestingIOC.add_database">
-<span class="sig-name descname"><span class="pre">add_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">macros</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_utils.html#TestingIOC.add_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.TestingIOC.add_database" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.TestingIOC.start">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_utils.html#TestingIOC.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.TestingIOC.start" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.TestingIOC.stop">
-<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_utils.html#TestingIOC.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.TestingIOC.stop" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.generate_random_pv_prefix">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">generate_random_pv_prefix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_launch.html#generate_random_pv_prefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.generate_random_pv_prefix" title="Link to this definition">#</a></dt>
+<dd><p>For generating random PV names in test devices.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.epics.testing.generate_random_pv_prefix">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">generate_random_pv_prefix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_utils.html#generate_random_pv_prefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.generate_random_pv_prefix" title="Link to this definition">#</a></dt>
-<dd><p>For generating random PV names in test devices.</p>
+<dt class="sig sig-object py" id="ophyd_async.epics.testing.start_ioc">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.testing.</span></span><span class="sig-name descname"><span class="pre">start_ioc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.testing.html#ophyd_async.testing.ManagedSubprocess" title="ophyd_async.testing.ManagedSubprocess"><span class="pre">ManagedSubprocess</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/testing/_launch.html#start_ioc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.testing.start_ioc" title="Link to this definition">#</a></dt>
+<dd><p>Start an EPICS IOC subprocess by running <code class="docutils literal notranslate"><span class="pre">script</span></code> with <code class="docutils literal notranslate"><span class="pre">args</span></code>.</p>
+<p>Mirrors <code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.testing.start_tango_device_servers</span></code>’s shape and
+subprocess handling: rather than building the IOC’s full argv inline,
+this always launches a real, independently-runnable file - the exact
+command a human would type by hand, so there’s no separate “does this
+even work standalone” code path to keep correct.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>script</strong> – The script implementing the IOC topology to host, e.g.
+<code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo.IOC</span></code> or <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.testing.IOC</span></code>.</p></li>
+<li><p><strong>args</strong> – Positional args for that script’s <code class="docutils literal notranslate"><span class="pre">__main__</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">prefix</span></code>
+or <code class="docutils literal notranslate"><span class="pre">prefix,</span> <span class="pre">str(num_channels)</span></code> - whatever it expects. Overriding
+which executable actually hosts the IOC (defaulting to the bundled
+<code class="docutils literal notranslate"><span class="pre">epicscorelibs.ioc</span></code>) is a command-line-only concern of that script
+itself - pass <code class="docutils literal notranslate"><span class="pre">--softioc</span> <span class="pre">...</span></code> as one of <code class="docutils literal notranslate"><span class="pre">args</span></code> if you need that (see
+the script’s own <code class="docutils literal notranslate"><span class="pre">--help</span></code>); this function doesn’t thread it through.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -1227,6 +1240,7 @@ absent).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.CA_PVA_RECORDS"><code class="docutils literal notranslate"><span class="pre">CA_PVA_RECORDS</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.IOC"><code class="docutils literal notranslate"><span class="pre">IOC</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.PVA_RECORDS"><code class="docutils literal notranslate"><span class="pre">PVA_RECORDS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.PVI_NESTED_RECORDS"><code class="docutils literal notranslate"><span class="pre">PVI_NESTED_RECORDS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestCaDevice"><code class="docutils literal notranslate"><span class="pre">EpicsTestCaDevice</span></code></a><ul class="nav section-nav flex-column">
@@ -1323,13 +1337,8 @@ absent).</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.EpicsTestTable.a_enum"><code class="docutils literal notranslate"><span class="pre">EpicsTestTable.a_enum</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.TestingIOC"><code class="docutils literal notranslate"><span class="pre">TestingIOC</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.TestingIOC.add_database"><code class="docutils literal notranslate"><span class="pre">TestingIOC.add_database()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.TestingIOC.start"><code class="docutils literal notranslate"><span class="pre">TestingIOC.start()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.TestingIOC.stop"><code class="docutils literal notranslate"><span class="pre">TestingIOC.stop()</span></code></a></li>
-</ul>
-</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.generate_random_pv_prefix"><code class="docutils literal notranslate"><span class="pre">generate_random_pv_prefix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.testing.start_ioc"><code class="docutils literal notranslate"><span class="pre">start_ioc()</span></code></a></li>
 </ul>
 </li>
 </ul>

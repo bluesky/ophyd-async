@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.demo &#8212; ophyd-async 0.19.4.dev9+ge395573f5 documentation</title>
+    <title>ophyd_async.epics.demo &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=b7e79e53"></script>
+    <script src="../../_static/documentation_options.js?v=6f85fcaa"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev9+ge395573f5 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev10+gbb065cace documentation - Home"/>
   
   
 </a></div>
@@ -566,12 +566,12 @@
 </table>
 </div>
 </section>
-<section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.start_ioc_subprocess" title="ophyd_async.epics.demo._ioc.start_ioc_subprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_ioc_subprocess</span></code></a></p></td>
-<td><p>Start an IOC subprocess for sample stage and sensor.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.IOC" title="ophyd_async.epics.demo.IOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IOC</span></code></a></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -579,6 +579,12 @@
 </section>
 <section id="api">
 <h3>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.epics.demo.IOC">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">IOC</span></span><a class="headerlink" href="#ophyd_async.epics.demo.IOC" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.DemoMotor">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">DemoMotor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_motor.html#DemoMotor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.DemoMotor" title="Link to this definition">#</a></dt>
@@ -703,20 +709,6 @@
 
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.epics.demo.start_ioc_subprocess">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">start_ioc_subprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.epics.testing.html#ophyd_async.epics.testing.TestingIOC" title="ophyd_async.epics.testing.TestingIOC"><span class="pre">TestingIOC</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_ioc.html#start_ioc_subprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.start_ioc_subprocess" title="Link to this definition">#</a></dt>
-<dd><p>Start an IOC subprocess for sample stage and sensor.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>prefix</strong> – The prefix for the IOC PVs.</p></li>
-<li><p><strong>num_channels</strong> – The number of point detector channels to create.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 </section>
@@ -770,8 +762,9 @@
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.IOC"><code class="docutils literal notranslate"><span class="pre">IOC</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor"><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor.readback"><code class="docutils literal notranslate"><span class="pre">DemoMotor.readback</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor.velocity"><code class="docutils literal notranslate"><span class="pre">DemoMotor.velocity</span></code></a></li>
@@ -799,7 +792,6 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoPointDetector.trigger"><code class="docutils literal notranslate"><span class="pre">DemoPointDetector.trigger()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.start_ioc_subprocess"><code class="docutils literal notranslate"><span class="pre">start_ioc_subprocess()</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -539,6 +539,14 @@
   - ```{autodoc2-docstring} ophyd_async.core._device.LazyMock
     :summary:
     ```
+* - {py:obj}`logger <ophyd_async.core._log.logger>`
+  - ```{autodoc2-docstring} ophyd_async.core._log.logger
+    :summary:
+    ```
+* - {py:obj}`set_handler <ophyd_async.core._log.set_handler>`
+  - ```{autodoc2-docstring} ophyd_async.core._log.set_handler
+    :summary:
+    ```
 * - {py:obj}`CALCULATE_TIMEOUT <ophyd_async.core._utils.CALCULATE_TIMEOUT>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.CALCULATE_TIMEOUT
     :summary:
@@ -3496,6 +3504,26 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._log.config_ophyd_async_logging
 ```
+````
+
+````{py:data} logger
+:canonical: ophyd_async.core._log.logger
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} ophyd_async.core._log.logger
+```
+
+````
+
+````{py:data} set_handler
+:canonical: ophyd_async.core._log.set_handler
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._log.set_handler
+```
+
 ````
 
 ````{py:data} CALCULATE_TIMEOUT

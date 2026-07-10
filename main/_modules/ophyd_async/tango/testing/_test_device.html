@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._pvi_nested_devices &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
+    <title>ophyd_async.tango.testing._test_device &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -483,7 +483,7 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/testing/_pvi_nested_devices';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/tango/testing/_test_device';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -880,7 +880,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.testing._pvi_nested_devices</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.tango.testing._test_device</span></li>
   </ul>
 </nav>
 </div>
@@ -897,72 +897,79 @@ window.runMermaid = runMermaid;</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.testing._pvi_nested_devices</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+  <h1>Source code for ophyd_async.tango.testing._test_device</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="n">PVI_NESTED_RECORDS</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;_pvi_nested_records.db&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Array1D</span><span class="p">,</span>
+    <span class="n">Command</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">TangoDevice</span><span class="p">,</span> <span class="n">TangoPolling</span>
 
-
-<div class="viewcode-block" id="EpicsTestPviLeafDevice">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviLeafDevice">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviLeafDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Leaf sub-device for `child` and `device_vector` on EpicsTestPviNestedDevice.&quot;&quot;&quot;</span>
-
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">signal_x</span><span class="p">:</span> <span class="n">TriggerableCommand</span></div>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">._example_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExampleStrEnum</span>
 
 
-<div class="viewcode-block" id="EpicsTestPviNestedDevice">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviNestedDevice">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviNestedDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Real-IOC-backed structural PVI test device.</span>
+<div class="viewcode-block" id="TangoTestDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoTestDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TangoTestDevice</span><span class="p">(</span><span class="n">TangoDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Declarative ophyd-async Device pairing 1:1 with `OneOfEverythingTangoDevice`.</span>
 
-<span class="sd">    Exercises PviDeviceConnector&#39;s handling of nested sub-devices,</span>
-<span class="sd">    DeviceVector of devices, DeviceVector of signals, DeviceVector of</span>
-<span class="sd">    commands, and an Optional signal absent from the served tree -- the</span>
-<span class="sd">    structural mechanics that tests/unit_tests/epics/pvi/test_pvi.py&#39;s</span>
-<span class="sd">    Block1-Block5 classes exercise only against a *mocked* PVI tree.</span>
-<span class="sd">    Construct with `with_pvi=True`.</span>
+<span class="sd">    Constructed with `auto_fill_signals=False`, so *only* these `Annotated` fields</span>
+<span class="sd">    are created — a purely declarative Device, unlike `TangoDevice(trl)` used on its</span>
+<span class="sd">    own (the default `auto_fill_signals=True` procedural/dynamic flavour, which</span>
+<span class="sd">    discovers every attribute/command on the live proxy with no annotations at all).</span>
+<span class="sd">    Both flavours connect to the exact same running `OneOfEverythingTangoDevice`</span>
+<span class="sd">    server instance and see identical values — see</span>
+<span class="sd">    `tests/system_tests_tango/test_tango_declarative_device.py`.</span>
 
-<span class="sd">    The served PVI tree also includes an `extra_devices` DeviceVector that</span>
-<span class="sd">    is deliberately *not* annotated here, to prove that PviDeviceConnector</span>
-<span class="sd">    fills in undeclared DeviceVectors of devices dynamically.</span>
+<span class="sd">    Field names must equal the server&#39;s real Tango attribute/command names (Tango</span>
+<span class="sd">    has no PvSuffix-equivalent indirection). A curated subset, not every datatype</span>
+<span class="sd">    `OneOfEverythingTangoDevice` serves (that full matrix is</span>
+<span class="sd">    `OneOfEverythingTangoDevice` itself plus the fully-dynamic `TangoDevice(trl)`</span>
+<span class="sd">    procedural flavour) — enough to demonstrate: scalar RW (`a_str`, `a_bool`), a</span>
+<span class="sd">    `StrictEnum` field (`strenum`), a `DevState`-backed enum (`my_state`),</span>
+<span class="sd">    a numeric scalar with change-detect polling params (`float64`), a spectrum/array</span>
+<span class="sd">    field (`int32_spectrum`), an image field (`float64_image`), a zero-arg</span>
+<span class="sd">    `TriggerableCommand` (`void_cmd`), and a typed `Command[P, T]` with mismatched</span>
+<span class="sd">    in/out types (`float_to_bool_cmd`).</span>
 
-<span class="sd">    Legacy list-based vector encoding (`PviTree._handle_legacy_entry`) is</span>
-<span class="sd">    deliberately not covered here: it&#39;s exclusively produced by</span>
-<span class="sd">    pandablocks-ioc&#39;s own hand-rolled PVA server, not something a</span>
-<span class="sd">    QSRV2/db-file-based IOC can construct declaratively, so it stays</span>
-<span class="sd">    covered by the existing mock-only unit test instead.</span>
+<span class="sd">    `int32_spectrum` is typed `np.int_` (platform-native width, not `np.int32`) to</span>
+<span class="sd">    match what `get_python_type` (`ophyd_async.tango.core`) actually reports for</span>
+<span class="sd">    Tango SPECTRUM attributes - it maps every signed integer Tango type to plain</span>
+<span class="sd">    `int` regardless of width (unlike its own command return-type mapping, which</span>
+<span class="sd">    is width-specific), so a width-specific annotation here would fail the</span>
+<span class="sd">    connector&#39;s datatype check even though nothing is wrong. `np.int_`/`np.float64`</span>
+<span class="sd">    are used rather than bare `int`/`float` only because `Array1D`/`np.dtype` need</span>
+<span class="sd">    an `np.generic` subclass, not because the precision matters -</span>
+<span class="sd">    `np.dtype(np.int_) == np.dtype(int)` and `np.dtype(np.float64) == np.dtype(float)`</span>
+<span class="sd">    are both `True`.</span>
+
+<span class="sd">    `TangoPolling` is given on every field even though `OneOfEverythingTangoDevice`</span>
+<span class="sd">    itself pushes Tango change events for all its attributes, because</span>
+<span class="sd">    `TangoDevice`&#39;s default `support_events=False` means the connector polls unless</span>
+<span class="sd">    told otherwise — this mirrors `ophyd_async.tango.demo.DemoMotor`&#39;s convention so</span>
+<span class="sd">    copied-and-pasted reference code keeps working against servers that don&#39;t push</span>
+<span class="sd">    events.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">signal_x</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">child</span><span class="p">:</span> <span class="n">EpicsTestPviLeafDevice</span>
-    <span class="n">device_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">]</span>
-    <span class="n">signal_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
-    <span class="n">command_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">]</span>
-    <span class="n">optional_signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></div>
+    <span class="n">a_str</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">a_bool</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">strenum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ExampleStrEnum</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">my_state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">DevStateEnum</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">float64</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)]</span>
+    <span class="n">int32_spectrum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">]],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">float64_image</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">void_cmd</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
+    <span class="n">float_to_bool_cmd</span><span class="p">:</span> <span class="n">Command</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
-
-
-<div class="viewcode-block" id="EpicsTestPviNestedDeviceMissingChild">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviNestedDeviceMissingChild</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects to the same served PVI tree as EpicsTestPviNestedDevice.</span>
-
-<span class="sd">    Declares an extra required (non-Optional) sub-device the server</span>
-<span class="sd">    doesn&#39;t actually provide -- demonstrates that connecting raises a clear</span>
-<span class="sd">    RuntimeError when a required field can&#39;t be resolved via PVI (the</span>
-<span class="sd">    mirror image of `optional_signal` above, which is allowed to be</span>
-<span class="sd">    absent).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">missing_child</span><span class="p">:</span> <span class="n">EpicsTestPviLeafDevice</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">trl</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">auto_fill_signals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 </pre></div>
 

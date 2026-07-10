@@ -37,7 +37,29 @@
     ```
 ````
 
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DEVICE_SERVERS <ophyd_async.tango.demo.DEVICE_SERVERS>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo.DEVICE_SERVERS
+    :summary:
+    ```
+````
+
 ### API
+
+````{py:data} DEVICE_SERVERS
+:canonical: ophyd_async.tango.demo.DEVICE_SERVERS
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo.DEVICE_SERVERS
+```
+
+````
 
 `````{py:class} DemoMotor(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.demo._motor.DemoMotor

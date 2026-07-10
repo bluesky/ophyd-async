@@ -55,10 +55,6 @@
   - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestTable
     :summary:
     ```
-* - {py:obj}`TestingIOC <ophyd_async.epics.testing._utils.TestingIOC>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC
-    :summary:
-    ```
 ````
 
 ### Functions
@@ -67,8 +63,12 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`generate_random_pv_prefix <ophyd_async.epics.testing._utils.generate_random_pv_prefix>`
-  - ```{autodoc2-docstring} ophyd_async.epics.testing._utils.generate_random_pv_prefix
+* - {py:obj}`generate_random_pv_prefix <ophyd_async.epics.testing._launch.generate_random_pv_prefix>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._launch.generate_random_pv_prefix
+    :summary:
+    ```
+* - {py:obj}`start_ioc <ophyd_async.epics.testing._launch.start_ioc>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._launch.start_ioc
     :summary:
     ```
 ````
@@ -81,6 +81,10 @@
 
 * - {py:obj}`CA_PVA_RECORDS <ophyd_async.epics.testing._devices.CA_PVA_RECORDS>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.CA_PVA_RECORDS
+    :summary:
+    ```
+* - {py:obj}`IOC <ophyd_async.epics.testing.IOC>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing.IOC
     :summary:
     ```
 * - {py:obj}`PVA_RECORDS <ophyd_async.epics.testing._devices.PVA_RECORDS>`
@@ -101,6 +105,16 @@
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._devices.CA_PVA_RECORDS
+```
+
+````
+
+````{py:data} IOC
+:canonical: ophyd_async.epics.testing.IOC
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing.IOC
 ```
 
 ````
@@ -920,41 +934,16 @@ Bases: {py:obj}`ophyd_async.core.Table`
 
 `````
 
-`````{py:class} TestingIOC()
-:canonical: ophyd_async.epics.testing._utils.TestingIOC
-
-```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC
-```
-
-````{py:method} add_database(db: ~pathlib.Path | str, /, **macros: str)
-:canonical: ophyd_async.epics.testing._utils.TestingIOC.add_database
-
-```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.add_database
-```
-
-````
-
-````{py:method} start()
-:canonical: ophyd_async.epics.testing._utils.TestingIOC.start
-
-```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.start
-```
-
-````
-
-````{py:method} stop()
-:canonical: ophyd_async.epics.testing._utils.TestingIOC.stop
-
-```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.stop
-```
-
-````
-
-`````
-
 ````{py:function} generate_random_pv_prefix() -> str
-:canonical: ophyd_async.epics.testing._utils.generate_random_pv_prefix
+:canonical: ophyd_async.epics.testing._launch.generate_random_pv_prefix
 
-```{autodoc2-docstring} ophyd_async.epics.testing._utils.generate_random_pv_prefix
+```{autodoc2-docstring} ophyd_async.epics.testing._launch.generate_random_pv_prefix
+```
+````
+
+````{py:function} start_ioc(script: ~pathlib.Path, *args: str) -> ~ophyd_async.testing.ManagedSubprocess
+:canonical: ophyd_async.epics.testing._launch.start_ioc
+
+```{autodoc2-docstring} ophyd_async.epics.testing._launch.start_ioc
 ```
 ````

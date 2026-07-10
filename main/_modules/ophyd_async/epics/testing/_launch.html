@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._pvi_nested_devices &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
+    <title>ophyd_async.epics.testing._launch &#8212; ophyd-async 0.19.4.dev10+gbb065cace documentation</title>
   
   
   
@@ -483,7 +483,7 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/testing/_pvi_nested_devices';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/testing/_launch';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -880,7 +880,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.testing._pvi_nested_devices</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.testing._launch</span></li>
   </ul>
 </nav>
 </div>
@@ -897,72 +897,61 @@ window.runMermaid = runMermaid;</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.testing._pvi_nested_devices</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+  <h1>Source code for ophyd_async.epics.testing._launch</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Launch this repo&#39;s EPICS IOC subprocesses.</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span>
+<span class="sd">Kept separate from the `_ioc.py` files (`ophyd_async.epics.testing`&#39;s and</span>
+<span class="sd">`ophyd_async.epics.demo`&#39;s) deliberately: those are genuinely standalone</span>
+<span class="sd">(zero `ophyd_async` imports - can be copied into or run from a bare</span>
+<span class="sd">EPICS-only venv), and importing `ophyd_async.testing` here would break that</span>
+<span class="sd">if this lived in the same file.</span>
 
-<span class="n">PVI_NESTED_RECORDS</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;_pvi_nested_records.db&quot;</span>
+<span class="sd">`start_ioc` mirrors `ophyd_async.tango.testing.start_tango_device_servers`&#39;s</span>
+<span class="sd">shape exactly - generic, doesn&#39;t know or care which IOC topology it&#39;s</span>
+<span class="sd">launching.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManagedSubprocess</span><span class="p">,</span> <span class="n">start_subprocess</span>
+
+<span class="n">_READY_MARKER</span> <span class="o">=</span> <span class="s2">&quot;iocRun: All initialization complete&quot;</span>
+<span class="n">_STOP_INPUT</span> <span class="o">=</span> <span class="s2">&quot;exit()&quot;</span>
 
 
-<div class="viewcode-block" id="EpicsTestPviLeafDevice">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviLeafDevice">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviLeafDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Leaf sub-device for `child` and `device_vector` on EpicsTestPviNestedDevice.&quot;&quot;&quot;</span>
-
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">signal_x</span><span class="p">:</span> <span class="n">TriggerableCommand</span></div>
+<div class="viewcode-block" id="generate_random_pv_prefix">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.generate_random_pv_prefix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_random_pv_prefix</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For generating random PV names in test devices.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span></div>
 
 
 
-<div class="viewcode-block" id="EpicsTestPviNestedDevice">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviNestedDevice">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviNestedDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Real-IOC-backed structural PVI test device.</span>
+<div class="viewcode-block" id="start_ioc">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.start_ioc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_ioc</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ManagedSubprocess</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an EPICS IOC subprocess by running `script` with `args`.</span>
 
-<span class="sd">    Exercises PviDeviceConnector&#39;s handling of nested sub-devices,</span>
-<span class="sd">    DeviceVector of devices, DeviceVector of signals, DeviceVector of</span>
-<span class="sd">    commands, and an Optional signal absent from the served tree -- the</span>
-<span class="sd">    structural mechanics that tests/unit_tests/epics/pvi/test_pvi.py&#39;s</span>
-<span class="sd">    Block1-Block5 classes exercise only against a *mocked* PVI tree.</span>
-<span class="sd">    Construct with `with_pvi=True`.</span>
+<span class="sd">    Mirrors `ophyd_async.tango.testing.start_tango_device_servers`&#39;s shape and</span>
+<span class="sd">    subprocess handling: rather than building the IOC&#39;s full argv inline,</span>
+<span class="sd">    this always launches a real, independently-runnable file - the exact</span>
+<span class="sd">    command a human would type by hand, so there&#39;s no separate &quot;does this</span>
+<span class="sd">    even work standalone&quot; code path to keep correct.</span>
 
-<span class="sd">    The served PVI tree also includes an `extra_devices` DeviceVector that</span>
-<span class="sd">    is deliberately *not* annotated here, to prove that PviDeviceConnector</span>
-<span class="sd">    fills in undeclared DeviceVectors of devices dynamically.</span>
-
-<span class="sd">    Legacy list-based vector encoding (`PviTree._handle_legacy_entry`) is</span>
-<span class="sd">    deliberately not covered here: it&#39;s exclusively produced by</span>
-<span class="sd">    pandablocks-ioc&#39;s own hand-rolled PVA server, not something a</span>
-<span class="sd">    QSRV2/db-file-based IOC can construct declaratively, so it stays</span>
-<span class="sd">    covered by the existing mock-only unit test instead.</span>
+<span class="sd">    :param script: The script implementing the IOC topology to host, e.g.</span>
+<span class="sd">        `ophyd_async.epics.demo.IOC` or `ophyd_async.epics.testing.IOC`.</span>
+<span class="sd">    :param args: Positional args for that script&#39;s `__main__`, e.g. `prefix`</span>
+<span class="sd">        or `prefix, str(num_channels)` - whatever it expects. Overriding</span>
+<span class="sd">        which executable actually hosts the IOC (defaulting to the bundled</span>
+<span class="sd">        `epicscorelibs.ioc`) is a command-line-only concern of that script</span>
+<span class="sd">        itself - pass `--softioc ...` as one of `args` if you need that (see</span>
+<span class="sd">        the script&#39;s own `--help`); this function doesn&#39;t thread it through.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">signal_x</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">child</span><span class="p">:</span> <span class="n">EpicsTestPviLeafDevice</span>
-    <span class="n">device_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">]</span>
-    <span class="n">signal_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
-    <span class="n">command_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">]</span>
-    <span class="n">optional_signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></div>
-
-
-
-<div class="viewcode-block" id="EpicsTestPviNestedDeviceMissingChild">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviNestedDeviceMissingChild">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviNestedDeviceMissingChild</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects to the same served PVI tree as EpicsTestPviNestedDevice.</span>
-
-<span class="sd">    Declares an extra required (non-Optional) sub-device the server</span>
-<span class="sd">    doesn&#39;t actually provide -- demonstrates that connecting raises a clear</span>
-<span class="sd">    RuntimeError when a required field can&#39;t be resolved via PVI (the</span>
-<span class="sd">    mirror image of `optional_signal` above, which is allowed to be</span>
-<span class="sd">    absent).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">missing_child</span><span class="p">:</span> <span class="n">EpicsTestPviLeafDevice</span></div>
+    <span class="n">subprocess_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">script</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">start_subprocess</span><span class="p">(</span><span class="n">subprocess_args</span><span class="p">,</span> <span class="n">_READY_MARKER</span><span class="p">,</span> <span class="n">stop_input</span><span class="o">=</span><span class="n">_STOP_INPUT</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -37,19 +37,29 @@
     ```
 ````
 
-### Functions
+### Data
 
 ````{list-table}
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`start_ioc_subprocess <ophyd_async.epics.demo._ioc.start_ioc_subprocess>`
-  - ```{autodoc2-docstring} ophyd_async.epics.demo._ioc.start_ioc_subprocess
+* - {py:obj}`IOC <ophyd_async.epics.demo.IOC>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo.IOC
     :summary:
     ```
 ````
 
 ### API
+
+````{py:data} IOC
+:canonical: ophyd_async.epics.demo.IOC
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo.IOC
+```
+
+````
 
 `````{py:class} DemoMotor(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.demo._motor.DemoMotor
@@ -247,10 +257,3 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.c
 ````
 
 `````
-
-````{py:function} start_ioc_subprocess(prefix: str, num_channels: int) -> ~ophyd_async.epics.testing.TestingIOC
-:canonical: ophyd_async.epics.demo._ioc.start_ioc_subprocess
-
-```{autodoc2-docstring} ophyd_async.epics.demo._ioc.start_ioc_subprocess
-```
-````
