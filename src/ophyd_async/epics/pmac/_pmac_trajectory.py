@@ -15,6 +15,7 @@ from ophyd_async.core import (
     AsyncStatus,
     Device,
     Reference,
+    SignalR,
     error_if_none,
     gather_dict,
     observe_value,
@@ -23,7 +24,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 
-from ._pmac_io import CS_INDEX, PmacExecuteState, PmacExecuteStatus, PmacIO
+from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO, PmacStatus
 from ._pmac_trajectory_generation import (
     PVT,
     Trajectory,
@@ -170,37 +171,32 @@ class PmacTrajectoryTriggerLogic(
                 path_length = len(path)
                 await self._append_trajectory(next_slice, path_length, motor_info)
 
-        # Ensure execute_profile in valid end state first, to avoid race condition
-        # when checking execute_status and execute_message
-        await self._ensure_trajectory_complete()
+        await self._check_profile_status(
+            self.pmac_ref().trajectory.execute_status,
+            self.pmac_ref().trajectory.execute_message,
+        )
 
-        if (
-            end_status := await self.pmac_ref().trajectory.execute_status.get_value()
-        ) != PmacExecuteStatus.SUCCESS:
-            error_message = await self.pmac_ref().trajectory.execute_message.get_value()
-            raise ValueError(
-                f"Failed PMAC trajectory execution with '{end_status}' status "
-                f"and error message: '{error_message}'"
-            )
-
-    async def _ensure_trajectory_complete(self):
-        pmac_status = None
+    async def _check_profile_status(
+        self, status_signal: SignalR, message_signal: SignalR
+    ):
+        status = None
         try:
-            async for pmac_status in observe_value(
-                self.pmac_ref().trajectory.execute_profile, done_timeout=DEFAULT_TIMEOUT
+            async for status in observe_value(
+                status_signal, done_timeout=DEFAULT_TIMEOUT
             ):
-                if pmac_status is False:
-                    break
+                if status is PmacStatus.SUCCESS:
+                    return
         except TimeoutError as exc:
-            if pmac_status is not None:
+            if status is not None:
+                message = await message_signal.get_value()
                 raise ValueError(
-                    f"PMAC profile execution state {pmac_status} "
-                    "not in valid end state of 'False'."
+                    f"PMAC profile {status_signal.name} '{status}' "
+                    f"is not in good end state of '{PmacStatus.SUCCESS}'. "
+                    f"Message reported from pmac is: '{message}'"
                 ) from exc
             else:
                 raise TimeoutError(
-                    f"Could not monitor PMAC state: "
-                    f"{self.pmac_ref().trajectory.execute_profile.source} "
+                    f"Could not monitor PMAC status: {status_signal.source} "
                 ) from exc
 
     async def _append_trajectory(
@@ -209,6 +205,11 @@ class PmacTrajectoryTriggerLogic(
         trajectory = await self._parse_trajectory(slice, path_length, motor_info, None)
         await self._set_trajectory_arrays(trajectory, motor_info)
         await self.pmac_ref().trajectory.append_profile.trigger()
+
+        await self._check_profile_status(
+            self.pmac_ref().trajectory.append_status,
+            self.pmac_ref().trajectory.append_message,
+        )
 
     async def _build_trajectory(
         self,
@@ -235,6 +236,10 @@ class PmacTrajectoryTriggerLogic(
 
         await asyncio.gather(*coros)
         await self.pmac_ref().trajectory.build_profile.trigger()
+        await self._check_profile_status(
+            self.pmac_ref().trajectory.build_status,
+            self.pmac_ref().trajectory.build_message,
+        )
 
     async def _parse_trajectory(
         self,

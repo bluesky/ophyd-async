@@ -19,12 +19,10 @@ class PmacExecuteState(SubsetEnum):
     EXECUTING = "Executing"
 
 
-class PmacExecuteStatus(SubsetEnum):
-    UNDEFINED = "Undefined"
+class PmacStatus(SubsetEnum):
     SUCCESS = "Success"
     FAILURE = "Failure"
-    ABORT = "Abort"
-    TIMEOUT = "Timeout"
+    UNDEFINED = "Undefined"
 
 
 class PmacTrajectoryIO(StandardReadable):
@@ -60,7 +58,15 @@ class PmacTrajectoryIO(StandardReadable):
         self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_triggerable_command(prefix + "ProfileBuild")
+        self.build_status = epics_signal_r(
+            PmacStatus, prefix + "ProfileBuilsStatus_RBV"
+        )
+        self.build_message = epics_signal_r(str, prefix + "ProfileBuildMessage_RBV")
         self.append_profile = epics_triggerable_command(prefix + "ProfileAppend")
+        self.append_status = epics_signal_r(
+            PmacStatus, prefix + "ProfileAppendStatus_RBV"
+        )
+        self.append_message = epics_signal_r(str, prefix + "ProfileAppendMessage_RBV")
         # This should be a SignalX, but because it is a Busy record, must
         # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
         # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
@@ -69,7 +75,7 @@ class PmacTrajectoryIO(StandardReadable):
             PmacExecuteState, prefix + "ProfileExecuteState_RBV"
         )
         self.execute_status = epics_signal_r(
-            PmacExecuteStatus, prefix + "ProfileExecuteStatus_RBV"
+            PmacStatus, prefix + "ProfileExecuteStatus_RBV"
         )
         self.execute_message = epics_signal_r(str, prefix + "ProfileExecuteMessage_RBV")
         self.abort_profile = epics_triggerable_command(prefix + "ProfileAbort")
