@@ -1644,6 +1644,7 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 
 ````{py:data} Array1D
 :canonical: ophyd_async.core._datatypes.Array1D
+:type: ~typing.TypeAlias
 :value: >
    None
 
