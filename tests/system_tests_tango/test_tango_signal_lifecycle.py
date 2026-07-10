@@ -66,9 +66,8 @@ class _MockableTestDevice(TangoDevice, StandardReadable):
     `TangoTestDevice.float64_image` looks to be the only dtype-narrowed one.
     Not fixed at the `core` level here (mock-mode support for "any-shape,
     fixed-dtype" ndarrays is a `SignalDatatype`/`SoftSignalBackend` change,
-    out of scope for this slice) - worth a follow-up issue; this local
-    subclass sidesteps it so the other 6 fields still get real mock-parity
-    coverage.
+    out of scope for this slice) - see #1335; this local subclass sidesteps
+    it so the other 6 fields still get real mock-parity coverage.
     """
 
     a_str: A[SignalRW[str], TangoPolling(0.1)]
@@ -230,9 +229,10 @@ async def test_signal_error_paths(everything_device_trl: str):
     # today: a raw `tango.DevFailed`, not `NotConnectedError`. EPICS has no
     # equivalent "whole-device proxy" connect step so doesn't share this gap
     # (`test_signals.py::test_non_existent_errors` reliably gets
-    # `NotConnectedError` for a bad PV). Worth a follow-up issue to wrap this
-    # the same way; asserting the actual current behaviour here rather than
-    # the behaviour this slice would like it to have.
+    # `NotConnectedError` for a bad PV). See #1336; asserting the actual
+    # current behaviour here rather than the behaviour this slice would
+    # like it to have - update this to `pytest.raises(NotConnectedError)`
+    # once that's fixed.
     missing_trl = everything_device_trl.rsplit("/", 1)[0] + "/no-such-device#dbase=no"
     missing = TangoTestDevice(missing_trl, name="missing")
     with pytest.raises(tango.DevFailed):
