@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
+from tango import DevFailed as TangoDevFailed
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -13,6 +14,7 @@ from ophyd_async.core import (
     DeviceFiller,
     DeviceVector,
     LazyMock,
+    NotConnectedError,
     Signal,
 )
 
@@ -132,7 +134,10 @@ class TangoDeviceConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-        proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        try:
+            proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        except TangoDevFailed as ex:
+            raise NotConnectedError(f"tango://{self.trl}") from ex
         self.proxy = proxy
         children = sorted(
             set().union(proxy.get_attribute_list()).union(proxy.get_command_list())

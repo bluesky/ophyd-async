@@ -24,10 +24,15 @@ from typing import Annotated as A
 
 import numpy as np
 import pytest
-import tango
 from bluesky.protocols import Location
 
-from ophyd_async.core import Array1D, DeviceVector, SignalRW, StandardReadable
+from ophyd_async.core import (
+    Array1D,
+    DeviceVector,
+    NotConnectedError,
+    SignalRW,
+    StandardReadable,
+)
 from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 from ophyd_async.tango.testing import ExampleStrEnum, TangoTestDevice
 from ophyd_async.testing import MonitorQueue, approx_value
@@ -260,20 +265,8 @@ async def test_signal_error_paths(everything_device_trl: str):
         await device.strenum.set("NOT_A_REAL_CHOICE")
 
     # A well-formed TRL (real host:port, so PyTango accepts the syntax) but
-    # for a device name nothing is serving. Unlike a bad *attribute* TRL
-    # (wrapped into `NotConnectedError` by `wait_for_connection`, since it
-    # fails once inside the per-child dispatch in `connect_real`), a bad
-    # *device* TRL fails one statement earlier - the `AsyncDeviceProxy(trl)`
-    # call at the very top of `TangoDeviceConnector.connect_real`, before
-    # there's any child to dispatch through - so it's genuinely unwrapped
-    # today: a raw `tango.DevFailed`, not `NotConnectedError`. EPICS has no
-    # equivalent "whole-device proxy" connect step so doesn't share this gap
-    # (`test_signals.py::test_non_existent_errors` reliably gets
-    # `NotConnectedError` for a bad PV). See #1336; asserting the actual
-    # current behaviour here rather than the behaviour this slice would
-    # like it to have - update this to `pytest.raises(NotConnectedError)`
-    # once that's fixed.
+    # for a device name nothing is serving.
     missing_trl = everything_device_trl.rsplit("/", 1)[0] + "/no-such-device#dbase=no"
     missing = TangoTestDevice(missing_trl, name="missing")
-    with pytest.raises(tango.DevFailed):
+    with pytest.raises(NotConnectedError):
         await missing.connect(timeout=0.5)
