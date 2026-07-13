@@ -4,7 +4,7 @@ from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, Triggerabl
 class MetaWriterIO(Device):
     """Ophyd-async implementation of a MetaWriter Odin Subdevice."""
 
-    stop: TriggerableCommand
+    stop_: TriggerableCommand
     file_prefix: SignalRW[str]
     directory: SignalRW[str]
     acquisition_id: SignalRW[str]

@@ -73,7 +73,7 @@ class OdinDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         await asyncio.gather(
             self.odin.fp.stop_writing.trigger(),
-            self.odin.mw.stop.trigger(),
+            self.odin.mw.stop_.trigger(),
         )
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:

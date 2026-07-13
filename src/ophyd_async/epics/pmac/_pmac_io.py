@@ -19,6 +19,12 @@ class PmacExecuteState(SubsetEnum):
     EXECUTING = "Executing"
 
 
+class PmacStatus(SubsetEnum):
+    SUCCESS = "Success"
+    FAILURE = "Failure"
+    UNDEFINED = "Undefined"
+
+
 class PmacTrajectoryIO(StandardReadable):
     """Device that moves a PMAC Motor record.
 
@@ -52,7 +58,15 @@ class PmacTrajectoryIO(StandardReadable):
         self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_triggerable_command(prefix + "ProfileBuild")
+        self.build_status = epics_signal_r(
+            PmacStatus, prefix + "ProfileBuildStatus_RBV"
+        )
+        self.build_message = epics_signal_r(str, prefix + "ProfileBuildMessage_RBV")
         self.append_profile = epics_triggerable_command(prefix + "ProfileAppend")
+        self.append_status = epics_signal_r(
+            PmacStatus, prefix + "ProfileAppendStatus_RBV"
+        )
+        self.append_message = epics_signal_r(str, prefix + "ProfileAppendMessage_RBV")
         # This should be a SignalX, but because it is a Busy record, must
         # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
         # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
@@ -60,6 +74,11 @@ class PmacTrajectoryIO(StandardReadable):
         self.execute_state = epics_signal_r(
             PmacExecuteState, prefix + "ProfileExecuteState_RBV"
         )
+        self.execute_status = epics_signal_r(
+            PmacStatus, prefix + "ProfileExecuteStatus_RBV"
+        )
+        self.execute_message = epics_signal_r(str, prefix + "ProfileExecuteMessage_RBV")
+        self.abort_profile = epics_triggerable_command(prefix + "ProfileAbort")
         self.abort_profile = epics_triggerable_command(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
