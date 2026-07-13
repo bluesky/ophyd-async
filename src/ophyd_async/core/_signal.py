@@ -596,37 +596,6 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             if self._matcher(value):
                 return
 
-    def timeout_error(
-        self, signal: SignalR[SignalDatatypeT], timeout: float | None
-    ) -> TimeoutError:
-        """Build the helpful, formatted `TimeoutError` for a value mismatch.
-
-        Used when `wait_for_value` gives up after seeing at least one value
-        for this checker's signal, but never one that matched: reports
-        `signal.name`, the matcher, the timeout and the last observed value,
-        so a bare, message-less `TimeoutError` never leaks out.
-        """
-        return TimeoutError(
-            f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
-            f"last value {self._last_value!r}"
-        )
-
-    def no_first_value_error(
-        self, signal: SignalR[SignalDatatypeT], timeout: float | None
-    ) -> TimeoutError:
-        """Build the helpful, formatted `TimeoutError` for no value at all.
-
-        Used when the outer wait in `set_and_wait_for_other_value` gives up
-        without ever observing a single value from this checker's signal -
-        distinct from `timeout_error`, since "didn't match, last value None"
-        would be misleading here: the real problem is more likely that the
-        signal is unconnected.
-        """
-        return TimeoutError(
-            f"{signal.name} didn't provide an initial value within {timeout}s, "
-            "is it connected?"
-        )
-
     async def wait_for_value(
         self, signal: SignalR[SignalDatatypeT], timeout: float | None
     ):
@@ -634,7 +603,10 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             async with asyncio.timeout(timeout):
                 await self._wait_for_value(signal)
         except TimeoutError as exc:
-            raise self.timeout_error(signal, timeout) from exc
+            raise TimeoutError(
+                f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
+                f"last value {self._last_value!r}"
+            ) from exc
 
 
 async def wait_for_value(
@@ -707,16 +679,15 @@ async def set_and_wait_for_other_value(
         # NOTE: this timeout races wait_task's own internal timeout (same
         # duration, started moments earlier) - whichever elapses first wins.
         # That race is harmless because each path reports its own distinct,
-        # helpful message: this outer timeout means match_signal never gave
-        # us a single value (so we report that explicitly, rather than
-        # reformatting it into wait_task's "didn't match" message), while
-        # wait_task's inner timeout means a value did arrive but never
-        # matched.
+        # helpful message.
         try:
             async with asyncio.timeout(timeout):
                 await checker.got_first_value.wait()
         except TimeoutError as exc:
-            raise checker.no_first_value_error(match_signal, timeout) from exc
+            raise TimeoutError(
+                f"{match_signal.name} didn't provide an initial value within "
+                f"{timeout}s, is it connected?"
+            ) from exc
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
