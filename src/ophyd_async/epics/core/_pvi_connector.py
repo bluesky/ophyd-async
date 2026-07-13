@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import re
 from collections.abc import Mapping
+from typing import Any
 
 from pydantic import (
     Field,
@@ -93,11 +94,11 @@ class PviDeviceConnector(DeviceConnector):
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         if isinstance(device, DeviceVector):
-            self.filler.create_device_collection_entries_to_mock(
+            self.filler.create_device_dict_entries_to_mock(
                 self.mock_device_vector_children
             )
         elif isinstance(device, DeviceMap):
-            self.filler.create_device_collection_entries_to_mock(
+            self.filler.create_device_dict_entries_to_mock(
                 self.mock_device_map_children
             )
         # Set the name of the device to name all children
@@ -129,82 +130,21 @@ class PviDeviceConnector(DeviceConnector):
             connector.pvi_tree = device_sub_tree
             connector.pvi_pv = device_sub_tree.pvi_pv
 
-        # Fill all vector sub-device
-        for (
-            vector_index,
-            vector_child,
-        ) in self.pvi_tree.vector_children.items():
-            if self.pvi_tree.is_signal_vector:
-                # DeviceVector of signals
-                if isinstance(vector_child, SignalDetails):
-                    backend = self.filler.fill_child_signal(
-                        device.name, vector_child.signal_type, vector_index
-                    )
-                    backend.read_pv = vector_child.read_pv
-                    backend.write_pv = vector_child.write_pv
-                else:
-                    raise TypeError(
-                        "Failed to fill DeviceVector. "
-                        f"Expected SignalDetails, got {type(vector_child)}"
-                    )
-            elif self.pvi_tree.is_command_vector:
-                # DeviceVector of commands
-                if isinstance(vector_child, str):
-                    backend = self.filler.fill_child_command(
-                        device.name, TriggerableCommand, vector_index
-                    )
-                    backend.write_pv = vector_child
-                else:
-                    raise TypeError(
-                        "Failed to fill DeviceVector. "
-                        f"Expected str execute PV, got {type(vector_child)}"
-                    )
-            else:
-                # DeviceVector of devices
-                if isinstance(vector_child, PviTree):
-                    connector = self.filler.fill_child_device(
-                        device.name, map_key=vector_index
-                    )
-                    connector.pvi_tree = vector_child
-                    connector.pvi_pv = vector_child.pvi_pv
-                else:
-                    raise TypeError(
-                        "Failed to fill DeviceVector. "
-                        f"Expected PviTree, got {type(vector_child)}"
-                    )
-
-        # ToDo - Compose above and this into single function.
-        # Fill all map sub-device
-        for (
-            key,
-            map_child,
-        ) in self.pvi_tree.map_children.items():
-            if self.pvi_tree.is_signal_vector:
-                # DeviceMap of signals
-                if isinstance(map_child, SignalDetails):
-                    backend = self.filler.fill_child_signal(
-                        device.name, map_child.signal_type, key
-                    )
-                    backend.read_pv = map_child.read_pv
-                    backend.write_pv = map_child.write_pv
-                else:
-                    raise TypeError(
-                        "Failed to fill DeviceMap. "
-                        f"Expected SignalDetails, got {type(map_child)}"
-                    )
-            else:
-                # DeviceVector of devices
-                if isinstance(map_child, PviTree):
-                    connector = self.filler.fill_child_device(
-                        device.name, map_key=map_child
-                    )
-                    connector.pvi_tree = map_child
-                    connector.pvi_pv = map_child.pvi_pv
-                else:
-                    raise TypeError(
-                        "Failed to fill DeviceMap. "
-                        f"Expected PviTree, got {type(map_child)}"
-                    )
+        # Fill the DeviceVector (int-keyed) and DeviceMap (str-keyed) children
+        self._fill_dict_children(
+            device,
+            self.pvi_tree.vector_children,
+            is_signal=self.pvi_tree.is_signal_vector,
+            is_command=self.pvi_tree.is_command_vector,
+            kind="DeviceVector",
+        )
+        self._fill_dict_children(
+            device,
+            self.pvi_tree.map_children,
+            is_signal=self.pvi_tree.is_signal_map,
+            is_command=self.pvi_tree.is_command_map,
+            kind="DeviceMap",
+        )
 
         # Fill all signals
         for signal_name, signal_details in self.pvi_tree.signals.items():
@@ -225,6 +165,50 @@ class PviDeviceConnector(DeviceConnector):
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_real(device, timeout, force_reconnect)
+
+    def _fill_dict_children(
+        self,
+        device: Device,
+        children: Mapping[Any, PviTree | SignalDetails | str],
+        is_signal: bool,
+        is_command: bool,
+        kind: str,
+    ) -> None:
+        """Fill the entries of a `DeviceVector` (int keys) or `DeviceMap` (str keys).
+
+        `children` maps each key to its `SignalDetails` (signal dict),
+        execute-PV `str` (command dict) or `PviTree` (device dict).
+        """
+        for key, child in children.items():
+            if is_signal:
+                if not isinstance(child, SignalDetails):
+                    raise TypeError(
+                        f"Failed to fill {kind}. "
+                        f"Expected SignalDetails, got {type(child)}"
+                    )
+                backend = self.filler.fill_child_signal(
+                    device.name, child.signal_type, key
+                )
+                backend.read_pv = child.read_pv
+                backend.write_pv = child.write_pv
+            elif is_command:
+                if not isinstance(child, str):
+                    raise TypeError(
+                        f"Failed to fill {kind}. "
+                        f"Expected str execute PV, got {type(child)}"
+                    )
+                backend = self.filler.fill_child_command(
+                    device.name, TriggerableCommand, key
+                )
+                backend.write_pv = child
+            else:
+                if not isinstance(child, PviTree):
+                    raise TypeError(
+                        f"Failed to fill {kind}. Expected PviTree, got {type(child)}"
+                    )
+                connector = self.filler.fill_child_device(device.name, map_key=key)
+                connector.pvi_tree = child
+                connector.pvi_pv = child.pvi_pv
 
 
 class SignalDetails(ConfinedModel):
@@ -353,7 +337,9 @@ class PviTree(ConfinedModel):
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
     commands: Mapping[str, str] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
-    map_children: Mapping[str, PviTree | SignalDetails] = Field(default_factory=dict)
+    map_children: Mapping[str, PviTree | SignalDetails | str] = Field(
+        default_factory=dict
+    )
     # A `str` vector_child is the execute PV of a DeviceVector of commands
     # (a "__N" entry whose only key is "x") -- see is_command_vector below.
     vector_children: Mapping[int, PviTree | SignalDetails | str] = Field(
@@ -402,7 +388,7 @@ class PviTree(ConfinedModel):
         )
 
         vector_children: dict[int, PviTree | SignalDetails | str] = {}
-        map_children: dict[str, PviTree | SignalDetails] = {}
+        map_children: dict[str, PviTree | SignalDetails | str] = {}
         # Filter vector children and map children out of stand-alone
         # devices/signals/commands ("commands" holds bare execute-PV strings for
         # "__N" entries here, i.e. a DeviceVector of commands).
@@ -469,6 +455,12 @@ class PviTree(ConfinedModel):
     def is_command_vector(self) -> bool:
         """Flags if a PviTree represents a DeviceVector of Commands."""
         return any(isinstance(v, str) for v in self.vector_children.values())
+
+    @computed_field
+    @property
+    def is_command_map(self) -> bool:
+        """Flags if a PviTree represents a DeviceMap of Commands."""
+        return any(isinstance(v, str) for v in self.map_children.values())
 
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""

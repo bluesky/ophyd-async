@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceFiller,
+    DeviceMap,
     DeviceProcessor,
     DeviceVector,
     NotConnectedError,
@@ -333,16 +334,30 @@ async def test_no_reconnect_signals_if_not_forced():
         assert parent.child1.connect.call_count == count
 
 
-def test_setitem_with_non_int_key():
-    device_vector = DeviceVector(children={})
-    with pytest.raises(TypeError, match="Expected int, got"):
-        device_vector["not_an_int"] = MagicMock(spec=Device)  # type: ignore
+@pytest.mark.parametrize(
+    "collection_cls, good_key, bad_key, match",
+    [
+        (DeviceVector, 1, "not_an_int", "Expected int, got"),
+        (DeviceMap, "a_str", 1, "Expected str, got"),
+    ],
+)
+def test_setitem_key_type_validation(collection_cls, good_key, bad_key, match):
+    collection = collection_cls(children={})
+    # A well-typed key works
+    collection[good_key] = MagicMock(spec=Device)
+    # A wrongly-typed key is rejected on entry
+    with pytest.raises(TypeError, match=match):
+        collection[bad_key] = MagicMock(spec=Device)
 
 
-def test_setitem_with_non_device_value():
-    device_vector = DeviceVector(children={})
+@pytest.mark.parametrize(
+    "collection_cls, key",
+    [(DeviceVector, 1), (DeviceMap, "a_str")],
+)
+def test_setitem_with_non_device_value(collection_cls, key):
+    collection = collection_cls(children={})
     with pytest.raises(TypeError, match="Expected Device, got"):
-        device_vector[1] = "not_a_device"
+        collection[key] = "not_a_device"
 
 
 def test_device_filler_check_filled_with_optional_signals(mock_device_and_filler):
