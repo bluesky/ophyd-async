@@ -89,18 +89,23 @@ def sim_test_context_trls(tango_servers) -> dict[str, str]:
 def pytest_collection_modifyitems(config, items):
     # Post-move (issue #1321's directory-layout decision:
     # tests/system_tests_tango/ -> tests/system_tests/tango/core/), match on
-    # the adjacent ("tango", "core") path parts rather than a substring of
-    # the raw path string - a plain "tango/core" in str(item.fspath) would
-    # silently stop matching on Windows, where fspath renders with
-    # backslashes. Using PurePath.parts (OS-appropriate splitting either
-    # way) keeps this correct regardless of platform. Belt-and-braces: the
+    # the "tango" path part rather than a substring of the raw path string -
+    # a plain "tango" in str(item.fspath) would silently stop matching on
+    # Windows, where fspath renders with backslashes, and could also false-
+    # positive on an unrelated path containing "tango" as a substring of a
+    # longer segment. Using PurePath.parts (OS-appropriate splitting either
+    # way, one part per path segment) avoids both. Matches on "tango" alone
+    # (not "tango"/"core" specifically) so this stays correct as further
+    # subdirectories are added under tests/system_tests/tango/ (e.g. future
+    # slices of issue #1321 item 5) without needing another update here -
+    # CI's --ignore for the general matrix job now covers the whole tango/
+    # tree the same way (see .github/workflows/ci.yml). Belt-and-braces: the
     # dedicated Tango CI matrix include never runs on Windows anyway, and
-    # the general job's tests/system_tests invocation now `--ignore`s this
-    # subdirectory (see .github/workflows/ci.yml) so it isn't even collected
-    # there - this skip is defense in depth in case that ever changes.
+    # that --ignore means this isn't even collected there - this skip is
+    # defense in depth in case that ever changes.
     for item in items:
         parts = PurePath(str(item.fspath)).parts
-        if any(parts[i : i + 2] == ("tango", "core") for i in range(len(parts) - 1)):
+        if "tango" in parts:
             if sys.platform.startswith(
                 "win"
             ):  # expect "win32", but open to a future change: https://mail.python.org/pipermail/patches/2000-May/000648.html

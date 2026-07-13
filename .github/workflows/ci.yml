@@ -19,11 +19,11 @@ jobs:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13", "3.14"]
-        tests-path: ["", "tests/system_tests --ignore=tests/system_tests/tango/core"]
+        tests-path: ["", "tests/system_tests --ignore=tests/system_tests/tango"]
         include:
           - runs-on: "ubuntu-latest"
             python-version: "3.11"
-            tests-path: "tests/system_tests/tango/core"
+            tests-path: "tests/system_tests/tango"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
