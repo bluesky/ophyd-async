@@ -232,13 +232,13 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```{autodoc2-docstring} ophyd_async.fastcs.odin._io.MetaWriterIO
 ```
 
-````{py:attribute} stop
-:canonical: ophyd_async.fastcs.odin._io.MetaWriterIO.stop
+````{py:attribute} stop_
+:canonical: ophyd_async.fastcs.odin._io.MetaWriterIO.stop_
 :type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.MetaWriterIO.stop
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.MetaWriterIO.stop_
 ```
 
 ````

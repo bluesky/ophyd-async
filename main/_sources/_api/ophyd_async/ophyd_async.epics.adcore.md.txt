@@ -1312,13 +1312,13 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````
 
-````{py:attribute} trigger
-:canonical: ophyd_async.epics.adcore._io.NDCircularBuffIO.trigger
+````{py:attribute} trigger_
+:canonical: ophyd_async.epics.adcore._io.NDCircularBuffIO.trigger_
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Trigger'), EpicsOptions(wait=non_zero)]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDCircularBuffIO.trigger
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDCircularBuffIO.trigger_
 ```
 
 ````

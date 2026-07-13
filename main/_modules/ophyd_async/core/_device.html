@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.19.4.dev17+g9212acab5 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.19.4.dev18+g398fb1a14 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=1c114be5"></script>
+    <script src="../../../_static/documentation_options.js?v=667c2aec"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev17+g9212acab5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev17+g9212acab5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev18+g398fb1a14 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev18+g398fb1a14 documentation - Home"/>
   
   
 </a></div>
@@ -920,6 +920,34 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">DeviceT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DeviceT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;Device&quot;</span><span class="p">)</span>
 
+<span class="n">DEVICE_RESERVED_ATTRS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;collect_asset_docs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_index&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;read_configuration&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;describe_configuration&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trigger&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;prepare&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;read&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;describe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;describe_collect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;collect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;collect_pages&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;set&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;locate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;kickoff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;complete&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;unstage&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pause&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;resume&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;clear_sub&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;check_value&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hints&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
 
 <div class="viewcode-block" id="DeviceMock">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock">[docs]</a>
@@ -1092,10 +1120,10 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
-        <span class="c1"># These are guarateed not to be devices, so don&#39;t check them</span>
+        <span class="c1"># These are guaranteed not to be devices, so don&#39;t check them</span>
         <span class="n">setattr_methods</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_not_device_attrs</span><span class="p">,</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">)</span> <span class="o">|</span> <span class="p">{</span>
             <span class="c1"># parent needs special handling</span>
-            <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="n">_fail_if_overwriting_parent</span>
+            <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="n">_fail_if_overwriting_parent</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="c1"># Assign _setattr_methods in __new__ instead of __init__,</span>
         <span class="c1"># as this is called before any __setattr__ calls are made</span>
@@ -1167,6 +1195,11 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># dictionary of setattr functions</span>
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setattr_methods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">DEVICE_RESERVED_ATTRS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` is used in one of the bluesky protocols. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Please use `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_` instead.&quot;</span>
+                <span class="p">)</span>
             <span class="c1"># First encounter, so assign correct</span>
             <span class="c1"># __setattr__ method depending on `value` type</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
