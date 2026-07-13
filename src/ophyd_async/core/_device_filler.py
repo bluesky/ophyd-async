@@ -349,8 +349,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             calling at parent device connection time before the child Device can
             be connected.
         :yields: `(connector, extras)`
-            The `DeviceConnector` that has been created for this Signal, and the list of
-            extra annotations that could be used to customize it.
+            The `DeviceConnector` that has been created for this child Device, and
+            the list of extra annotations that could be used to customize it. The
+            child Device is only constructed (with this connector) *after* the
+            caller resumes the iterator, so the caller may configure the connector
+            here (e.g. an `EpicsDeviceConnector` consuming a `PvSuffix` to set the
+            child's prefix) and the child's own signals will then be created with
+            that configuration. Any address annotations the caller handles should
+            be removed from `extras`; only `DeviceAnnotation`s (e.g.
+            `StandardReadableFormat`) may remain, as this class applies them to the
+            constructed child.
         """
         for name in list(self._uncreated_devices):
             child_type = self._uncreated_devices.pop(name)
