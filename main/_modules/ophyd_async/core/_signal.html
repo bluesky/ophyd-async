@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.19.4.dev20+ge7e678b7b documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.19.4.dev21+gb65e864d2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=2924bbda"></script>
+    <script src="../../../_static/documentation_options.js?v=a3b7b60d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev20+ge7e678b7b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev20+ge7e678b7b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev21+gb65e864d2 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev21+gb65e864d2 documentation - Home"/>
   
   
 </a></div>
@@ -1647,8 +1647,18 @@ window.runMermaid = runMermaid;</script>
 
     <span class="c1"># Put this in a try/except to ensure wait_task is cancelled when we exit</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
-            <span class="k">await</span> <span class="n">checker</span><span class="o">.</span><span class="n">got_first_value</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="c1"># NOTE: this timeout races wait_task&#39;s own internal timeout (same</span>
+        <span class="c1"># duration, started moments earlier) - whichever elapses first wins.</span>
+        <span class="c1"># That race is harmless because each path reports its own distinct,</span>
+        <span class="c1"># helpful message.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">checker</span><span class="o">.</span><span class="n">got_first_value</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t provide an initial value within &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, is it connected?&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
         <span class="c1"># Now we can start the set</span>
         <span class="n">status</span> <span class="o">=</span> <span class="n">set_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">set_value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">set_timeout</span><span class="p">)</span>
