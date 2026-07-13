@@ -404,9 +404,11 @@ async def test_set_and_wait_for_other_value_gives_helpful_error_with_no_first_va
     particular race - its clock starts ticking at (or fractionally before)
     wait_task's, since wait_task needs a trip through the event loop before
     it can start its own timer. This test pins down that the outer path
-    also raises a helpful, formatted TimeoutError, not the bare,
-    message-less one asyncio.timeout() raises by default (see PR #1342 /
-    the flaky windows CI failure that motivated this).
+    raises its own distinct, helpful TimeoutError - "didn't provide an
+    initial value" - rather than reusing the inner path's "didn't match"
+    message (which would be misleading here, since no value was ever seen),
+    and not the bare, message-less one asyncio.timeout() raises by default
+    (see PR #1342 / the flaky windows CI failure that motivated this).
     """
     set_signal = epics_signal_rw(int, "pva://signal", name="s")
     match_signal = epics_signal_rw(int, "pva://match_signal", name="m")
@@ -422,7 +424,9 @@ async def test_set_and_wait_for_other_value_gives_helpful_error_with_no_first_va
     with patch("ophyd_async.core._signal.observe_value", never_yields):
         with pytest.raises(
             asyncio.TimeoutError,
-            match=re.escape("m didn't match 20 in 0.05s, last value None"),
+            match=re.escape(
+                "m didn't provide an initial value within 0.05s, is it connected?"
+            ),
         ):
             await set_and_wait_for_other_value(
                 set_signal, 1, match_signal, 20, timeout=0.05

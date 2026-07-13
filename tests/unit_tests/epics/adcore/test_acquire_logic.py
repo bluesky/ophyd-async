@@ -37,18 +37,22 @@ async def test_acquire_logic_trigger_internal_calls_acquire(
 async def test_acquire_logic_when_arming_times_out(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    # This test is meant to exercise wait_task's own internal timeout inside
-    # set_and_wait_for_other_value (the one with the "didn't match ... last
-    # value ..." message), not the outer wait for a first value from
-    # match_signal (which resolves almost immediately regardless of this
-    # callback, since it just reports the signal's already-present current
-    # value). Give the callback's delay a large margin over DEFAULT_TIMEOUT
-    # so the match reliably doesn't happen in time (rather than racing to
-    # land right on the boundary), and keep DEFAULT_TIMEOUT itself generous
-    # so the "did we see a first value yet" phase has plenty of headroom
-    # against CI scheduling jitter and doesn't itself time out first.
+    # This test is meant to exercise wait_task's own internal "didn't match"
+    # timeout inside set_and_wait_for_other_value, not the outer "didn't
+    # provide an initial value" wait for a first value from match_signal.
+    # The mock acquire signal already has an initial value (False) present
+    # before this callback ever fires, so the outer got_first_value wait
+    # resolves almost immediately regardless of timeout size - but to make
+    # that deterministic under CI scheduling jitter (rather than a "photo
+    # finish" between the two clocks, which is what originally flaked on
+    # Windows CI - see PR #1342), give the callback's delay a large margin
+    # over DEFAULT_TIMEOUT. This makes the ratio between "time available for
+    # the initial-value observation to land" and "time before the inner
+    # match timeout fires" large, without needing to actually wait for the
+    # callback to complete (nothing awaits it - only the asyncio.sleep below
+    # drains it), so total test wall-clock time stays reasonable.
     async def sleep_for_a_bit(value):
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(1.0)
 
     callback_on_mock_put(adbase_detector.driver.acquire, sleep_for_a_bit)
 
@@ -61,7 +65,7 @@ async def test_acquire_logic_when_arming_times_out(
         ):
             await adbase_detector.trigger()
 
-    await asyncio.sleep(0.25)  # Allow background tasks to complete
+    await asyncio.sleep(1.1)  # Allow background tasks to complete
 
 
 async def test_acquire_logic_wait_for_idle_in_bad_state(

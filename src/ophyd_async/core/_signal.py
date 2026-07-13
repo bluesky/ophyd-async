@@ -599,16 +599,32 @@ class _ValueChecker(Generic[SignalDatatypeT]):
     def timeout_error(
         self, signal: SignalR[SignalDatatypeT], timeout: float | None
     ) -> TimeoutError:
-        """Build the helpful, formatted `TimeoutError` for this checker.
+        """Build the helpful, formatted `TimeoutError` for a value mismatch.
 
-        Shared by every place that gives up waiting on this checker's
-        signal, so a bare, message-less `TimeoutError` never leaks out -
-        whichever of them fires first still reports `signal.name`, the
-        matcher, the timeout and the last observed value.
+        Used when `wait_for_value` gives up after seeing at least one value
+        for this checker's signal, but never one that matched: reports
+        `signal.name`, the matcher, the timeout and the last observed value,
+        so a bare, message-less `TimeoutError` never leaks out.
         """
         return TimeoutError(
             f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
             f"last value {self._last_value!r}"
+        )
+
+    def no_first_value_error(
+        self, signal: SignalR[SignalDatatypeT], timeout: float | None
+    ) -> TimeoutError:
+        """Build the helpful, formatted `TimeoutError` for no value at all.
+
+        Used when the outer wait in `set_and_wait_for_other_value` gives up
+        without ever observing a single value from this checker's signal -
+        distinct from `timeout_error`, since "didn't match, last value None"
+        would be misleading here: the real problem is more likely that the
+        signal is unconnected.
+        """
+        return TimeoutError(
+            f"{signal.name} didn't provide an initial value within {timeout}s, "
+            "is it connected?"
         )
 
     async def wait_for_value(
@@ -690,14 +706,17 @@ async def set_and_wait_for_other_value(
     try:
         # NOTE: this timeout races wait_task's own internal timeout (same
         # duration, started moments earlier) - whichever elapses first wins.
-        # That race is harmless *as long as* both outcomes report a helpful
-        # message, so we catch a bare timeout here and reformat it rather
-        # than restructuring the control flow to avoid the race outright.
+        # That race is harmless because each path reports its own distinct,
+        # helpful message: this outer timeout means match_signal never gave
+        # us a single value (so we report that explicitly, rather than
+        # reformatting it into wait_task's "didn't match" message), while
+        # wait_task's inner timeout means a value did arrive but never
+        # matched.
         try:
             async with asyncio.timeout(timeout):
                 await checker.got_first_value.wait()
         except TimeoutError as exc:
-            raise checker.timeout_error(match_signal, timeout) from exc
+            raise checker.no_first_value_error(match_signal, timeout) from exc
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
