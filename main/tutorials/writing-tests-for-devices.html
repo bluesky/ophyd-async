@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.19.4.dev14+g3cf07c761 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=700824af"></script>
+    <script src="../_static/documentation_options.js?v=347370e4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev13+ge6c03c8e4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev14+g3cf07c761 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev14+g3cf07c761 documentation - Home"/>
   
   
 </a></div>
@@ -678,7 +678,16 @@ or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.c
         <span class="n">target</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
         <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.18</span><span class="p">),</span>
+        <span class="c1"># windows-latest CI runners intermittently overshoot asyncio.sleep(0.2)</span>
+        <span class="c1"># by well over the (already generous) 0.18s tolerance - observed</span>
+        <span class="c1"># time_elapsed values of 0.394, 0.408 and 0.424 across independent</span>
+        <span class="c1"># windows-latest/3.13 runs (PRs #1337, #1341, #1342, all within the</span>
+        <span class="c1"># same ~15 minutes). Local runs are rock solid at ~0.202s (50/50</span>
+        <span class="c1"># passes), so the extra latency is Windows scheduler/CI-load jitter,</span>
+        <span class="c1"># not a code regression. Widen only on Windows, matching the existing</span>
+        <span class="c1"># os.name == &quot;nt&quot; precedent in</span>
+        <span class="c1"># test_device.py::test_many_individual_device_connects_not_slow.</span>
+        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span> <span class="k">else</span> <span class="mf">0.18</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="c1"># Make it almost get there and check that it completes</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.5499999</span><span class="p">)</span>
