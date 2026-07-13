@@ -31,6 +31,10 @@ class TangoDevice(Device):
     :param trl: Tango resource locator, typically of the device server.
         An asynchronous DeviceProxy object will be created using the
         trl and awaited when the device is connected.
+    :param connector: A pre-built `DeviceConnector`, used when this device is
+        created as a declarative sub-device of another `TangoDevice` (the parent
+        connector builds it). When given, `trl`/`support_events`/
+        `auto_fill_signals` are ignored.
     """
 
     _trl: str = ""
@@ -41,13 +45,15 @@ class TangoDevice(Device):
         support_events: bool = False,
         name: str = "",
         auto_fill_signals: bool = True,
+        connector: DeviceConnector | None = None,
     ) -> None:
         self._trl = trl
-        connector = TangoDeviceConnector(
-            trl=trl,
-            support_events=support_events,
-            auto_fill_signals=auto_fill_signals,
-        )
+        if connector is None:
+            connector = TangoDeviceConnector(
+                trl=trl,
+                support_events=support_events,
+                auto_fill_signals=auto_fill_signals,
+            )
         super().__init__(name=name, connector=connector)
 
     def get_trl(self) -> str:
