@@ -472,7 +472,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             # Prevent shadowing bluesky protocol with new signal by
             # adding a trailing underscore
             if name in DEVICE_RESERVED_ATTRS:
-                logger.warning(
+                logger.info(
                     f"Signal `{name}` is used in one of the bluesky protocols. "
                     f"Using `{name}_` instead."
                 )
