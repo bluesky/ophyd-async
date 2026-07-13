@@ -313,7 +313,7 @@ async def merge_gathered_dicts(
             else:
                 ret[key] = result[key]
     if duplicates:
-        duplicate_keys = ", ".join(set(duplicates))
+        duplicate_keys = ", ".join(sorted(set(duplicates)))
         if duplicate_keys:
             msg = f"Duplicate keys found while merging dictionaries: {duplicate_keys}"
         else:
