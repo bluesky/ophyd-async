@@ -936,7 +936,17 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
         return {"dtype": "string", "shape": []}
     if get_origin(python_type) is Sequence:
         return {"dtype": "array", "shape": [len(value)]}
-    if issubclass(python_type, StrictEnum):
+    # Array-typed fields (Array1D[dtype], np.ndarray[Any, np.dtype[dtype]]) are
+    # types.GenericAlias instances, not plain classes - isinstance(..., type)
+    # guards issubclass() against them explicitly rather than relying on
+    # however leniently a given Python version resolves issubclass() against
+    # a GenericAlias's origin. Confirmed version-dependent: harmlessly False
+    # on 3.11/3.12 (issubclass() resolves via the alias's __origin__, e.g.
+    # np.ndarray, which isn't a StrictEnum subclass either way), but a hard
+    # TypeError ("issubclass() arg 1 must be a class") on 3.13/3.14 - only
+    # ever exercised on those versions once Tango stopped being matrix-
+    # restricted to ubuntu+3.11 (#1145).
+    if isinstance(python_type, type) and issubclass(python_type, StrictEnum):
         return {"dtype": "string", "shape": []}
     return {
         "dtype": "array",
