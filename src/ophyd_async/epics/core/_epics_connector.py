@@ -55,6 +55,34 @@ def fill_command_with_prefix(
     annotations.extend(unhandled)
 
 
+def fill_connector_with_prefix(
+    prefix: str, connector: EpicsDeviceConnector, annotations: list[Any]
+):
+    """Set a declarative sub-device's connector prefix from a [](#PvSuffix).
+
+    A declarative EPICS sub-device must be addressed with a `PvSuffix`; the child
+    connector's prefix becomes the parent prefix plus that suffix, so the child's
+    own signals connect under it. Raises a `TypeError` if no `PvSuffix` is given.
+    """
+    unhandled = []
+    suffix: str | None = None
+    while annotations:
+        annotation = annotations.pop(0)
+        if isinstance(annotation, PvSuffix):
+            # A sub-device is addressed by a single prefix; use the read suffix.
+            suffix = annotation.read_suffix
+        else:
+            unhandled.append(annotation)
+    annotations.extend(unhandled)
+    if suffix is None:
+        raise TypeError(
+            "A declarative EPICS sub-device must be given a PvSuffix to set its "
+            "prefix, but none was found in its annotations"
+        )
+    connector.prefix = prefix + suffix
+    # Any leftover annotations (e.g. StandardReadableFormat) are handled by the filler
+
+
 def fill_backend_with_prefix(
     prefix: str, backend: EpicsSignalBackend, annotations: list[Any]
 ):
@@ -100,11 +128,15 @@ class EpicsDeviceConnector(DeviceConnector):
             self.filler = DeviceFiller(
                 device,
                 signal_backend_factory=get_signal_backend_type(protocol),
-                device_connector_factory=DeviceConnector,
+                # Declarative sub-devices get their own EpicsDeviceConnector so
+                # their signals are created under a PvSuffix-derived prefix.
+                device_connector_factory=lambda: EpicsDeviceConnector(""),
                 command_backend_factory=_command_backend_factory,
             )
             for backend, annotations in self.filler.create_signals_from_annotations():
                 fill_backend_with_prefix(prefix, backend, annotations)
             for backend, annotations in self.filler.create_commands_from_annotations():
                 fill_command_with_prefix(prefix, backend, annotations)
-            list(self.filler.create_devices_from_annotations())
+            for connector, annotations in self.filler.create_devices_from_annotations():
+                # self.prefix still carries the protocol so the child re-derives it
+                fill_connector_with_prefix(self.prefix, connector, annotations)
