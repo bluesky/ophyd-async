@@ -8,7 +8,6 @@ from typing import Any, Generic, TypeVar
 
 import numpy as np
 import pytest
-from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
 from ophyd_async.tango import demo, testing
@@ -24,10 +23,10 @@ T = TypeVar("T")
 
 NUM_CHANNELS = 3
 
-
-@pytest.fixture(autouse=True)
-def reset_tango_asyncio():
-    set_global_executor(None)
+# reset_tango_asyncio (PyTango global-executor reset, autouse) moved up to
+# tests/system_tests/conftest.py - see its docstring there for why this
+# directory alone was no longer broad enough once Tango system tests
+# stopped running in their own dedicated CI job/pytest session.
 
 
 @pytest.fixture(scope="session")
@@ -97,12 +96,12 @@ def pytest_collection_modifyitems(config, items):
     # way, one part per path segment) avoids both. Matches on "tango" alone
     # (not "tango"/"core" specifically) so this stays correct as further
     # subdirectories are added under tests/system_tests/tango/ (e.g. future
-    # slices of issue #1321 item 5) without needing another update here -
-    # CI's --ignore for the general matrix job now covers the whole tango/
-    # tree the same way (see .github/workflows/ci.yml). Belt-and-braces: the
-    # dedicated Tango CI matrix include never runs on Windows anyway, and
-    # that --ignore means this isn't even collected there - this skip is
-    # defense in depth in case that ever changes.
+    # slices of issue #1321 item 5) without needing another update here.
+    # Tango system tests run as part of the regular tests/system_tests CI
+    # job now (no more dedicated matrix include/ignore, see #1145 and
+    # .github/workflows/ci.yml), which does run on windows-latest - so this
+    # skip is the only thing preventing them being collected there for real
+    # (tracked separately, #733).
     for item in items:
         parts = PurePath(str(item.fspath)).parts
         if "tango" in parts:
