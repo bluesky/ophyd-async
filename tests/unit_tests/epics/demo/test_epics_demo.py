@@ -98,7 +98,16 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.2, abs=0.18),
+        # windows-latest CI runners intermittently overshoot asyncio.sleep(0.2)
+        # by well over the (already generous) 0.18s tolerance - observed
+        # time_elapsed values of 0.394, 0.408 and 0.424 across independent
+        # windows-latest/3.13 runs (PRs #1337, #1341, #1342, all within the
+        # same ~15 minutes). Local runs are rock solid at ~0.202s (50/50
+        # passes), so the extra latency is Windows scheduler/CI-load jitter,
+        # not a code regression. Widen only on Windows, matching the existing
+        # os.name == "nt" precedent in
+        # test_device.py::test_many_individual_device_connects_not_slow.
+        time_elapsed=pytest.approx(0.2, abs=0.4 if os.name == "nt" else 0.18),
     )
     # Make it almost get there and check that it completes
     set_mock_value(mock_motor.readback, 0.5499999)

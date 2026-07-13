@@ -466,6 +466,58 @@ async def test_preserve_detector_state_no_trigger_logic_falls_back(
     assert det._prepare_ctx.trigger_info == TriggerInfo()
 
 
+async def test_preserve_detector_state_multi_collection_watcher_updates(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+):
+    """When OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES and default_trigger_info returns
+    collections_per_event > 1, trigger() should yield watcher updates that reflect
+    the correct number of collections requested."""
+
+    class MultiCollectionTriggerLogic(DetectorTriggerLogic):
+        async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+            pass
+
+        async def default_trigger_info(self) -> TriggerInfo:
+            return TriggerInfo(collections_per_event=3)
+
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    det = StandardDetector(name="multidet")
+    dl = StreamableOnlyDataLogic(tmp_path)
+    det.add_detector_logics(MultiCollectionTriggerLogic(), dl)
+    await det.stage()
+
+    # Collect watcher updates via watch() callback
+    updates: list[dict] = []
+    status = det.trigger()
+    status.watch(lambda **kwargs: updates.append(kwargs))
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+
+    # Simulate 1 collection written — watcher should report current=1
+    # and target=3, so not done yet.
+    await dl.collections_written.set(1)
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    assert not status.done
+
+    # Simulate 2 collections written — still not done
+    await dl.collections_written.set(2)
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    assert not status.done
+
+    # Simulate 3 collections written — now complete
+    await dl.collections_written.set(3)
+    await status
+
+    # Verify watcher updates all have correct target.
+    # observe_signals_value emits the initial value (0), so we get 4 updates:
+    # initial(0), set(1), set(2), set(3).
+    assert len(updates) == 4
+    for update in updates:
+        assert update["target"] == 3  # 3 collections per event
+    # Final update should show current == target
+    assert updates[-1]["current"] == 3
+
+
 async def test_kickoff_respects_prepare_bounds(tmp_path):
     """Test that multiple kickoff() calls respect prepared bounds."""
     det = StandardDetector()
