@@ -520,13 +520,13 @@ class StandardDetector(
         initial_collections_written: int,
         collections_requested: int,
         wait_for_idle: bool,
+        watcher_divisor: int = 1,
     ) -> AsyncIterator[WatcherUpdate]:
         start_time = time.monotonic()
         current_collections_written = {
             dp.collections_written_signal: initial_collections_written
             for dp in data_providers
         }
-        collections_per_event = trigger_info.collections_per_event
         target_collections_written = initial_collections_written + collections_requested
         if data_providers:
             async for sig, value in observe_signals_value(
@@ -537,9 +537,9 @@ class StandardDetector(
                 collections_written = min(current_collections_written.values())
                 yield WatcherUpdate(
                     name=self.name,
-                    current=collections_written // collections_per_event,
-                    initial=initial_collections_written // collections_per_event,
-                    target=target_collections_written // collections_per_event,
+                    current=collections_written // watcher_divisor,
+                    initial=initial_collections_written // watcher_divisor,
+                    target=target_collections_written // watcher_divisor,
                     unit="",
                     precision=0,
                     time_elapsed=time.monotonic() - start_time,
@@ -662,7 +662,8 @@ class StandardDetector(
             data_providers=ctx.streamable_data_providers,
             trigger_info=ctx.trigger_info,
             initial_collections_written=ctx.collections_written,
-            collections_requested=1,
+            collections_requested=ctx.trigger_info.collections_per_event,
+            watcher_divisor=1,
             wait_for_idle=True,
         ):
             yield update
@@ -711,6 +712,7 @@ class StandardDetector(
             initial_collections_written=ctx.collections_written,
             collections_requested=ctx.collections_requested,
             wait_for_idle=ctx.is_last_kickoff,
+            watcher_divisor=ctx.trigger_info.collections_per_event,
         ):
             yield update
 
