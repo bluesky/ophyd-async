@@ -1,22 +1,36 @@
+"""EPICS-specific Signal/backend *mechanism* coverage - not datatype coverage.
+
+Companion to `test_epics_signal_lifecycle.py`: when the old `test_signals.py`
+(~1150 lines) was deleted as part of issue #1321 item 4, most of it turned
+out to be a hand-curated per-field datatype table (now replaced by that
+file's generic `assert_signal_lifecycle` sweep) - but a genuine remainder
+wasn't datatype coverage at all, it was testing EPICS/`ophyd_async.epics`
+*mechanisms*: precision/limits edge cases, direct-bit access, PV connection
+error paths, `epics_signal_r/w/rw*` helper construction, put-completion,
+retries, deprecation warnings, and a couple of PVI mechanics not subsumed by
+the generic suite's own PVI dimension (see `test_pvi_wins_over_static_pv_suffix`/
+`test_pvi_adds_undeclared_signal_dynamically` below for why those two
+specifically still need their own test). None of this has a generic-helper
+equivalent, so it's folded forward here verbatim (or near enough) rather than
+silently dropped.
+"""
+
 import asyncio
 import os
 import re
 import time
 import typing
-from collections.abc import Awaitable, Callable
 from enum import Enum
-from pathlib import Path
-from typing import Any, Generic, Literal, TypeVar, get_args
+from typing import Any, Literal, get_args
 from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import numpy as np
 import numpy.typing as npt
 import pytest
-import yaml
 from aioca import Subscription, purge_channel_caches
 from bluesky.protocols import Location
-from event_model import Dtype, Limits, LimitsRange
+from event_model import Limits, LimitsRange
 from ophyd.signal import EpicsSignal
 
 from ophyd_async.core import (
@@ -29,8 +43,6 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
     SubsetEnum,
-    Table,
-    YamlSettingsProvider,
     observe_value,
     set_mock_value,
     soft_signal_r_and_setter,
@@ -58,45 +70,36 @@ from ophyd_async.epics.testing import (
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
-    EpicsTestSubsetEnum,
-    EpicsTestTable,
     generate_random_pv_prefix,
     start_ioc,
 )
-from ophyd_async.plan_stubs import (
-    apply_settings,
-    ensure_connected,
-    retrieve_settings,
-    store_settings,
-)
+from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.testing import MonitorQueue, assert_describe_signal
 
-T = TypeVar("T")
 Protocol = Literal["ca", "pva"]
-
 
 TIMEOUT = 30.0 if os.name == "nt" else 3.0
 
+# Can be removed once numpy >=2 is pinned.
+scalar_int_dtype = (
+    "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
+)
 
-class EpicsTestIocAndDevices:
-    """Devices for the ca:/pva: sub-topologies of the fixed EPICS test IOC catalog.
 
-    ca: and pva: prefixes each load the ca/pva db files, which now carry
-    PVI directory tags inline, so pvi_device connects at the same pva:
-    prefix as pva_device rather than needing a third IOC "device" instance.
-    Sharing one IOC process/prefix set across all three Devices keeps test
-    startup fast. See `ophyd_async.epics.testing._ioc._testing_ioc_args`
-    for how the IOC backing these prefixes is actually built.
+class MechanismIocAndDevices:
+    """Devices/PVs for the mechanism tests in this module.
+
+    A separate IOC process/prefix from `test_epics_signal_lifecycle.py`'s -
+    each system test module in this directory starts and owns its own, same
+    as that file and the old `test_signals.py` before it.
     """
 
     def __init__(self):
         self.prefix = generate_random_pv_prefix()
         ca_prefix = f"{self.prefix}ca:"
-        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
-        self.ca_device_via_pvi = EpicsTestCaDevice(ca_prefix, with_pvi=True)
         pva_prefix = f"{self.prefix}pva:"
+        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
         self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
-        self.pva_device_via_pvi = EpicsTestPvaDevice(pva_prefix, with_pvi=True)
         self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
 
     def get_device(self, protocol: str) -> EpicsTestCaDevice | EpicsTestPvaDevice:
@@ -111,25 +114,14 @@ class EpicsTestIocAndDevices:
 
 @pytest.fixture(scope="module")
 def ioc_devices():
-    ioc_devices = EpicsTestIocAndDevices()
+    ioc_devices = MechanismIocAndDevices()
     process = start_ioc(IOC, ioc_devices.prefix)
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown
     purge_channel_caches()
     process.stop()
-    # Print the IOC process output so in the case of a failing test
-    # we will see if anything on the IOC side also failed
     print(process.output)
-
-
-class ExpectedData(Generic[T]):
-    def __init__(
-        self, initial: T, put: T, dtype: Dtype, dtype_numpy: str | list, **metadata
-    ):
-        self.initial = initial
-        self.put = put
-        self.metadata = dict(dtype=dtype, dtype_numpy=dtype_numpy, **metadata)
 
 
 async def assert_monitor_then_put(
@@ -137,47 +129,49 @@ async def assert_monitor_then_put(
     initial_value: SignalDatatypeT,
     put_value: SignalDatatypeT,
     metadata: dict,
-    signal_set: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
 ):
-    if signal_set is None:
-        assert isinstance(signal, SignalRW)
-        signal_set = signal.set
+    assert isinstance(signal, SignalRW)
     await signal.connect(timeout=1)
     with MonitorQueue(signal) as q:
-        # Check initial value
         await q.assert_updates(initial_value)
-        # Check descriptor
         if isinstance(initial_value, np.ndarray):
             shape = list(initial_value.shape)
-        elif isinstance(initial_value, list | Table):
-            shape = [len(initial_value)]
         else:
             shape = []
         await assert_describe_signal(signal, shape=shape, **metadata)
-        # Put to new value and check it
-        await signal_set(put_value)
+        await signal.set(put_value)
         await q.assert_updates(put_value)
 
 
-# Can be removed once numpy >=2 is pinned.
-scalar_int_dtype = (
-    "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
-)
-CA_PVA_INFERRED = {
-    "a_int": ExpectedData(
-        42,
-        43,
-        "integer",
-        scalar_int_dtype,
-        limits=Limits(
-            control=LimitsRange(low=10, high=90),
-            warning=LimitsRange(low=5, high=96),
-            alarm=LimitsRange(low=2, high=98),
-            display=LimitsRange(low=0, high=100),
-        ),
-        units="",
+# --- longstr/longstr2/bool_unnamed/float_prec_0: fields whose whole point is
+# an EPICS-specific quirk (long-string encoding, an unnamed-choices bo record,
+# 0-precision-as-int), not a "one more datatype" data point - kept as
+# overrides on top of the generic sweep rather than folded into it.
+
+
+class _Quirk:
+    def __init__(self, initial, put, dtype, dtype_numpy, **metadata):
+        self.initial = initial
+        self.put = put
+        self.metadata = dict(dtype=dtype, dtype_numpy=dtype_numpy, **metadata)
+
+
+QUIRK_FIELDS: dict[str, _Quirk] = {
+    "longstr": _Quirk(
+        "a string that is just longer than forty characters",
+        "another string that is just longer than forty characters",
+        "string",
+        "|S40",
     ),
-    "partialint": ExpectedData(
+    "longstr2": _Quirk(
+        "a string that is just longer than forty characters",
+        "another string that is just longer than forty characters",
+        "string",
+        "|S40",
+    ),
+    "bool_unnamed": _Quirk(True, False, "boolean", dtype_numpy="|b1"),
+    "float_prec_0": _Quirk(3, 4, "integer", scalar_int_dtype, units="mm"),
+    "partialint": _Quirk(
         42,
         43,
         "integer",
@@ -189,7 +183,7 @@ CA_PVA_INFERRED = {
         ),
         units="",
     ),
-    "lessint": ExpectedData(
+    "lessint": _Quirk(
         42,
         43,
         "integer",
@@ -204,269 +198,50 @@ CA_PVA_INFERRED = {
         ),
         units="",
     ),
-    "a_float": ExpectedData(3.141, 43.5, "number", "<f8", precision=1, units="mm"),
-    "a_str": ExpectedData("hello", "goodbye", "string", "|S40"),
-    "uint8a": ExpectedData(
-        np.array([0, 255], dtype=np.uint8),
-        np.array([218], dtype=np.uint8),
-        "array",
-        "|u1",
-        units="",
-    ),
-    "int16a": ExpectedData(
-        np.array([-32768, 32767], dtype=np.int16),
-        np.array([-855], dtype=np.int16),
-        "array",
-        "<i2",
-        units="",
-    ),
-    "int32a": ExpectedData(
-        np.array([-2147483648, 2147483647], dtype=np.int32),
-        np.array([-2], dtype=np.int32),
-        "array",
-        "<i4",
-        units="",
-    ),
-    "float32a": ExpectedData(
-        np.array([0.000002, -123.123], dtype=np.float32),
-        np.array([1.0], dtype=np.float32),
-        "array",
-        "<f4",
-        units="",
-        precision=0,
-    ),
-    "float64a": ExpectedData(
-        np.array([0.1, -12345678.123], dtype=np.float64),
-        np.array([0.2], dtype=np.float64),
-        "array",
-        "<f8",
-        units="",
-        precision=0,
-    ),
-    "stra": ExpectedData(["five", "six", "seven"], ["nine", "ten"], "array", "|S40"),
 }
-PVA_INFERRED = {
-    "int8a": ExpectedData(
-        np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
-        np.array([-8, 3, 44], dtype=np.int8),
-        "array",
-        "|i1",
-        units="",
-    ),
-    "uint16a": ExpectedData(
-        np.array([0, 65535, 0, 1, 2, 3, 4], dtype=np.uint16),
-        np.array([5666], dtype=np.uint16),
-        "array",
-        "<u2",
-        units="",
-    ),
-    "uint32a": ExpectedData(
-        np.array([0, 4294967295, 0, 1, 2, 3, 4], dtype=np.uint32),
-        np.array([1022233], dtype=np.uint32),
-        "array",
-        "<u4",
-        units="",
-    ),
-    "int64a": ExpectedData(
-        np.array([-(2**63 - 1), 2**63 - 1, 0, 1, 2, 3, 4], dtype=np.int64),
-        np.array([-3], dtype=np.int64),
-        "array",
-        "<i8",
-        units="",
-    ),
-    "uint64a": ExpectedData(
-        np.array([0, 2**63 - 1, 0, 1, 2, 3, 4], dtype=np.uint64),
-        np.array([995444], dtype=np.uint64),
-        "array",
-        "<u8",
-        units="",
-    ),
-}
-
-
-@pytest.mark.timeout(TIMEOUT)
-@pytest.mark.parametrize(
-    "protocol,name,data",
-    [("ca", k, v) for k, v in CA_PVA_INFERRED.items()]  # ca/pva shared for ca
-    + [("pva", k, v) for k, v in CA_PVA_INFERRED.items()]  # ca/pva shared for pva
-    + [("pva", k, v) for k, v in PVA_INFERRED.items()],  # pva only
-)
-async def test_epics_get_put_monitor_for_inferred_types(
-    ioc_devices: EpicsTestIocAndDevices,
-    protocol: Protocol,
-    name: str,
-    data: ExpectedData,
-):
-    # With the given datatype, check we have the correct initial value and putting
-    # works
-    device_signal = ioc_devices.get_signal(protocol, name)
-    await assert_monitor_then_put(device_signal, data.initial, data.put, data.metadata)
-    # With datatype guessed from CA/PVA, check we can set it back to the initial value
-    guess_signal = epics_signal_rw(None, device_signal.source)  # type: ignore
-    await assert_monitor_then_put(guess_signal, data.put, data.initial, data.metadata)
-
-
-CA_PVA_OVERRIDE = {
-    "longstr": ExpectedData(
-        "a string that is just longer than forty characters",
-        "another string that is just longer than forty characters",
-        "string",
-        "|S40",
-    ),
-    "longstr2": ExpectedData(
-        "a string that is just longer than forty characters",
-        "another string that is just longer than forty characters",
-        "string",
-        "|S40",
-    ),
-    "a_bool": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
-    "bool_unnamed": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
-    "enum": ExpectedData(
-        EpicsTestEnum.B,
-        EpicsTestEnum.C,
-        "string",
-        "|S40",
-        choices=["Aaa", "Bbb", "Ccc"],
-    ),
-    "subset_enum": ExpectedData(
-        EpicsTestSubsetEnum.B,
-        EpicsTestSubsetEnum.A,
-        "string",
-        "|S40",
-        choices=["Aaa", "Bbb", "Ccc"],
-    ),
-    "float_prec_0": ExpectedData(3, 4, "integer", scalar_int_dtype, units="mm"),
-}
-PVA_OVERRIDE = {}
 
 
 @pytest.mark.timeout(TIMEOUT + 0.6)
-@pytest.mark.parametrize(
-    "protocol,name,data",
-    [("ca", k, v) for k, v in CA_PVA_OVERRIDE.items()]  # ca/pva shared for ca
-    + [("pva", k, v) for k, v in CA_PVA_OVERRIDE.items()]  # ca/pva shared for pva
-    + [("pva", k, v) for k, v in PVA_OVERRIDE.items()],  # pva only
-)
-async def test_epics_get_put_monitor_for_override_types(
-    ioc_devices: EpicsTestIocAndDevices,
-    protocol: Protocol,
-    name: str,
-    data: ExpectedData,
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+@pytest.mark.parametrize("name,data", list(QUIRK_FIELDS.items()))
+async def test_epics_quirk_fields_get_put_monitor(
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol, name: str, data: _Quirk
 ):
-    # With the given datatype, check we have the correct initial value and putting
-    # works
-    device_signal = ioc_devices.get_signal(protocol, name)
-    await assert_monitor_then_put(device_signal, data.initial, data.put, data.metadata)
-    # Then using the same signal, check that putting back works
-    await assert_monitor_then_put(device_signal, data.put, data.initial, data.metadata)
-
-
-def _example_table_dtype_numpy(guess: bool) -> list:
-    return [
-        # natively bool fields are uint8, so if we don't provide a Table
-        # subclass to specify bool, that is what we get
-        ("bool", "|u1" if guess else "|b1"),
-        ("int", "<i4"),
-        ("float", "<f8"),
-        ("str", "|S40"),
-        ("enum", "|S40"),
-    ]
+    signal = ioc_devices.get_signal(protocol, name)
+    await assert_monitor_then_put(signal, data.initial, data.put, data.metadata)
+    # Put back, proving the round trip works in both directions.
+    await assert_monitor_then_put(signal, data.put, data.initial, data.metadata)
 
 
 @pytest.mark.timeout(TIMEOUT)
-async def test_pva_table(ioc_devices: EpicsTestIocAndDevices):
-    initial = EpicsTestTable(
-        a_bool=np.array([False, False, True, True], np.bool_),
-        a_int=np.array([1, 8, -9, 32], np.int32),
-        a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-        a_str=["Hello", "World", "Foo", "Bar"],
-        a_enum=[EpicsTestEnum.A, EpicsTestEnum.B, EpicsTestEnum.A, EpicsTestEnum.C],
-    )
-    put = EpicsTestTable(
-        a_bool=np.array([True, False], np.bool_),
-        a_int=np.array([-5, 32], np.int32),
-        a_float=np.array([8.5, -6.97], np.float64),
-        a_str=["Hello", "Bat"],
-        a_enum=[EpicsTestEnum.C, EpicsTestEnum.B],
-    )
-    dtype_numpy = [
-        ("a_bool", "|b1"),
-        ("a_int", "<i4"),
-        ("a_float", "<f8"),
-        ("a_str", "|S40"),
-        ("a_enum", "|S40"),
-    ]
-    signal = ioc_devices.pva_device.table
-    await assert_monitor_then_put(
-        signal,
-        initial,
-        put,
-        {"dtype": "array", "dtype_numpy": dtype_numpy},
-    )
-    initial_plain_table = Table(
-        a_bool=np.array([0, 0, 1, 1], np.uint8),
-        a_int=np.array([1, 8, -9, 32], np.int32),
-        a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-        a_str=["Hello", "World", "Foo", "Bar"],
-        a_enum=["Aaa", "Bbb", "Aaa", "Ccc"],
-    )
-    put_plain_table = Table(
-        a_bool=np.array([1, 0], np.uint8),
-        a_int=np.array([-5, 32], np.int32),
-        a_float=np.array([8.5, -6.97], np.float64),
-        a_str=["Hello", "Bat"],
-        a_enum=["Ccc", "Bbb"],
-    )
-    dtype_numpy_plain_table = [
-        # Plain tables will use the underlying epics datatype, in this
-        # case uint8
-        ("a_bool", "|u1"),
-        ("a_int", "<i4"),
-        ("a_float", "<f8"),
-        ("a_str", "|S40"),
-        ("a_enum", "|S40"),
-    ]
-    await assert_monitor_then_put(
-        epics_signal_rw(None, signal.source),  # type: ignore
-        put_plain_table,
-        initial_plain_table,
-        {"dtype": "array", "dtype_numpy": dtype_numpy_plain_table},
-    )
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_mbb_direct_bit_access(
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
+):
+    """`.B0` field suffix syntax reads/writes a single bit of an
+    mbbiDirect/mbboDirect record directly, decoded as bool -
+    `mbb_direct_bit_r`/`mbb_direct_bit` exercise the read-only and
+    read-write sides of this respectively (different underlying records,
+    not a read/readback pair of the same one)."""
+    device = ioc_devices.get_device(protocol)
+    await device.mbb_direct_bit_r.connect()
+    await device.mbb_direct_bit.connect()
+    assert isinstance(await device.mbb_direct_bit_r.get_value(), bool)
 
-
-@pytest.mark.timeout(TIMEOUT)
-async def test_pva_ntndarray(ioc_devices: EpicsTestIocAndDevices):
-    data = ExpectedData(np.zeros((2, 3)), np.arange(6).reshape((2, 3)), "array", "<i8")
-    signal = ioc_devices.pva_device.ntndarray
-
-    # Backdoor into the "raw" data underlying the NDArray in QSrv
-    # not supporting direct writes to NDArray at the moment.
-    raw_signal = epics_signal_rw(Array1D[np.int64], signal.source + ":data")
-    await raw_signal.connect()
-
-    async def signal_set(v):
-        await raw_signal.set(v.flatten())
-
-    await assert_monitor_then_put(
-        signal, data.initial, data.put, data.metadata, signal_set
-    )
-    await assert_monitor_then_put(
-        signal, data.put, data.initial, data.metadata, signal_set
-    )
-
-
-@pytest.mark.timeout(TIMEOUT)
-async def test_writing_to_ndarray_raises_typeerror(ioc_devices: EpicsTestIocAndDevices):
-    signal = epics_signal_rw(np.ndarray, ioc_devices.pva_device.ntndarray.source)
-    await signal.connect()
-    with pytest.raises(TypeError):
-        await signal.set(np.zeros((6,), dtype=np.int64))
+    initial = await device.mbb_direct_bit.get_value()
+    assert isinstance(initial, bool)
+    await device.mbb_direct_bit.set(not initial)
+    assert await device.mbb_direct_bit.get_value() is (not initial)
+    await device.mbb_direct_bit.set(initial)
 
 
 @pytest.mark.timeout(TIMEOUT)
 async def test_invalid_enum_choice_raises_valueerror(
-    ioc_devices: EpicsTestIocAndDevices,
+    ioc_devices: MechanismIocAndDevices,
 ):
+    """enum_str_fallback exercises the fallback-to-str path for an mbb
+    record with no declared StrictEnum/SubsetEnum - invalid choices still
+    raise ValueError, with a message naming both the PV and valid choices."""
     signal = ioc_devices.ca_device.enum_str_fallback
     await signal.connect()
     with pytest.raises(ValueError) as exc:
@@ -480,7 +255,7 @@ async def test_invalid_enum_choice_raises_valueerror(
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_typing_sequence_str_signal_connects(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     # Explicitly test that we can connect to a typing.Sequence[str] signal
     # rather than a collections.abc.Sequence[str] which is more normal
@@ -491,7 +266,7 @@ async def test_typing_sequence_str_signal_connects(
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_error_raised_on_disconnected_pv(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     signal = epics_signal_rw(bool, ioc_devices.get_pv(protocol, "bool"))
     await signal.connect()
@@ -618,7 +393,7 @@ def test_enum_equality():
     ],
 )
 async def test_backend_wrong_type_errors(
-    ioc_devices: EpicsTestIocAndDevices, typ, suff, errors, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, typ, suff, errors, protocol: Protocol
 ):
     signal = epics_signal_rw(typ, ioc_devices.get_pv(protocol, suff))
     with pytest.raises(TypeError) as exc:
@@ -630,7 +405,7 @@ async def test_backend_wrong_type_errors(
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_backend_put_enum_string(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     signal = ioc_devices.get_signal(protocol, "enum2")
     await signal.connect()
@@ -648,7 +423,7 @@ async def test_backend_put_enum_string(
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_non_existent_errors(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     signal = epics_signal_rw(str, "non-existent")
     with pytest.raises(NotConnectedError):
@@ -745,7 +520,7 @@ def test_signal_helpers_explicit_read_timeout():
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_signals_created_for_not_prec_0_float_cannot_use_int(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     sig = epics_signal_rw(int, ioc_devices.get_pv(protocol, "float_prec_1"))
     with pytest.raises(
@@ -758,7 +533,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_bool_works_for_mismatching_enums(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     pv_name = ioc_devices.get_pv(protocol, "bool")
     sig = epics_signal_rw(bool, pv_name, pv_name + "_unnamed")
@@ -767,7 +542,7 @@ async def test_bool_works_for_mismatching_enums(
 
 @pytest.mark.timeout(TIMEOUT)
 async def test_can_read_using_ophyd_async_then_ophyd(
-    RE, ioc_devices: EpicsTestIocAndDevices
+    RE, ioc_devices: MechanismIocAndDevices
 ):
     ophyd_async_sig = epics_signal_rw(float, ioc_devices.get_pv("ca", "float_prec_1"))
     await ophyd_async_sig.connect()
@@ -789,7 +564,7 @@ def test_signal_module_emits_deprecation_warning():
 @pytest.mark.timeout(TIMEOUT + 0.6)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_observe_ticking_signal_with_busy_loop(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     sig = epics_signal_rw(int, ioc_devices.get_pv("ca", "ticking"))
     await sig.connect()
@@ -817,7 +592,7 @@ async def test_observe_ticking_signal_with_busy_loop(
 )
 @pytest.mark.timeout(TIMEOUT + 0.6)
 async def test_all_updates_settable_with_environment_variable(
-    ioc_devices: EpicsTestIocAndDevices,
+    ioc_devices: MechanismIocAndDevices,
     all_updates: Any,
     expected_all_updates: bool,
 ):
@@ -833,7 +608,7 @@ async def test_all_updates_settable_with_environment_variable(
 
 @pytest.mark.timeout(TIMEOUT + 0.6)
 async def test_all_updates_defaults_to_true(
-    ioc_devices: EpicsTestIocAndDevices,
+    ioc_devices: MechanismIocAndDevices,
 ):
     assert await default_all_updates(ioc_devices.get_pv("ca", "ticking"))
 
@@ -853,40 +628,10 @@ async def default_all_updates(pv: str) -> bool:
         sig.clear_sub(lambda v: ...)
 
 
-HERE = Path(__file__).absolute().parent
-
-
-@pytest.mark.timeout(TIMEOUT + 0.5)
-@pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_retrieve_apply_store_settings(
-    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol, tmp_path
-):
-    tmp_provider = YamlSettingsProvider(tmp_path)
-    expected_provider = YamlSettingsProvider(HERE)
-    device = ioc_devices.get_device(protocol)
-
-    def a_plan():
-        yield from ensure_connected(device)
-        settings = yield from retrieve_settings(
-            expected_provider, f"test_yaml_save_{protocol}", device
-        )
-        yield from apply_settings(settings)
-        yield from store_settings(tmp_provider, "test_file", device)
-        with open(tmp_path / "test_file.yaml") as actual_file:
-            with open(HERE / f"test_yaml_save_{protocol}.yaml") as expected_file:
-                # If this test fails because you added a signal, then you can regenerate
-                # the test data with:
-                # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_store_sett0/test_file.yaml tests/epics/signal/test_yaml_save_ca.yaml  # noqa: E501
-                # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_store_sett1/test_file.yaml tests/epics/signal/test_yaml_save_pva.yaml  # noqa: E501
-                assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
-
-    RE(a_plan())
-
-
 @pytest.mark.timeout(TIMEOUT + 0.5)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_put_completion(
-    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+    RE, ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
     # Check that we can put to an epics signal and wait for put completion
     slow_seq_pv = ioc_devices.get_pv(protocol, "slowseq")
@@ -913,7 +658,7 @@ async def test_put_completion(
 
 @pytest.mark.timeout(TIMEOUT + 0.5)
 async def test_setting_with_none_uses_initial_value_of_pv(
-    ioc_devices: EpicsTestIocAndDevices,
+    ioc_devices: MechanismIocAndDevices,
 ):
     sig_rw = epics_signal_rw(int, ioc_devices.get_pv("pva", "slowseq"))
     await sig_rw.connect()
@@ -935,7 +680,7 @@ async def test_setting_with_none_uses_initial_value_of_pv(
 
 @pytest.mark.timeout(TIMEOUT + 0.5)
 async def test_signal_retries_when_timeout(
-    ioc_devices: EpicsTestIocAndDevices,
+    ioc_devices: MechanismIocAndDevices,
 ):
     # put callback on slowseq in 0.5s, so if waited, this will fail to set
     sig_rw_times_out = epics_signal_rw(
@@ -952,7 +697,7 @@ async def test_signal_retries_when_timeout(
 
 
 async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
-    RE, ioc_devices: EpicsTestIocAndDevices
+    RE, ioc_devices: MechanismIocAndDevices
 ):
     sim_sig, sim_sig_setter = soft_signal_r_and_setter(float)
     real_sig = epics_signal_rw(float, ioc_devices.get_pv("ca", "float_prec_1"))
@@ -970,7 +715,7 @@ async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 @pytest.mark.parametrize("mock", [True, False])
 def test_subscribe_works_under_re_and_fails_outside(
-    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol, mock: bool
+    RE, ioc_devices: MechanismIocAndDevices, protocol: Protocol, mock: bool
 ):
     s1 = epics_signal_r(float, ioc_devices.get_pv(protocol, "float"), "s1")
     s2 = epics_signal_r(float, ioc_devices.get_pv(protocol, "float"), "s2")
@@ -1001,22 +746,15 @@ def test_subscribe_works_under_re_and_fails_outside(
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_command_backends_accept_enum(
-    ioc_devices: EpicsTestIocAndDevices, protocol
+    ioc_devices: MechanismIocAndDevices, protocol
 ):
     triggerable_enum = epics_triggerable_command(ioc_devices.get_pv(protocol, "enum"))
     await triggerable_enum.connect()
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_go_command_on_device(ioc_devices: EpicsTestIocAndDevices, protocol):
-    device = ioc_devices.get_device(protocol)
-    await device.go.connect()
-    await device.go.trigger()
-
-
-@pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_command_backends_raise_with_float(
-    ioc_devices: EpicsTestIocAndDevices, protocol
+    ioc_devices: MechanismIocAndDevices, protocol
 ):
     triggerable_float = epics_triggerable_command(
         ioc_devices.get_pv(protocol, "float_prec_1")
@@ -1025,30 +763,22 @@ async def test_command_backends_raise_with_float(
         await triggerable_float.connect()
 
 
-# --- Generic PVI backend: PviDeviceConnector-discovered EpicsTestPviDevice ---
-# Full get/put/monitor/error-path coverage for every transport, including
-# PVI, lands with the Signal-level system test suite rewrite; these check
-# PVI-specific mechanics that the CA/PVA devices above don't exercise:
-# SignalR/SignalW/SignalRW construction from the "r"/"w"/"rw" PVI
-# designators, PVI winning over a statically-configured PvSuffix, and
-# undeclared PVI entries being added to the Device dynamically.
+# --- PVI mechanics not subsumed by test_epics_signal_lifecycle.py's own PVI
+# dimension. That file's `pvi=True` cases connect EpicsTestCaDevice/
+# EpicsTestPvaDevice - the same static Devices as their non-PVI cases - via
+# PVI discovery instead, proving the datatype coverage carries over. These
+# two check PVI-*specific* mechanics with no non-PVI equivalent to piggyback
+# on, so they still need EpicsTestPviDevice directly. The old file's other
+# PVI-specific tests (test_pvi_scalar_signal_kinds, test_pvi_table,
+# test_pvi_ntndarray, test_pvi_command) are genuinely subsumed - the r/w/rw
+# signal kinds, table, ntndarray and go command they checked are now all
+# exercised through the pvi=True dimension in test_epics_signal_lifecycle.py.
 
 
 @pytest.fixture
-async def pvi_device(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestPviDevice:
+async def pvi_device(ioc_devices: MechanismIocAndDevices) -> EpicsTestPviDevice:
     await ioc_devices.pvi_device.connect(timeout=TIMEOUT)
     return ioc_devices.pvi_device
-
-
-async def test_pvi_scalar_signal_kinds(pvi_device: EpicsTestPviDevice):
-    # a_float/wo_float both resolve to the same underlying "float" record:
-    # the PVI r/w/rw designator only controls which Signal type gets built.
-    await pvi_device.a_float.set(1.5)
-    assert await pvi_device.a_float.get_value() == 1.5
-    await pvi_device.wo_float.set(2.5)
-    # mbb_direct_bit_r is a genuine SignalR-only field, reused directly from
-    # EpicsTestCaDevice's own PVI mirror entry (not a synthetic PVI-only one).
-    assert isinstance(await pvi_device.mbb_direct_bit_r.get_value(), bool)
 
 
 async def test_pvi_wins_over_static_pv_suffix(pvi_device: EpicsTestPviDevice):
@@ -1059,95 +789,9 @@ async def test_pvi_wins_over_static_pv_suffix(pvi_device: EpicsTestPviDevice):
     assert await pvi_device.overridden_float.get_value() == 4.5
 
 
-async def test_pvi_table(pvi_device: EpicsTestPviDevice):
-    table = await pvi_device.table.get_value()
-    assert isinstance(table, EpicsTestTable)
-    np.testing.assert_array_equal(table.a_bool, [False, False, True, True])
-    np.testing.assert_array_equal(table.a_int, [1, 8, -9, 32])
-    np.testing.assert_array_equal(table.a_float, [1.8, 8.2, -6, 32.9887])
-    assert list(table.a_str) == ["Hello", "World", "Foo", "Bar"]
-    assert list(table.a_enum) == [
-        EpicsTestEnum.A,
-        EpicsTestEnum.B,
-        EpicsTestEnum.A,
-        EpicsTestEnum.C,
-    ]
-
-
-async def test_pvi_ntndarray(pvi_device: EpicsTestPviDevice):
-    value = await pvi_device.ntndarray.get_value()
-    assert isinstance(value, np.ndarray)
-    assert value.shape == (2, 3)
-
-
-async def test_pvi_command(pvi_device: EpicsTestPviDevice):
-    await pvi_device.go.trigger()
-
-
 async def test_pvi_adds_undeclared_signal_dynamically(pvi_device: EpicsTestPviDevice):
     # extra_int has a PVI entry but is not an annotation on EpicsTestPviDevice
     assert "extra_int" not in EpicsTestPviDevice.__annotations__
     extra_int = pvi_device.extra_int  # type: ignore[attr-defined]
     assert isinstance(extra_int, SignalRW)
     assert await extra_int.get_value() == 42
-
-
-# --- PVI as a full mirror of EpicsTestCaDevice/EpicsTestPvaDevice ---
-# Every field of the statically PvSuffix-declared devices also has a PVI
-# directory entry keyed by its Python attribute name, so connecting via
-# with_pvi=True should succeed and resolve to the same signals.
-
-
-@pytest.fixture
-async def ca_device_via_pvi(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestCaDevice:
-    await ioc_devices.ca_device_via_pvi.connect(timeout=TIMEOUT)
-    return ioc_devices.ca_device_via_pvi
-
-
-@pytest.fixture
-async def pva_device_via_pvi(ioc_devices: EpicsTestIocAndDevices) -> EpicsTestPvaDevice:
-    await ioc_devices.pva_device_via_pvi.connect(timeout=TIMEOUT)
-    return ioc_devices.pva_device_via_pvi
-
-
-async def test_ca_device_full_pvi_mirror(ca_device_via_pvi: EpicsTestCaDevice):
-    # Successfully connecting already proves every annotated field resolved
-    # via PVI (DeviceFiller.check_filled requires 100% coverage) -- spot
-    # check a representative handful of values for confidence. These PVs are
-    # shared with other tests in this module-scoped IOC, so round-trip known
-    # values rather than asserting untouched initial ones.
-    await ca_device_via_pvi.a_int.set(50)
-    assert await ca_device_via_pvi.a_int.get_value() == 50
-    await ca_device_via_pvi.a_bool.set(False)
-    assert await ca_device_via_pvi.a_bool.get_value() is False
-    await ca_device_via_pvi.a_str.set("goodbye")
-    assert await ca_device_via_pvi.a_str.get_value() == "goodbye"
-    uint8a_value = np.array([12, 34], dtype=np.uint8)
-    await ca_device_via_pvi.uint8a.set(uint8a_value)
-    np.testing.assert_array_equal(
-        await ca_device_via_pvi.uint8a.get_value(), uint8a_value
-    )
-    await ca_device_via_pvi.subset_enum.set(EpicsTestSubsetEnum.A)
-    assert await ca_device_via_pvi.subset_enum.get_value() == EpicsTestSubsetEnum.A
-    assert (
-        await ca_device_via_pvi.mbb_direct_bit_r.get_value()
-        == await ca_device_via_pvi.mbb_direct_bit.get_value()
-    )
-    await ca_device_via_pvi.go.trigger()
-
-
-async def test_pva_device_full_pvi_mirror(pva_device_via_pvi: EpicsTestPvaDevice):
-    table = await pva_device_via_pvi.table.get_value()
-    assert isinstance(table, EpicsTestTable)
-    ntndarray = await pva_device_via_pvi.ntndarray.get_value()
-    assert ntndarray.shape == (2, 3)
-    # int8a/a_int are shared with other tests in this module-scoped IOC, so
-    # round-trip a known value rather than asserting the untouched initial
-    # one (which other tests may have already overwritten by this point).
-    await pva_device_via_pvi.a_int.set(50)
-    assert await pva_device_via_pvi.a_int.get_value() == 50
-    int8a_value = np.array([-8, 3, 44], dtype=np.int8)
-    await pva_device_via_pvi.int8a.set(int8a_value)
-    np.testing.assert_array_equal(
-        await pva_device_via_pvi.int8a.get_value(), int8a_value
-    )

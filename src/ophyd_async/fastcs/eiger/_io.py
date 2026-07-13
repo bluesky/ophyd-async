@@ -54,4 +54,4 @@ class EigerDetectorIO(Device):
     omega_increment: SignalRW[float]
     arm: TriggerableCommand
     disarm: TriggerableCommand
-    trigger: TriggerableCommand
+    trigger_: TriggerableCommand

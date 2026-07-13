@@ -305,8 +305,20 @@ async def merge_gathered_dicts(
     ```
     """
     ret: dict[str, T] = {}
+    duplicates: list[str] = []
     for result in await asyncio.gather(*coros):
-        ret.update(result)
+        for key in result:
+            if key in ret:
+                duplicates.append(key)
+            else:
+                ret[key] = result[key]
+    if duplicates:
+        duplicate_keys = ", ".join(sorted(set(duplicates)))
+        if duplicate_keys:
+            msg = f"Duplicate keys found while merging dictionaries: {duplicate_keys}"
+        else:
+            msg = "Have you remembered to name the Device?"
+        raise ValueError(msg)
     return ret
 
 
