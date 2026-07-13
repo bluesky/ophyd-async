@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pmac._pmac_io &#8212; ophyd-async 0.19.4.dev14+g3cf07c761 documentation</title>
+    <title>ophyd_async.epics.pmac._pmac_io &#8212; ophyd-async 0.19.4.dev15+g9e30bebf2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=347370e4"></script>
+    <script src="../../../../_static/documentation_options.js?v=21404bbb"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev14+g3cf07c761 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev14+g3cf07c761 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.4.dev15+g9e30bebf2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.4.dev15+g9e30bebf2 documentation - Home"/>
   
   
 </a></div>
@@ -919,6 +919,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">EXECUTING</span> <span class="o">=</span> <span class="s2">&quot;Executing&quot;</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">PmacStatus</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
+    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="s2">&quot;Success&quot;</span>
+    <span class="n">FAILURE</span> <span class="o">=</span> <span class="s2">&quot;Failure&quot;</span>
+    <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="s2">&quot;Undefined&quot;</span>
+
+
 <div class="viewcode-block" id="PmacTrajectoryIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PmacTrajectoryIO</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
@@ -954,7 +960,15 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">total_points</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">TotalPoints_RBV&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">points_to_build</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfilePointsToBuild&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">build_profile</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileBuild&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_status</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>
+            <span class="n">PmacStatus</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileBuildStatus_RBV&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_message</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileBuildMessage_RBV&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_profile</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAppend&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_status</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>
+            <span class="n">PmacStatus</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAppendStatus_RBV&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_message</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAppendMessage_RBV&quot;</span><span class="p">)</span>
         <span class="c1"># This should be a SignalX, but because it is a Busy record, must</span>
         <span class="c1"># be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.</span>
         <span class="c1"># TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)</span>
@@ -962,6 +976,11 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">execute_state</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>
             <span class="n">PmacExecuteState</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileExecuteState_RBV&quot;</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_status</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>
+            <span class="n">PmacStatus</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileExecuteStatus_RBV&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_message</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileExecuteMessage_RBV&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort_profile</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAbort&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">abort_profile</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAbort&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">profile_cs_name</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileCsName&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculate_velocities</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileCalcVel&quot;</span><span class="p">)</span>
