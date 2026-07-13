@@ -38,32 +38,34 @@ Initial values/valid put values for each field are pulled from
 (`reset_everything_device` fixture below), since it's a session-scoped
 server shared with every other test module in this directory.
 
-Performance note (CI regression fix, see PR discussion): the two
-parametrized tiers below (`test_signal_lifecycle`, 7 cases;
-`test_exhaustive_signal_lifecycle`, 37 cases) share one connected device
-each (`lifecycle_device`/`exhaustive_device`) and one reset
-(`reset_everything_device_once`), all module-scoped, rather than each
-parametrized case reconnecting and resetting from scratch. Reconnecting
-per case was the actual cost driver measured in CI - not the field count
-itself: `TangoDevice(trl)` with `auto_fill_signals=True` (what
-`test_exhaustive_signal_lifecycle` uses) discovers and connects *every*
-attribute/command on the device on every single `connect()` call, so 37
-separate connects paid a ~37x-inflated discovery cost versus the one
-connect this module actually needs; `reset_everything_device`'s hardcoded
-`asyncio.sleep(1)` similarly paid its 1s settle time 44+ times instead of
-once. Sharing a device/connection across parametrized cases needs pytest-
-asyncio's `loop_scope="module"` (a real event loop, module-lifetime, not
-just fixture-caching `scope="module"`) - PyTango's asyncio internals
-(executor, per-proxy Futures/Locks) are bound to whichever event loop
-created them, so reusing an already-connected device from a *different*
-loop breaks (see `reset_tango_asyncio`'s docstring below for the sibling
-bug this already hit once, with the global executor). The other three
-tests below that also depend on a reset (`test_signal_mock_parity`,
-`test_enum_set_accepts_name_value_and_member`,
-`test_retrieve_apply_store_settings`) aren't parametrized, so each only
-pays the connect+reset cost once regardless - left on the original
-function-scoped `reset_everything_device`, unchanged, rather than folded
-into the module-loop-scoped group for no benefit.
+Performance note (CI regression fix, see PR discussion): the dominant CI
+cost was `reset_everything_device` (below) being pulled in as a
+function-scoped fixture by every one of the 44 `test_signal_lifecycle`/
+`test_exhaustive_signal_lifecycle` parametrized cases, each paying a fresh
+`TangoDevice(...).connect()` plus a hardcoded `asyncio.sleep(1)` - 44
+seconds of pure sleep alone. `_reset_everything_device_done` below (a
+module-level guard flag) makes that actual reset work run *once per test
+process* rather than once per case: every case's own
+`assert_signal_lifecycle` already restores its field to `initial` in a
+`finally`, so one reset before the first case in this module (to counter
+mutation by earlier-collected modules sharing this session-scoped device)
+is all that's needed.
+
+This intentionally stays a function-scoped fixture (matching every other
+fixture in this directory) rather than `scope="module"`, even though a
+per-process guard makes the module framing more accurate: this directory's
+`conftest.py` still defines a function-scoped `event_loop` fixture, and
+pytest-asyncio requires any non-function-scoped *async* fixture to have a
+same-or-broader-scoped `event_loop` - module-scoping `reset_everything_
+device` directly (tried first) hit exactly that mismatch in CI ("Event
+loop is closed" at the very first fixture use, not a later cross-case
+issue). A similar attempt to share one *connected device* across all 44
+cases (rather than just the reset) was reverted for the same reason - it
+would need the same conftest-level event-loop change to do safely, which
+is out of scope for this fix. `test_exhaustive_signal_lifecycle`'s
+`TangoDevice(trl, auto_fill_signals=True)` still reconnects (and thus
+rediscovers all 37 attributes/commands) once per parametrized case, so
+that particular O(N) cost remains - a smaller, separate follow-up.
 """
 
 import asyncio
@@ -73,7 +75,6 @@ from typing import Annotated as A
 import conftest
 import numpy as np
 import pytest
-import pytest_asyncio
 import tango
 import yaml
 from bluesky.protocols import Location
@@ -148,6 +149,12 @@ class _MockableTestDevice(TangoDevice, StandardReadable):
 MOCK_PARITY_FIELDS = [f for f in LIFECYCLE_FIELDS if f != "float64_image"]
 
 
+# Set the first time `reset_everything_device` actually does its (slow)
+# work - see the fixture's own docstring for why this per-process guard
+# exists instead of a module-scoped fixture.
+_reset_everything_device_done = False
+
+
 @pytest.fixture
 async def reset_everything_device(everything_device_trl: str) -> None:
     """Force `OneOfEverythingTangoDevice` back to its documented defaults.
@@ -156,65 +163,32 @@ async def reset_everything_device(everything_device_trl: str) -> None:
     directory (some of which mutate it), so any test that wants a known
     starting value needs to force one first - same as
     `test_tango_signals.py::test_assert_val_reading_everything_tango` does.
+
+    Guarded to only actually do that (a `connect()` plus a 1s settle sleep)
+    once per test *process*, not once per request: every call site's own
+    test (via `assert_signal_lifecycle`'s `finally`, or its own explicit
+    restore) already leaves its field back at `initial` when it finishes,
+    so a single reset before the first test in this module is sufficient -
+    repeating the full connect+trigger+sleep(1) for all 44
+    `test_signal_lifecycle`/`test_exhaustive_signal_lifecycle` parametrized
+    cases was pure waste (measured directly in CI: ~44s of that 1s sleep
+    alone). Deliberately a plain per-process flag rather than
+    `scope="module"`/`scope="session"`: this directory's `conftest.py`
+    still defines a function-scoped `event_loop` fixture, and pytest-
+    asyncio requires any non-function-scoped *async* fixture to have a
+    same-or-broader-scoped `event_loop` - scoping this fixture up hit
+    exactly that mismatch ("Event loop is closed") when tried. Staying
+    function-scoped keeps every test's fixture chain on its own fresh loop
+    as before; the guard just skips the awaits entirely after the first.
     """
+    global _reset_everything_device_done
+    if _reset_everything_device_done:
+        return
     resetter = TangoDevice(everything_device_trl, name="resetter")
     await resetter.connect()
     await resetter.reset_values.trigger()
     await asyncio.sleep(1)
-
-
-@pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def reset_everything_device_once(everything_device_trl: str) -> None:
-    """Module-scoped twin of `reset_everything_device` above, for the two
-    exhaustively-parametrized tiers below (44 cases combined via
-    `test_signal_lifecycle`/`test_exhaustive_signal_lifecycle`).
-
-    Runs once for the whole module rather than once per parametrized case:
-    each case's own `assert_signal_lifecycle` already restores its field to
-    `initial` in a `finally`, so a single reset at module start (to counter
-    mutation by earlier-collected modules sharing this session-scoped
-    device) is all that's needed - repeating it per field bought nothing
-    but 44x the connect and the 1s settle wait. See this module's docstring
-    for why `loop_scope="module"` (a real shared event loop, not just
-    fixture-caching `scope="module"`) is required here.
-    """
-    resetter = TangoDevice(everything_device_trl, name="resetter_once")
-    await resetter.connect()
-    await resetter.reset_values.trigger()
-    await asyncio.sleep(1)
-
-
-@pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def lifecycle_device(everything_device_trl: str) -> TangoTestDevice:
-    """Curated `TangoTestDevice`, connected once and shared across every
-    `test_signal_lifecycle` parametrized case (the 7 `LIFECYCLE_FIELDS`) -
-    the field set is static, so there's no reason to reconnect per field.
-    See this module's docstring for why `loop_scope="module"` is required
-    to share a connected device across parametrized cases safely.
-    """
-    device = TangoTestDevice(everything_device_trl, name="lifecycle")
-    await device.connect()
-    return device
-
-
-@pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def exhaustive_device(everything_device_trl: str) -> TangoDevice:
-    """Plain procedural `TangoDevice` (`auto_fill_signals=True`), connected
-    once and shared across every `test_exhaustive_signal_lifecycle`
-    parametrized case (all 37 `EXHAUSTIVE_FIELDS`).
-
-    `auto_fill_signals=True` discovers and connects *every* attribute/
-    command on the device on each `connect()` call (see
-    `TangoDeviceConnector.connect_real`) - reconnecting per field (as
-    before) meant each of the 37 cases paid that whole-device discovery
-    cost again, ~37x more network round-trips than the single connect this
-    module actually needs. See this module's docstring for why
-    `loop_scope="module"` is required to share a connected device across
-    parametrized cases safely.
-    """
-    device = TangoDevice(everything_device_trl, name="exhaustive")
-    await device.connect()
-    return device
+    _reset_everything_device_done = True
 
 
 async def assert_signal_lifecycle(signal: SignalRW, initial_value, put_value) -> None:
@@ -276,16 +250,17 @@ def _distinct_put_value(attr_data: conftest.AttributeData, field: str):
     pytest.fail(f"Could not find a value for {field} that differs from initial")
 
 
-@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(10.0)
 @pytest.mark.parametrize("field", LIFECYCLE_FIELDS)
 async def test_signal_lifecycle(
-    lifecycle_device: TangoTestDevice,
+    everything_device_trl: str,
     everything_signal_info,
-    reset_everything_device_once: None,
+    reset_everything_device: None,
     field: str,
 ):
-    signal = getattr(lifecycle_device, field)
+    device = TangoTestDevice(everything_device_trl, name="lifecycle")
+    await device.connect()
+    signal = getattr(device, field)
     attr_data = everything_signal_info[field]
     initial_value = attr_data.initial
     put_value = _distinct_put_value(attr_data, field)
@@ -300,13 +275,12 @@ async def test_signal_lifecycle(
 EXHAUSTIVE_FIELDS = sorted(conftest.build_everything_signal_info())
 
 
-@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(10.0)
 @pytest.mark.parametrize("field", EXHAUSTIVE_FIELDS)
 async def test_exhaustive_signal_lifecycle(
-    exhaustive_device: TangoDevice,
+    everything_device_trl: str,
     everything_signal_info,
-    reset_everything_device_once: None,
+    reset_everything_device: None,
     field: str,
 ):
     """Same lifecycle check as `test_signal_lifecycle` above, but exhaustive.
@@ -317,10 +291,11 @@ async def test_exhaustive_signal_lifecycle(
     this exhaustive - which the procedural flavour gets for free by
     discovering every attribute on the live proxy. See this module's
     docstring for why exhaustive coverage here is cheap enough to just do,
-    rather than needing its own curated subset (and for why it's a single
-    shared `exhaustive_device` rather than a fresh connect per field).
+    rather than needing its own curated subset.
     """
-    signal = getattr(exhaustive_device, field)
+    device = TangoDevice(everything_device_trl, name="exhaustive")
+    await device.connect()
+    signal = getattr(device, field)
     # Confirmed empirically (see this module's docstring): every one of the
     # 37 fields discovered by auto_fill_signals=True comes back as a
     # SignalRW, since OneOfEverythingTangoDevice declares every attribute
