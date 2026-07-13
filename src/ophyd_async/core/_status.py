@@ -81,6 +81,22 @@ class AsyncStatusBase(Status, Awaitable[T]):
                 return exc
         return None
 
+    def result(self) -> T:
+        """Return whatever result the status is meant to produce when it is done.
+
+        It replicates the behavior of `asyncio.Future.result()
+        <https://docs.python.org/3/library/asyncio-future.html#asyncio.Future.result>`_.
+
+        If a result is not available yet, it raises `asyncio.InvalidStateError
+        <https://docs.python.org/3/library/asyncio-exceptions.html#asyncio.InvalidStateError>`_.
+
+        Returns:
+        -------
+        T
+            The result of the operation when it is done.
+        """
+        return self.task.result()
+
     @property
     def done(self) -> bool:
         return self.task.done()
@@ -92,11 +108,6 @@ class AsyncStatusBase(Status, Awaitable[T]):
             and not self.task.cancelled()
             and self.task.exception() is None
         )
-
-    @property
-    def result(self) -> T:
-        """Return the result of the awaitable. Only valid after the status is done."""
-        return self.task.result()
 
     def __repr__(self) -> str:
         if self.done:
