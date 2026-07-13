@@ -20,6 +20,34 @@ from ._utils import (
 
 DeviceT = TypeVar("DeviceT", bound="Device")
 
+DEVICE_RESERVED_ATTRS = {
+    "name",
+    "collect_asset_docs",
+    "get_index",
+    "read_configuration",
+    "describe_configuration",
+    "trigger",
+    "prepare",
+    "read",
+    "describe",
+    "describe_collect",
+    "collect",
+    "collect_pages",
+    "set",
+    "locate",
+    "kickoff",
+    "complete",
+    "stage",
+    "unstage",
+    "pause",
+    "resume",
+    "stop",
+    "subscribe",
+    "clear_sub",
+    "check_value",
+    "hints",
+}
+
 
 class DeviceMock(Generic[DeviceT]):
     """A lazily created Mock to be used when connecting in mock mode.
@@ -172,10 +200,10 @@ class Device(HasName):
 
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
-        # These are guarateed not to be devices, so don't check them
+        # These are guaranteed not to be devices, so don't check them
         setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
             # parent needs special handling
-            "parent": _fail_if_overwriting_parent
+            "parent": _fail_if_overwriting_parent,
         }
         # Assign _setattr_methods in __new__ instead of __init__,
         # as this is called before any __setattr__ calls are made
@@ -241,6 +269,11 @@ class Device(HasName):
         # dictionary of setattr functions
         func = self._setattr_methods.get(name, None)
         if func is None:
+            if name in DEVICE_RESERVED_ATTRS:
+                raise NameError(
+                    f"`{name}` is used in one of the bluesky protocols. "
+                    f"Please use `{name}_` instead."
+                )
             # First encounter, so assign correct
             # __setattr__ method depending on `value` type
             if isinstance(value, Device):
