@@ -3,6 +3,8 @@ a_enum: Bbb
 a_float: 1.234
 a_int: 1
 a_str: test_string
+a_subset_enum: Bbb
+a_superset_enum: Bbb
 boola: [false, false, true]
 enuma:
   - Aaa

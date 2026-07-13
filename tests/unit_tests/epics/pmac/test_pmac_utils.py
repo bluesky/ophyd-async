@@ -7,6 +7,13 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
     PmacIO,
 )
+
+# _PmacMotorInfo (internal per-motor accel/resolution dataclass) and
+# calculate_ramp_position_and_duration (internal ramp-math helper) are both
+# implementation details PmacTrajectoryTriggerLogic (the public façade,
+# `ophyd_async.epics.pmac`) uses internally, not things a caller would
+# invoke directly - checked, nothing here looks missing from the public
+# interface.
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
@@ -82,6 +89,8 @@ async def test_motor_info_from_cs_motors(sim_cs_motors: tuple[PmacIO, Motor, Mot
         {sim_cs_x_motor: 7, sim_cs_y_motor: 8},
         {sim_cs_x_motor: 10.0, sim_cs_y_motor: 20.0},
         {sim_cs_x_motor: 5.0, sim_cs_y_motor: 10.0},
+        {sim_cs_x_motor: -20.0, sim_cs_y_motor: -20.0},
+        {sim_cs_x_motor: 20.0, sim_cs_y_motor: 20.0},
     )
     assert motor_info == expected_motor_info
 
@@ -104,6 +113,8 @@ async def test_motor_info_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 7, sim_y_motor: 8},
         {sim_x_motor: 10, sim_y_motor: 20},
         {sim_x_motor: 5, sim_y_motor: 10},
+        {sim_x_motor: -20.0, sim_y_motor: -20.0},
+        {sim_x_motor: 20.0, sim_y_motor: 20.0},
     )
     assert motor_info == expected_motor_info
 

@@ -482,7 +482,11 @@ class PvaCommandBackend(EpicsCommandBackend):
         value = await pvget_with_timeout(self.write_pv, timeout)
         typeid = value.getID()
         specifier = _get_specifier(value)
-        if typeid != "epics:nt/NTScalar:1.0" or specifier not in _number_specifiers:
+
+        is_int = typeid == "epics:nt/NTScalar:1.0" and specifier in _int_specifiers
+        is_enum = typeid == "epics:nt/NTEnum:1.0"
+
+        if not (is_int or is_enum):
             raise TypeError(
                 f"pva://{self.write_pv} is not a scalar numeric PV "
                 f"(typeid={typeid!r}, specifier={specifier!r}); "

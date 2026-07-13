@@ -262,7 +262,7 @@ class NDCircularBuffIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
+    trigger_: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture"), EpicsOptions(wait=non_zero)]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")

@@ -37,21 +37,35 @@ async def test_acquire_logic_trigger_internal_calls_acquire(
 async def test_acquire_logic_when_arming_times_out(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
+    # This test is meant to exercise wait_task's own internal "didn't match"
+    # timeout inside set_and_wait_for_other_value, not the outer "didn't
+    # provide an initial value" wait for a first value from match_signal.
+    # The mock acquire signal already has an initial value (False) present
+    # before this callback ever fires, so the outer got_first_value wait
+    # resolves almost immediately regardless of timeout size - but to make
+    # that deterministic under CI scheduling jitter (rather than a "photo
+    # finish" between the two clocks, which is what originally flaked on
+    # Windows CI - see PR #1342), give the callback's delay a large margin
+    # over DEFAULT_TIMEOUT. This makes the ratio between "time available for
+    # the initial-value observation to land" and "time before the inner
+    # match timeout fires" large, without needing to actually wait for the
+    # callback to complete (nothing awaits it - only the asyncio.sleep below
+    # drains it), so total test wall-clock time stays reasonable.
     async def sleep_for_a_bit(value):
-        await asyncio.sleep(0.02)
+        await asyncio.sleep(1.0)
 
     callback_on_mock_put(adbase_detector.driver.acquire, sleep_for_a_bit)
 
-    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.02):
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.05):
         with pytest.raises(
             TimeoutError,
             match=re.escape(
-                "det-driver-acquire didn't match True in 0.02s, last value False"
+                "det-driver-acquire didn't match True in 0.05s, last value False"
             ),
         ):
             await adbase_detector.trigger()
 
-    await asyncio.sleep(0.03)  # Allow background tasks to complete
+    await asyncio.sleep(1.1)  # Allow background tasks to complete
 
 
 async def test_acquire_logic_wait_for_idle_in_bad_state(

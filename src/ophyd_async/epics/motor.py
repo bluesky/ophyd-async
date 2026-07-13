@@ -22,6 +22,7 @@ from ophyd_async.core import (
     StandardMovable,
     StandardReadable,
     StrictEnum,
+    TimeoutCalculator,
     WatchableAsyncStatus,
     callback_on_mock_put,
     default_mock_class,
@@ -154,9 +155,9 @@ class MotorMoveLogic(MovableLogic[float]):
             msg = f"Motor {self.readback.name} has zero velocity."
             raise ValueError(msg) from error
 
-    async def move(self, new_position: float, timeout: float | None) -> None:
+    async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
         """Move by setting the setpoint and waiting for put completion."""
-        await self.setpoint.set(new_position, timeout)
+        await self.setpoint.set(new_position, timeout=timeout())
 
 
 class InstantMotorMock(DeviceMock["Motor"]):
@@ -181,7 +182,7 @@ class InstantMotorMock(DeviceMock["Motor"]):
 
 
 @default_mock_class(InstantMotorMock)
-class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
+class Motor(StandardMovable[float], StandardReadable, Flyable, Preparable):
     """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:

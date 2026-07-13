@@ -60,7 +60,7 @@ methods with safe defaults:
 | `readback: SignalR[T]` | required |
 | `stop()` | no-op |
 | `check_move(new)` | no-op |
-| `calculate_timeout(old, new)` | `DEFAULT_TIMEOUT` |
+| `calculate_timeout(old, new)` | `None` |
 | `get_units_precision()` | reads from `readback.describe()` |
 | `move(new_position, timeout)` | `set_and_wait_for_other_value(setpoint, new_position, readback)` |
 

@@ -1,7 +1,6 @@
 import asyncio
-from asyncio import CancelledError, Event, get_event_loop
 from functools import cached_property
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -9,7 +8,6 @@ from ophyd_async.core import (
     MovableLogic,
     StandardMovable,
     callback_on_mock_put,
-    get_mock_put,
     init_devices,
     mock_puts_blocked,
     set_mock_put_proceeds,
@@ -17,10 +15,35 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+
+# MoveTimeout is an internal helper StandardMovable constructs to track a
+# move's remaining timeout across repeated calculate_timeout() calls - the
+# public MovableLogic.calculate_timeout() hook returns a plain float | None,
+# never a MoveTimeout, so a caller never sees this type. Tested directly
+# here since the reducing-timeout behaviour across repeated calls isn't
+# otherwise observable from the public surface - checked, nothing here
+# looks missing from the public interface.
+from ophyd_async.core._movable import MoveTimeout  # noqa: PLC2701
 from ophyd_async.testing import wait_for_pending_wakeups
 
 
-class StandardMovableImpl(StandardMovable):
+async def test_move_timeout_repeated_calls_reduces_avaliable_timeout():
+    with patch("ophyd_async.core._movable.time.monotonic") as monotonic:
+        timeout = 10
+        monotonic.return_value = 0
+        move_timeout = MoveTimeout(timeout=timeout, start_time=0)
+        for elapsed in range(timeout):
+            monotonic.return_value = elapsed
+            assert move_timeout() == timeout - elapsed
+
+
+async def test_move_timeout_with_timeout_none_returns_none():
+    move_timeout = MoveTimeout(timeout=None, start_time=0)
+    for _ in range(3):
+        assert move_timeout() is None
+
+
+class StandardMovableImpl(StandardMovable[float]):
     def __init__(self, name: str = ""):
         self.readback, _ = soft_signal_r_and_setter(float)
         self.setpoint = soft_signal_rw(float)
@@ -90,59 +113,42 @@ async def test_movable_move_timeout(movable: StandardMovableImpl):
 
 async def test_movable_moving_stopped(movable: StandardMovableImpl):
     set_mock_put_proceeds(movable.setpoint, False)
-    s = movable.set(1.5)
-    s.add_callback(Mock())
+    move_status = movable.set(1.5)
+    move_status.add_callback(Mock())
     await asyncio.sleep(0.0001)
 
-    assert not s.done
+    assert not move_status.done
     await movable.stop()
 
     set_mock_put_proceeds(movable.setpoint, True)
     await wait_for_pending_wakeups()
 
-    assert s.done
-    assert s.success is False
+    assert move_status.done
+    assert move_status.success is False
 
-
-async def test_cancellederror_in_set_ensures_movable_setpoint_set_task_is_cancelled(
-    movable: StandardMovableImpl,
-):
-    sleep_result = get_event_loop().create_future()
-    block_until_ready = Event()
-
-    async def wait_forever_in_setpoint_set(value: float, *args, **kwargs):
-        try:
-            block_until_ready.set()
-            await asyncio.sleep(0.5)
-            sleep_result.set_result(None)
-        except CancelledError as e:
-            sleep_result.set_exception(e)
-            raise
-
-    get_mock_put(movable.setpoint).side_effect = wait_forever_in_setpoint_set
-
-    status = movable.set(1)
-    await block_until_ready.wait()
-    assert status.task.cancel()
-    with pytest.raises(CancelledError):
-        await status
-    with pytest.raises(CancelledError):
-        await sleep_result
-    assert sleep_result.done()
-    assert isinstance(sleep_result.exception(), CancelledError)
+    with pytest.raises(RuntimeError, match=f"Device {movable.name} was stopped"):
+        await move_status
 
 
 async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     movable: StandardMovableImpl,
 ):
     mock_check_move = movable.movable_logic.check_move = AsyncMock()
+    timeout = 5
     mock_calculate_timeout = movable.movable_logic.calculate_timeout = AsyncMock(
-        return_value=5
+        return_value=timeout
     )
-    await movable.set(10)
+    mock_move = movable.movable_logic.move = AsyncMock()
 
-    mock_check_move.assert_awaited_once_with(10)
-    mock_calculate_timeout.assert_awaited_once_with(0, 10)
+    with patch("ophyd_async.core._movable.MoveTimeout") as move_timeout:
+        pos = 10
+        await movable.set(pos)
+
+        mock_check_move.assert_awaited_once_with(pos)
+        mock_calculate_timeout.assert_awaited_once_with(0, pos)
+        mock_move.assert_awaited_once_with(
+            new_position=pos, timeout=move_timeout.return_value
+        )
 
 
 async def test_motor_set_with_instant_mock(

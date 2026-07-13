@@ -1,6 +1,9 @@
 import asyncio
+import time
 from abc import abstractmethod
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
 from functools import cached_property
 from typing import Generic
 
@@ -20,11 +23,28 @@ from ._signal_backend import SignalDatatypeT
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
-    DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
     WatcherUpdate,
 )
+
+
+@dataclass
+class MoveTimeout:
+    """The time left for a move to complete before it times out."""
+
+    timeout: float | None
+    start_time: float = field(default_factory=time.monotonic)
+
+    def __call__(self) -> float | None:
+        """Remaining time for a calculated timeout left for the move to use."""
+        if self.timeout is None:
+            return None
+        elapsed = time.monotonic() - self.start_time
+        return max(0.0, self.timeout - elapsed)
+
+
+TimeoutCalculator = Callable[[], float | None]
 
 
 @dataclass
@@ -54,16 +74,18 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
     async def calculate_timeout(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
-    ) -> float:
+    ) -> float | None:
         """Optional hook to calculate valid timeout for a move."""
-        return DEFAULT_TIMEOUT
+        return None
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Optional hook to return the units and precision."""
         datakey = (await self.readback.describe())[self.readback.name]
         return datakey.get("units"), datakey.get("precision")
 
-    async def move(self, new_position: SignalDatatypeT, timeout: float | None) -> None:
+    async def move(
+        self, new_position: SignalDatatypeT, timeout: TimeoutCalculator
+    ) -> None:
         """Move the device, waiting for the readback to reach the correct position.
 
         ```{note}
@@ -74,7 +96,11 @@ class MovableLogic(Generic[SignalDatatypeT]):
         ```
         """
         await set_and_wait_for_other_value(
-            self.setpoint, new_position, self.readback, new_position, timeout=timeout
+            self.setpoint,
+            new_position,
+            self.readback,
+            new_position,
+            timeout=timeout(),
         )
 
 
@@ -90,6 +116,12 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
         callback_on_mock_put(device.movable_logic.setpoint, _instant_move)
 
 
+class StopState(Enum):
+    NONE = "NONE"
+    USER_SUCCESS = "USER_SUCCESS"
+    USER_FAILURE = "USER_FAILURE"
+
+
 @default_mock_class(InstantMovableMock)
 class StandardMovable(
     Device,
@@ -102,10 +134,13 @@ class StandardMovable(
     """Device that provides standard logic for moving.
 
     This class must be inherited and have a `movable_logic` @cached_property.
+    If stop is called while moving, it will raise a RuntimeError.
     """
 
-    # Whether set() should complete successfully or not
-    _set_success = True
+    # Whether set() should complete successfully or raise an error due to stop called or
+    # due to timeout.
+    _stop_state: Enum = StopState.NONE
+    _move_status: AsyncStatus | None = None
 
     @cached_property
     @abstractmethod
@@ -129,7 +164,7 @@ class StandardMovable(
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ):
         """Move to the given value."""
-        self._set_success = True
+        self._stop_state = StopState.NONE
         old_position, (units, precision) = await asyncio.gather(
             self.movable_logic.readback.get_value(),
             self.movable_logic.get_units_precision(),
@@ -143,29 +178,46 @@ class StandardMovable(
         else:
             move_timeout = timeout
 
-        async with AsyncStatus(
-            self.movable_logic.move(new_position=new_position, timeout=move_timeout)
-        ) as move_status:
-            async for current_position in observe_value(
-                self.movable_logic.readback,
-                done_status=move_status,
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                    precision=precision,
+        try:
+            async with AsyncStatus(
+                self.movable_logic.move(
+                    new_position=new_position, timeout=MoveTimeout(move_timeout)
                 )
+            ) as self._move_status:
+                async for current_position in observe_value(
+                    self.movable_logic.readback,
+                    done_status=self._move_status,
+                ):
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.name,
+                        unit=units,
+                        precision=precision,
+                    )
+        # Convert cancellation into the appropriate stop result.
+        # If stop(success=True) was called, complete without raising.
+        # If stop(success=False) was called, raise a RuntimeError below.
+        # If not stopped but times out, show the CancelledError from the timeout.
+        except asyncio.CancelledError:
+            if self._stop_state == StopState.NONE:
+                raise
+        finally:
+            self._move_status = None
 
-        if not self._set_success:
+        # Raise error if needed, reset stop state.
+        stop_state = self._stop_state
+        self._stop_state = StopState.NONE
+        if stop_state == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
-        self._set_success = success
+        self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
         await self.movable_logic.stop()
+        if self._move_status:
+            self._move_status.task.cancel()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)

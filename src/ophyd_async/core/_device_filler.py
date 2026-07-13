@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import logging
 import types
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
@@ -19,10 +20,18 @@ from typing import (
 )
 
 from ._command import Command, CommandBackend
-from ._device import Device, DeviceCollection, DeviceConnector
+from ._device import (
+    DEVICE_RESERVED_ATTRS,
+    Device,
+    DeviceCollection,
+    DeviceConnector,
+)
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import T, V, cached_get_origin, cached_get_type_hints, get_origin_class
+
+logger = logging.getLogger("ophyd_async")
+
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
@@ -480,8 +489,22 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             # We need to add a new child to the top level Device
             backend = self._signal_backend_factory(None)
             expected_signal_type = signal_type
+            # Prevent shadowing bluesky protocol with new signal by
+            # adding a trailing underscore
+            if name in DEVICE_RESERVED_ATTRS:
+                logger.info(
+                    f"Signal `{name}` is used in one of the bluesky protocols. "
+                    f"Using `{name}_` instead."
+                )
+                name = f"{name}_"
             setattr(self._device, name, signal_type(backend))
-        if signal_type is not expected_signal_type:
+        # Compare origin classes (e.g. SignalRW) rather than the raw objects:
+        # `expected_signal_type` may be a parameterized generic alias like
+        # `SignalRW[float]` (from a `DeviceVector[SignalRW[float]]` annotation),
+        # while a real (non-mock) connection reports `signal_type` as the bare
+        # class inferred from the "r"/"w"/"rw" PVI designator -- these should
+        # be considered equal as long as they agree on the Signal kind.
+        if get_origin_class(signal_type) is not get_origin_class(expected_signal_type):
             self._raise(
                 name,
                 f"is a {signal_type.__name__} not a {expected_signal_type.__name__}",

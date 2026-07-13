@@ -38,6 +38,7 @@ from ._device import (
     DeviceConnector,
     DeviceMap,
     DeviceMock,
+    DeviceProcessor,
     DeviceVector,
     LazyMock,
     default_mock_class,
@@ -52,7 +53,7 @@ from ._enums import (
     YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
-from ._log import config_ophyd_async_logging
+from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     callback_on_mock_execute,
@@ -67,7 +68,12 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
-from ._movable import InstantMovableMock, MovableLogic, StandardMovable
+from ._movable import (
+    InstantMovableMock,
+    MovableLogic,
+    StandardMovable,
+    TimeoutCalculator,
+)
 from ._path_providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
@@ -179,11 +185,13 @@ __all__ = [
     "DeviceAnnotation",
     "DeviceMap",
     "DeviceVector",
+    "DeviceProcessor",
     "init_devices",
     # Movable
     "MovableLogic",
     "StandardMovable",
     "InstantMovableMock",
+    "TimeoutCalculator",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
@@ -286,6 +294,8 @@ __all__ = [
     "YamlSettingsProvider",
     # Utils
     "config_ophyd_async_logging",
+    "logger",
+    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",

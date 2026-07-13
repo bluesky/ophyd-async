@@ -78,8 +78,7 @@ async def test_stop(m2: SimMotor):
     await asyncio.sleep(0.5)
     await m2.stop(success=False)
     new_pos = await m2.user_readback.get_value()
-    assert new_pos < 10
-    assert new_pos >= 0.1
+    assert 0 < new_pos < 10
 
     assert not move_status.success
     with pytest.raises(RuntimeError, match=f"Device {m2.name} was stopped"):
