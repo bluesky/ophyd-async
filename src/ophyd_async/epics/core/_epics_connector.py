@@ -105,7 +105,7 @@ def fill_backend_with_prefix(
 class EpicsDeviceConnector(DeviceConnector):
     """Used for connecting signals to static EPICS pvs."""
 
-    def __init__(self, prefix: str) -> None:
+    def __init__(self, prefix: str = "") -> None:
         self.prefix = prefix
 
     def create_children_from_annotations(self, device: Device):
@@ -130,7 +130,7 @@ class EpicsDeviceConnector(DeviceConnector):
                 signal_backend_factory=get_signal_backend_type(protocol),
                 # Declarative sub-devices get their own EpicsDeviceConnector so
                 # their signals are created under a PvSuffix-derived prefix.
-                device_connector_factory=lambda: EpicsDeviceConnector(""),
+                device_connector_factory=EpicsDeviceConnector,
                 command_backend_factory=_command_backend_factory,
             )
             for backend, annotations in self.filler.create_signals_from_annotations():

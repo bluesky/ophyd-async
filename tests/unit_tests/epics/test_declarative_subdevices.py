@@ -84,3 +84,12 @@ def test_declarative_subdevice_requires_pvsuffix(annotation):
 
     with pytest.raises(TypeError, match="must be given a PvSuffix"):
         BadParent("DEV:")
+
+
+def test_epics_device_rejects_both_prefix_and_connector():
+    # An EpicsDevice takes either a prefix (user) or a connector (parent filler),
+    # never both -- passing both is ambiguous and rejected.
+    from ophyd_async.epics.core import EpicsDeviceConnector
+
+    with pytest.raises(ValueError, match="either `prefix` or `connector`, not both"):
+        SubDevice("DEV:", connector=EpicsDeviceConnector("DEV:"))

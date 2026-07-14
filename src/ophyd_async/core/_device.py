@@ -452,8 +452,8 @@ class DeviceMap(MutableMapping[str, DeviceT], Device):
         return len(self._children)
 
     def children(self) -> Iterator[tuple[str, Device]]:
-        for key, child in self._children.items():
-            yield str(key), child
+        # Keys are already str, so yield them directly (no str() needed)
+        yield from self._children.items()
         yield from super().children()
 
     def __hash__(self):  # to allow DeviceMap to be used as dict keys and in sets

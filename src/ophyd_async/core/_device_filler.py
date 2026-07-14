@@ -4,7 +4,7 @@ import inspect
 import logging
 import types
 from abc import abstractmethod
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from typing import (
     Any,
     Generic,
@@ -443,22 +443,23 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_dict(self) -> DeviceVector | DeviceMap:
-        if not isinstance(self._device, (DeviceVector, DeviceMap)):
+    def _set_dict_child(self, map_key: int | str, value: Device) -> None:
+        # A DeviceVector has int keys, a DeviceMap str keys. Checking the key
+        # type against the container here narrows it so the assignment
+        # type-checks without a cast (each __setitem__ re-validates at runtime).
+        if isinstance(self._device, DeviceVector):
+            if not isinstance(map_key, int):
+                self._raise(self._device.name, f"Expected int key, got {map_key!r}")
+            self._device[map_key] = value
+        elif isinstance(self._device, DeviceMap):
+            if not isinstance(map_key, str):
+                self._raise(self._device.name, f"Expected str key, got {map_key!r}")
+            self._device[map_key] = value
+        else:
             self._raise(
                 self._device.name,
                 f"Expected DeviceVector or DeviceMap, got {self._device}",
             )
-        return self._device
-
-    @staticmethod
-    def _set_dict_child(
-        device_dict: DeviceVector | DeviceMap, map_key: int | str, value: Device
-    ) -> None:
-        # DeviceVector (int keys) and DeviceMap (str keys) each validate the key
-        # type at runtime in __setitem__; the union of their two signatures can't
-        # be expressed statically, so cast to the combined mapping type.
-        cast("MutableMapping[int | str, Device]", device_dict)[map_key] = value
 
     def fill_child_signal(
         self,
@@ -486,11 +487,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         elif map_key is not None:
             # We need to add a new entry to a DeviceVector/DeviceMap
             backend = self._signal_backend_factory(_get_datatype(signal_type))
-            device_dict = self._ensure_device_dict()
             expected_signal_type = (
-                _get_device_dict_child_datatype(device_dict) or signal_type
+                _get_device_dict_child_datatype(self._device) or signal_type
             )
-            self._set_dict_child(device_dict, map_key, signal_type(backend))
+            self._set_dict_child(map_key, signal_type(backend))
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -544,9 +544,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             connector = self._filled_connectors[name]
         elif map_key is not None:
             # We need to add a new entry to a DeviceVector/DeviceMap
-            device_dict = self._ensure_device_dict()
             dict_device_type = (
-                _get_device_dict_child_datatype(device_dict) or device_type
+                _get_device_dict_child_datatype(self._device) or device_type
             )
             if not issubclass(dict_device_type, Device):
                 # Raise if adding Non-Device to DeviceVector/DeviceMap
@@ -557,9 +556,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                     f"but {dict_device_type} is not a subclass of `Device`",
                 )
             connector = self._device_connector_factory()
-            self._set_dict_child(
-                device_dict, map_key, dict_device_type(connector=connector)
-            )
+            self._set_dict_child(map_key, dict_device_type(connector=connector))
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -603,7 +600,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
 
         # Handle DeviceVector/DeviceMap case
         elif map_key is not None:
-            device_dict = self._ensure_device_dict()
             vector_command_type = (
                 self._vector_device_type.get(logical_name) or command_type
             )
@@ -614,7 +610,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 self._command_signature.get(logical_name)
             )
             expected_command_type = vector_command_type
-            self._set_dict_child(device_dict, map_key, vector_command_type(backend))
+            self._set_dict_child(map_key, vector_command_type(backend))
 
         # Shadowing check
         elif child := getattr(self._device, name, None):
