@@ -67,7 +67,7 @@ async def test_when_closed_then_data_capture_turned_off(odin_det: OdinDet):
         odin_det,
         [
             call.odin.fp.stop_writing.execute(),
-            call.odin.mw.stop.execute(),
+            call.odin.mw.stop_.execute(),
         ],
     )
 

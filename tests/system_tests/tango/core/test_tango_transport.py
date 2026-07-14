@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, TypeVar, get_origin
 
 import numpy as np
 import numpy.typing as npt
@@ -12,11 +12,11 @@ from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
 )
-from test_tango_signals import make_backend
 
 from ophyd_async.core import (
     Array1D,
     NotConnectedError,
+    SignalRW,
     StrictEnum,
 )
 from ophyd_async.tango.core import (
@@ -24,6 +24,7 @@ from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
     DevStateEnum,
+    TangoDevice,
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
@@ -32,8 +33,13 @@ from ophyd_async.tango.core import (
     get_full_attr_trl,
     get_python_type,
     get_tango_trl,
+    infer_python_type,
+    parse_precision,
     try_to_cast_as_float,
 )
+from ophyd_async.testing import MonitorQueue
+
+T = TypeVar("T")
 
 # tango_test_device fixture comes from conftest.py, shared with every other
 # test module in this directory.
@@ -43,6 +49,28 @@ from ophyd_async.tango.core import (
 async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
     proxy = await DeviceProxy(trl)
     setattr(proxy, pv, put_value)
+
+
+# --------------------------------------------------------------------
+# Folded forward from the now-deleted test_tango_signals.py (issue #1321
+# item 5) - genuine TangoSignalBackend-mechanism coverage with no generic
+# Signal-level equivalent (unlike the get/put/monitor-per-field tests that
+# file also had, which test_tango_signal_lifecycle.py's exhaustive tier now
+# covers generically, so weren't brought across).
+# --------------------------------------------------------------------
+async def make_backend(
+    typ: type | None,
+    pv: str,
+    connect: bool = True,
+    allow_events: bool | None = True,
+) -> TangoSignalBackend:
+    """Wrapper for making the tango signal backend."""
+
+    backend = TangoSignalBackend(typ, pv, pv)
+    backend.allow_events(allow_events)
+    if connect:
+        await backend.connect(1)
+    return backend
 
 
 # --------------------------------------------------------------------
@@ -890,3 +918,243 @@ async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
     assert any(
         "Subscribe to event failed" in record.message for record in caplog.records
     )
+
+
+# --------------------------------------------------------------------
+# More folded-forward TangoSignalBackend-mechanism coverage from the
+# now-deleted test_tango_signals.py (see the block comment above
+# `make_backend` near the top of this file).
+# --------------------------------------------------------------------
+def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
+    if python_type in [bool]:
+        return {"dtype": "boolean", "shape": []}
+    if python_type in [int]:
+        return {"dtype": "integer", "shape": []}
+    if python_type in [float]:
+        return {"dtype": "number", "shape": []}
+    if python_type in [str]:
+        return {"dtype": "string", "shape": []}
+    if get_origin(python_type) is Sequence:
+        return {"dtype": "array", "shape": [len(value)]}
+    # Array-typed fields (Array1D[dtype], np.ndarray[Any, np.dtype[dtype]]) are
+    # types.GenericAlias instances, not plain classes - isinstance(..., type)
+    # guards issubclass() against them explicitly rather than relying on
+    # however leniently a given Python version resolves issubclass() against
+    # a GenericAlias's origin. Confirmed version-dependent: harmlessly False
+    # on 3.11/3.12 (issubclass() resolves via the alias's __origin__, e.g.
+    # np.ndarray, which isn't a StrictEnum subclass either way), but a hard
+    # TypeError ("issubclass() arg 1 must be a class") on 3.13/3.14 - only
+    # ever exercised on those versions once Tango stopped being matrix-
+    # restricted to ubuntu+3.11 (#1145).
+    if isinstance(python_type, type) and issubclass(python_type, StrictEnum):
+        return {"dtype": "string", "shape": []}
+    return {
+        "dtype": "array",
+        "shape": [np.iinfo(np.int32).max] if is_cmd else list(np.array(value).shape),
+    }
+
+
+async def assert_monitor_then_put(
+    signal: SignalRW,
+    source: str,
+    initial_value: T,
+    put_value: T,
+    descriptor: dict,
+):
+    backend = signal._connector.backend
+    # Make a monitor queue that will monitor for updates
+    with MonitorQueue(signal) as q:
+        test_descriptor = dict(source=source, **descriptor)
+        try:
+            backend_datakey = await backend.get_datakey(source)
+        except Exception as exc:
+            pytest.fail(f"Failed to get datakey for {source}: {exc}")
+        for key, value in test_descriptor.items():
+            assert backend_datakey[key] == value, (
+                f"Key {key} mismatch: {value} != {backend_datakey[key]}."
+                f" Source: {source}"
+            )
+        # Check initial value
+        await q.assert_updates(initial_value)
+        # Put to new value and check that
+        await backend.put(put_value)
+        await q.assert_updates(put_value)
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(18.8)
+async def test_backend_get_put_monitor_attr(
+    everything_device_trl: str, everything_signal_info
+):
+    """Exercises `TangoSignalBackend`'s own `get_datakey`/`put`/monitor
+    directly, over every field - distinct from
+    `test_tango_signal_lifecycle.py`'s exhaustive Signal-level tier (which
+    goes through `Signal.describe()`/`.set()`/`.locate()`, not the backend
+    directly), since this also checks backend-level datakey shape/dtype
+    values (`get_test_descriptor`) that Signal.describe() doesn't expose in
+    the same shape (e.g. a command's `np.iinfo(np.int32).max` placeholder
+    shape).
+    """
+    device = TangoDevice(everything_device_trl, name="backend_get_put_monitor")
+    await device.connect()
+    try:
+        for attr_data in everything_signal_info.values():
+            signal = getattr(device, attr_data.name)
+            source = get_full_attr_trl(device._connector.trl, attr_data.name)
+            await asyncio.wait_for(
+                assert_monitor_then_put(
+                    signal,
+                    source,
+                    attr_data.initial,
+                    attr_data.random_value(),
+                    get_test_descriptor(attr_data.py_type, attr_data.initial, False),
+                ),
+                timeout=10,  # Timeout in seconds
+            )
+    except TimeoutError:
+        pytest.fail("Test timed out")
+    except Exception as exc:
+        pytest.fail(f"Test failed with exception: {exc}")
+
+
+@pytest.mark.asyncio
+async def test_set_callback(everything_device_trl):
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnectedError) as exc:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc.value)
+
+    await transport.connect(1)
+    val = None
+
+    def callback(reading):
+        nonlocal val
+        val = reading["value"]
+
+    # Correct usage
+    transport.set_callback(callback)
+    current_value = await transport.get_value()
+    new_value = current_value + 2
+    await transport.put(new_value)
+    await asyncio.sleep(0.1)
+    # approx, not ==: "float32" is a real DevFloat (server-side float32)
+    # attribute, so `new_value` (float64-precision Python arithmetic) loses
+    # precision on the round trip through the wire - exact equality only
+    # ever passed by coincidence, depending on what `current_value` was left
+    # at by whichever test ran before this one shared this session-scoped
+    # device (e.g. `test_backend_get_put_monitor_attr` above, or
+    # `test_tango_signal_lifecycle.py`'s exhaustive tier, both of which
+    # exercise this same field).
+    assert val == pytest.approx(new_value)
+
+    # Try to add second callback
+    with pytest.raises(RuntimeError) as exc:
+        transport.set_callback(callback)
+    assert "Cannot set a callback when one is already set"
+
+    transport.set_callback(None)
+
+    # Try to add a callback to a non-callable proxy
+    transport.allow_events(False)
+    transport.set_polling(False)
+    with pytest.raises(RuntimeError) as exc:
+        transport.set_callback(callback)
+    assert "Cannot set event" in str(exc.value)
+
+    # Try to add a non-callable callback
+    transport.allow_events(True)
+    with pytest.raises(RuntimeError) as exc:
+        transport.set_callback(1)
+    assert "Callback must be a callable" in str(exc.value)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("allow", [True, False])
+async def test_tango_transport_allow_events(everything_device_trl, allow):
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+    transport.allow_events(allow)
+    assert transport.support_events == allow
+
+
+@pytest.mark.asyncio
+async def test_tango_transport_set_polling(everything_device_trl):
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+    transport.set_polling(True, 0.1, 1, 0.1)
+    assert transport._polling == (True, 0.1, 1, 0.1)
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(12.0)
+async def test_attribute_subscribe_callback(everything_device_trl):
+    source = get_full_attr_trl(everything_device_trl, "int64")
+    backend = await make_backend(int, source)
+    attr_proxy = backend.proxies[source]
+    val = None
+
+    def callback(reading):
+        nonlocal val
+        val = reading["value"]
+
+    attr_proxy.subscribe_callback(callback)
+    assert attr_proxy.has_subscription()
+    old_value = await attr_proxy.get()
+    new_value = old_value + 1
+    await attr_proxy.put(new_value)
+    await asyncio.sleep(0.2)
+    attr_proxy.unsubscribe_callback()
+    assert val == new_value
+
+    attr_proxy.set_polling(False)
+    attr_proxy.support_events = False
+    with pytest.raises(RuntimeError) as exc:
+        attr_proxy.subscribe_callback(callback)
+    assert "Cannot set a callback" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_attribute_unsubscribe_callback(everything_device_trl):
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    backend = await make_backend(float, source)
+    attr_proxy = backend.proxies[source]
+
+    def callback(reading):
+        pass
+
+    attr_proxy.subscribe_callback(callback)
+    assert attr_proxy.has_subscription()
+    attr_proxy.unsubscribe_callback()
+    assert not attr_proxy.has_subscription()
+    await asyncio.sleep(0.1)
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(3.0)
+async def test_parse_precision(everything_device_trl):
+    proxy = await DeviceProxy(everything_device_trl)
+    for attr in proxy.get_attribute_list():
+        config = await proxy.get_attribute_config(attr)
+        precision = parse_precision(config)
+        if attr in [
+            "float32",
+            "float32_image",
+            "float32_spectrum",
+            "float64",
+            "float64_image",
+            "float64_spectrum",
+        ]:
+            assert precision == 2
+        else:
+            assert precision is None
+
+
+@pytest.mark.asyncio
+async def test_infer_python_type(everything_device_trl):
+    proxy = await DeviceProxy(everything_device_trl)
+    bad_attr = everything_device_trl + "/this_does_not_exist"
+    with pytest.raises(RuntimeError) as exc:
+        await infer_python_type(trl=bad_attr, proxy=proxy)
+    assert "Cannot find" in str(exc.value)

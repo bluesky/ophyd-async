@@ -24,7 +24,7 @@ class TangoTestDevice(TangoDevice, StandardReadable):
     discovers every attribute/command on the live proxy with no annotations at all).
     Both flavours connect to the exact same running `OneOfEverythingTangoDevice`
     server instance and see identical values — see
-    `tests/system_tests_tango/test_tango_declarative_device.py`.
+    `tests/system_tests/tango/core/test_tango_declarative_device.py`.
 
     Field names must equal the server's real Tango attribute/command names (Tango
     has no PvSuffix-equivalent indirection). A curated subset, not every datatype
