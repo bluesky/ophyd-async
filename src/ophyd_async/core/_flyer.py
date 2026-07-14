@@ -49,7 +49,7 @@ class FlyableLogic(Generic[T]):
         """Optional hook to stop flying and wait for everything to be stopped."""
         pass
 
-    def with_device(self, name: str = "") -> "StandardFlyable[T]":
+    def with_device(self, name: str = "") -> "StandardFlyable":
         """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
         return _EphemeralFlyable(self, name=name)
 
