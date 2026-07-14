@@ -65,9 +65,10 @@ async def test_seq_table_trigger_logic(mock_panda):
         await asyncio.sleep(0.1)
         set_mock_value(mock_panda.seq[1].active, value)
 
-    await trigger_logic.prepare(seq_table_info)
-    await asyncio.gather(trigger_logic.kickoff(), set_active(True))
-    await asyncio.gather(trigger_logic.complete(), set_active(False))
+    flyer = trigger_logic.with_device()
+    await flyer.prepare(seq_table_info)
+    await asyncio.gather(flyer.kickoff(), set_active(True))
+    await asyncio.gather(flyer.complete(), set_active(False))
 
 
 @pytest.fixture
@@ -104,7 +105,7 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
             ),  # type: ignore
         },
     )
-    await trigger_logic.prepare(info)
+    await trigger_logic.on_prepare(info)
     out = await trigger_logic.seq.table.get_value()
     assert out.repeats == pytest.approx([1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5])
     assert out.trigger == [
@@ -145,7 +146,7 @@ async def test_seq_scanspec_trigger_logic_no_gaps(
             )
         },
     )
-    await trigger_logic.prepare(info)
+    await trigger_logic.on_prepare(info)
     out = await trigger_logic.seq.table.get_value()
     assert out.repeats == pytest.approx([1, 1, 1, 3])
     assert out.trigger == [
@@ -180,7 +181,7 @@ async def test_seq_scanspec_trigger_logic_duration_error(
         },
     )
     with pytest.raises(RuntimeError, match="Slice must have duration"):
-        await trigger_logic.prepare(info)
+        await trigger_logic.on_prepare(info)
 
 
 async def test_seq_scanspec_trigger_logic_motor_not_passed(
@@ -198,7 +199,7 @@ async def test_seq_scanspec_trigger_logic_motor_not_passed(
             )
         },
     )
-    await trigger_logic.prepare(info)
+    await trigger_logic.on_prepare(info)
     out = await trigger_logic.seq.table.get_value()
     assert out.repeats == pytest.approx([1, 1, 3])
     assert out.trigger == [
@@ -226,7 +227,7 @@ async def test_seq_scanspec_trigger_logic_equal(
             )
         },
     )
-    await trigger_logic.prepare(info)
+    await trigger_logic.on_prepare(info)
     out = await trigger_logic.seq.table.get_value()
     assert out.repeats == pytest.approx([1, 1, 1, 1, 1, 1, 1, 1, 1])
     assert out.trigger == [
@@ -259,9 +260,10 @@ async def test_pcomp_trigger_logic(mock_panda):
         await asyncio.sleep(0.1)
         set_mock_value(mock_panda.pcomp[1].active, value)
 
-    await trigger_logic.prepare(pcomp_info)
-    await asyncio.gather(trigger_logic.kickoff(), set_active(True))
-    await asyncio.gather(trigger_logic.complete(), set_active(False))
+    flyer = trigger_logic.with_device()
+    await flyer.prepare(pcomp_info)
+    await asyncio.gather(flyer.kickoff(), set_active(True))
+    await asyncio.gather(flyer.complete(), set_active(False))
 
 
 @pytest.mark.parametrize(

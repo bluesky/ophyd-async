@@ -1,35 +1,57 @@
-from abc import ABC, abstractmethod
-from typing import Any, Generic
+from abc import abstractmethod
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
+from functools import cached_property
+from typing import Generic
 
 from bluesky.protocols import Flyable, Preparable, Stageable
 from pydantic import Field
 
 from ._device import Device
-from ._status import AsyncStatus
-from ._utils import CALCULATE_TIMEOUT, CalculatableTimeout, ConfinedModel, T
+from ._status import AsyncStatus, WatchableAsyncStatus
+from ._utils import (
+    CALCULATE_TIMEOUT,
+    CalculatableTimeout,
+    ConfinedModel,
+    T,
+    WatcherUpdate,
+)
 
 
-class FlyerController(ABC, Generic[T]):
-    """Base class for controlling 'flyable' devices.
+@dataclass
+class FlyableLogic(Generic[T]):
+    """Minimum logic needed for controlling a `StandardFlyable`.
 
-    [`bluesky.protocols.Flyable`](#bluesky.protocols.Flyable).
+    Inherit and fill in the hooks for a particular flyable (e.g. a motion or
+    trigger system). Subclasses hold whatever signals or sub-devices they need
+    as dataclass fields. `on_prepare` receives the per-scan info (often a
+    [`scanspec.core.Path`](inv:scanspec#scanspec.core.Path), but any type `T`).
     """
 
     @abstractmethod
-    async def prepare(self, value: T) -> Any:
-        """Move to the start of the fly scan."""
+    async def on_prepare(self, value: T) -> None:
+        """Move to the start of the fly scan and set it up."""
 
     @abstractmethod
-    async def kickoff(self):
+    async def on_kickoff(self) -> None:
         """Start the fly scan."""
 
     @abstractmethod
-    async def complete(self):
-        """Block until the fly scan is done."""
+    def on_complete(self) -> AsyncIterator[WatcherUpdate]:
+        """Block until the fly scan is done.
 
-    @abstractmethod
-    async def stop(self):
-        """Stop flying and wait everything to be stopped."""
+        This is an async generator: yield a `WatcherUpdate` for each progress
+        update (e.g. current position), or yield nothing if there is no
+        meaningful progress to report.
+        """
+
+    async def stop(self) -> None:
+        """Optional hook to stop flying and wait for everything to be stopped."""
+        pass
+
+    def with_device(self, name: str = "") -> "StandardFlyable[T]":
+        """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
+        return _EphemeralFlyable(self, name=name)
 
 
 class FlyMotorInfo(ConfinedModel):
@@ -65,29 +87,28 @@ class FlyMotorInfo(ConfinedModel):
         return self.end_position + acceleration_time * self.velocity / 2
 
 
-class StandardFlyer(
+class StandardFlyable(
     Device,
     Stageable,
     Preparable,
     Flyable,
     Generic[T],
 ):
-    """Base class for 'flyable' devices.
+    """Device that provides standard logic for flying.
 
-    [`bluesky.protocols.Flyable`](#bluesky.protocols.Flyable).
+    This class must be inherited and have a `flyable_logic` @cached_property.
+    For an ephemeral flyer in a plan, call `FlyableLogic.with_device` instead of
+    inheriting.
     """
 
-    def __init__(
-        self,
-        trigger_logic: FlyerController[T],
-        name: str = "",
-    ):
-        self._trigger_logic = trigger_logic
-        super().__init__(name=name)
+    @cached_property
+    @abstractmethod
+    def flyable_logic(self) -> FlyableLogic[T]:
+        """The logic object that describes how this device flies.
 
-    @property
-    def trigger_logic(self) -> FlyerController[T]:
-        return self._trigger_logic
+        Subclasses must implement this as a `@cached_property` that returns a
+        `FlyableLogic` instance.
+        """
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -95,19 +116,36 @@ class StandardFlyer(
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        await self._trigger_logic.stop()
+        await self.flyable_logic.stop()
 
-    def prepare(self, value: T) -> AsyncStatus:
-        return AsyncStatus(self._prepare(value))
-
-    async def _prepare(self, value: T) -> None:
-        # Move to start and setup the fly scan
-        await self._trigger_logic.prepare(value)
+    @AsyncStatus.wrap
+    async def prepare(self, value: T) -> None:
+        """Move to the start and set up the fly scan."""
+        await self.flyable_logic.on_prepare(value)
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        await self._trigger_logic.kickoff()
+        """Start the fly scan."""
+        await self.flyable_logic.on_kickoff()
 
-    @AsyncStatus.wrap
-    async def complete(self) -> None:
-        await self._trigger_logic.complete()
+    @WatchableAsyncStatus.wrap
+    async def complete(self) -> AsyncIterator[WatcherUpdate]:
+        """Block until the fly scan is done, forwarding any progress updates."""
+        async for update in self.flyable_logic.on_complete():
+            yield update
+
+
+class _EphemeralFlyable(StandardFlyable[T]):
+    """A concrete `StandardFlyable` wrapping a given `FlyableLogic`.
+
+    Created by `FlyableLogic.with_device` so a bare logic object can be used as
+    a flyer in a plan without defining a Device subclass.
+    """
+
+    def __init__(self, flyable_logic: FlyableLogic[T], name: str = "") -> None:
+        self._flyable_logic = flyable_logic
+        super().__init__(name=name)
+
+    @cached_property
+    def flyable_logic(self) -> FlyableLogic[T]:
+        return self._flyable_logic
