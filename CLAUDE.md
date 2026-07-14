@@ -57,6 +57,7 @@ tox -p                  # all envs in parallel (CI equivalent)
 - **STATE.md schema:** Done (with SHAs) / In progress (with exact next command) / Decisions + rationale / Invariants / Open questions.
 - **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md. Make an ADR as part of the PR for anything substantial.
 - **One PR-sized slice per session.** Never rely on context surviving across sessions — files and git are the source of truth.
+- **PR closes its issues:** a PR body must have a `Fixes #NNN` (or `Closes #NNN`) line for **every** issue it resolves, so GitHub auto-closes them on merge — one line per issue on a multi-issue PR. After editing a PR body, re-read it back (web-UI edits can trim it) and confirm each closing line is present.
 
 ## Updating this guide
 
