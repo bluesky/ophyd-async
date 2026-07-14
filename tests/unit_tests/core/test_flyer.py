@@ -7,9 +7,12 @@ import pytest
 from ophyd_async.core import (
     FlyableLogic,
     StandardFlyable,
+    StandardReadable,
+    StandardReadableFormat,
     WatchableAsyncStatus,
     WatcherUpdate,
     init_devices,
+    soft_signal_rw,
 )
 
 
@@ -68,28 +71,63 @@ async def test_flyable_complete_is_watchable():
     assert currents == [1, 2]
 
 
-@pytest.mark.parametrize("success", [True, False])
-async def test_flyable_stage_unstage_call_stop(success: bool):
+async def test_flyable_stage_unstage_default_to_stop():
     logic = RecordingFlyableLogic()
     async with init_devices(mock=True):
         flyer = logic.with_device(name="flyer")
 
     await flyer.stage()
     await flyer.unstage()
-    # stage() delegates to unstage(), so stop() is called for each
+    # on_stage/on_unstage both default to stop()
     assert logic.calls == ["stop", "stop"]
 
 
-async def test_flyable_as_mixin_subclass():
+async def test_flyable_stage_unstage_can_differ():
+    # A flyer (e.g. PmacTrajectoryTriggerLogic) may need distinct stage/unstage.
+    @dataclass
+    class StageUnstageLogic(RecordingFlyableLogic):
+        async def on_stage(self) -> None:
+            self.calls.append("on_stage")
+
+        async def on_unstage(self) -> None:
+            self.calls.append("on_unstage")
+
+    logic = StageUnstageLogic()
+    async with init_devices(mock=True):
+        flyer = logic.with_device(name="flyer")
+
+    await flyer.stage()
+    await flyer.unstage()
+    assert logic.calls == ["on_stage", "on_unstage"]
+
+
+async def test_flyable_composes_with_readable_staging():
+    # Motor is StandardMovable + StandardFlyable + StandardReadable; the flyer's
+    # stage/unstage must NOT shadow StandardReadable's caching of hinted signals.
     logic = RecordingFlyableLogic()
 
-    class MyFlyer(StandardFlyable[int]):
+    class ReadableFlyer(StandardReadable, StandardFlyable[int]):
+        def __init__(self, name: str = ""):
+            with self.add_children_as_readables(StandardReadableFormat.HINTED_SIGNAL):
+                self.sig = soft_signal_rw(float)
+            super().__init__(name=name)
+
         @cached_property
         def flyable_logic(self) -> FlyableLogic[int]:
             return logic
 
     async with init_devices(mock=True):
-        flyer = MyFlyer(name="my_flyer")
+        device = ReadableFlyer(name="rf")
 
-    await flyer.prepare(3)
-    assert logic.prepared_with == [3]
+    await device.stage()
+    # StandardReadable contribution: the hinted signal is now cached (this raises
+    # "not being monitored" if StandardFlyable.stage had shadowed it).
+    await device.sig.read(cached=True)
+    # StandardFlyable contribution ran too.
+    assert logic.calls == ["stop"]
+
+    await device.unstage()
+    assert logic.calls == ["stop", "stop"]
+    # The cache is torn down on unstage.
+    with pytest.raises(RuntimeError, match="not being monitored"):
+        await device.sig.read(cached=True)

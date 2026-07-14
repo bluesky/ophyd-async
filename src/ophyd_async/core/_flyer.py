@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Generic
 
-from bluesky.protocols import Flyable, Preparable, Stageable
+from bluesky.protocols import Flyable, Preparable
 from pydantic import Field
 
-from ._device import Device
+from ._standard_base import _StandardBase
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
@@ -46,8 +46,20 @@ class FlyableLogic(Generic[T]):
         """
 
     async def stop(self) -> None:
-        """Optional hook to stop flying and wait for everything to be stopped."""
+        """Stop/disarm the flyer and wait for everything to be stopped.
+
+        Called by `on_stage` and `on_unstage` by default; override those instead
+        if stage and unstage need to differ.
+        """
         pass
+
+    async def on_stage(self) -> None:
+        """Set the flyer up on `stage()`. Defaults to `stop`."""
+        await self.stop()
+
+    async def on_unstage(self) -> None:
+        """Clean the flyer up on `unstage()`. Defaults to `stop`."""
+        await self.stop()
 
     def with_device(self, name: str = "") -> "StandardFlyable":
         """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
@@ -88,8 +100,7 @@ class FlyMotorInfo(ConfinedModel):
 
 
 class StandardFlyable(
-    Device,
-    Stageable,
+    _StandardBase,
     Preparable,
     Flyable,
     Generic[T],
@@ -98,8 +109,16 @@ class StandardFlyable(
 
     This class must be inherited and have a `flyable_logic` @cached_property.
     For an ephemeral flyer in a plan, call `FlyableLogic.with_device` instead of
-    inheriting.
+    inheriting. `stage()`/`unstage()` run the logic's `on_stage`/`on_unstage`
+    (which default to `stop`).
     """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # Contribute the flyer's stage/unstage hooks (composes with any other
+        # _StandardBase mix-in, e.g. StandardReadable on a Motor).
+        self._stage_funcs += (self._on_stage,)
+        self._unstage_funcs += (self._on_unstage,)
 
     @cached_property
     @abstractmethod
@@ -111,12 +130,12 @@ class StandardFlyable(
         """
 
     @AsyncStatus.wrap
-    async def stage(self) -> None:
-        await self.unstage()
+    async def _on_stage(self) -> None:
+        await self.flyable_logic.on_stage()
 
     @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        await self.flyable_logic.stop()
+    async def _on_unstage(self) -> None:
+        await self.flyable_logic.on_unstage()
 
     @AsyncStatus.wrap
     async def prepare(self, value: T) -> None:
