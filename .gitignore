@@ -95,3 +95,6 @@ ophyd_async/_version.py
 
 # jython cache
 .jython_cache/
+
+# local-only agent task state (see "Working pattern" in CLAUDE.md); fold-forward.md is still committed
+.claude/plans/*/STATE.md
