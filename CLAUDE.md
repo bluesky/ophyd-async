@@ -51,12 +51,13 @@ tox -p                  # all envs in parallel (CI equivalent)
 
 ## Working pattern (long, multi-session tasks)
 
+- **STATE.md is local-only** (git-ignored via `.claude/plans/`) — a private scratchpad, **never committed**. The durable, shareable record is the git history + the GitHub issue, not this file.
 - **Session start:** if `.claude/plans/<active-task>/STATE.md` exists, read it, verify against `git status` and `git log --oneline -10`, and flag discrepancies *before* doing work.
-- **After each subtask:** update STATE.md and commit it *with* the code change. Small, frequent commits; messages say *why*.
+- **After each subtask:** update STATE.md (uncommitted) and make a small, focused commit of just the code change. Small, frequent commits; messages say *why*.
 - **STATE.md schema:** Done (with SHAs) / In progress (with exact next command) / Decisions + rationale / Invariants / Open questions.
-- **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in local files.
-- **Test-deletion invariant:** never delete a test without appending its ID + justification to the task's `.claude/plans/<task>/fold-forward.md` in the same commit.
+- **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md. Make an ADR as part of the PR for anything substantial.
 - **One PR-sized slice per session.** Never rely on context surviving across sessions — files and git are the source of truth.
+- **PR closes its issues:** a PR body must have a `Fixes #NNN` (or `Closes #NNN`) line for **every** issue it resolves, so GitHub auto-closes them on merge — one line per issue on a multi-issue PR. After editing a PR body, re-read it back (web-UI edits can trim it) and confirm each closing line is present.
 
 ## Updating this guide
 
