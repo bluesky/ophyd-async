@@ -93,10 +93,18 @@ class MotorMoveLogic(MovableLogic[float]):
     dial_high_limit_travel: SignalRW[float]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
+    motor_done_move: SignalR[int]
 
     async def stop(self):
-        """Request to stop moving."""
-        await self.motor_stop.set(1)
+        """Request to stop moving, but only if the motor is currently moving.
+
+        This makes stop idempotent when the motor is already stopped, so a motor
+        that is both moved and staged in a run (e.g. `bp.scan`) is not stopped
+        twice -- once by the RunEngine (it stops everything it set) and once by
+        `unstage`.
+        """
+        if not await self.motor_done_move.get_value():
+            await self.motor_stop.set(1)
 
     async def check_move(self, new_position: float):
         """Check the positions are within limits.
@@ -325,6 +333,7 @@ class Motor(StandardMovable[float], StandardFlyable[FlyMotorInfo], StandardReada
             dial_high_limit_travel=self.dial_high_limit_travel,
             velocity=self.velocity,
             acceleration_time=self.acceleration_time,
+            motor_done_move=self.motor_done_move,
             max_velocity=self.max_velocity,
             motor_egu=self.motor_egu,
         )

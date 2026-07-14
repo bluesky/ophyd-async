@@ -349,6 +349,22 @@ async def test_complete(motor: Motor) -> None:
     assert await motor.user_setpoint.get_value() == 15.0
 
 
+@pytest.mark.parametrize(
+    "done_move, expect_stop",
+    [
+        (0, True),  # moving -> stop is issued
+        (1, False),  # already stopped -> no redundant STOP write
+    ],
+)
+async def test_stop_only_when_moving(motor: Motor, done_move: int, expect_stop: bool):
+    set_mock_value(motor.motor_done_move, done_move)
+    await motor.stop()
+    if expect_stop:
+        get_mock_put(motor.motor_stop).assert_called_once_with(1)
+    else:
+        get_mock_put(motor.motor_stop).assert_not_called()
+
+
 def test_core_notconnected_emits_deprecation_warning():
     with pytest.deprecated_call():
         from ophyd_async.epics.motor import MotorLimitsException  # noqa: F401
