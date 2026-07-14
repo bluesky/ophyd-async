@@ -3,11 +3,9 @@ from __future__ import annotations
 import inspect
 import re
 from collections.abc import Mapping
-from typing import Any
 
 from pydantic import (
     Field,
-    computed_field,
     field_validator,
 )
 
@@ -33,17 +31,18 @@ from ._util import EpicsCommandBackend
 
 
 class PviDeviceConnector(DeviceConnector):
-    """Connect to PVI structure served over PVA.
+    """Connect a `Device` to a PVI structure served over PVA.
 
-    At init, fill in all the type hinted signals. At connection check their
-    types and fill in any extra signals.
+    At construction, create the type-hinted signals, commands and sub-devices
+    from the `Device`'s annotations. At connection, discover the served PVI tree
+    and fill in each child, checking the type-hinted ones and adding any extra
+    ones the tree provides.
 
     :param prefix:
-        The PV prefix of the device, "PVI" will be appended to it to get the PVI
-        PV.
+        The PV prefix of the device; "PVI" is appended to it to get the PVI PV.
     :param error_hint:
-        If given, this will be appended to the error message if any of they type
-        hinted Signals are not present.
+        If given, appended to the error message when a type-hinted child is
+        missing from the served tree.
     """
 
     mock_device_vector_children: list[int] = [1, 2]
@@ -55,175 +54,138 @@ class PviDeviceConnector(DeviceConnector):
         self.pvi_pv = prefix + "PVI"
         self.error_hint = error_hint
 
-    def create_children_from_annotations(self, device: Device):
-        if not hasattr(self, "filler"):
+    def create_children_from_annotations(self, device: Device) -> None:
+        # Per the DeviceConnector contract this may be called more than once;
+        # having built the filler, subsequent calls are a no-op.
+        if hasattr(self, "filler"):
+            return
 
-            def _command_backend_factory(
-                sig: inspect.Signature | None,
-            ) -> EpicsCommandBackend:
-                # EPICS only supports void/void commands (plain PV put); typed
-                # Command[P, T] annotations are a mistake on an EPICS device.
-                if sig is not None:
-                    raise TypeError(
-                        f"{device.name}: EPICS only supports TriggerableCommand /"
-                        " Command[[], None]; typed Command with parameters is not"
-                        " yet supported over EPICS"
-                    )
-                return PvaCommandBackend()
+        def command_backend_factory(
+            sig: inspect.Signature | None,
+        ) -> EpicsCommandBackend:
+            # EPICS only supports void/void commands (a plain PV put); a typed
+            # Command[P, T] annotation is a mistake on an EPICS device.
+            if sig is not None:
+                raise TypeError(
+                    f"{device.name}: EPICS only supports TriggerableCommand /"
+                    " Command[[], None]; typed Command with parameters is not"
+                    " yet supported over EPICS"
+                )
+            return PvaCommandBackend()
 
-            self.filler = DeviceFiller(
-                device=device,
-                signal_backend_factory=PvaSignalBackend,
-                device_connector_factory=PviDeviceConnector,
-                command_backend_factory=_command_backend_factory,
-            )
-            # Signals can be filled in with EpicsSignalSuffix and checked at runtime
-            for backend, annotations in self.filler.create_signals_from_annotations(
-                filled=False
-            ):
-                fill_backend_with_prefix(self.prefix, backend, annotations)
-            # Commands are filled from PVI tree at connect time
-            for backend, annotations in self.filler.create_commands_from_annotations(
-                filled=False
-            ):
-                fill_command_with_prefix(self.prefix, backend, annotations)
-            # Devices will be created with unfilled PviDeviceConnectors
-            list(self.filler.create_devices_from_annotations(filled=False))
-            self.filler.check_created()
+        self.filler = DeviceFiller(
+            device=device,
+            signal_backend_factory=PvaSignalBackend,
+            device_connector_factory=PviDeviceConnector,
+            command_backend_factory=command_backend_factory,
+        )
+        # Address the type-hinted signals/commands now; sub-devices get an
+        # unfilled connector. The rest is filled from the PVI tree at connect.
+        for backend, extras in self.filler.create_signals_from_annotations(
+            filled=False
+        ):
+            fill_backend_with_prefix(self.prefix, backend, extras)
+        for backend, extras in self.filler.create_commands_from_annotations(
+            filled=False
+        ):
+            fill_command_with_prefix(self.prefix, backend, extras)
+        list(self.filler.create_devices_from_annotations(filled=False))
+        self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: LazyMock) -> None:
+        # A DeviceVector gets fabricated mock children; a DeviceMap does not (its
+        # entries come from the served PVI tree, so in mock mode it stays empty).
         if isinstance(device, DeviceVector):
             self.filler.create_device_dict_entries_to_mock(
                 self.mock_device_vector_children
             )
-        # A DeviceMap has no fabricated mock children: its entries come from the
-        # served PVI tree (see connect_real), so in mock mode it stays empty.
-        # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
 
     async def connect_real(
         self, device: Device, timeout: float, force_reconnect: bool
     ) -> None:
-        if not self.pvi_tree:
-            # Top-level device, so discover PVI tree
+        if self.pvi_tree is None:
+            # Top-level device: discover the served PVI tree.
             self.pvi_tree = await PviTree.build_device_tree(
                 pvi_pv=self.pvi_pv, timeout=timeout
             )
+        tree = self.pvi_tree
 
-        if isinstance(device, DeviceMap):
-            # A DeviceMap is only ever created from an explicit `DeviceMap[...]`
-            # annotation. Its string-keyed entries are the *normal* named entries
-            # of its PVI node (a, b, ...), all of the map's single element type
-            # (unlike a DeviceVector, whose entries are "__N" integer keys).
-            self._fill_device_map(device, self.pvi_tree)
-        else:
-            # Fill all sub devices
-            for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
-                if device_sub_tree.vector_children:
-                    connector = self.filler.fill_child_device(
-                        device_name, device_type=DeviceVector
-                    )
-                else:
-                    # This is a Device (or an explicitly annotated DeviceMap,
-                    # whose type the filler already knows from the annotation)
-                    connector = self.filler.fill_child_device(device_name)
-                connector.pvi_tree = device_sub_tree
-                connector.pvi_pv = device_sub_tree.pvi_pv
+        # A DeviceMap is filled from its node's normal named entries, keyed by
+        # name. Anything else fills its named entries as attributes, plus any
+        # "__N" entries into the int-keyed DeviceVector that it is.
+        is_map = isinstance(device, DeviceMap)
+        self._fill_named_entries(tree, as_map=is_map)
+        if not is_map:
+            self._fill_vector_children(device, tree)
 
-            # Fill the DeviceVector (int-keyed "__N") children
-            self._fill_dict_children(
-                device,
-                self.pvi_tree.vector_children,
-                is_signal=self.pvi_tree.is_signal_vector,
-                is_command=self.pvi_tree.is_command_vector,
-                kind="DeviceVector",
-            )
-
-            # Fill all signals
-            for signal_name, signal_details in self.pvi_tree.signals.items():
-                backend = self.filler.fill_child_signal(
-                    signal_name, signal_details.signal_type, None
-                )
-                backend.read_pv = signal_details.read_pv
-                backend.write_pv = signal_details.write_pv
-
-            # Fill all commands ("x" entries from PVI tree)
-            for command_name, execute_pv in self.pvi_tree.commands.items():
-                backend = self.filler.fill_child_command(
-                    command_name, TriggerableCommand
-                )
-                backend.write_pv = execute_pv
-
-        # Check that all the requested children have been filled
         suffix = f"\n{self.error_hint}" if self.error_hint else ""
-        self.filler.check_filled(f"{self.pvi_pv}: {self.pvi_tree}{suffix}")
-        # Set the name of the device to name all children
+        self.filler.check_filled(f"{self.pvi_pv}: {tree}{suffix}")
         device.set_name(device.name)
         return await super().connect_real(device, timeout, force_reconnect)
 
-    def _fill_device_map(self, device: Device, pvi_tree: PviTree) -> None:
-        """Fill a `DeviceMap` from the normal named entries of its PVI node.
+    def _fill_named_entries(self, tree: PviTree, *, as_map: bool) -> None:
+        """Fill a node's normal (non-"__N") entries.
 
-        The map's element type is uniform, so its entries arrive as signals,
-        commands or sub-devices (mutually exclusive); each is added to the map
-        keyed by its PVI name and type-checked against the map's element type by
-        the filler.
+        `as_map=True` adds each entry to a `DeviceMap` keyed by its name;
+        `as_map=False` sets it as a plain attribute on the device.
         """
-        if pvi_tree.signals:
-            self._fill_dict_children(device, pvi_tree.signals, True, False, "DeviceMap")
-        if pvi_tree.commands:
-            self._fill_dict_children(
-                device, pvi_tree.commands, False, True, "DeviceMap"
-            )
-        if pvi_tree.sub_devices:
-            self._fill_dict_children(
-                device, pvi_tree.sub_devices, False, False, "DeviceMap"
+        for name, details in tree.signals.items():
+            self._fill_signal(name, details, map_key=name if as_map else None)
+        for name, execute_pv in tree.commands.items():
+            self._fill_command(name, execute_pv, map_key=name if as_map else None)
+        for name, sub_tree in tree.sub_devices.items():
+            # A sub-tree with "__N" entries is an (undeclared) DeviceVector;
+            # for declared children the filler already knows the type.
+            device_type = DeviceVector if sub_tree.vector_children else Device
+            self._fill_sub_device(
+                name,
+                sub_tree,
+                device_type=device_type,
+                map_key=name if as_map else None,
             )
 
-    def _fill_dict_children(
-        self,
-        device: Device,
-        children: Mapping[Any, PviTree | SignalDetails | str],
-        is_signal: bool,
-        is_command: bool,
-        kind: str,
+    def _fill_vector_children(self, device: Device, tree: PviTree) -> None:
+        """Fill the int-keyed "__N" entries into the `DeviceVector` `device`.
+
+        `PviTree` validates the entries are all one kind, so the child value type
+        selects how to fill it.
+        """
+        for key, child in tree.vector_children.items():
+            if isinstance(child, SignalDetails):
+                self._fill_signal(device.name, child, map_key=key)
+            elif isinstance(child, PviTree):
+                self._fill_sub_device(device.name, child, map_key=key)
+            else:  # a bare execute-PV str is a command
+                self._fill_command(device.name, child, map_key=key)
+
+    def _fill_signal(
+        self, name: str, details: SignalDetails, map_key: int | str | None = None
     ) -> None:
-        """Fill the entries of a `DeviceVector` (int keys) or `DeviceMap` (str keys).
+        backend = self.filler.fill_child_signal(name, details.signal_type, map_key)
+        backend.read_pv = details.read_pv
+        backend.write_pv = details.write_pv
 
-        `children` maps each key to its `SignalDetails` (signal dict),
-        execute-PV `str` (command dict) or `PviTree` (device dict).
-        """
-        for key, child in children.items():
-            if is_signal:
-                if not isinstance(child, SignalDetails):
-                    raise TypeError(
-                        f"Failed to fill {kind}. "
-                        f"Expected SignalDetails, got {type(child)}"
-                    )
-                backend = self.filler.fill_child_signal(
-                    device.name, child.signal_type, key
-                )
-                backend.read_pv = child.read_pv
-                backend.write_pv = child.write_pv
-            elif is_command:
-                if not isinstance(child, str):
-                    raise TypeError(
-                        f"Failed to fill {kind}. "
-                        f"Expected str execute PV, got {type(child)}"
-                    )
-                backend = self.filler.fill_child_command(
-                    device.name, TriggerableCommand, key
-                )
-                backend.write_pv = child
-            else:
-                if not isinstance(child, PviTree):
-                    raise TypeError(
-                        f"Failed to fill {kind}. Expected PviTree, got {type(child)}"
-                    )
-                connector = self.filler.fill_child_device(device.name, map_key=key)
-                connector.pvi_tree = child
-                connector.pvi_pv = child.pvi_pv
+    def _fill_command(
+        self, name: str, execute_pv: str, map_key: int | str | None = None
+    ) -> None:
+        backend = self.filler.fill_child_command(name, TriggerableCommand, map_key)
+        backend.write_pv = execute_pv
+
+    def _fill_sub_device(
+        self,
+        name: str,
+        sub_tree: PviTree,
+        *,
+        device_type: type[Device] = Device,
+        map_key: int | str | None = None,
+    ) -> None:
+        connector = self.filler.fill_child_device(
+            name, device_type=device_type, map_key=map_key
+        )
+        connector.pvi_tree = sub_tree
+        connector.pvi_pv = sub_tree.pvi_pv
 
 
 class SignalDetails(ConfinedModel):
@@ -342,10 +304,6 @@ class PviTree(ConfinedModel):
     :param vector_children:
         A mapping of int to `PviTree` objects representing child devices of a vector
         device.
-
-    :attr is_signal_vector:
-        A computed property returning True if any child device in `vector_children`
-        is an instance of `SignalDetails`, else False.
     """
 
     pvi_pv: str = Field(default="")
@@ -353,7 +311,7 @@ class PviTree(ConfinedModel):
     commands: Mapping[str, str] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
     # A `str` vector_child is the execute PV of a DeviceVector of commands
-    # (a "__N" entry whose only key is "x") -- see is_command_vector below.
+    # (a "__N" entry whose only key is "x").
     vector_children: Mapping[int, PviTree | SignalDetails | str] = Field(
         default_factory=dict
     )
@@ -447,18 +405,6 @@ class PviTree(ConfinedModel):
         return PviTree(
             vector_children=sub_trees,
         )
-
-    @computed_field
-    @property
-    def is_signal_vector(self) -> bool:
-        """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
-        return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
-
-    @computed_field
-    @property
-    def is_command_vector(self) -> bool:
-        """Flags if a PviTree represents a DeviceVector of Commands."""
-        return any(isinstance(v, str) for v in self.vector_children.values())
 
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
