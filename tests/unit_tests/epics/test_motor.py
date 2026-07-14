@@ -306,7 +306,7 @@ async def test_prepare(motor: Motor, target_position: float, expected_velocity: 
             if value == target_position:
                 break
 
-    motor.set = AsyncMock(side_effect=wait_for_set)
+    object.__setattr__(motor, "set", AsyncMock(side_effect=wait_for_set))
 
     async def do_set(status: AsyncStatus):
         assert not status.done
@@ -329,7 +329,8 @@ async def test_prepare(motor: Motor, target_position: float, expected_velocity: 
 
 
 async def test_kickoff(motor: Motor):
-    motor.set = MagicMock()
+    mock_set = MagicMock()
+    object.__setattr__(motor, "set", mock_set)
     with pytest.raises(
         RuntimeError,
         match=f"Motor {motor.name} must be prepared before attempting to kickoff",
@@ -345,7 +346,7 @@ async def test_kickoff(motor: Motor):
         time_for_move=1,
     )
     await motor.kickoff()
-    motor.set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
+    mock_set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(motor: Motor) -> None:

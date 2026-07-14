@@ -676,8 +676,18 @@ async def set_and_wait_for_other_value(
 
     # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
-        async with asyncio.timeout(timeout):
-            await checker.got_first_value.wait()
+        # NOTE: this timeout races wait_task's own internal timeout (same
+        # duration, started moments earlier) - whichever elapses first wins.
+        # That race is harmless because each path reports its own distinct,
+        # helpful message.
+        try:
+            async with asyncio.timeout(timeout):
+                await checker.got_first_value.wait()
+        except TimeoutError as exc:
+            raise TimeoutError(
+                f"{match_signal.name} didn't provide an initial value within "
+                f"{timeout}s, is it connected?"
+            ) from exc
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
