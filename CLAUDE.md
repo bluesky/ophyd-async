@@ -51,12 +51,11 @@ tox -p                  # all envs in parallel (CI equivalent)
 
 ## Working pattern (long, multi-session tasks)
 
-- **STATE.md is local-only** (git-ignored via `.claude/plans/*/STATE.md`) — a private scratchpad, **never committed**. The durable, shareable record is the git history + the GitHub issue, not this file.
+- **STATE.md is local-only** (git-ignored via `.claude/plans/`) — a private scratchpad, **never committed**. The durable, shareable record is the git history + the GitHub issue, not this file.
 - **Session start:** if `.claude/plans/<active-task>/STATE.md` exists, read it, verify against `git status` and `git log --oneline -10`, and flag discrepancies *before* doing work.
 - **After each subtask:** update STATE.md (uncommitted) and make a small, focused commit of just the code change. Small, frequent commits; messages say *why*.
 - **STATE.md schema:** Done (with SHAs) / In progress (with exact next command) / Decisions + rationale / Invariants / Open questions.
-- **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md.
-- **Test-deletion invariant:** never delete a test without appending its ID + justification to the task's `.claude/plans/<task>/fold-forward.md` in the same commit.
+- **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md. Make an ADR as part of the PR for anything substantial.
 - **One PR-sized slice per session.** Never rely on context surviving across sessions — files and git are the source of truth.
 
 ## Updating this guide
