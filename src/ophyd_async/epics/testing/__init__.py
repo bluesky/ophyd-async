@@ -15,6 +15,7 @@ from ._launch import generate_random_pv_prefix, start_ioc
 from ._pvi_nested_devices import (
     PVI_NESTED_RECORDS,
     EpicsTestPviLeafDevice,
+    EpicsTestPviMapDevice,
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "EpicsTestPvaDevice",
     "EpicsTestPviDevice",
     "EpicsTestPviLeafDevice",
+    "EpicsTestPviMapDevice",
     "EpicsTestPviNestedDevice",
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",

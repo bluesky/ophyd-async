@@ -360,6 +360,18 @@ def test_setitem_with_non_device_value(collection_cls, key):
         collection[key] = "not_a_device"
 
 
+def test_device_map_bans_device_attributes():
+    # A DeviceMap child must be set via `device_map[key] = child` so it gets a
+    # string key; setting a Device as an attribute is rejected (but `parent`
+    # and non-Device attributes are still allowed).
+    device_map = DeviceMap(children={})
+    with pytest.raises(AttributeError, match="can only have string named children"):
+        device_map.child = MagicMock(spec=Device)
+    # Non-Device attributes and `parent` are unaffected
+    device_map.some_value = 42
+    device_map.parent = MagicMock(spec=Device)
+
+
 def test_device_filler_check_filled_with_optional_signals(mock_device_and_filler):
     """Test DeviceFiller.check_filled with both mandatory and optional Signals."""
 

@@ -33,8 +33,9 @@ class TangoDevice(Device):
         trl and awaited when the device is connected.
     :param connector: A pre-built `DeviceConnector`, used when this device is
         created as a declarative sub-device of another `TangoDevice` (the parent
-        connector builds it). When given, `trl`/`support_events`/
-        `auto_fill_signals` are ignored.
+        connector builds it). Mutually exclusive with `trl`: pass one or the
+        other, not both. When given, `support_events`/`auto_fill_signals` are
+        ignored (they are configured on the supplied connector instead).
     """
 
     _trl: str = ""
@@ -47,6 +48,8 @@ class TangoDevice(Device):
         auto_fill_signals: bool = True,
         connector: DeviceConnector | None = None,
     ) -> None:
+        if connector is not None and trl:
+            raise ValueError("TangoDevice takes either `trl` or `connector`, not both")
         self._trl = trl
         if connector is None:
             connector = TangoDeviceConnector(

@@ -432,6 +432,16 @@ class DeviceMap(MutableMapping[str, DeviceT], Device):
         self._children[key] = value
         value.parent = self
 
+    def __setattr__(self, name: str, child: Any) -> None:
+        # Child Devices must be set via `device_map[key] = child` so they get a
+        # string key; setting them as attributes would give them no key.
+        if name != "parent" and isinstance(child, Device):
+            raise AttributeError(
+                "DeviceMap can only have string named children, "
+                "set via device_map[key] = child"
+            )
+        super().__setattr__(name, child)
+
     def __delitem__(self, key: str) -> None:
         del self._children[key]
 

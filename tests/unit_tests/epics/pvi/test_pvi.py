@@ -250,17 +250,15 @@ class MapDeviceFromAnnotations(Device):
     device_map: DeviceMap[SignalR[float]]
 
 
-async def test_map_device_from_annotations():
+async def test_device_map_is_empty_in_mock_mode():
+    # A DeviceMap is created from its annotation but, unlike a DeviceVector, has
+    # no fabricated mock children: its entries come from the served PVI tree, so
+    # in mock mode (no tree) it connects empty. Its real, annotation-driven fill
+    # is covered end-to-end against a live IOC in
+    # tests/system_tests/epics/core/test_pvi_nested.py.
     async with init_devices(mock=True):
         test_device = with_pvi_connector(MapDeviceFromAnnotations, "PREFIX:")
 
-    assert test_device.name == "test_device"
+    assert isinstance(test_device.device_map, DeviceMap)
     assert test_device.device_map.name == "test_device-device_map"
-
-    assert test_device.device_map["mock1"].name == "test_device-device_map-mock1"
-    assert isinstance(test_device.device_map["mock1"], SignalR)
-    assert test_device.device_map["mock1"]._connector.backend.datatype is float
-
-    assert test_device.device_map["mock2"].name == "test_device-device_map-mock2"
-    assert isinstance(test_device.device_map["mock2"], SignalR)
-    assert test_device.device_map["mock2"]._connector.backend.datatype is float
+    assert len(test_device.device_map) == 0

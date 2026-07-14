@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from ophyd_async.core import Device, DeviceVector, SignalRW, TriggerableCommand
+from ophyd_async.core import (
+    Device,
+    DeviceMap,
+    DeviceVector,
+    SignalRW,
+    TriggerableCommand,
+)
 from ophyd_async.epics.core import EpicsDevice
 
 PVI_NESTED_RECORDS = Path(__file__).parent / "_pvi_nested_records.db"
@@ -41,6 +47,21 @@ class EpicsTestPviNestedDevice(EpicsDevice):
     signal_vector: DeviceVector[SignalRW[float]]
     command_vector: DeviceVector[TriggerableCommand]
     optional_signal: SignalRW[int] | None
+
+
+class EpicsTestPviMapDevice(EpicsDevice):
+    """Real-IOC-backed `DeviceMap` test device, served under the `mapd:` group.
+
+    Proves that a `DeviceMap` is created only from an explicit `DeviceMap[...]`
+    annotation and filled from a node's *normal* named entries, keyed by name
+    (`signal_map` -> `{"a", "b"}`, `device_map` -> `{"one", "two"}`), with each
+    entry type-checked against the map's element type -- the counterpart to
+    `EpicsTestPviNestedDevice`'s integer-keyed `DeviceVector`s. Construct with
+    `with_pvi=True` and a prefix ending `mapd:`.
+    """
+
+    signal_map: DeviceMap[SignalRW[float]]
+    device_map: DeviceMap[EpicsTestPviLeafDevice]
 
 
 class EpicsTestPviNestedDeviceMissingChild(EpicsDevice):

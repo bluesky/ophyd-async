@@ -35,6 +35,16 @@ def test_declarative_tango_subdevice_constructs():
     assert isinstance(parent.sub, TangoSub)
 
 
+def test_tango_device_rejects_both_trl_and_connector():
+    # A TangoDevice takes either a trl (user) or a connector (parent filler),
+    # never both -- passing both is ambiguous and rejected.
+    from ophyd_async.tango.core import TangoDeviceConnector
+
+    connector = TangoDeviceConnector(trl=None, support_events=False)
+    with pytest.raises(ValueError, match="either `trl` or `connector`, not both"):
+        TangoSub(trl="test/sub/1", connector=connector)
+
+
 async def test_declarative_tango_subdevice_mock_connect_and_reads():
     async with init_devices(mock=True):
         parent = TangoParent("test/parent/1")

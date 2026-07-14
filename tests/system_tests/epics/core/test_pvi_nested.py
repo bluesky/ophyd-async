@@ -2,10 +2,11 @@ import os
 
 import pytest
 
-from ophyd_async.core import Device, DeviceVector
+from ophyd_async.core import Device, DeviceMap, DeviceVector, SignalRW
 from ophyd_async.epics.testing import (
     IOC,
     EpicsTestPviLeafDevice,
+    EpicsTestPviMapDevice,
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
     generate_random_pv_prefix,
@@ -142,3 +143,47 @@ async def test_undeclared_device_vector_of_devices(
     assert isinstance(extra_devices[1], Device)
     assert await extra_devices[1].signal_rw.get_value() == 30
     assert await extra_devices[2].signal_rw.get_value() == 40
+
+
+@pytest.fixture
+async def map_device(nested_ioc_and_prefix) -> EpicsTestPviMapDevice:
+    _, prefix = nested_ioc_and_prefix
+    # The DeviceMap structure is served under its own "mapd:" group (see
+    # _pvi_nested_records.db) so it doesn't perturb EpicsTestPviNestedDevice.
+    device = EpicsTestPviMapDevice(f"{prefix}mapd:", with_pvi=True, name="map_device")
+    await device.connect(timeout=TIMEOUT)
+    return device
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_of_signals(map_device: EpicsTestPviMapDevice):
+    # A DeviceMap is filled from its node's normal named entries (a, b), keyed
+    # by name, each type-checked against the map's SignalRW[float] element type.
+    assert isinstance(map_device.signal_map, DeviceMap)
+    assert set(map_device.signal_map) == {"a", "b"}
+    assert isinstance(map_device.signal_map["a"], SignalRW)
+    assert await map_device.signal_map["a"].get_value() == 1.5
+    assert await map_device.signal_map["b"].get_value() == 2.5
+    await map_device.signal_map["a"].set(15.5)
+    assert await map_device.signal_map["a"].get_value() == 15.5
+    assert await map_device.signal_map["b"].get_value() == 2.5
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_naming_and_parenting(map_device: EpicsTestPviMapDevice):
+    assert map_device.signal_map.name == "map_device-signal_map"
+    assert map_device.signal_map["a"].name == "map_device-signal_map-a"
+    assert map_device.signal_map.parent is map_device
+    assert map_device.signal_map["a"].parent is map_device.signal_map
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_of_devices(map_device: EpicsTestPviMapDevice):
+    # A DeviceMap of Devices: each named entry (one, two) is created as the
+    # map's EpicsTestPviLeafDevice element type and recursed into.
+    assert isinstance(map_device.device_map, DeviceMap)
+    assert set(map_device.device_map) == {"one", "two"}
+    assert isinstance(map_device.device_map["one"], EpicsTestPviLeafDevice)
+    assert await map_device.device_map["one"].signal_rw.get_value() == 11
+    assert await map_device.device_map["two"].signal_rw.get_value() == 22
+    await map_device.device_map["one"].signal_x.trigger()
