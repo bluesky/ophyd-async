@@ -126,6 +126,23 @@ class AttributeData(Generic[T]):
     def random_value(self):
         return choice(self.random_put_values)
 
+    def distinct_value(self):
+        """A put value deterministically guaranteed to differ from `initial`.
+
+        `random_value` draws from `random_put_values` with no "differ from
+        initial" exclusion, so for a tiny value space (e.g. `a_bool`'s
+        `{False, True}`) every draw can coincide with `initial` - a no-op set
+        fires no change event, so a caller relying on one would hang. Scanning
+        the declared choices in order and returning the first that differs is
+        deterministic, so it never depends on luck. `random_put_values` always
+        contains a value distinct from `initial` for every field this device
+        serves.
+        """
+        for value in self.random_put_values:
+            if not np.array_equal(value, self.initial):
+                return value
+        raise ValueError(f"No put value for {self.name} differs from its initial")
+
 
 class ArrayData(AttributeData):
     def random_value(self):
@@ -134,10 +151,30 @@ class ArrayData(AttributeData):
             array[idx] = choice(self.random_put_values)
         return array
 
+    def distinct_value(self):
+        # Flip just the first element to a choice that differs from it; that
+        # alone guarantees the whole array differs from `initial`.
+        array = self.initial.copy()
+        first = array.flat[0]
+        for value in self.random_put_values:
+            if not np.array_equal(value, first):
+                array.flat[0] = value
+                return array
+        raise ValueError(f"No put value for {self.name} differs from its initial")
+
 
 class SequenceData(AttributeData):
     def random_value(self):
         return [choice(self.random_put_values) for _ in range(len(self.initial))]
+
+    def distinct_value(self):
+        # As ArrayData, but for a plain (non-numpy) sequence.
+        values = list(self.initial)
+        for value in self.random_put_values:
+            if not np.array_equal(value, values[0]):
+                values[0] = value
+                return values
+        raise ValueError(f"No put value for {self.name} differs from its initial")
 
 
 def build_everything_signal_info() -> dict[str, AttributeData]:
