@@ -95,3 +95,6 @@ ophyd_async/_version.py
 
 # jython cache
 .jython_cache/
+
+# local-only agent tasks (see "Working pattern" in CLAUDE.md)
+.claude/plans

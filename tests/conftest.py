@@ -3,7 +3,6 @@ import os
 import pprint
 import signal
 import subprocess
-import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -19,9 +18,6 @@ from ophyd_async.core import (
     StaticPathProvider,
 )
 
-PANDA_RECORD = str(
-    Path(__file__).parent / "unit_tests" / "fastcs" / "panda" / "db" / "panda.db"
-)
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent
     / "unit_tests"
@@ -176,42 +172,6 @@ def RE(request: FixtureRequest):
 
     request.addfinalizer(clean_event_loop)
     return RE
-
-
-@pytest.fixture(scope="module", params=["pva"])
-def panda_pva():
-    processes = [
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "epicscorelibs.ioc",
-                "-m",
-                macros,
-                "-d",
-                PANDA_RECORD,
-            ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-        )
-        for macros in [
-            "INCLUDE_EXTRA_BLOCK=,INCLUDE_EXTRA_SIGNAL=",
-            "EXCLUDE_WIDTH=#,IOC_NAME=PANDAQSRVIB",
-            "EXCLUDE_PCAP=#,IOC_NAME=PANDAQSRVI",
-        ]
-    ]
-    time.sleep(2)
-
-    for p in processes:
-        assert not p.poll(), p.stdout.read()
-
-    yield processes
-
-    for p in processes:
-        p.terminate()
-        p.communicate()
 
 
 @pytest.fixture
