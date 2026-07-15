@@ -315,10 +315,7 @@ async def test_prepare(
 
 
 async def test_kickoff(motor: Motor):
-    with pytest.raises(
-        RuntimeError,
-        match=f"Motor {motor.name} must be prepared before attempting to kickoff",
-    ):
+    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
         await motor.kickoff()
     set_mock_value(motor.acceleration_time, 1)
     set_mock_value(motor.max_velocity, 100)
@@ -332,9 +329,7 @@ async def test_kickoff(motor: Motor):
 
 
 async def test_complete(motor: Motor) -> None:
-    with pytest.raises(
-        RuntimeError, match=f"kickoff for motor {motor.name} not called"
-    ):
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
         await motor.complete()
     set_mock_value(motor.acceleration_time, 1)
     set_mock_value(motor.max_velocity, 100)

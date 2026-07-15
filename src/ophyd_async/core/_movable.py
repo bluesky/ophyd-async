@@ -1,7 +1,7 @@
 import asyncio
 import time
 from abc import abstractmethod
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
@@ -45,6 +45,39 @@ class MoveTimeout:
 
 
 TimeoutCalculator = Callable[[], float | None]
+
+
+async def observe_watcher_updates(
+    readback: SignalR[SignalDatatypeT],
+    initial: SignalDatatypeT,
+    target: SignalDatatypeT,
+    name: str,
+    units: str | None,
+    precision: int | None,
+    done_status: AsyncStatus,
+) -> AsyncIterator[WatcherUpdate]:
+    """Yield a `WatcherUpdate` per readback change until `done_status` completes.
+
+    Shared by `StandardMovable.set` and `StandardFlyable.complete` so a flyable
+    move reports progress to watchers the same way a `set()` does.
+
+    :param readback: the signal whose value is reported as `current`.
+    :param initial: the position the move started from.
+    :param target: the position the move is heading to.
+    :param name: the device name reported on each update.
+    :param units: the engineering units of the position.
+    :param precision: the display precision of the position.
+    :param done_status: stops the iterator when it completes.
+    """
+    async for current_position in observe_value(readback, done_status=done_status):
+        yield WatcherUpdate(
+            current=current_position,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=units,
+            precision=precision,
+        )
 
 
 @dataclass
@@ -184,18 +217,16 @@ class StandardMovable(
                     new_position=new_position, timeout=MoveTimeout(move_timeout)
                 )
             ) as self._move_status:
-                async for current_position in observe_value(
+                async for update in observe_watcher_updates(
                     self.movable_logic.readback,
+                    initial=old_position,
+                    target=new_position,
+                    name=self.name,
+                    units=units,
+                    precision=precision,
                     done_status=self._move_status,
                 ):
-                    yield WatcherUpdate(
-                        current=current_position,
-                        initial=old_position,
-                        target=new_position,
-                        name=self.name,
-                        unit=units,
-                        precision=precision,
-                    )
+                    yield update
         # Convert cancellation into the appropriate stop result.
         # If stop(success=True) was called, complete without raising.
         # If stop(success=False) was called, raise a RuntimeError below.

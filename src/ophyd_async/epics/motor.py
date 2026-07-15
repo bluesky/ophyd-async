@@ -6,8 +6,7 @@ https://github.com/epics-modules/motor
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 
 from ophyd_async.core import (
@@ -26,11 +25,9 @@ from ophyd_async.core import (
     StandardReadable,
     StrictEnum,
     TimeoutCalculator,
-    WatcherUpdate,
     callback_on_mock_put,
     default_mock_class,
     error_if_none,
-    observe_value,
     set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -83,8 +80,26 @@ class UseSetMode(StrictEnum):
 
 
 @dataclass
-class MotorMoveLogic(MovableLogic[float]):
-    """Add the specific logic for moving a motor."""
+class MotorFlyCtx:
+    """State threaded through a motor fly scan (prepare -> kickoff -> complete)."""
+
+    #: The info the scan was prepared with, produced by `on_prepare`.
+    fly_info: FlyMotorInfo
+    #: The move to the end position, produced by `on_kickoff`.
+    status: AsyncStatus | None = None
+
+
+@dataclass
+class MotorFlyableMovableLogic(
+    MovableLogic[float], FlyableLogic[FlyMotorInfo, MotorFlyCtx]
+):
+    """Combined move + fly logic for a motor record.
+
+    A single logic object backs a `Motor`'s `movable_logic` and `flyable_logic`:
+    it implements `MovableLogic` (the motor-record move, limit and timeout logic)
+    and `FlyableLogic` (the fly hooks, which reuse `move`/`check_move` and carry
+    all per-scan state in a `MotorFlyCtx` rather than on the logic).
+    """
 
     motor_stop: SignalW[int]
     low_limit_travel: SignalRW[float]
@@ -94,6 +109,8 @@ class MotorMoveLogic(MovableLogic[float]):
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
     motor_done_move: SignalR[int]
+    max_velocity: SignalR[float]
+    motor_egu: SignalR[str]
 
     async def stop(self):
         """Request to stop moving, but only if the motor is currently moving.
@@ -171,29 +188,8 @@ class MotorMoveLogic(MovableLogic[float]):
         """Move by setting the setpoint and waiting for put completion."""
         await self.setpoint.set(new_position, timeout=timeout())
 
-
-@dataclass
-class MotorFlyableMovableLogic(MotorMoveLogic, FlyableLogic[FlyMotorInfo]):
-    """Combined move + fly logic for a motor record.
-
-    Implements both `MovableLogic` (via `MotorMoveLogic`) and `FlyableLogic`, so a
-    single instance can back a `Motor`'s `movable_logic` and `flyable_logic`. The
-    fly hooks reuse `move`/`check_move` from the movable side.
-    """
-
-    max_velocity: SignalR[float]
-    motor_egu: SignalR[str]
-
-    _fly_info: FlyMotorInfo | None = field(default=None, init=False, repr=False)
-    _fly_status: AsyncStatus | None = field(default=None, init=False, repr=False)
-    _fly_initial: float = field(default=0.0, init=False, repr=False)
-    _fly_target: float = field(default=0.0, init=False, repr=False)
-    _fly_units: str | None = field(default=None, init=False, repr=False)
-    _fly_precision: float | None = field(default=None, init=False, repr=False)
-
-    async def on_prepare(self, value: FlyMotorInfo) -> None:
+    async def on_prepare(self, value: FlyMotorInfo) -> MotorFlyCtx:
         """Move to the beginning of a run-up distance ready for a fly scan."""
-        self._fly_info = value
         # Velocity at which the motor travels from start to end, in motor egu/s.
         max_speed, egu = await asyncio.gather(
             self.max_velocity.get_value(), self.motor_egu.get_value()
@@ -217,43 +213,26 @@ class MotorFlyableMovableLogic(MotorMoveLogic, FlyableLogic[FlyMotorInfo]):
         await self.move(ramp_up_start_pos, lambda: timeout)
         # Set the velocity we will use for the fly scan
         await self.velocity.set(abs(value.velocity))
+        return MotorFlyCtx(fly_info=value)
 
-    async def on_kickoff(self) -> None:
+    async def on_kickoff(self, ctx: MotorFlyCtx) -> MotorFlyCtx:
         """Begin moving the motor from the prepared position to the final position."""
-        fly_info = error_if_none(
-            self._fly_info,
-            f"Motor {self.readback.name} must be prepared before attempting to "
-            "kickoff.",
-        )
         acceleration_time = await self.acceleration_time.get_value()
-        self._fly_target = fly_info.ramp_down_end_pos(acceleration_time)
-        (
-            self._fly_initial,
-            (self._fly_units, self._fly_precision),
-        ) = await asyncio.gather(
-            self.readback.get_value(),
-            self.get_units_precision(),
-        )
-        if fly_info.timeout == CALCULATE_TIMEOUT:
-            timeout = await self.calculate_timeout(self._fly_initial, self._fly_target)
+        target = ctx.fly_info.ramp_down_end_pos(acceleration_time)
+        if ctx.fly_info.timeout == CALCULATE_TIMEOUT:
+            initial = await self.readback.get_value()
+            timeout = await self.calculate_timeout(initial, target)
         else:
-            timeout = fly_info.timeout
-        self._fly_status = AsyncStatus(self.move(self._fly_target, lambda: timeout))
+            timeout = ctx.fly_info.timeout
+        ctx.status = AsyncStatus(self.move(target, lambda: timeout))
+        return ctx
 
-    async def on_complete(self) -> AsyncIterator[WatcherUpdate[float]]:
-        """Yield progress until the motor reaches the fly-scan end position."""
+    async def on_complete(self, ctx: MotorFlyCtx) -> None:
+        """Block until the motor reaches the fly-scan end position."""
         status = error_if_none(
-            self._fly_status, f"kickoff for motor {self.readback.name} not called."
+            ctx.status, f"kickoff for motor {self.readback.name} not called."
         )
-        async for current in observe_value(self.readback, done_status=status):
-            yield WatcherUpdate(
-                current=current,
-                initial=self._fly_initial,
-                target=self._fly_target,
-                name=self.readback.name,
-                unit=self._fly_units,
-                precision=self._fly_precision,
-            )
+        await status
 
 
 class InstantMotorMock(DeviceMock["Motor"]):
@@ -278,7 +257,9 @@ class InstantMotorMock(DeviceMock["Motor"]):
 
 
 @default_mock_class(InstantMotorMock)
-class Motor(StandardMovable[float], StandardFlyable[FlyMotorInfo], StandardReadable):
+class Motor(
+    StandardMovable[float], StandardFlyable[FlyMotorInfo, MotorFlyCtx], StandardReadable
+):
     """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:
@@ -339,9 +320,9 @@ class Motor(StandardMovable[float], StandardFlyable[FlyMotorInfo], StandardReada
         )
 
     @cached_property
-    def movable_logic(self) -> MovableLogic:
+    def movable_logic(self) -> MotorFlyableMovableLogic:
         return self._logic
 
     @cached_property
-    def flyable_logic(self) -> FlyableLogic[FlyMotorInfo]:
+    def flyable_logic(self) -> MotorFlyableMovableLogic:
         return self._logic

@@ -68,7 +68,7 @@ class PmacTrajectoryIO(StandardReadable):
         )
         self.append_message = epics_signal_r(str, prefix + "ProfileAppendMessage_RBV")
         # This should be a SignalX, but because it is a Busy record, must
-        # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
+        # be a SignalRW to be waited on in PmacTrajectoryFlyableLogic.
         # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
         self.execute_state = epics_signal_r(

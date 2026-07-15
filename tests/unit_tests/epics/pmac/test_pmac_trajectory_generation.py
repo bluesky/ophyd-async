@@ -10,7 +10,7 @@ from ophyd_async.epics.pmac import PmacIO
 # MIN_INTERVAL/PVT/Trajectory (intermediate trajectory-math artifacts) and
 # _PmacMotorInfo (an internal per-motor accel/resolution dataclass, built
 # via its own from_motors() classmethod) are all consumed entirely inside
-# PmacTrajectoryTriggerLogic (the public façade, `ophyd_async.epics.pmac`)
+# PmacTrajectoryFlyableLogic (the public façade, `ophyd_async.epics.pmac`)
 # and never returned to a caller - checked, nothing here looks missing
 # from the public interface.
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (  # noqa: PLC2701

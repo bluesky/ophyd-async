@@ -1,6 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 from scanspec.core import Path, Slice
@@ -11,7 +10,6 @@ from ophyd_async.core import (
     AsyncStatus,
     FlyableLogic,
     SignalR,
-    WatcherUpdate,
     error_if_none,
     gather_dict,
     observe_value,
@@ -56,19 +54,30 @@ class PmacScanInfo:
 
 
 @dataclass
-class PmacTrajectoryTriggerLogic(FlyableLogic[PmacScanInfo]):
-    pmac: PmacIO
-    _next_pvt: PVT | None = field(default=None, init=False, repr=False)
-    _loaded: int = field(default=0, init=False, repr=False)
-    _trajectory_status: AsyncStatus | None = field(default=None, init=False, repr=False)
-    _prepare_context: PmacPrepareContext | None = field(
-        default=None, init=False, repr=False
-    )
-    _turnaround_time: float | None = field(default=None, init=False, repr=False)
+class PmacFlyCtx:
+    """State threaded through a PMAC fly scan (prepare -> kickoff -> complete)."""
 
-    async def on_prepare(self, value: PmacScanInfo):
+    #: Trajectory + motion info built by `on_prepare`.
+    prepare: PmacPrepareContext
+    #: The running trajectory, produced by `on_kickoff`.
+    trajectory_status: AsyncStatus | None = None
+
+
+class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
+    def __init__(self, pmac: PmacIO) -> None:
+        self.pmac = pmac
+        # Working state mutated by the running trajectory task; it spans prepare
+        # and the executing trajectory, so it lives on the logic rather than in
+        # the cross-stage context.
+        self._next_pvt: PVT | None = None
+        self._loaded = 0
+        self._turnaround_time: float | None = None
+
+    async def on_prepare(self, value: PmacScanInfo) -> PmacFlyCtx:
         spec = value.spec
         self._turnaround_time = value.turnaround_time
+        self._next_pvt = None
+        self._loaded = 0
         path = Path(spec.calculate())
         slice = path.consume(SLICE_SIZE)
         path_length = len(path)
@@ -77,39 +86,36 @@ class PmacTrajectoryTriggerLogic(FlyableLogic[PmacScanInfo]):
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
             slice, motor_info, True, value.ramp_time
         )
-        self._prepare_context = PmacPrepareContext(
-            path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
-        )
         await asyncio.gather(
             self._build_trajectory(motor_info, slice, path_length, ramp_up_time),
             self._move_to_start(motor_info, ramp_up_pos),
         )
-
-    async def on_kickoff(self):
-        prepare_context = error_if_none(
-            self._prepare_context, "Cannot kickoff. Must call prepare first."
+        return PmacFlyCtx(
+            prepare=PmacPrepareContext(
+                path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
+            )
         )
-        self._prepare_context = None
-        self._trajectory_status = self._execute_trajectory(
-            prepare_context.path, prepare_context.motor_info
+
+    async def on_kickoff(self, ctx: PmacFlyCtx) -> PmacFlyCtx:
+        prepare = ctx.prepare
+        ctx.trajectory_status = self._execute_trajectory(
+            prepare.path, prepare.motor_info
         )
         # Wait for the ramp up to happen
         await wait_for_value(
             self.pmac.trajectory.total_points,
             lambda v: v >= 1,
-            prepare_context.ramp_up_time + DEFAULT_TIMEOUT,
+            prepare.ramp_up_time + DEFAULT_TIMEOUT,
         )
+        return ctx
 
-    async def on_complete(self) -> AsyncIterator[WatcherUpdate]:
+    async def on_complete(self, ctx: PmacFlyCtx) -> None:
         trajectory_status = error_if_none(
-            self._trajectory_status, "Cannot complete. Must call kickoff first."
+            ctx.trajectory_status, "Cannot complete. Must call kickoff first."
         )
         await trajectory_status
-        # Reset trajectory status and number of loaded points
-        self._trajectory_status = None
+        # Reset number of loaded points
         self._loaded = 0
-        return
-        yield
 
     async def stop(self) -> None:
         # Abort current trajectory, if one is running

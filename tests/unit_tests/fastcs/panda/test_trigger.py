@@ -15,12 +15,12 @@ from ophyd_async.fastcs.panda import (
     PcompInfo,
     PosOutScaleOffset,
     ScanSpecInfo,
-    ScanSpecSeqTableTriggerLogic,
+    ScanSpecSeqTableFlyableLogic,
     SeqTable,
     SeqTableInfo,
     SeqTrigger,
-    StaticPcompTriggerLogic,
-    StaticSeqTableTriggerLogic,
+    StaticPcompFlyableLogic,
+    StaticSeqTableFlyableLogic,
 )
 
 
@@ -52,7 +52,7 @@ async def test_from_inenc(mock_panda):
 
 
 async def test_seq_table_trigger_logic(mock_panda):
-    trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
+    trigger_logic = StaticSeqTableFlyableLogic(mock_panda.seq[1])
     seq_table = (
         SeqTable.row(outa1=True, outa2=True)
         + SeqTable.row(outa1=False, outa2=False)
@@ -90,7 +90,7 @@ async def sim_y_motor():
 async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) -> None:
     spec = Fly(1.0 @ (Line(sim_y_motor, 1, 2, 3) * ~Line(sim_x_motor, 1, 5, 5)))
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
-    trigger_logic = ScanSpecSeqTableTriggerLogic(
+    trigger_logic = ScanSpecSeqTableFlyableLogic(
         mock_panda.seq[1],
         {
             sim_x_motor: PosOutScaleOffset(
@@ -136,7 +136,7 @@ async def test_seq_scanspec_trigger_logic_no_gaps(
 ) -> None:
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
-    trigger_logic = ScanSpecSeqTableTriggerLogic(
+    trigger_logic = ScanSpecSeqTableFlyableLogic(
         mock_panda.seq[1],
         {
             sim_y_motor: PosOutScaleOffset(
@@ -165,7 +165,7 @@ async def test_seq_scanspec_trigger_logic_duration_error(
 ) -> None:
     spec = Fly(Line(sim_y_motor, 1, 2, 3) * ~Line(sim_x_motor, 1, 5, 5))
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
-    trigger_logic = ScanSpecSeqTableTriggerLogic(
+    trigger_logic = ScanSpecSeqTableFlyableLogic(
         mock_panda.seq[1],
         {
             sim_x_motor: PosOutScaleOffset(
@@ -189,7 +189,7 @@ async def test_seq_scanspec_trigger_logic_motor_not_passed(
 ) -> None:
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
-    trigger_logic = ScanSpecSeqTableTriggerLogic(
+    trigger_logic = ScanSpecSeqTableFlyableLogic(
         mock_panda.seq[1],
         {
             sim_x_motor: PosOutScaleOffset(
@@ -217,7 +217,7 @@ async def test_seq_scanspec_trigger_logic_equal(
 ) -> None:
     spec = 2.0 @ (Line(sim_x_motor, 1, 2, 3))
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
-    trigger_logic = ScanSpecSeqTableTriggerLogic(
+    trigger_logic = ScanSpecSeqTableFlyableLogic(
         mock_panda.seq[1],
         {
             sim_x_motor: PosOutScaleOffset(
@@ -247,7 +247,7 @@ async def test_seq_scanspec_trigger_logic_equal(
 
 
 async def test_pcomp_trigger_logic(mock_panda):
-    trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
+    trigger_logic = StaticPcompFlyableLogic(mock_panda.pcomp[1])
     pcomp_info = PcompInfo(
         start_position=0,
         pulse_width=1,
