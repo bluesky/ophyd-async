@@ -274,25 +274,6 @@ async def assert_signal_lifecycle(signal: SignalRW, initial_value, put_value) ->
         await signal.set(initial_value)
 
 
-def _distinct_put_value(attr_data: conftest.AttributeData, field: str):
-    """A put value that's guaranteed to differ from `attr_data.initial`.
-
-    `random_value()` picks from a small fixed choice list (e.g. 3 enum
-    members) with no exclusion for "same as initial" - on a large enough
-    test run that coincidence happens often enough to matter. A no-op set
-    never fires a change event, so the monitor assertion inside
-    `assert_signal_lifecycle` would hang until its own timeout instead of
-    failing fast, rather than actually be wrong - so guarantee a genuine
-    transition instead of trusting the coin flip.
-    """
-    put_value = attr_data.random_value()
-    for _ in range(10):
-        if not np.array_equal(put_value, attr_data.initial):
-            return put_value
-        put_value = attr_data.random_value()
-    pytest.fail(f"Could not find a value for {field} that differs from initial")
-
-
 @pytest.mark.timeout(10.0)
 @pytest.mark.parametrize("field", LIFECYCLE_FIELDS)
 async def test_signal_lifecycle(
@@ -306,7 +287,9 @@ async def test_signal_lifecycle(
     signal = getattr(lifecycle_device, field)
     attr_data = everything_signal_info[field]
     initial_value = attr_data.initial
-    put_value = _distinct_put_value(attr_data, field)
+    # distinct_value() is deterministic - it never coincides with initial, so
+    # the set() below always fires a change event (see conftest for why).
+    put_value = attr_data.distinct_value()
     await assert_signal_lifecycle(signal, initial_value, put_value)
 
 
@@ -350,7 +333,9 @@ async def test_exhaustive_signal_lifecycle(
         pytest.skip(f"{field} is not a settable Signal")
     attr_data = everything_signal_info[field]
     initial_value = attr_data.initial
-    put_value = _distinct_put_value(attr_data, field)
+    # See test_signal_lifecycle above for why this is distinct_value(), not
+    # random_value().
+    put_value = attr_data.distinct_value()
     await assert_signal_lifecycle(signal, initial_value, put_value)
 
 
