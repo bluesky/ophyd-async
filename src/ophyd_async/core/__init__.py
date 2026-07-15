@@ -51,7 +51,7 @@ from ._enums import (
     OnOff,
     YesNo,
 )
-from ._flyer import FlyableLogic, FlyMotorInfo, StandardFlyable
+from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (

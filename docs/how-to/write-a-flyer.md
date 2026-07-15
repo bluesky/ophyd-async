@@ -131,25 +131,10 @@ for it to go inactive again (the context is `None`, so it is ignored):
 
 Rather than declare this logic on a Device class, construct it in the plan from the
 PandA block you want to drive and call [](#FlyableLogic.with_device) to get a ready
-flyer. Then drive it with the standard bluesky flyer stubs:
+flyer to prepare, kickoff, and complete:
 
 ```python
-from bluesky import plan_stubs as bps
-
-from ophyd_async.fastcs.panda import PcompInfo, StaticPcompFlyableLogic
-
-
-def fly_pcomp(panda, pcomp_info: PcompInfo):
-    # Wrap the bare logic in an ephemeral StandardFlyable
-    flyer = StaticPcompFlyableLogic(panda.pcomp[1]).with_device(name="pcomp")
-
-    yield from bps.stage(flyer)
-    yield from bps.prepare(flyer, pcomp_info, wait=True)
-    yield from bps.open_run()
-    yield from bps.kickoff(flyer, wait=True)
-    yield from bps.complete(flyer, wait=True)
-    yield from bps.close_run()
-    yield from bps.unstage(flyer)
+flyer = StaticPcompFlyableLogic(panda.pcomp[1]).with_device(name="pcomp")
 ```
 
 ```{seealso}

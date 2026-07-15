@@ -8,7 +8,8 @@ from typing import Generic, TypeVar, cast
 from bluesky.protocols import Flyable, Preparable
 from pydantic import Field
 
-from ._movable import MovableLogic, observe_watcher_updates
+from ._movable import MovableLogic
+from ._signal import observe_value
 from ._standard_base import _StandardBase
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
@@ -220,16 +221,17 @@ class StandardFlyable(
                 logic.get_units_precision(),
             )
             async with AsyncStatus(logic.on_complete(self._fly_ctx)) as completing:
-                async for update in observe_watcher_updates(
-                    logic.readback,
-                    initial=initial,
-                    target=target,
-                    name=self.name,
-                    units=units,
-                    precision=precision,
-                    done_status=completing,
+                async for current_position in observe_value(
+                    logic.readback, done_status=completing
                 ):
-                    yield update
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=initial,
+                        target=target,
+                        name=self.name,
+                        unit=units,
+                        precision=precision,
+                    )
         else:
             await self.flyable_logic.on_complete(self._fly_ctx)
         self._fly_stage = _FlyStage.IDLE
