@@ -28,13 +28,8 @@ jobs:
       EXAMPLE_SERVICES_PATH: ./example-services
 
     steps:
-<<<<<<< before updating
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v5
-=======
-      - name: Checkout
         uses: actions/checkout@v7
->>>>>>> after updating
         with:
           submodules: recursive
           fetch-depth: 0
