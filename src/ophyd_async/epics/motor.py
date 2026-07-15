@@ -225,6 +225,11 @@ class MotorFlyableMovableLogic(
         else:
             timeout = ctx.fly_info.timeout
         ctx.status = AsyncStatus(self.move(target, lambda: timeout))
+        # Wait out the run-up so the motor is at constant velocity before
+        # kickoff() returns. A plan can then kickoff the motor and afterwards
+        # kickoff internally-triggered detectors, which is more accurate for
+        # long acceleration times.
+        await asyncio.sleep(acceleration_time)
         return ctx
 
     async def on_complete(self, ctx: MotorFlyCtx) -> None:

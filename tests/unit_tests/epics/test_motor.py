@@ -317,21 +317,21 @@ async def test_prepare(
 async def test_kickoff(motor: Motor):
     with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
         await motor.kickoff()
-    set_mock_value(motor.acceleration_time, 1)
+    set_mock_value(motor.acceleration_time, 0.2)
     set_mock_value(motor.max_velocity, 100)
     await motor.prepare(
         FlyMotorInfo(start_position=12, end_position=2, time_for_move=1)
     )
     await motor.kickoff()
-    # kickoff starts the move to the ramp-down end position (-3.0)
+    # kickoff starts the move to the ramp-down end position (1.0)
     await motor.complete()
-    assert await motor.user_setpoint.get_value() == -3.0
+    assert await motor.user_setpoint.get_value() == 1.0
 
 
 async def test_complete(motor: Motor) -> None:
     with pytest.raises(RuntimeError, match="kickoff.* before complete"):
         await motor.complete()
-    set_mock_value(motor.acceleration_time, 1)
+    set_mock_value(motor.acceleration_time, 0.2)
     set_mock_value(motor.max_velocity, 100)
     await motor.prepare(
         FlyMotorInfo(start_position=0, end_position=10, time_for_move=1)
@@ -340,8 +340,8 @@ async def test_complete(motor: Motor) -> None:
     status = motor.complete()
     await status
     assert status.done
-    # complete resolves once the move to the ramp-down end position (15.0) finishes
-    assert await motor.user_setpoint.get_value() == 15.0
+    # complete resolves once the move to the ramp-down end position (11.0) finishes
+    assert await motor.user_setpoint.get_value() == 11.0
 
 
 @pytest.mark.parametrize(
