@@ -497,8 +497,8 @@ class StandardDetector(
                     else:
                         logger.warning(
                             f"DataLogic {dl} only supports a single collection, but "
-                            f"the detector was prepared for {trigger_info.number_of_collections}."
-                            "collections."
+                            "the detector was prepared for "
+                            f"{trigger_info.number_of_collections} collections."
                         )
                 else:
                     msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"

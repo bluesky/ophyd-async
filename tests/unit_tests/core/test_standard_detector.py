@@ -844,7 +844,7 @@ async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool
 
 
 async def test_multiple_collections_with_single_only_logic_warns(caplog):
-    """Test that requesting multiple collections warns and leads to empty prepare ctx."""
+    """Test that requesting multiple collections warns, leads to empty prepare ctx."""
     det = StandardDetector()
     det.add_detector_logics(ReadableOnlyDataLogic())
 
