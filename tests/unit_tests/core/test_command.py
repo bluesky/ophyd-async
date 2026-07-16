@@ -86,7 +86,7 @@ async def test_soft_command_execution(datatype, value):
     await cmd.connect()
     status = cmd.execute(value)
     await status
-    res = status.result
+    res = status.result()
     if isinstance(value, np.ndarray):
         assert np.array_equal(res, value)
     else:
@@ -281,7 +281,7 @@ async def test_soft_command_factory():
     await cmd_rw.connect()
     status = cmd_rw.execute(123)
     await status
-    assert status.result == "123"
+    assert status.result() == "123"
 
     def x_cb() -> None:
         return None
@@ -290,7 +290,7 @@ async def test_soft_command_factory():
     await cmd_x.connect()
     status = cmd_x.execute()
     await status
-    assert status.result is None
+    assert status.result() is None
 
 
 async def test_execution_error_wrapping():
@@ -321,7 +321,7 @@ async def test_command_logging(caplog):
     assert "Connecting to softcmd://mycmd" in caplog.text
     status = cmd.execute(42)
     await status
-    assert status.result == "42"
+    assert status.result() == "42"
     assert "Executing command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
 
