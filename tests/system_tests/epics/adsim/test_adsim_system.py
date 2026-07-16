@@ -1,3 +1,36 @@
+"""System tests driving a real areaDetector IOC.
+
+These are the only tests in the suite that run containers, so the rules they live
+by are written down here rather than somewhere more general.
+
+**Paths must mean the same thing on both sides.** The IOC is started by `docker
+compose` against the *host's* container engine (see the `bl01t_di_cam_01`
+fixture), so every path in a compose file resolves on the host - not here. A
+directory handed to the IOC, as `StaticPathProvider` does below, travels over
+Channel Access as a plain string and is opened by the IOC in *its own*
+filesystem, so it has to resolve to the same directory there as it does here.
+pytest's `tmp_path` does not: a devcontainer's /tmp is not the host's /tmp, and
+no IOC container mounts /tmp either way, so the IOC reports the directory missing
+and refuses to write. Use `shared_tmp_path`, which is mounted into the IOC at the
+same absolute path - see tests/compose-shared-tmp.yaml for how, and note it must
+keep working both in a devcontainer and on a bare host (CI), which resolve that
+path by different means.
+
+**The IOC outlives each test.** It is started once per module, so whatever a test
+leaves configured is what the next test finds, however narrowly the device
+fixture is scoped - the device object is not the state that persists, the IOC is.
+`reset_adsim_to_baseline` puts it back to a known state before every test, which
+is what lets these pass in any order.
+
+**These tests only pass in a pytest session of their own.** They reach the IOC
+through the ca-gateway, which needs `EPICS_CA_NAME_SERVERS` - and the EPICS
+client libraries read that once, when libca initialises. Importing anything that
+pulls in pyepics (`from ophyd.signal import EpicsSignal`, in the epics/core
+system tests) initialises libca during *collection*, before `with_env` below can
+apply, and these tests then cannot find the IOC at all. Sharing a session with
+tests/system_tests/epics/core is what breaks them, in either order.
+"""
+
 import os
 import sys
 from pathlib import Path

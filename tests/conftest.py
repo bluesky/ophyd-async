@@ -379,31 +379,56 @@ def docker_composer():
     yield inner_docker_composer
 
 
+def example_services_compose_file() -> str:
+    """The compose file describing the IOCs the system tests run against.
+
+    Raises loudly when EXAMPLE_SERVICES_PATH is unset. The fixtures below used to
+    skip starting anything instead, on the grounds that the services might have
+    been started by hand - but a fixture generator has to yield exactly once, so
+    that branch only ever produced
+
+        ValueError: ca_gateway did not yield a value
+
+    which names neither the variable nor the environment, and reads like a bug in
+    the test suite rather than a missing setting.
+    """
+    path = os.environ.get("EXAMPLE_SERVICES_PATH")
+    if not path:
+        raise RuntimeError(
+            "EXAMPLE_SERVICES_PATH is not set, so the IOCs these tests need "
+            "cannot be started.\n"
+            "Set it to the example-services directory as the *host* sees it - "
+            "docker compose runs against the host's container engine, so a path "
+            "only this process can see will not resolve:\n"
+            "    export EXAMPLE_SERVICES_PATH=<path to repo>/example-services\n"
+            "A devcontainer sets this for you (see .devcontainer/"
+            "devcontainer.json); if you are in one and still seeing this, the "
+            "variable has not reached this process."
+        )
+    return f"{path}/compose.yaml"
+
+
 @pytest.fixture(scope="module")
 def ca_gateway(docker_composer):
-    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # user may start services manually
-        yield from docker_composer(
-            ["-f", f"{example_services_path}/compose.yaml"],
-            docker_services="ca-gateway",
-            ready_log_line="Running as user ",
-        )
+    yield from docker_composer(
+        ["-f", example_services_compose_file()],
+        docker_services="ca-gateway",
+        ready_log_line="Running as user ",
+    )
 
 
 @pytest.fixture(scope="module")
 def bl01t_di_cam_01(ca_gateway, docker_composer):
-    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # user may start services manually
-        # Create it before compose binds it: a rootful engine would otherwise
-        # create the source as root, which pytest could then not write to.
-        Path(os.environ["OA_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
-        yield from docker_composer(
-            [
-                "-f",
-                f"{example_services_path}/compose.yaml",
-                "-f",
-                SHARED_TMP_COMPOSE_FILE,
-            ],
-            docker_services="bl01t-di-cam-01",
-            ready_log_line="iocRun: All initialization complete",
-        )
+    # Create it before compose binds it: a rootful engine would otherwise
+    # create the source as root, which pytest could then not write to.
+    Path(os.environ["OA_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
+    yield from docker_composer(
+        [
+            "-f",
+            example_services_compose_file(),
+            "-f",
+            SHARED_TMP_COMPOSE_FILE,
+        ],
+        docker_services="bl01t-di-cam-01",
+        ready_log_line="iocRun: All initialization complete",
+    )
