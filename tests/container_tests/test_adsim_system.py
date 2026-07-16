@@ -22,13 +22,8 @@ fixture is scoped - the device object is not the state that persists, the IOC is
 `reset_adsim_to_baseline` puts it back to a known state before every test, which
 is what lets these pass in any order.
 
-**These tests only pass in a pytest session of their own.** They reach the IOC
-through the ca-gateway, which needs `EPICS_CA_NAME_SERVERS` - and the EPICS
-client libraries read that once, when libca initialises. Importing anything that
-pulls in pyepics (`from ophyd.signal import EpicsSignal`, in the epics/core
-system tests) initialises libca during *collection*, before `with_env` below can
-apply, and these tests then cannot find the IOC at all. Sharing a session with
-tests/system_tests/epics/core is what breaks them, in either order.
+**These tests only pass in a pytest session of their own**, which is why they
+live here rather than under tests/system_tests - see this directory's conftest.
 """
 
 import os
@@ -71,6 +66,12 @@ from ophyd_async.plan_stubs import (
 )
 
 TIMEOUT = 60.0  # allow extra time for docker compose
+
+# Applies to every test here, not just the one that used to carry it: they all
+# need the IOC, and the IOC needs services that are not set up on Windows.
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Services not set up on Windows"
+)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -156,10 +157,6 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
     assert actual_exposure_time == 0.2
 
 
-# @pytest.mark.insubprocess
-@pytest.mark.skipif(
-    sys.platform.startswith("win"), reason="Services not set up on Windows"
-)
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(
     RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None, shared_tmp_path: Path
