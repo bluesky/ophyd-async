@@ -12,7 +12,6 @@ from pydantic import (
 from ophyd_async.core import (
     ConfinedModel,
     Device,
-    DeviceConnector,
     DeviceFiller,
     DeviceMap,
     DeviceVector,
@@ -25,12 +24,12 @@ from ophyd_async.core import (
     gather_dict,
 )
 
-from ._epics_connector import fill_backend_with_prefix, fill_command_with_prefix
+from ._epics_connector import _PvPrefixDeviceConnector, fill_children_with_prefix
 from ._signal import PvaCommandBackend, PvaSignalBackend, pvget_with_timeout
 from ._util import EpicsCommandBackend
 
 
-class PviDeviceConnector(DeviceConnector):
+class PviDeviceConnector(_PvPrefixDeviceConnector):
     """Connect a `Device` to a PVI structure served over PVA.
 
     At construction, create the type-hinted signals, commands and sub-devices
@@ -50,9 +49,12 @@ class PviDeviceConnector(DeviceConnector):
 
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
         # TODO: what happens if we get a leading "pva://" here?
-        self.prefix = prefix
-        self.pvi_pv = prefix + "PVI"
+        super().__init__(prefix)
         self.error_hint = error_hint
+
+    def set_prefix(self, prefix: str) -> None:
+        super().set_prefix(prefix)
+        self.pvi_pv = prefix + "PVI"
 
     def create_children_from_annotations(self, device: Device) -> None:
         # Per the DeviceConnector contract this may be called more than once;
@@ -79,17 +81,10 @@ class PviDeviceConnector(DeviceConnector):
             device_connector_factory=PviDeviceConnector,
             command_backend_factory=command_backend_factory,
         )
-        # Address the type-hinted signals/commands now; sub-devices get an
-        # unfilled connector. The rest is filled from the PVI tree at connect.
-        for backend, extras in self.filler.create_signals_from_annotations(
-            filled=False
-        ):
-            fill_backend_with_prefix(self.prefix, backend, extras)
-        for backend, extras in self.filler.create_commands_from_annotations(
-            filled=False
-        ):
-            fill_command_with_prefix(self.prefix, backend, extras)
-        list(self.filler.create_devices_from_annotations(filled=False))
+        # Address any PvSuffix-annotated children now; everything else is
+        # addressed from the served PVI tree at connect, which also cross-checks
+        # the ones addressed here.
+        fill_children_with_prefix(self.prefix, self.filler, filled=False)
         self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock) -> None:
@@ -116,6 +111,12 @@ class PviDeviceConnector(DeviceConnector):
         # name. Anything else fills its named entries as attributes, plus any
         # "__N" entries into the int-keyed DeviceVector that it is.
         is_map = isinstance(device, DeviceMap)
+        if is_map and tree.vector_children:
+            raise TypeError(
+                f"{self.pvi_pv}: {device.name} is annotated as a DeviceMap, but "
+                f"PVI serves integer-keyed entries {sorted(tree.vector_children)} "
+                "here, which only a DeviceVector can hold"
+            )
         self._fill_named_entries(tree, as_map=is_map)
         if not is_map:
             self._fill_vector_children(device, tree)
@@ -160,10 +161,25 @@ class PviDeviceConnector(DeviceConnector):
             else:  # a bare execute-PV str is a command
                 self._fill_command(device.name, child, map_key=key)
 
+    def _check_agrees_with_pvi(self, name: str, annotated: str, served: str) -> None:
+        """Raise if a child's PvSuffix annotation disagrees with the PVI tree.
+
+        `annotated` is empty for the children PVI alone addresses, which is the
+        usual case; a child that was given a `PvSuffix` as well must agree with
+        what the tree says, or one of the two is wrong.
+        """
+        if annotated and annotated != served:
+            raise TypeError(
+                f"{self.pvi_pv}: {name} is addressed at {annotated} by its "
+                f"PvSuffix annotation, but PVI serves it at {served}"
+            )
+
     def _fill_signal(
         self, name: str, details: SignalDetails, map_key: int | str | None = None
     ) -> None:
         backend = self.filler.fill_child_signal(name, details.signal_type, map_key)
+        self._check_agrees_with_pvi(name, backend.read_pv, details.read_pv)
+        self._check_agrees_with_pvi(name, backend.write_pv, details.write_pv)
         backend.read_pv = details.read_pv
         backend.write_pv = details.write_pv
 
@@ -171,6 +187,7 @@ class PviDeviceConnector(DeviceConnector):
         self, name: str, execute_pv: str, map_key: int | str | None = None
     ) -> None:
         backend = self.filler.fill_child_command(name, TriggerableCommand, map_key)
+        self._check_agrees_with_pvi(name, backend.write_pv, execute_pv)
         backend.write_pv = execute_pv
 
     def _fill_sub_device(
@@ -183,6 +200,11 @@ class PviDeviceConnector(DeviceConnector):
     ) -> None:
         connector = self.filler.fill_child_device(
             name, device_type=device_type, map_key=map_key
+        )
+        # An unaddressed connector still has the "PVI" its empty prefix makes,
+        # so only cross-check the ones a PvSuffix gave a prefix to.
+        self._check_agrees_with_pvi(
+            name, connector.pvi_pv if connector.prefix else "", sub_tree.pvi_pv
         )
         connector.pvi_tree = sub_tree
         connector.pvi_pv = sub_tree.pvi_pv
