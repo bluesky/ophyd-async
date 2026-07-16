@@ -140,7 +140,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._command_signature: dict[LogicalName, inspect.Signature | None] = {}
-        self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
         # Backends and Connectors stored ready for the connection phase
@@ -600,17 +599,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
 
         # Handle DeviceVector/DeviceMap case
         elif map_key is not None:
-            vector_command_type = (
-                self._vector_device_type.get(logical_name) or command_type
-            )
-            if not issubclass(vector_command_type, Command):
-                raise TypeError(f"{vector_command_type} is not a Command")
-
             backend = self._command_backend_factory(
                 self._command_signature.get(logical_name)
             )
-            expected_command_type = vector_command_type
-            self._set_dict_child(map_key, vector_command_type(backend))
+            # A DeviceVector[FooCommand] holds FooCommands, so instantiate the
+            # element type it was hinted with rather than the bare class the
+            # control system reported, as `fill_child_device` does.
+            expected_command_type = (
+                _get_device_dict_child_datatype(self._device) or command_type
+            )
+            self._set_dict_child(map_key, expected_command_type(backend))
 
         # Shadowing check
         elif child := getattr(self._device, name, None):
@@ -622,7 +620,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             expected_command_type = command_type
             setattr(self._device, name, command_type(backend))
 
-        if command_type is not expected_command_type:
+        # Compare origin classes, as `expected_command_type` may be a
+        # parameterized generic alias (e.g. `Command[[], int]` from a
+        # `DeviceVector[Command[[], int]]` annotation) while `command_type` is
+        # the bare class the control system reported. See `fill_child_signal`.
+        if get_origin_class(command_type) is not get_origin_class(
+            expected_command_type
+        ):
             self._raise(
                 name,
                 f"is a {command_type.__name__} not a {expected_command_type.__name__}",
