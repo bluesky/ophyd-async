@@ -73,9 +73,11 @@ async def test_short_move_is_exactly_move_time(m2: SimMotor):
 
 @pytest.mark.timeout(3)
 async def test_stop(m2: SimMotor):
-    # this move should take 10 seconds but we will stop it after 0.5
+    # this move should take 10 seconds but we will stop it partway through.
+    # The sim motor updates its readback at 10Hz, so 0.2s is two update ticks
+    # in - enough for the readback to have moved off 0 without waiting longer.
     move_status = m2.set(10)
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.2)
     await m2.stop(success=False)
     new_pos = await m2.user_readback.get_value()
     assert 0 < new_pos < 10
