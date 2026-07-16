@@ -1,10 +1,12 @@
 import asyncio
 import os
 import pprint
+import shutil
 import signal
 import subprocess
 import time
-from collections.abc import Callable
+import uuid
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +44,38 @@ EXTRA_BLOCKS_RECORD = str(
     / "db"
     / "extra_blocks_panda.db"
 )
+
+
+# Compose override giving the cam IOC a directory pytest and the IOC agree on.
+SHARED_TMP_COMPOSE_FILE = str(Path(__file__).parent / "compose-shared-tmp.yaml")
+
+# IOCs are started against the *host's* container engine, so a directory handed
+# to an IOC over Channel Access must have the same absolute path for pytest and
+# for the IOC. The default is the bare-host shape (CI, or running the tests
+# directly on a workstation): pytest and the engine already share a filesystem,
+# so one host path bound to itself needs no translation. A devcontainer does not
+# share the host's filesystem and must point these at something the engine
+# resolves identically for every container - it sets both itself, see
+# .devcontainer/devcontainer.json. OA_SHARED_TMP_SOURCE is a host path or a
+# volume name; OA_SHARED_TMP_DIR is the path both sides use.
+os.environ.setdefault("OA_SHARED_TMP_DIR", "/tmp/ophyd-async-shared-tmp")
+os.environ.setdefault("OA_SHARED_TMP_SOURCE", os.environ["OA_SHARED_TMP_DIR"])
+
+
+@pytest.fixture
+def shared_tmp_path(request: FixtureRequest) -> Iterator[Path]:
+    """A tmp_path that IOC containers can also see, at the same absolute path.
+
+    `tmp_path` lives under the pytest process's own /tmp, which no IOC container
+    mounts, so a directory handed to an IOC over Channel Access does not resolve
+    there and the IOC reports it missing. Each test gets a unique directory,
+    removed afterwards, so concurrent runs sharing the volume cannot collide.
+    """
+    root = Path(os.environ["OA_SHARED_TMP_DIR"]) / "pytest-shared-tmp"
+    path = root / f"{request.node.name}-{uuid.uuid4().hex[:8]}"
+    path.mkdir(parents=True)
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def fixture_is_used(fixture_name, session):
@@ -360,8 +394,16 @@ def ca_gateway(docker_composer):
 def bl01t_di_cam_01(ca_gateway, docker_composer):
     example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
     if example_services_path is not None:  # user may start services manually
+        # Create it before compose binds it: a rootful engine would otherwise
+        # create the source as root, which pytest could then not write to.
+        Path(os.environ["OA_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
         yield from docker_composer(
-            ["-f", f"{example_services_path}/compose.yaml"],
+            [
+                "-f",
+                f"{example_services_path}/compose.yaml",
+                "-f",
+                SHARED_TMP_COMPOSE_FILE,
+            ],
             docker_services="bl01t-di-cam-01",
             ready_log_line="iocRun: All initialization complete",
         )
