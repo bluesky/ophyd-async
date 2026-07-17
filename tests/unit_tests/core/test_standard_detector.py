@@ -992,6 +992,41 @@ async def test_bounded_fly_scan_accumulates_across_kickoffs():
     assert dl.prepare_calls == [(10, pytest.approx(0.1))]
 
 
+@pytest.mark.parametrize(
+    "requested_livetime,default,expected_period",
+    [
+        # livetime unset -> resolved from the trigger logic's current state
+        (0.0, TriggerInfo(livetime=0.1, deadtime=0.02), 0.12),
+        # livetime given -> used as-is, no readback substitution
+        (0.05, TriggerInfo(livetime=0.1, deadtime=0.02), 0.05),
+        # livetime unset but trigger logic has nothing set -> stays 0
+        (0.0, TriggerInfo(), 0.0),
+    ],
+)
+async def test_prepare_resolves_zero_livetime_for_bounded_period(
+    requested_livetime, default, expected_period
+):
+    """A livetime of 0 is filled in from the trigger logic before sizing a buffer."""
+
+    class PeriodTriggerLogic(DetectorTriggerLogic):
+        async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+            pass
+
+        async def default_trigger_info(self) -> TriggerInfo:
+            return default
+
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(PeriodTriggerLogic(), dl)
+
+    await det.prepare(
+        TriggerInfo(
+            number_of_events=1, collections_per_event=3, livetime=requested_livetime
+        )
+    )
+    assert dl.prepare_calls == [(3, pytest.approx(expected_period))]
+
+
 async def test_bounded_dropped_for_infinite_events(caplog):
     """A bounded buffer cannot serve an infinite scan, so is dropped with a warning."""
     det = StandardDetector(name="foo")

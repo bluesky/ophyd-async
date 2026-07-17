@@ -531,6 +531,27 @@ class StandardDetector(
         self._kickoff_ctx = None
         await self.events_to_kickoff.set(0)
 
+    async def _resolve_period(self, value: TriggerInfo) -> TriggerInfo:
+        # A livetime of 0 means "use whatever the detector currently has set". A
+        # data logic that sizes chunks or a buffer by the exposure period needs a
+        # real value, so read the current livetime and deadtime back from the
+        # trigger logic and fill them in. This runs after the trigger logic has been
+        # prepared, so the hardware already holds the values we read.
+        if (
+            value.livetime == 0.0
+            and self._trigger_logic is not None
+            and _trigger_logic_supported(self._trigger_logic.default_trigger_info)
+        ):
+            current = await self._trigger_logic.default_trigger_info()
+            if current.livetime or current.deadtime:
+                value = value.model_copy(
+                    update={
+                        "livetime": current.livetime,
+                        "deadtime": current.deadtime,
+                    }
+                )
+        return value
+
     async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
         num_collections = trigger_info.number_of_collections
         period = trigger_info.livetime + trigger_info.deadtime
@@ -698,6 +719,7 @@ class StandardDetector(
             )
         # NOTE: this section must come after preparing the trigger logic as we may
         # use parameters from it to determine datatype for the streams
+        value = await self._resolve_period(value)
         await self._update_prepare_context(value)
         # Tell people how many collections we will acquire for
         await self.events_to_kickoff.set(value.number_of_events)
