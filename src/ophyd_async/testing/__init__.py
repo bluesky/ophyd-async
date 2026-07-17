@@ -24,6 +24,7 @@ from ._assert import (
     assert_value,
     partial_reading,
 )
+from ._mock_attr import set_mock_attr
 from ._one_of_everything import (
     ExampleEnum,
     ExampleSubsetEnum,
@@ -108,4 +109,5 @@ __all__ = [
     "MovableBeamstop",
     "ReadOnlyBeamstop",
     "assert_has_calls",
+    "set_mock_attr",
 ]

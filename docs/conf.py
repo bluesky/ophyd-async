@@ -176,6 +176,7 @@ obj_ignore = [
     "ophyd_async.tango.core._utils.P.args",
     "ophyd_async.tango.core._utils.P.kwargs",
     "ophyd_async.testing._utils.T",
+    "ophyd_async.testing._mock_attr.MockT",
     "ophyd_async.sim._mirror.TwoJackRaw",
     "ophyd_async.sim._mirror.TwoJackDerived",
     "non_zero",

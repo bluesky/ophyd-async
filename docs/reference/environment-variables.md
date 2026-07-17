@@ -41,6 +41,23 @@ The value is compared against the exact string `True`, so any other spelling —
 See [ADR 0011](../explanations/decisions/0011-buffer-updates-camonitor.md) for
 rationale.
 
+(OPHYD_ASYNC_ALLOW_RESERVED_ATTRS)=
+
+## `OPHYD_ASYNC_ALLOW_RESERVED_ATTRS`
+
+Disables the check that stops a [](#Device) attribute being given a name that
+collides with a bluesky protocol method (`set`, `read`, `trigger`, ...).
+
+| Value | Behaviour |
+|-------|-----------|
+| `YES` | Assigning to a reserved name is allowed, e.g. `device.set = AsyncMock()`. |
+| anything else (default) | Assigning to a reserved name raises `NameError`. |
+
+Intended as a quick escape for downstream test suites that mock protocol methods
+this way, so they can be turned back on without editing every call site. To
+override a single attribute instead, prefer
+[](#ophyd_async.testing.set_mock_attr), which does not disable the check globally.
+
 ## Test suite
 
 These are read by the tests only, and are irrelevant to using ophyd-async as a

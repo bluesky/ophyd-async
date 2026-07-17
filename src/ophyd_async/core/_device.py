@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
@@ -47,6 +48,15 @@ DEVICE_RESERVED_ATTRS = {
     "check_value",
     "hints",
 }
+
+
+def _reserved_attrs_allowed() -> bool:
+    # Opt-out for the reserved-name check, mainly so downstream test suites that
+    # mock protocol methods (e.g. `device.set = AsyncMock()`) can be flipped back
+    # on without editing every call site. Read from the environment each time so a
+    # test can toggle it; only reached when a reserved name is actually set, so it
+    # never touches the hot path. Prefer set_mock_attr() for a single override.
+    return os.environ.get("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", "NO").upper() == "YES"
 
 
 class DeviceMock(Generic[DeviceT]):
@@ -269,10 +279,13 @@ class Device(HasName):
         # dictionary of setattr functions
         func = self._setattr_methods.get(name, None)
         if func is None:
-            if name in DEVICE_RESERVED_ATTRS:
+            if name in DEVICE_RESERVED_ATTRS and not _reserved_attrs_allowed():
                 raise NameError(
                     f"`{name}` is used in one of the bluesky protocols. "
-                    f"Please use `{name}_` instead."
+                    f"Please use `{name}_` instead. To override this attribute in a "
+                    f"test (e.g. with a mock) use ophyd_async.testing.set_mock_attr, "
+                    f"or set OPHYD_ASYNC_ALLOW_RESERVED_ATTRS=YES to disable this "
+                    f"check entirely."
                 )
             # First encounter, so assign correct
             # __setattr__ method depending on `value` type

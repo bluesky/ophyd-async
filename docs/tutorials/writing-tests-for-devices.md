@@ -127,9 +127,31 @@ For a [](#Command) backed by [](#soft_command) and connected in mock mode, the o
 
 For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
 
+## Mocking out a verb
+
+Sometimes a test wants to replace a whole verb with a mock, rather than mock the
+Signals underneath it — for example to check that `kickoff()` calls `set()` with
+the right target without actually running the move:
+
+```python
+mock_set = set_mock_attr(motor, "set", MagicMock())
+await motor.kickoff()
+mock_set.assert_called_once_with(-3.0)
+```
+
+A plain `motor.set = MagicMock()` raises `NameError`, because [](#Device) reserves
+the bluesky protocol method names (`set`, `read`, `trigger`, ...) to stop a Signal
+accidentally shadowing a verb. [](#set_mock_attr) sets the attribute anyway and
+returns the mock, so the override and the assertion fit in one expression.
+
+If you are bringing an existing test suite onto a version of ophyd-async that adds
+this check and want it passing again before migrating each call site, set
+[](#OPHYD_ASYNC_ALLOW_RESERVED_ATTRS) to `YES` to disable the check globally.
+
 ## Other test utilities
 
 There are a few other things we may wish to do in tests:
+- [](#set_mock_attr) to override a verb (or any reserved-name attribute) on a Device with a mock
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
 - [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal

@@ -24,6 +24,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor, MotorLimitsError
 from ophyd_async.testing import (
     StatusWatcher,
+    set_mock_attr,
     wait_for_pending_wakeups,
 )
 
@@ -306,7 +307,7 @@ async def test_prepare(motor: Motor, target_position: float, expected_velocity: 
             if value == target_position:
                 break
 
-    object.__setattr__(motor, "set", AsyncMock(side_effect=wait_for_set))
+    set_mock_attr(motor, "set", AsyncMock(side_effect=wait_for_set))
 
     async def do_set(status: AsyncStatus):
         assert not status.done
@@ -329,8 +330,7 @@ async def test_prepare(motor: Motor, target_position: float, expected_velocity: 
 
 
 async def test_kickoff(motor: Motor):
-    mock_set = MagicMock()
-    object.__setattr__(motor, "set", mock_set)
+    mock_set = set_mock_attr(motor, "set", MagicMock())
     with pytest.raises(
         RuntimeError,
         match=f"Motor {motor.name} must be prepared before attempting to kickoff",
