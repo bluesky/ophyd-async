@@ -5,6 +5,7 @@ from typing import Any
 
 from bluesky.protocols import Reading, StreamAsset
 from event_model import ComposeStreamResource, DataKey, StreamRange
+from event_model.documents import PartialEventPage
 
 from ._signal import SignalR, SignalW
 from ._utils import ConfinedModel
@@ -56,6 +57,59 @@ class StreamableDataProvider:
         """
         while False:
             yield
+
+
+class PageableDataProvider:
+    """For bounded data held in a finite buffer, emitted as event pages.
+
+    Used by data logics whose device must be told how many collections to
+    expect before it starts acquiring, because it holds a finite buffer that
+    has to be sized upfront: an areaDetector stats time series (`TSNumPoints`),
+    or a scaler whose MCA array length is the frame count. Such a device
+    produces its data as event pages at the end of an event rather than as
+    stream datums as it goes.
+
+    A step-scan event has a single collection window, so `make_pages` yields
+    one page of one event which the base `make_readings` extracts to a single
+    reading; the same `make_pages` serves fly-scan collection.
+    """
+
+    collections_written_signal: SignalR[int]
+
+    @abstractmethod
+    async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
+        """Return a DataKey for each field this provider produces.
+
+        Called before the first exposure is taken.
+
+        :param collections_per_event: this should appear in the shape of each DataKey
+        """
+
+    @abstractmethod
+    def make_pages(
+        self, collections_written: int, collections_per_event: int
+    ) -> AsyncIterator[PartialEventPage]:
+        """Emit event pages for collections written since the last call.
+
+        :param collections_written: how many collections have been written so far
+        :param collections_per_event: how many collections make up one event
+        """
+
+    async def make_readings(self, collections_per_event: int) -> dict[str, Reading]:
+        """Derive readings from the pages for the collections written so far.
+
+        A step-scan prepare has a single event, so the page holds one event
+        whose per-key value is the `collections_per_event`-length array; this
+        extracts to a single reading per key.
+        """
+        collections_written = await self.collections_written_signal.get_value()
+        readings: dict[str, Reading] = {}
+        async for page in self.make_pages(collections_written, collections_per_event):
+            times = page["time"]
+            for key, values in page["data"].items():
+                for value, timestamp in zip(values, times, strict=True):
+                    readings[key] = Reading(value=value, timestamp=timestamp)
+        return readings
 
 
 class StreamResourceInfo(ConfinedModel):
