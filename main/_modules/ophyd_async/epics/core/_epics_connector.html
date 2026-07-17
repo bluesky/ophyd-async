@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._epics_connector &#8212; ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation</title>
+    <title>ophyd_async.epics.core._epics_connector &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=1198fa9c"></script>
+    <script src="../../../../_static/documentation_options.js?v=34ff03ac"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
   
   
 </a></div>
@@ -902,7 +902,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">DeviceFiller</span>
 
@@ -945,6 +945,68 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_PvPrefixDeviceConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Baseclass for `DeviceConnector`s that address a Device by PV prefix.</span>
+
+<span class="sd">    :param prefix:</span>
+<span class="sd">        The PV prefix of the Device. Empty when the connector is made for a</span>
+<span class="sd">        declarative sub-device, whose parent sets the prefix via `set_prefix`</span>
+<span class="sd">        before the child is constructed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the PV prefix, and anything the subclass derives from it.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+
+
+<span class="n">EpicsSignalBackendT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;EpicsSignalBackendT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">EpicsSignalBackend</span><span class="p">)</span>
+<span class="n">EpicsCommandBackendT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;EpicsCommandBackendT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">EpicsCommandBackend</span><span class="p">)</span>
+<span class="n">_PvPrefixDeviceConnectorT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;_PvPrefixDeviceConnectorT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">_PvPrefixDeviceConnector</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fill_children_with_prefix</span><span class="p">(</span>
+    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">filler</span><span class="p">:</span> <span class="n">DeviceFiller</span><span class="p">[</span>
+        <span class="n">EpicsSignalBackendT</span><span class="p">,</span> <span class="n">_PvPrefixDeviceConnectorT</span><span class="p">,</span> <span class="n">EpicsCommandBackendT</span>
+    <span class="p">],</span>
+    <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a Device&#39;s declarative children, addressing them under `prefix`.</span>
+
+<span class="sd">    Each Signal, Command and sub-device annotated with a [](#PvSuffix) is</span>
+<span class="sd">    addressed at `prefix` plus that suffix.</span>
+
+<span class="sd">    :param prefix: The parent Device&#39;s PV prefix, which may name a protocol.</span>
+<span class="sd">    :param filler: The parent Device&#39;s `DeviceFiller`.</span>
+<span class="sd">    :param filled:</span>
+<span class="sd">        If True then a [](#PvSuffix) is the only thing that will address these</span>
+<span class="sd">        children, so a sub-device must have one. If False then a PVI structure</span>
+<span class="sd">        will address them at connection time, and a [](#PvSuffix) is optional.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Signals and commands connect to a bare PV, but a sub-device&#39;s connector</span>
+    <span class="c1"># re-derives the protocol from the prefix it is given, so keep it there.</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">pv_prefix</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">signal_annotations</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">(</span>
+        <span class="n">filled</span><span class="o">=</span><span class="n">filled</span>
+    <span class="p">):</span>
+        <span class="n">fill_backend_with_prefix</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">signal_annotations</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">command_backend</span><span class="p">,</span> <span class="n">command_annotations</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">create_commands_from_annotations</span><span class="p">(</span>
+        <span class="n">filled</span><span class="o">=</span><span class="n">filled</span>
+    <span class="p">):</span>
+        <span class="n">fill_command_with_prefix</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">,</span> <span class="n">command_backend</span><span class="p">,</span> <span class="n">command_annotations</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">connector</span><span class="p">,</span> <span class="n">device_annotations</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">(</span>
+        <span class="n">filled</span><span class="o">=</span><span class="n">filled</span>
+    <span class="p">):</span>
+        <span class="n">fill_connector_with_prefix</span><span class="p">(</span>
+            <span class="n">prefix</span><span class="p">,</span> <span class="n">connector</span><span class="p">,</span> <span class="n">device_annotations</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="n">filled</span>
+        <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_command_with_prefix</span><span class="p">(</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">EpicsCommandBackend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
 <span class="p">):</span>
@@ -959,6 +1021,42 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">unhandled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
     <span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unhandled</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fill_connector_with_prefix</span><span class="p">(</span>
+    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">connector</span><span class="p">:</span> <span class="n">_PvPrefixDeviceConnector</span><span class="p">,</span>
+    <span class="n">annotations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a declarative sub-device&#39;s connector prefix from a [](#PvSuffix).</span>
+
+<span class="sd">    The child connector&#39;s prefix becomes the parent prefix plus that suffix, so</span>
+<span class="sd">    the child&#39;s own signals connect under it.</span>
+
+<span class="sd">    :param required:</span>
+<span class="sd">        If True then a `PvSuffix` is the only thing that will address the child,</span>
+<span class="sd">        so raise a `TypeError` if there isn&#39;t one. If False then something else</span>
+<span class="sd">        (a PVI structure) will address it, and a `PvSuffix` is optional.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unhandled</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">while</span> <span class="n">annotations</span><span class="p">:</span>
+        <span class="n">annotation</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">):</span>
+            <span class="c1"># A sub-device is addressed by a single prefix; use the read suffix.</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="n">annotation</span><span class="o">.</span><span class="n">read_suffix</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">unhandled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+    <span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unhandled</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">suffix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">set_prefix</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">required</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;A declarative EPICS sub-device must be given a PvSuffix to set its &quot;</span>
+            <span class="s2">&quot;prefix, but none was found in its annotations&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># Any leftover annotations (e.g. StandardReadableFormat) are handled by the filler</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_backend_with_prefix</span><span class="p">(</span>
@@ -982,17 +1080,14 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="EpicsDeviceConnector">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDeviceConnector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsDeviceConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsDeviceConnector</span><span class="p">(</span><span class="n">_PvPrefixDeviceConnector</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for connecting signals to static EPICS pvs.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
 
 <div class="viewcode-block" id="EpicsDeviceConnector.create_children_from_annotations">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDeviceConnector.create_children_from_annotations">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;filler&quot;</span><span class="p">):</span>
-            <span class="n">protocol</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="n">protocol</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">_command_backend_factory</span><span class="p">(</span>
                 <span class="n">sig</span><span class="p">:</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -1010,14 +1105,12 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
                 <span class="n">device</span><span class="p">,</span>
                 <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">get_signal_backend_type</span><span class="p">(</span><span class="n">protocol</span><span class="p">),</span>
-                <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">DeviceConnector</span><span class="p">,</span>
+                <span class="c1"># Declarative sub-devices get their own EpicsDeviceConnector so</span>
+                <span class="c1"># their signals are created under a PvSuffix-derived prefix.</span>
+                <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">EpicsDeviceConnector</span><span class="p">,</span>
                 <span class="n">command_backend_factory</span><span class="o">=</span><span class="n">_command_backend_factory</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">():</span>
-                <span class="n">fill_backend_with_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_commands_from_annotations</span><span class="p">():</span>
-                <span class="n">fill_command_with_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">())</span></div>
+            <span class="n">fill_children_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

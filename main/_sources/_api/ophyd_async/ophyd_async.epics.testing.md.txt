@@ -35,12 +35,32 @@
   - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPvaDevice
     :summary:
     ```
+* - {py:obj}`EpicsTestPviAgreeingPvSuffixDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice
+    :summary:
+    ```
 * - {py:obj}`EpicsTestPviDevice <ophyd_async.epics.testing._devices.EpicsTestPviDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice
     :summary:
     ```
+* - {py:obj}`EpicsTestPviDisagreeingDeviceDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice
+    :summary:
+    ```
+* - {py:obj}`EpicsTestPviDisagreeingSuffixDevice <ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice
+    :summary:
+    ```
 * - {py:obj}`EpicsTestPviLeafDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice
+    :summary:
+    ```
+* - {py:obj}`EpicsTestPviMapDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice
+    :summary:
+    ```
+* - {py:obj}`EpicsTestPviMapOverVectorDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice
     :summary:
     ```
 * - {py:obj}`EpicsTestPviNestedDevice <ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice>`
@@ -139,7 +159,7 @@
 
 ````
 
-`````{py:class} EpicsTestCaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestCaDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.testing._devices.EpicsTestCaDevice
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -544,7 +564,7 @@ Bases: {py:obj}`ophyd_async.core.SupersetEnum`
 
 `````
 
-`````{py:class} EpicsTestPvaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestPvaDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.testing._devices.EpicsTestPvaDevice
 
 Bases: {py:obj}`ophyd_async.epics.testing._devices.EpicsTestCaDevice`
@@ -631,7 +651,39 @@ Bases: {py:obj}`ophyd_async.epics.testing._devices.EpicsTestCaDevice`
 
 `````
 
-`````{py:class} EpicsTestPviDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestPviAgreeingPvSuffixDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice
+```
+
+````{py:attribute} signal_rw
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice.signal_rw
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('signal_rw')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice.signal_rw
+```
+
+````
+
+````{py:attribute} child
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice.child
+:type: ~typing.Annotated[~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice, PvSuffix('child:')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviAgreeingPvSuffixDevice.child
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -672,17 +724,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
-````{py:attribute} overridden_float
-:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.overridden_float
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('float_prec_1')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.overridden_float
-```
-
-````
-
 ````{py:attribute} table
 :canonical: ophyd_async.epics.testing._devices.EpicsTestPviDevice.table
 :type: ~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._devices.EpicsTestTable]
@@ -712,6 +753,48 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDevice.go
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviDisagreeingDeviceDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice
+```
+
+````{py:attribute} child
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice.child
+:type: ~typing.Annotated[~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice, PvSuffix('not_child:')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviDisagreeingDeviceDevice.child
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviDisagreeingSuffixDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice
+```
+
+````{py:attribute} overridden_float
+:canonical: ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice.overridden_float
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('float_prec_1')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._devices.EpicsTestPviDisagreeingSuffixDevice.overridden_float
 ```
 
 ````
@@ -750,7 +833,60 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 `````
 
-`````{py:class} EpicsTestPviNestedDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestPviMapDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice
+```
+
+````{py:attribute} signal_map
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice.signal_map
+:type: ~ophyd_async.core.DeviceMap[~ophyd_async.core.SignalRW[float]]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice.signal_map
+```
+
+````
+
+````{py:attribute} device_map
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice.device_map
+:type: ~ophyd_async.core.DeviceMap[~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapDevice.device_map
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviMapOverVectorDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice
+```
+
+````{py:attribute} device_vector
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice.device_vector
+:type: ~ophyd_async.core.DeviceMap[~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviMapOverVectorDevice.device_vector
+```
+
+````
+
+`````
+
+`````{py:class} EpicsTestPviNestedDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -837,7 +973,7 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 `````
 
-`````{py:class} EpicsTestPviNestedDeviceMissingChild(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestPviNestedDeviceMissingChild(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDeviceMissingChild
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`

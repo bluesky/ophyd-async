@@ -94,18 +94,18 @@
 `````{py:class} PviDeviceConnector(prefix: str = '', error_hint: str = '')
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector
 
-Bases: {py:obj}`ophyd_async.core.DeviceConnector`
+Bases: {py:obj}`ophyd_async.epics.core._epics_connector._PvPrefixDeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
 ```
 
-````{py:attribute} mock_device_vector_len
-:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
-:type: int
+````{py:attribute} mock_device_vector_children
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_children
+:type: list[int]
 :value: >
-   2
+   [1, 2]
 
-```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_children
 ```
 
 ````
@@ -121,7 +121,15 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ````
 
-````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
+````{py:method} set_prefix(prefix: str) -> None
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.set_prefix
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.set_prefix
+```
+
+````
+
+````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device) -> None
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
@@ -129,7 +137,7 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ````
 
-````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core.LazyMock)
+````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core.LazyMock) -> None
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
 :async:
 
@@ -222,24 +230,6 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 ````
 
-````{py:property} is_signal_vector
-:canonical: ophyd_async.epics.core._pvi_connector.PviTree.is_signal_vector
-:type: bool
-
-```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.is_signal_vector
-```
-
-````
-
-````{py:property} is_command_vector
-:canonical: ophyd_async.epics.core._pvi_connector.PviTree.is_command_vector
-:type: bool
-
-```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.is_command_vector
-```
-
-````
-
 `````
 
 `````{py:class} SignalDetails(/, **data: ~typing.Any)
@@ -294,10 +284,10 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 `````
 
-`````{py:class} EpicsDeviceConnector(prefix: str)
+`````{py:class} EpicsDeviceConnector(prefix: str = '')
 :canonical: ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
 
-Bases: {py:obj}`ophyd_async.core.DeviceConnector`
+Bases: {py:obj}`ophyd_async.epics.core._epics_connector._PvPrefixDeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
 ```
@@ -351,7 +341,7 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 `````
 
-````{py:class} EpicsDevice(prefix: str, with_pvi: bool = False, name: str = '')
+````{py:class} EpicsDevice(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.core._epics_device.EpicsDevice
 
 Bases: {py:obj}`ophyd_async.core.Device`

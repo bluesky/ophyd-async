@@ -869,7 +869,7 @@ Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.Signa
 ```
 ````
 
-`````{py:class} TangoDevice(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
+`````{py:class} TangoDevice(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True, connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.tango.core._base_device.TangoDevice
 
 Bases: {py:obj}`ophyd_async.core.Device`

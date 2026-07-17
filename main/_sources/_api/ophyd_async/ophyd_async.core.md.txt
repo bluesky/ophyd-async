@@ -31,6 +31,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceAnnotation
     :summary:
     ```
+* - {py:obj}`DeviceMap <ophyd_async.core._device.DeviceMap>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.DeviceMap
+    :summary:
+    ```
 * - {py:obj}`DeviceVector <ophyd_async.core._device.DeviceVector>`
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
     :summary:
@@ -720,10 +724,10 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 
 ````
 
-````{py:method} create_device_vector_entries_to_mock(num: int)
-:canonical: ophyd_async.core._device_filler.DeviceFiller.create_device_vector_entries_to_mock
+````{py:method} create_device_dict_entries_to_mock(entries: list[~typing.Any])
+:canonical: ophyd_async.core._device_filler.DeviceFiller.create_device_dict_entries_to_mock
 
-```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_device_vector_entries_to_mock
+```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_device_dict_entries_to_mock
 ```
 
 ````
@@ -736,7 +740,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 
 ````
 
-````{py:method} fill_child_signal(name: str, signal_type: type[~ophyd_async.core._signal.Signal], vector_index: int | None = None) -> ~ophyd_async.core._device_filler.SignalBackendT
+````{py:method} fill_child_signal(name: str, signal_type: type[~ophyd_async.core._signal.Signal], map_key: int | str | None = None) -> ~ophyd_async.core._device_filler.SignalBackendT
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_signal
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_signal
@@ -744,7 +748,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 
 ````
 
-````{py:method} fill_child_device(name: str, device_type: type[~ophyd_async.core._device.Device | ~ophyd_async.core._device.DeviceVector] = Device, vector_index: int | None = None) -> ~ophyd_async.core._device_filler.DeviceConnectorT
+````{py:method} fill_child_device(name: str, device_type: type[~ophyd_async.core._device.Device] = Device, map_key: int | str | None = None) -> ~ophyd_async.core._device_filler.DeviceConnectorT
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_device
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_device
@@ -752,7 +756,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 
 ````
 
-````{py:method} fill_child_command(name: str, command_type: type[~ophyd_async.core._command.Command] = Command, vector_index: int | None = None) -> ~ophyd_async.core._device_filler.CommandBackendT
+````{py:method} fill_child_command(name: str, command_type: type[~ophyd_async.core._command.Command] = Command, map_key: str | int | None = None) -> ~ophyd_async.core._device_filler.CommandBackendT
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_command
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_command
@@ -771,6 +775,24 @@ Bases: {py:obj}`typing.Protocol`
 ```
 
 ````
+
+`````{py:class} DeviceMap(children: ~collections.abc.Mapping[str, ~ophyd_async.core._device.DeviceT] | None = None, name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.core._device.DeviceMap
+
+Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`str`\, {py:obj}`ophyd_async.core._device.DeviceT`\], {py:obj}`ophyd_async.core._device.Device`
+
+```{autodoc2-docstring} ophyd_async.core._device.DeviceMap
+```
+
+````{py:method} children() -> ~collections.abc.Iterator[tuple[str, ~ophyd_async.core._device.Device]]
+:canonical: ophyd_async.core._device.DeviceMap.children
+
+```{autodoc2-docstring} ophyd_async.core._device.DeviceMap.children
+```
+
+````
+
+`````
 
 `````{py:class} DeviceVector(children: ~collections.abc.Mapping[int, ~ophyd_async.core._device.DeviceT] | None = None, name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.core._device.DeviceVector

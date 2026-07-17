@@ -45,7 +45,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epi
 
 ````
 
-`````{py:class} AravisDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} AravisDriverIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adaravis.AravisDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`

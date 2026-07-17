@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=1198fa9c"></script>
+    <script src="../_static/documentation_options.js?v=34ff03ac"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
   
   
 </a></div>
@@ -1528,29 +1528,39 @@ FastCS</label><div class="sd-tab-content docutils">
 </section>
 <section id="demostage">
 <h3><code class="docutils literal notranslate"><span class="pre">DemoStage</span></code><a class="headerlink" href="#demostage" title="Link to this heading">#</a></h3>
-<p>Finally we get to the <code class="docutils literal notranslate"><span class="pre">DemoStage</span></code>, which is responsible for instantiating two <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s. It also inherits from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>, which allows it to be used in plans that <code class="docutils literal notranslate"><span class="pre">read()</span></code> devices. It ensures that the output of <code class="docutils literal notranslate"><span class="pre">read()</span></code> is the same as if you were to <code class="docutils literal notranslate"><span class="pre">read()</span></code> both the <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s, and merge the result:</p>
+<p>Finally we get to the <code class="docutils literal notranslate"><span class="pre">DemoStage</span></code>, which groups two <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s called <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>. It also inherits from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>, which allows it to be used in plans that <code class="docutils literal notranslate"><span class="pre">read()</span></code> devices. It ensures that the output of <code class="docutils literal notranslate"><span class="pre">read()</span></code> is the same as if you were to <code class="docutils literal notranslate"><span class="pre">read()</span></code> both the <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s, and merge the result:</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-18" name="sd-tab-set-6" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-18">
 EPICS</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadable</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DemoMotor</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">DemoStage</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoStage</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A simulated sample stage with X and Y movables.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Define some child Devices</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">DemoMotor</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;X:&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">DemoMotor</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Y:&quot;</span><span class="p">)</span>
-        <span class="c1"># Set name of device and child devices</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="c1"># The stage has a fixed set of child Devices, so we can declare them the</span>
+    <span class="c1"># same way as Signals: a PvSuffix addresses each motor relative to the</span>
+    <span class="c1"># stage&#39;s prefix, and Format.CHILD merges its readings into the stage.</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;X:&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Y:&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Like <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code>, the PV concatenation is done explicitly in code, and the children are added within a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager.</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code>, the stage has a <em>fixed</em> set of child Devices — always an <code class="docutils literal notranslate"><span class="pre">x</span></code> and a <code class="docutils literal notranslate"><span class="pre">y</span></code> — rather than a runtime-sized <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>. So instead of instantiating them in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, we can declare them the same way as Signals: via a type hint annotated with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a>. The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> baseclass prepends the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> to the stage’s prefix to address each motor, so a <code class="docutils literal notranslate"><span class="pre">DemoStage(prefix=&quot;PREFIX:&quot;)</span></code> gives <code class="docutils literal notranslate"><span class="pre">x</span></code> the prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:X:</span></code>. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a> adds each motor’s <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> into the stage’s, just as if we had used <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a>. Declared sub-devices may themselves declare sub-devices, so this nests to any depth.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A declarative EPICS sub-device <strong>must</strong> be given a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a>; a bare annotation such as <code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">DemoMotor</span></code> raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, because there would be no way to address its Signals.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For when to declare children with type hints versus instantiating them procedurally in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, see <a class="reference internal" href="../explanations/declarative-vs-procedural.html"><span class="doc std std-doc">Declarative vs Procedural Devices</span></a>.</p>
+</div>
 </div>
 <input id="sd-tab-item-19" name="sd-tab-set-6" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-19">

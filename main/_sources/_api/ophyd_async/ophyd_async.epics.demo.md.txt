@@ -61,7 +61,7 @@
 
 ````
 
-`````{py:class} DemoMotor(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} DemoMotor(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.demo._motor.DemoMotor
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`\[{py:obj}`float`\]
@@ -123,15 +123,37 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.S
 
 `````
 
-````{py:class} DemoStage(prefix: str, name='')
+`````{py:class} DemoStage(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.demo._stage.DemoStage
 
-Bases: {py:obj}`ophyd_async.core.StandardReadable`
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ```{autodoc2-docstring} ophyd_async.epics.demo._stage.DemoStage
 ```
 
+````{py:attribute} x
+:canonical: ophyd_async.epics.demo._stage.DemoStage.x
+:type: ~typing.Annotated[~ophyd_async.epics.demo._motor.DemoMotor, PvSuffix('X:'), ~ophyd_async.core.StandardReadableFormat.CHILD]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._stage.DemoStage.x
+```
+
 ````
+
+````{py:attribute} y
+:canonical: ophyd_async.epics.demo._stage.DemoStage.y
+:type: ~typing.Annotated[~ophyd_async.epics.demo._motor.DemoMotor, PvSuffix('Y:'), ~ophyd_async.core.StandardReadableFormat.CHILD]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._stage.DemoStage.y
+```
+
+````
+
+`````
 
 `````{py:class} EnergyMode()
 :canonical: ophyd_async.epics.demo._point_detector_channel.EnergyMode

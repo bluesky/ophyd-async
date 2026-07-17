@@ -384,7 +384,7 @@ Bases: {py:obj}`ophyd_async.core.SupersetEnum`
 
 `````
 
-`````{py:class} NDArrayBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDArrayBaseIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -708,7 +708,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} ADBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} ADBaseIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.ADBaseIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
@@ -850,7 +850,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
 
 `````
 
-`````{py:class} NDPluginBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDPluginBaseIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDPluginBaseIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
@@ -904,7 +904,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
 
 `````
 
-`````{py:class} NDROIIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDROIIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDROIIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
@@ -947,7 +947,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 `````
 
-`````{py:class} NDStatsIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDStatsIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDStatsIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
@@ -1111,7 +1111,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 `````
 
-`````{py:class} NDROIStatNIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDROIStatNIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDROIStatNIO
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -1271,7 +1271,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} NDCircularBuffIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDCircularBuffIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDCircularBuffIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
@@ -1387,7 +1387,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} NDFileIO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDFileIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDFileIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
@@ -1551,7 +1551,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
 
 `````
 
-````{py:class} NDPluginFileIO(prefix: str, with_pvi: bool = False, name: str = '')
+````{py:class} NDPluginFileIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDPluginFileIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`, {py:obj}`ophyd_async.epics.adcore._io.NDFileIO`
@@ -1651,7 +1651,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} NDFileHDF5IO(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} NDFileHDF5IO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDFileHDF5IO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginFileIO`

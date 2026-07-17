@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._devices &#8212; ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation</title>
+    <title>ophyd_async.epics.testing._devices &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=1198fa9c"></script>
+    <script src="../../../../_static/documentation_options.js?v=34ff03ac"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
   
   
 </a></div>
@@ -1034,26 +1034,40 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device for use in a generic PVI test IOC, independent of PandA/FastCS.</span>
 
 <span class="sd">    Construct with `with_pvi=True`: signals here are plain type annotations</span>
-<span class="sd">    with no `PvSuffix` (discovered and filled in from the IOC&#39;s PVI structure</span>
-<span class="sd">    by `PviDeviceConnector` at connect time), except `overridden_float`, which</span>
-<span class="sd">    deliberately also carries a `PvSuffix` pointing at a *different* record —</span>
-<span class="sd">    this checks that the PVI-supplied PV wins once connected.</span>
+<span class="sd">    with no `PvSuffix`, discovered and filled in from the IOC&#39;s PVI structure</span>
+<span class="sd">    by `PviDeviceConnector` at connect time.</span>
 
 <span class="sd">    Most fields (`mbb_direct_bit_r`, `a_float`, `table`, `ntndarray`, `go`)</span>
 <span class="sd">    reuse the same attribute names, PVI entries and backing records as</span>
 <span class="sd">    `EpicsTestCaDevice`/`EpicsTestPvaDevice`, rather than declaring new</span>
-<span class="sd">    synthetic ones. Only `wo_float` (no write-only field exists on those</span>
-<span class="sd">    devices to reuse) and `overridden_float` (inherently synthetic by</span>
-<span class="sd">    design, see above) are bespoke to this device.</span>
+<span class="sd">    synthetic ones. Only `wo_float` is bespoke to this device, as no</span>
+<span class="sd">    write-only field exists on those devices to reuse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">mbb_direct_bit_r</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="n">a_float</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">wo_float</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">overridden_float</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float_prec_1&quot;</span><span class="p">)]</span>
     <span class="n">table</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestTable</span><span class="p">]</span>
     <span class="n">ntndarray</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
     <span class="n">go</span><span class="p">:</span> <span class="n">TriggerableCommand</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestPviDisagreeingSuffixDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviDisagreeingSuffixDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviDisagreeingSuffixDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device whose `PvSuffix` contradicts the PVI structure serving it.</span>
+
+<span class="sd">    `overridden_float` is annotated at the `float_prec_1` record, but the IOC&#39;s</span>
+<span class="sd">    PVI directory points it at the same record as `a_float`. Two different PVs</span>
+<span class="sd">    for one Signal means one of them is wrong, so connecting must raise rather</span>
+<span class="sd">    than silently pick either. Construct with `with_pvi=True`.</span>
+
+<span class="sd">    It is a device of its own because it cannot connect: a disagreeing Signal</span>
+<span class="sd">    would otherwise stop `EpicsTestPviDevice` connecting at all.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">overridden_float</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float_prec_1&quot;</span><span class="p">)]</span></div>
 
 </pre></div>
 

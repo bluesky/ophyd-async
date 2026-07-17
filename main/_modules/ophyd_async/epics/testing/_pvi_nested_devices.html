@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._pvi_nested_devices &#8212; ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation</title>
+    <title>ophyd_async.epics.testing._pvi_nested_devices &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=1198fa9c"></script>
+    <script src="../../../../_static/documentation_options.js?v=34ff03ac"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
   
   
 </a></div>
@@ -899,9 +899,16 @@ window.runMermaid = runMermaid;</script>
                   
   <h1>Source code for ophyd_async.epics.testing._pvi_nested_devices</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">DeviceMap</span><span class="p">,</span>
+    <span class="n">DeviceVector</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
 <span class="n">PVI_NESTED_RECORDS</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;_pvi_nested_records.db&quot;</span>
 
@@ -946,6 +953,71 @@ window.runMermaid = runMermaid;</script>
     <span class="n">signal_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
     <span class="n">command_vector</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">]</span>
     <span class="n">optional_signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestPviMapDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviMapDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviMapDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Real-IOC-backed `DeviceMap` test device, served under the `mapd:` group.</span>
+
+<span class="sd">    Proves that a `DeviceMap` is created only from an explicit `DeviceMap[...]`</span>
+<span class="sd">    annotation and filled from a node&#39;s *normal* named entries, keyed by name</span>
+<span class="sd">    (`signal_map` -&gt; `{&quot;a&quot;, &quot;b&quot;}`, `device_map` -&gt; `{&quot;one&quot;, &quot;two&quot;}`), with each</span>
+<span class="sd">    entry type-checked against the map&#39;s element type -- the counterpart to</span>
+<span class="sd">    `EpicsTestPviNestedDevice`&#39;s integer-keyed `DeviceVector`s. Construct with</span>
+<span class="sd">    `with_pvi=True` and a prefix ending `mapd:`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">signal_map</span><span class="p">:</span> <span class="n">DeviceMap</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+    <span class="n">device_map</span><span class="p">:</span> <span class="n">DeviceMap</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestPviAgreeingPvSuffixDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviAgreeingPvSuffixDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviAgreeingPvSuffixDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects to the same served PVI tree as `EpicsTestPviNestedDevice`.</span>
+
+<span class="sd">    Addresses its children with a `PvSuffix` *as well as* via PVI, naming the</span>
+<span class="sd">    same PVs the served tree does. PVI is the one that fills them; the</span>
+<span class="sd">    annotations are only cross-checked against it, so connecting succeeds.</span>
+<span class="sd">    Construct with `with_pvi=True`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">signal_rw</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;signal_rw&quot;</span><span class="p">)]</span>
+    <span class="n">child</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;child:&quot;</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestPviDisagreeingDeviceDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviDisagreeingDeviceDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviDisagreeingDeviceDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects to the same served PVI tree as `EpicsTestPviNestedDevice`.</span>
+
+<span class="sd">    Gives `child` a `PvSuffix` naming a different PVI PV to the served one, so</span>
+<span class="sd">    connecting must raise rather than silently take PVI&#39;s. The sub-device</span>
+<span class="sd">    counterpart of `EpicsTestPviDisagreeingSuffixDevice`, which covers a</span>
+<span class="sd">    disagreeing Signal. Construct with `with_pvi=True`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">child</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;not_child:&quot;</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestPviMapOverVectorDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPviMapOverVectorDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPviMapOverVectorDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connects to the same served PVI tree as `EpicsTestPviNestedDevice`.</span>
+
+<span class="sd">    Annotates `device_vector` -- which PVI serves as integer-keyed &quot;__N&quot; entries</span>
+<span class="sd">    -- as a `DeviceMap`. A `DeviceMap` can only hold the named entries of a node,</span>
+<span class="sd">    so its &quot;__N&quot; children have nowhere to go and connecting must raise rather</span>
+<span class="sd">    than yield a map that has silently dropped them. Construct with</span>
+<span class="sd">    `with_pvi=True`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">device_vector</span><span class="p">:</span> <span class="n">DeviceMap</span><span class="p">[</span><span class="n">EpicsTestPviLeafDevice</span><span class="p">]</span></div>
 
 
 

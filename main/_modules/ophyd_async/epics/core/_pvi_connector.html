@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation</title>
+    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=1198fa9c"></script>
+    <script src="../../../../_static/documentation_options.js?v=34ff03ac"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev2+gdb39ad7f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
   
   
 </a></div>
@@ -906,15 +906,14 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Field</span><span class="p">,</span>
-    <span class="n">computed_field</span><span class="p">,</span>
     <span class="n">field_validator</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConfinedModel</span><span class="p">,</span>
     <span class="n">Device</span><span class="p">,</span>
-    <span class="n">DeviceConnector</span><span class="p">,</span>
     <span class="n">DeviceFiller</span><span class="p">,</span>
+    <span class="n">DeviceMap</span><span class="p">,</span>
     <span class="n">DeviceVector</span><span class="p">,</span>
     <span class="n">LazyMock</span><span class="p">,</span>
     <span class="n">Signal</span><span class="p">,</span>
@@ -925,83 +924,86 @@ window.runMermaid = runMermaid;</script>
     <span class="n">gather_dict</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._epics_connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">fill_backend_with_prefix</span><span class="p">,</span> <span class="n">fill_command_with_prefix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._epics_connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">_PvPrefixDeviceConnector</span><span class="p">,</span> <span class="n">fill_children_with_prefix</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvaCommandBackend</span><span class="p">,</span> <span class="n">PvaSignalBackend</span><span class="p">,</span> <span class="n">pvget_with_timeout</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsCommandBackend</span>
 
 
 <div class="viewcode-block" id="PviDeviceConnector">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PviDeviceConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connect to PVI structure served over PVA.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PviDeviceConnector</span><span class="p">(</span><span class="n">_PvPrefixDeviceConnector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connect a `Device` to a PVI structure served over PVA.</span>
 
-<span class="sd">    At init, fill in all the type hinted signals. At connection check their</span>
-<span class="sd">    types and fill in any extra signals.</span>
+<span class="sd">    At construction, create the type-hinted signals, commands and sub-devices</span>
+<span class="sd">    from the `Device`&#39;s annotations. At connection, discover the served PVI tree</span>
+<span class="sd">    and fill in each child, checking the type-hinted ones and adding any extra</span>
+<span class="sd">    ones the tree provides.</span>
 
 <span class="sd">    :param prefix:</span>
-<span class="sd">        The PV prefix of the device, &quot;PVI&quot; will be appended to it to get the PVI</span>
-<span class="sd">        PV.</span>
+<span class="sd">        The PV prefix of the device; &quot;PVI&quot; is appended to it to get the PVI PV.</span>
 <span class="sd">    :param error_hint:</span>
-<span class="sd">        If given, this will be appended to the error message if any of they type</span>
-<span class="sd">        hinted Signals are not present.</span>
+<span class="sd">        If given, appended to the error message when a type-hinted child is</span>
+<span class="sd">        missing from the served tree.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">mock_device_vector_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">mock_device_vector_children</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">pvi_tree</span><span class="p">:</span> <span class="n">PviTree</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">error_hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># TODO: what happens if we get a leading &quot;pva://&quot; here?</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;PVI&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">error_hint</span> <span class="o">=</span> <span class="n">error_hint</span>
+
+<div class="viewcode-block" id="PviDeviceConnector.set_prefix">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector.set_prefix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;PVI&quot;</span></div>
+
 
 <div class="viewcode-block" id="PviDeviceConnector.create_children_from_annotations">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector.create_children_from_annotations">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;filler&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Per the DeviceConnector contract this may be called more than once;</span>
+        <span class="c1"># having built the filler, subsequent calls are a no-op.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;filler&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
 
-            <span class="k">def</span><span class="w"> </span><span class="nf">_command_backend_factory</span><span class="p">(</span>
-                <span class="n">sig</span><span class="p">:</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EpicsCommandBackend</span><span class="p">:</span>
-                <span class="c1"># EPICS only supports void/void commands (plain PV put); typed</span>
-                <span class="c1"># Command[P, T] annotations are a mistake on an EPICS device.</span>
-                <span class="k">if</span> <span class="n">sig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: EPICS only supports TriggerableCommand /&quot;</span>
-                        <span class="s2">&quot; Command[[], None]; typed Command with parameters is not&quot;</span>
-                        <span class="s2">&quot; yet supported over EPICS&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">return</span> <span class="n">PvaCommandBackend</span><span class="p">()</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">command_backend_factory</span><span class="p">(</span>
+            <span class="n">sig</span><span class="p">:</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EpicsCommandBackend</span><span class="p">:</span>
+            <span class="c1"># EPICS only supports void/void commands (a plain PV put); a typed</span>
+            <span class="c1"># Command[P, T] annotation is a mistake on an EPICS device.</span>
+            <span class="k">if</span> <span class="n">sig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: EPICS only supports TriggerableCommand /&quot;</span>
+                    <span class="s2">&quot; Command[[], None]; typed Command with parameters is not&quot;</span>
+                    <span class="s2">&quot; yet supported over EPICS&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">PvaCommandBackend</span><span class="p">()</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
-                <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-                <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">PvaSignalBackend</span><span class="p">,</span>
-                <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">PviDeviceConnector</span><span class="p">,</span>
-                <span class="n">command_backend_factory</span><span class="o">=</span><span class="n">_command_backend_factory</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="c1"># Signals can be filled in with EpicsSignalSuffix and checked at runtime</span>
-            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">(</span>
-                <span class="n">filled</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">):</span>
-                <span class="n">fill_backend_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
-            <span class="c1"># Commands are filled from PVI tree at connect time</span>
-            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_commands_from_annotations</span><span class="p">(</span>
-                <span class="n">filled</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">):</span>
-                <span class="n">fill_command_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
-            <span class="c1"># Devices will be created with unfilled PviDeviceConnectors</span>
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">(</span><span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_created</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">PvaSignalBackend</span><span class="p">,</span>
+            <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">PviDeviceConnector</span><span class="p">,</span>
+            <span class="n">command_backend_factory</span><span class="o">=</span><span class="n">command_backend_factory</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Address any PvSuffix-annotated children now; everything else is</span>
+        <span class="c1"># addressed from the served PVI tree at connect, which also cross-checks</span>
+        <span class="c1"># the ones addressed here.</span>
+        <span class="n">fill_children_with_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="p">,</span> <span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_created</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PviDeviceConnector.connect_mock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector.connect_mock">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># A DeviceVector gets fabricated mock children; a DeviceMap does not (its</span>
+        <span class="c1"># entries come from the served PVI tree, so in mock mode it stays empty).</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_device_vector_entries_to_mock</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mock_device_vector_len</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_device_dict_entries_to_mock</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mock_device_vector_children</span>
             <span class="p">)</span>
-        <span class="c1"># Set the name of the device to name all children</span>
         <span class="n">device</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect_mock</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span></div>
 
@@ -1011,89 +1013,115 @@ window.runMermaid = runMermaid;</script>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="p">:</span>
-            <span class="c1"># Top-level device, so discover PVI tree</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Top-level device: discover the served PVI tree.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span> <span class="o">=</span> <span class="k">await</span> <span class="n">PviTree</span><span class="o">.</span><span class="n">build_device_tree</span><span class="p">(</span>
                 <span class="n">pvi_pv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
             <span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span>
 
-        <span class="c1"># Fill all sub devices</span>
-        <span class="k">for</span> <span class="n">device_name</span><span class="p">,</span> <span class="n">device_sub_tree</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">sub_devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">device_sub_tree</span><span class="o">.</span><span class="n">vector_children</span><span class="p">:</span>
-                <span class="c1"># This is a DeviceVector</span>
-                <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_device</span><span class="p">(</span>
-                    <span class="n">device_name</span><span class="p">,</span> <span class="n">device_type</span><span class="o">=</span><span class="n">DeviceVector</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># This is a Device</span>
-                <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_device</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
-            <span class="n">connector</span><span class="o">.</span><span class="n">pvi_tree</span> <span class="o">=</span> <span class="n">device_sub_tree</span>
-            <span class="n">connector</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="o">=</span> <span class="n">device_sub_tree</span><span class="o">.</span><span class="n">pvi_pv</span>
-
-        <span class="c1"># Fill all vector sub-device</span>
-        <span class="k">for</span> <span class="p">(</span>
-            <span class="n">vector_index</span><span class="p">,</span>
-            <span class="n">vector_child</span><span class="p">,</span>
-        <span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">vector_children</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">is_signal_vector</span><span class="p">:</span>
-                <span class="c1"># DeviceVector of signals</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vector_child</span><span class="p">,</span> <span class="n">SignalDetails</span><span class="p">):</span>
-                    <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span>
-                        <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">vector_child</span><span class="o">.</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">vector_index</span>
-                    <span class="p">)</span>
-                    <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">vector_child</span><span class="o">.</span><span class="n">read_pv</span>
-                    <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">vector_child</span><span class="o">.</span><span class="n">write_pv</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="s2">&quot;Failed to fill DeviceVector. &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Expected SignalDetails, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">vector_child</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">is_command_vector</span><span class="p">:</span>
-                <span class="c1"># DeviceVector of commands</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vector_child</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span>
-                        <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">vector_index</span>
-                    <span class="p">)</span>
-                    <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">vector_child</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="s2">&quot;Failed to fill DeviceVector. &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Expected str execute PV, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">vector_child</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># DeviceVector of devices</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vector_child</span><span class="p">,</span> <span class="n">PviTree</span><span class="p">):</span>
-                    <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_device</span><span class="p">(</span>
-                        <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">vector_index</span><span class="o">=</span><span class="n">vector_index</span>
-                    <span class="p">)</span>
-                    <span class="n">connector</span><span class="o">.</span><span class="n">pvi_tree</span> <span class="o">=</span> <span class="n">vector_child</span>
-                    <span class="n">connector</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="o">=</span> <span class="n">vector_child</span><span class="o">.</span><span class="n">pvi_pv</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="s2">&quot;Failed to fill DeviceVector. &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Expected PviTree, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">vector_child</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-
-        <span class="c1"># Fill all signals</span>
-        <span class="k">for</span> <span class="n">signal_name</span><span class="p">,</span> <span class="n">signal_details</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span>
-                <span class="n">signal_name</span><span class="p">,</span> <span class="n">signal_details</span><span class="o">.</span><span class="n">signal_type</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="c1"># A DeviceMap is filled from its node&#39;s normal named entries, keyed by</span>
+        <span class="c1"># name. Anything else fills its named entries as attributes, plus any</span>
+        <span class="c1"># &quot;__N&quot; entries into the int-keyed DeviceVector that it is.</span>
+        <span class="n">is_map</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">DeviceMap</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_map</span> <span class="ow">and</span> <span class="n">tree</span><span class="o">.</span><span class="n">vector_children</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is annotated as a DeviceMap, but &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;PVI serves integer-keyed entries </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">vector_children</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;here, which only a DeviceVector can hold&quot;</span>
             <span class="p">)</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">signal_details</span><span class="o">.</span><span class="n">read_pv</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">signal_details</span><span class="o">.</span><span class="n">write_pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_named_entries</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">as_map</span><span class="o">=</span><span class="n">is_map</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_map</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_vector_children</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
 
-        <span class="c1"># Fill all commands (&quot;x&quot; entries from PVI tree)</span>
-        <span class="k">for</span> <span class="n">command_name</span><span class="p">,</span> <span class="n">execute_pv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">TriggerableCommand</span><span class="p">)</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">execute_pv</span>
-
-        <span class="c1"># Check that all the requested children have been filled</span>
         <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">error_hint</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_hint</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_filled</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_tree</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="c1"># Set the name of the device to name all children</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">check_filled</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tree</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">device</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect_real</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_named_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">PviTree</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">as_map</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill a node&#39;s normal (non-&quot;__N&quot;) entries.</span>
+
+<span class="sd">        `as_map=True` adds each entry to a `DeviceMap` keyed by its name;</span>
+<span class="sd">        `as_map=False` sets it as a plain attribute on the device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">details</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_signal</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">as_map</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">execute_pv</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">execute_pv</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">as_map</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sub_tree</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">sub_devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># A sub-tree with &quot;__N&quot; entries is an (undeclared) DeviceVector;</span>
+            <span class="c1"># for declared children the filler already knows the type.</span>
+            <span class="n">device_type</span> <span class="o">=</span> <span class="n">DeviceVector</span> <span class="k">if</span> <span class="n">sub_tree</span><span class="o">.</span><span class="n">vector_children</span> <span class="k">else</span> <span class="n">Device</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fill_sub_device</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="n">sub_tree</span><span class="p">,</span>
+                <span class="n">device_type</span><span class="o">=</span><span class="n">device_type</span><span class="p">,</span>
+                <span class="n">map_key</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">as_map</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_vector_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">PviTree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill the int-keyed &quot;__N&quot; entries into the `DeviceVector` `device`.</span>
+
+<span class="sd">        `PviTree` validates the entries are all one kind, so the child value type</span>
+<span class="sd">        selects how to fill it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">vector_children</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">SignalDetails</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_signal</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">PviTree</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_sub_device</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># a bare execute-PV str is a command</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_command</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_agrees_with_pvi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">annotated</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">served</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Raise if a child&#39;s PvSuffix annotation disagrees with the PVI tree.</span>
+
+<span class="sd">        `annotated` is empty for the children PVI alone addresses, which is the</span>
+<span class="sd">        usual case; a child that was given a `PvSuffix` as well must agree with</span>
+<span class="sd">        what the tree says, or one of the two is wrong.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">annotated</span> <span class="ow">and</span> <span class="n">annotated</span> <span class="o">!=</span> <span class="n">served</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvi_pv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is addressed at </span><span class="si">{</span><span class="n">annotated</span><span class="si">}</span><span class="s2"> by its &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;PvSuffix annotation, but PVI serves it at </span><span class="si">{</span><span class="n">served</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_signal</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">details</span><span class="p">:</span> <span class="n">SignalDetails</span><span class="p">,</span> <span class="n">map_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_signal</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">details</span><span class="o">.</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">map_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_agrees_with_pvi</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span><span class="p">,</span> <span class="n">details</span><span class="o">.</span><span class="n">read_pv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_agrees_with_pvi</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span><span class="p">,</span> <span class="n">details</span><span class="o">.</span><span class="n">write_pv</span><span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">read_pv</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">write_pv</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_command</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">execute_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">map_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">map_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_agrees_with_pvi</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span><span class="p">,</span> <span class="n">execute_pv</span><span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">execute_pv</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fill_sub_device</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sub_tree</span><span class="p">:</span> <span class="n">PviTree</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">device_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="n">Device</span><span class="p">,</span>
+        <span class="n">map_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">fill_child_device</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">device_type</span><span class="o">=</span><span class="n">device_type</span><span class="p">,</span> <span class="n">map_key</span><span class="o">=</span><span class="n">map_key</span>
+        <span class="p">)</span>
+        <span class="c1"># An unaddressed connector still has the &quot;PVI&quot; its empty prefix makes,</span>
+        <span class="c1"># so only cross-check the ones a PvSuffix gave a prefix to.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_agrees_with_pvi</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="k">if</span> <span class="n">connector</span><span class="o">.</span><span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sub_tree</span><span class="o">.</span><span class="n">pvi_pv</span>
+        <span class="p">)</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">pvi_tree</span> <span class="o">=</span> <span class="n">sub_tree</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">pvi_pv</span> <span class="o">=</span> <span class="n">sub_tree</span><span class="o">.</span><span class="n">pvi_pv</span></div>
 
 
 
@@ -1221,10 +1249,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param vector_children:</span>
 <span class="sd">        A mapping of int to `PviTree` objects representing child devices of a vector</span>
 <span class="sd">        device.</span>
-
-<span class="sd">    :attr is_signal_vector:</span>
-<span class="sd">        A computed property returning True if any child device in `vector_children`</span>
-<span class="sd">        is an instance of `SignalDetails`, else False.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">pvi_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1232,7 +1256,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">commands</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="n">sub_devices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PviTree</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="c1"># A `str` vector_child is the execute PV of a DeviceVector of commands</span>
-    <span class="c1"># (a &quot;__N&quot; entry whose only key is &quot;x&quot;) -- see is_command_vector below.</span>
+    <span class="c1"># (a &quot;__N&quot; entry whose only key is &quot;x&quot;).</span>
     <span class="n">vector_children</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PviTree</span> <span class="o">|</span> <span class="n">SignalDetails</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
     <span class="p">)</span>
@@ -1281,14 +1305,16 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
 
         <span class="n">vector_children</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PviTree</span> <span class="o">|</span> <span class="n">SignalDetails</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Filter vector children out of stand-alone devices/signals/commands</span>
-        <span class="c1"># (&quot;commands&quot; holds bare execute-PV strings for &quot;__N&quot; entries here,</span>
-        <span class="c1"># i.e. a DeviceVector of commands).</span>
+        <span class="c1"># Filter DeviceVector children (&quot;__N&quot; integer entries) out of the</span>
+        <span class="c1"># stand-alone devices/signals/commands (&quot;commands&quot; holds bare execute-PV</span>
+        <span class="c1"># strings for &quot;__N&quot; entries here, i.e. a DeviceVector of commands). There</span>
+        <span class="c1"># is deliberately no string-keyed equivalent: a DeviceMap is only ever</span>
+        <span class="c1"># created from an explicit `DeviceMap[...]` annotation, and is filled from</span>
+        <span class="c1"># a node&#39;s normal named entries (see PviDeviceConnector._fill_device_map).</span>
         <span class="k">for</span> <span class="n">processed_entries</span> <span class="ow">in</span> <span class="p">(</span><span class="n">sub_trees</span><span class="p">,</span> <span class="n">signal_details</span><span class="p">,</span> <span class="n">commands</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">child_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">processed_entries</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^__(\d+)$&quot;</span><span class="p">,</span> <span class="n">child_name</span><span class="p">):</span>
-                    <span class="n">sub_tree</span> <span class="o">=</span> <span class="n">processed_entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">child_name</span><span class="p">)</span>
-                    <span class="n">vector_children</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">sub_tree</span>
+                    <span class="n">vector_children</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">processed_entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">child_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">PviTree</span><span class="p">(</span>
             <span class="n">pvi_pv</span><span class="o">=</span><span class="n">pvi_pv</span><span class="p">,</span>
@@ -1303,7 +1329,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_legacy_entry</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">legacy_entry</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PviTree</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle legacy vector entries.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle legacy vector entries. Cannot be converted to map as have no str keys.</span>
 
 <span class="sd">        For example;</span>
 <span class="sd">        ```</span>
@@ -1327,18 +1353,6 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">PviTree</span><span class="p">(</span>
             <span class="n">vector_children</span><span class="o">=</span><span class="n">sub_trees</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="nd">@computed_field</span>
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_signal_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flags if a PviTree represents a DeviceVector of Signals or Devices.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">SignalDetails</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_children</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-
-    <span class="nd">@computed_field</span>
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_command_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flags if a PviTree represents a DeviceVector of Commands.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_children</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a readable top layer of the PviTree.&quot;&quot;&quot;</span>
