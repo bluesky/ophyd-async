@@ -398,6 +398,68 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         return hash(id(self))
 
 
+class DeviceMap(MutableMapping[str, DeviceT], Device):
+    """Defines a dictionary of Device children with arbitrary string keys.
+
+    Like [](#DeviceVector) but indexed by `str` rather than `int`, for when
+    sub-devices are more naturally addressed by name than by number.
+
+    :see-also: [](#implementing-devices) for examples of how to use this class.
+    """
+
+    def __init__(
+        self,
+        children: Mapping[str, DeviceT] | None = None,
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ) -> None:
+        self._children: dict[str, DeviceT] = {}
+        self.update(children or {})
+        super().__init__(name=name, connector=connector)
+
+    def __getitem__(self, key: str) -> DeviceT:
+        return self._children[key]
+
+    def __setitem__(self, key: str, value: DeviceT) -> None:
+        # Check the types on entry to dict to make sure we can't accidentally
+        # make a non-string named child
+        if not isinstance(key, str):
+            msg = f"Expected str, got {key}"
+            raise TypeError(msg)
+        if not isinstance(value, Device):
+            msg = f"Expected Device, got {value}"
+            raise TypeError(msg)
+        self._children[key] = value
+        value.parent = self
+
+    def __setattr__(self, name: str, child: Any) -> None:
+        # Child Devices must be set via `device_map[key] = child` so they get a
+        # string key; setting them as attributes would give them no key.
+        if name != "parent" and isinstance(child, Device):
+            raise AttributeError(
+                "DeviceMap can only have string named children, "
+                "set via device_map[key] = child"
+            )
+        super().__setattr__(name, child)
+
+    def __delitem__(self, key: str) -> None:
+        del self._children[key]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self._children
+
+    def __len__(self) -> int:
+        return len(self._children)
+
+    def children(self) -> Iterator[tuple[str, Device]]:
+        # Keys are already str, so yield them directly (no str() needed)
+        yield from self._children.items()
+        yield from super().children()
+
+    def __hash__(self):  # to allow DeviceMap to be used as dict keys and in sets
+        return hash(id(self))
+
+
 class DeviceProcessor:
     """Sync/Async Context Manager that finds all the Devices declared within it.
 

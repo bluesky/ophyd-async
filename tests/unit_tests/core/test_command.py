@@ -381,7 +381,7 @@ async def test_fill_child_command_vector_index():
         filler.fill_child_command(
             name="my_cmd",
             command_type=Command,
-            vector_index=i,
+            map_key=i,
         )
 
     assert len(vector) == 3
