@@ -56,10 +56,12 @@ SHARED_TMP_COMPOSE_FILE = str(Path(__file__).parent / "compose-shared-tmp.yaml")
 # so one host path bound to itself needs no translation. A devcontainer does not
 # share the host's filesystem and must point these at something the engine
 # resolves identically for every container - it sets both itself, see
-# .devcontainer/devcontainer.json. OA_SHARED_TMP_SOURCE is a host path or a
-# volume name; OA_SHARED_TMP_DIR is the path both sides use.
-os.environ.setdefault("OA_SHARED_TMP_DIR", "/tmp/ophyd-async-shared-tmp")
-os.environ.setdefault("OA_SHARED_TMP_SOURCE", os.environ["OA_SHARED_TMP_DIR"])
+# .devcontainer/devcontainer.json. OPHYD_ASYNC_SHARED_TMP_SOURCE is a host path
+# or a volume name; OPHYD_ASYNC_SHARED_TMP_DIR is the path both sides use.
+os.environ.setdefault("OPHYD_ASYNC_SHARED_TMP_DIR", "/tmp/ophyd-async-shared-tmp")
+os.environ.setdefault(
+    "OPHYD_ASYNC_SHARED_TMP_SOURCE", os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]
+)
 
 
 @pytest.fixture
@@ -71,7 +73,7 @@ def shared_tmp_path(request: FixtureRequest) -> Iterator[Path]:
     there and the IOC reports it missing. Each test gets a unique directory,
     removed afterwards, so concurrent runs sharing the volume cannot collide.
     """
-    root = Path(os.environ["OA_SHARED_TMP_DIR"]) / "pytest-shared-tmp"
+    root = Path(os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]) / "pytest-shared-tmp"
     path = root / f"{request.node.name}-{uuid.uuid4().hex[:8]}"
     path.mkdir(parents=True)
     yield path
@@ -420,7 +422,7 @@ def ca_gateway(docker_composer):
 def bl01t_di_cam_01(ca_gateway, docker_composer):
     # Create it before compose binds it: a rootful engine would otherwise
     # create the source as root, which pytest could then not write to.
-    Path(os.environ["OA_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
+    Path(os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
     yield from docker_composer(
         [
             "-f",
