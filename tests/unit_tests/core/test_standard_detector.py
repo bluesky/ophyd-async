@@ -5,6 +5,8 @@ from unittest.mock import ANY
 
 import numpy as np
 import pytest
+from event_model import DataKey
+from event_model.documents import PartialEventPage
 
 from ophyd_async.core import (
     Array1D,
@@ -12,6 +14,7 @@ from ophyd_async.core import (
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
+    PageableDataProvider,
     Settings,
     SignalDict,
     SignalR,
@@ -153,6 +156,61 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
             collections_written_signal=self.collections_written,
         )
         return provider
+
+    async def stop(self) -> None:
+        self.stop_count += 1
+
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
+        return [datakey_name]
+
+
+class MockPageableProvider(PageableDataProvider):
+    """A finite buffer emitted as event pages, one value per collection."""
+
+    def __init__(self, datakey_name: str, collections_written_signal: SignalR[int]):
+        self.datakey_name = datakey_name
+        self.collections_written_signal = collections_written_signal
+        self.last_emitted = 0
+
+    async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
+        return {
+            self.datakey_name: DataKey(
+                source="mock",
+                shape=[collections_per_event],
+                dtype="array",
+                dtype_numpy="<i8",
+                external="",
+            )
+        }
+
+    async def make_pages(self, collections_written: int, collections_per_event: int):
+        events = collections_written // collections_per_event
+        if events > self.last_emitted:
+            new = range(self.last_emitted, events)
+            page: PartialEventPage = {
+                "data": {self.datakey_name: [[0] * collections_per_event for _ in new]},
+                "time": [0.0 for _ in new],
+                "timestamps": {self.datakey_name: [0.0 for _ in new]},
+            }
+            self.last_emitted = events
+            yield page
+
+
+class BoundedOnlyDataLogic(DetectorDataLogic):
+    """Produces bounded data held in a finite buffer, sized at prepare_bounded."""
+
+    def __init__(self):
+        self.collections_written = soft_signal_rw(int)
+        self.prepare_calls: list[tuple[int, float]] = []
+        self.stop_count = 0
+
+    async def prepare_bounded(
+        self, datakey_name: str, num_collections: int, period: float
+    ) -> PageableDataProvider:
+        self.prepare_calls.append((num_collections, period))
+        # A real buffer clears its progress counter when armed
+        await self.collections_written.set(0)
+        return MockPageableProvider(datakey_name, self.collections_written)
 
     async def stop(self) -> None:
         self.stop_count += 1
@@ -657,7 +715,7 @@ async def test_kickoff_without_streamable_data_raises():
     # ...but there is nothing to collect, so it cannot be flown
     await det.prepare(TriggerInfo(number_of_events=5))
     with pytest.raises(
-        ValueError, match="Detector foo is not streamable, so cannot kickoff"
+        ValueError, match="Detector foo has no collectable data, so cannot kickoff"
     ):
         await det.kickoff()
 
@@ -870,6 +928,78 @@ async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool
 
     await det.unstage()
     assert al.shutter_closed is True  # unstage() must close the shutter
+
+
+async def test_bounded_step_scan_reads_derived_from_page():
+    """A bounded buffer describes as an array and read() derives one reading."""
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+
+    ti = TriggerInfo(
+        number_of_events=1, collections_per_event=5, livetime=0.1, deadtime=0.0
+    )
+    await det.prepare(ti)
+    desc = await det.describe()
+    assert desc["foo"]["shape"] == [5]
+    # prepare sized the buffer for 5 collections at the 0.1s period
+    assert dl.prepare_calls == [(5, pytest.approx(0.1))]
+
+    status = det.trigger()
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await dl.collections_written.set(5)
+    assert status.done
+    assert status.success
+    # trigger() re-armed the buffer, so prepare_bounded ran a second time
+    assert dl.prepare_calls == [(5, pytest.approx(0.1)), (5, pytest.approx(0.1))]
+    reading = await det.read()
+    assert reading["foo"]["value"] == [0, 0, 0, 0, 0]
+
+
+async def test_bounded_fly_scan_accumulates_across_kickoffs():
+    """A bounded buffer is armed once at prepare and not re-armed per kickoff."""
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+
+    await det.prepare(
+        TriggerInfo(number_of_events=10, collections_per_event=1, livetime=0.1)
+    )
+    assert dl.prepare_calls == [(10, pytest.approx(0.1))]
+
+    # First kickoff of 5 events, buffer fills 0 -> 5
+    await det.events_to_kickoff.set(5)
+    await det.kickoff()
+    status = det.complete()
+    await dl.collections_written.set(5)
+    pages = [page async for page in det._collect_pages()]
+    assert pages[0]["data"]["foo"] == [[0]] * 5
+    assert status.done
+
+    # Second kickoff of 5 more, buffer continues 5 -> 10 (monotonic, no reset)
+    await det.events_to_kickoff.set(5)
+    await det.kickoff()
+    status = det.complete()
+    await dl.collections_written.set(10)
+    pages = [page async for page in det._collect_pages()]
+    assert pages[0]["data"]["foo"] == [[0]] * 5
+    assert status.done
+    # kickoff() never re-arms: prepare_bounded was only ever called once
+    assert dl.prepare_calls == [(10, pytest.approx(0.1))]
+
+
+async def test_bounded_dropped_for_infinite_events(caplog):
+    """A bounded buffer cannot serve an infinite scan, so is dropped with a warning."""
+    det = StandardDetector(name="foo")
+    det.add_detector_logics(JustInternalTriggerLogic(), BoundedOnlyDataLogic())
+
+    with caplog.at_level("WARNING"):
+        await det.prepare(TriggerInfo(number_of_events=0))
+
+    assert "cannot serve 0 collections" in caplog.text
+    ctx = det._prepare_ctx
+    assert ctx is not None
+    assert ctx.pageable_data_providers == []
 
 
 async def test_data_logic_with_no_prepare_methods_raises():
