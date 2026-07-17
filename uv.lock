@@ -1622,7 +1622,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-faulthandler" },
     { name = "pytest-forked" },
-    { name = "pytest-insubprocess" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
@@ -1683,7 +1682,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-faulthandler" },
     { name = "pytest-forked" },
-    { name = "pytest-insubprocess" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
@@ -2390,19 +2388,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8c/c9/93ad2ba2413057ee694884b88cf7467a46c50c438977720aeac26e73fdb7/pytest-forked-1.6.0.tar.gz", hash = "sha256:4dafd46a9a600f65d822b8f605133ecf5b3e1941ebb3588e943b4e3eb71a5a3f", size = 9977, upload-time = "2023-02-12T23:22:27.544Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/af/9c0bda43e486a3c9bf1e0f876d0f241bc3f229d7d65d09331a0868db9629/pytest_forked-1.6.0-py3-none-any.whl", hash = "sha256:810958f66a91afb1a1e2ae83089d8dc1cd2437ac96b12963042fbb9fb4d16af0", size = 4897, upload-time = "2023-02-12T23:22:26.022Z" },
-]
-
-[[package]]
-name = "pytest-insubprocess"
-version = "1.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-    { name = "xmltodict" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/3b/a2/30a67cfd24ad489b7af22ed4046e83152f67278ca667c56c0495b50e7f78/pytest_insubprocess-1.2.tar.gz", hash = "sha256:07ce10eb45053394b4acfd3210859b583402c148e4dad6e398c3ad1cdca03a57", size = 4497, upload-time = "2025-12-08T00:25:32.894Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/e1/9c9d3afd9999c92b03c22a81eb10526df55cc407d162b073ab65479e6b3c/pytest_insubprocess-1.2-py3-none-any.whl", hash = "sha256:31b461946753df8ab5ae02fa318e36f7c6f045c4bfb7cabe41e40bc5571427e9", size = 6217, upload-time = "2025-12-08T00:25:31.585Z" },
 ]
 
 [[package]]
@@ -3429,15 +3414,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a5/8f/aea9c71cc92bf9b6cc0f7f70df8f0b420636b6c96ef4feee1e16f80f75dd/websockets-16.0-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0298d07ee155e2e9fda5be8a9042200dd2e3bb0b8a38482156576f863a9d457c", size = 176968, upload-time = "2026-01-10T09:23:41.031Z" },
     { url = "https://files.pythonhosted.org/packages/9a/3f/f70e03f40ffc9a30d817eef7da1be72ee4956ba8d7255c399a01b135902a/websockets-16.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:a653aea902e0324b52f1613332ddf50b00c06fdaf7e92624fbf8c77c78fa5767", size = 178735, upload-time = "2026-01-10T09:23:42.259Z" },
     { url = "https://files.pythonhosted.org/packages/6f/28/258ebab549c2bf3e64d2b0217b973467394a9cea8c42f70418ca2c5d0d2e/websockets-16.0-py3-none-any.whl", hash = "sha256:1637db62fad1dc833276dded54215f2c7fa46912301a24bd94d45d46a011ceec", size = 171598, upload-time = "2026-01-10T09:23:45.395Z" },
-]
-
-[[package]]
-name = "xmltodict"
-version = "1.0.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/19/70/80f3b7c10d2630aa66414bf23d210386700aa390547278c789afa994fd7e/xmltodict-1.0.4.tar.gz", hash = "sha256:6d94c9f834dd9e44514162799d344d815a3a4faec913717a9ecbfa5be1bb8e61", size = 26124, upload-time = "2026-02-22T02:21:22.074Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/34/98a2f52245f4d47be93b580dae5f9861ef58977d73a79eb47c58f1ad1f3a/xmltodict-1.0.4-py3-none-any.whl", hash = "sha256:a4a00d300b0e1c59fc2bfccb53d7b2e88c32f200df138a0dd2229f842497026a", size = 13580, upload-time = "2026-02-22T02:21:21.039Z" },
 ]
 
 [[package]]

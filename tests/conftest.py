@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-import pytest_insubprocess
 from bluesky.run_engine import RunEngine, TransitionError
 from pytest import FixtureRequest
 
@@ -79,36 +78,6 @@ def shared_tmp_path(request: FixtureRequest) -> Iterator[Path]:
     shutil.rmtree(path, ignore_errors=True)
 
 
-def _report_insubprocess_errors() -> None:
-    """Make pytest-insubprocess report tests whose fixtures errored.
-
-    The plugin runs a marked test in a subprocess and reads that subprocess's
-    JUnit XML back. It looks for `<failure>` and `<skipped>` and treats anything
-    else as a pass - but pytest records an error in a test's *setup* as
-    `<error>`, so any subprocessed test whose fixtures raised was reported as
-    passing. The adsim system tests sat green in CI for months this way while
-    being unable to reach their IOC at all.
-
-    Body failures were always reported; only errors were lost. Patch rather than
-    fork: the plugin is otherwise doing its job, and the tests below genuinely
-    need the process isolation it provides.
-    """
-    original = pytest_insubprocess._parse_testcase_outcome
-
-    def _parse_testcase_outcome(item, testcase):
-        if (error := testcase.get("error")) is not None:
-            # The message already reads 'failed on setup with "..."', which is
-            # also how the plugin decides which phase to blame.
-            detail = error.get("#text", "")
-            return "failed", f"{error['@message']}\n{detail}".strip(), None
-        return original(item, testcase)
-
-    pytest_insubprocess._parse_testcase_outcome = _parse_testcase_outcome
-
-
-_report_insubprocess_errors()
-
-
 def fixture_is_used(fixture_name, session):
     """
     Helper function to check if a fixture is used in a pytest session
@@ -121,9 +90,8 @@ def fixture_is_used(fixture_name, session):
 
 
 def pytest_collection_modifyitems(session, config, items):
-    # Raise a runtime error if docker cannot communicate to the host
-    # This is needed when we want to run docker fixtures in subprocesses
-    # as pytest-insubprocess doesn't report fixture errors
+    # Fail at collection, with a clear message, if the container engine cannot
+    # be reached - rather than once per test, as an opaque fixture error.
     if fixture_is_used("docker_composer", session):
         check_docker_sock()
 

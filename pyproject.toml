@@ -60,7 +60,6 @@ dev = [
     "pytest-cov",
     "pytest-faulthandler",
     "pytest-forked",
-    "pytest-insubprocess",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
