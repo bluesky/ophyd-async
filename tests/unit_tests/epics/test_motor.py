@@ -15,6 +15,7 @@ from ophyd_async.core import (
     get_mock_put,
     init_devices,
     observe_value,
+    set_mock_attr,
     set_mock_precision,
     set_mock_put_proceeds,
     set_mock_units,
@@ -24,7 +25,6 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor, MotorLimitsError
 from ophyd_async.testing import (
     StatusWatcher,
-    set_mock_attr,
     wait_for_pending_wakeups,
 )
 

@@ -17,13 +17,13 @@ from ophyd_async.core import (
     Reference,
     SignalRW,
     init_devices,
+    set_mock_attr,
     soft_signal_rw,
     wait_for_connection,
 )
 from ophyd_async.core._device import DEVICE_RESERVED_ATTRS  # noqa: PLC2701
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
-from ophyd_async.testing import set_mock_attr
 
 
 @pytest.fixture

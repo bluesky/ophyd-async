@@ -56,7 +56,7 @@ collides with a bluesky protocol method (`set`, `read`, `trigger`, ...).
 Intended as a quick escape for downstream test suites that mock protocol methods
 this way, so they can be turned back on without editing every call site. To
 override a single attribute instead, prefer
-[](#ophyd_async.testing.set_mock_attr), which does not disable the check globally.
+[](#ophyd_async.core.set_mock_attr), which does not disable the check globally.
 
 ## Test suite
 
