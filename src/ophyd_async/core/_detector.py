@@ -401,6 +401,25 @@ class StandardDetector(
         :param logic: The logic to add
         """
         for logic in logics:
+            # Each object must fill exactly one role. A single object that is both,
+            # say, an AcquireLogic and a DataLogic would otherwise register as only
+            # the first match and have its other role silently dropped, so require
+            # separate objects even when one device's concerns live on one control.
+            roles = [
+                base
+                for base in (
+                    DetectorTriggerLogic,
+                    DetectorAcquireLogic,
+                    DetectorDataLogic,
+                )
+                if isinstance(logic, base)
+            ]
+            if len(roles) > 1:
+                names = ", ".join(base.__name__ for base in roles)
+                raise TypeError(
+                    f"{type(logic).__name__} is both {names}; pass a separate object "
+                    "for each logic role"
+                )
             if isinstance(logic, DetectorTriggerLogic):
                 if self._trigger_logic is not None:
                     raise RuntimeError("Detector already has trigger logic")

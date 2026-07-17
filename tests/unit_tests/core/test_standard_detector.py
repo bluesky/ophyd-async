@@ -800,6 +800,22 @@ async def test_add_unknown_logic_type_raises():
         det.add_detector_logics(UnknownLogic())
 
 
+async def test_add_logic_filling_two_roles_raises():
+    """An object satisfying two logic protocols must not be silently half-registered."""
+    det = StandardDetector()
+
+    class BothAcquireAndData(DetectorAcquireLogic, DetectorDataLogic):
+        async def start_acquiring(self): ...
+        async def wait_for_idle(self): ...
+        async def ensure_stopped(self): ...
+
+    with pytest.raises(
+        TypeError,
+        match="is both DetectorAcquireLogic, DetectorDataLogic",
+    ):
+        det.add_detector_logics(BothAcquireAndData())
+
+
 @pytest.mark.parametrize("initial_shutter_closed", [True, False])
 async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool):
     """ensure_ready and ensure_stopped are separate hooks.
