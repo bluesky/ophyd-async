@@ -70,6 +70,7 @@ from ophyd_async.epics.testing import (
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
+    EpicsTestPviDisagreeingSuffixDevice,
     generate_random_pv_prefix,
     start_ioc,
 )
@@ -781,12 +782,19 @@ async def pvi_device(ioc_devices: MechanismIocAndDevices) -> EpicsTestPviDevice:
     return ioc_devices.pvi_device
 
 
-async def test_pvi_wins_over_static_pv_suffix(pvi_device: EpicsTestPviDevice):
+async def test_pvi_disagreeing_with_static_pv_suffix_raises(
+    ioc_devices: MechanismIocAndDevices,
+):
     # overridden_float carries PvSuffix("float_prec_1"), but the real PVI
-    # directory points it at the same record as a_float: the PVI-supplied
-    # PV should win once connected.
-    await pvi_device.a_float.set(4.5)
-    assert await pvi_device.overridden_float.get_value() == 4.5
+    # directory points it at the same record as a_float. Two different PVs for
+    # one Signal means one of them is wrong, so connecting must say so rather
+    # than silently pick either. The sub-device counterpart of this lives in
+    # test_pvi_nested.py.
+    device = EpicsTestPviDisagreeingSuffixDevice(
+        f"{ioc_devices.prefix}pva:", with_pvi=True, name="disagreeing_suffix"
+    )
+    with pytest.raises(TypeError, match="overridden_float is addressed at"):
+        await device.connect(timeout=TIMEOUT)
 
 
 async def test_pvi_adds_undeclared_signal_dynamically(pvi_device: EpicsTestPviDevice):

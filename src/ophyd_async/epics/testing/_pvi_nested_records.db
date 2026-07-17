@@ -344,3 +344,133 @@ record("*", "$(device)ed:2:signal_rw") {
         }
     })
 }
+
+# --- DeviceMap test device, served under its own "mapd:PVI" top group so it
+# does not perturb EpicsTestPviNestedDevice's "$(device)PVI" tree. A DeviceMap
+# (unlike a DeviceVector, whose entries are "__N" integer keys) is created only
+# from an explicit DeviceMap[...] annotation and is filled from a node's
+# *normal* named entries, keyed by name. Record-name segments are kept short
+# ("sm"/"dm"/"sr"/"sx") to stay under QSRV's 39-char Q:group NAME limit; only
+# the "value.<name>" JSON keys control the Python-side keys/attributes. ---
+
+# DeviceMap of signals "signal_map": normal named entries a, b -> map["a"], ["b"]
+record(stringin, "$(device)mapd:sm:_ref") {
+    field(VAL, "$(device)mapd:sm:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)mapd:PVI": {
+            "value.signal_map.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(ao, "$(device)mapd:sm:a") {
+    field(VAL, "1.5")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:sm:a") {
+    info(Q:group, {
+        "$(device)mapd:sm:PVI": {
+            "value.a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(ao, "$(device)mapd:sm:b") {
+    field(VAL, "2.5")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:sm:b") {
+    info(Q:group, {
+        "$(device)mapd:sm:PVI": {
+            "value.b.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+# DeviceMap of devices "device_map": normal named entries one, two -> leaf devices
+record(stringin, "$(device)mapd:dm:_ref") {
+    field(VAL, "$(device)mapd:dm:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)mapd:PVI": {
+            "value.device_map.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)mapd:dm:one:_ref") {
+    field(VAL, "$(device)mapd:dm:one:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)mapd:dm:PVI": {
+            "value.one.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(stringin, "$(device)mapd:dm:two:_ref") {
+    field(VAL, "$(device)mapd:dm:two:PVI")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(device)mapd:dm:PVI": {
+            "value.two.d": {"+channel": "VAL", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)mapd:dm:one:sr") {
+    field(VAL, "11")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:dm:one:sr") {
+    info(Q:group, {
+        "$(device)mapd:dm:one:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)mapd:dm:one:sx") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:dm:one:sx") {
+    info(Q:group, {
+        "$(device)mapd:dm:one:PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(longout, "$(device)mapd:dm:two:sr") {
+    field(VAL, "22")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:dm:two:sr") {
+    info(Q:group, {
+        "$(device)mapd:dm:two:PVI": {
+            "value.signal_rw.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record(bo, "$(device)mapd:dm:two:sx") {
+    field(ZNAM, "Done")
+    field(ONAM, "Go")
+    field(PINI, "YES")
+}
+
+record("*", "$(device)mapd:dm:two:sx") {
+    info(Q:group, {
+        "$(device)mapd:dm:two:PVI": {
+            "value.signal_x.x": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
