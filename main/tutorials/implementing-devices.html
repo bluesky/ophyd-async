@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.19.5.dev3+g46666cb95 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.20.1.dev1+g83e9a7c51 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=34ff03ac"></script>
+    <script src="../_static/documentation_options.js?v=748433b3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.5.dev3+g46666cb95 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev1+g83e9a7c51 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev1+g83e9a7c51 documentation - Home"/>
   
   
 </a></div>
@@ -1555,7 +1555,7 @@ EPICS</label><div class="sd-tab-content docutils">
 <p>Unlike <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code>, the stage has a <em>fixed</em> set of child Devices — always an <code class="docutils literal notranslate"><span class="pre">x</span></code> and a <code class="docutils literal notranslate"><span class="pre">y</span></code> — rather than a runtime-sized <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>. So instead of instantiating them in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, we can declare them the same way as Signals: via a type hint annotated with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a>. The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> baseclass prepends the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> to the stage’s prefix to address each motor, so a <code class="docutils literal notranslate"><span class="pre">DemoStage(prefix=&quot;PREFIX:&quot;)</span></code> gives <code class="docutils literal notranslate"><span class="pre">x</span></code> the prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:X:</span></code>. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a> adds each motor’s <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> into the stage’s, just as if we had used <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a>. Declared sub-devices may themselves declare sub-devices, so this nests to any depth.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>A declarative EPICS sub-device <strong>must</strong> be given a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a>; a bare annotation such as <code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">DemoMotor</span></code> raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, because there would be no way to address its Signals.</p>
+<p>A sub-device of a static <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> like this one <strong>must</strong> be given a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a>; a bare annotation such as <code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">DemoMotor</span></code> raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, because there would be no way to address its Signals. Under PVI the suffix is optional, as the PVI structure addresses the children at connection time.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
