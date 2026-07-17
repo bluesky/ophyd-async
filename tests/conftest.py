@@ -429,5 +429,16 @@ def bl01t_di_cam_01(ca_gateway, docker_composer):
             SHARED_TMP_COMPOSE_FILE,
         ],
         docker_services="bl01t-di-cam-01",
-        ready_log_line="iocRun: All initialization complete",
+        # Not "iocRun: All initialization complete": the IOC configures itself
+        # *after* iocInit, from the epics.PostStartupCommand in its ioc.yaml,
+        # and the first thing that block does is
+        # `dbpf BL01T-DI-CAM-01:DET:AcquireTime 0.1`. A test that connects
+        # while that is still in flight has its own exposure overwritten with
+        # 0.1 - which is what made test_prepare_is_idempotent... flake, and only
+        # ever on a cold start, where the gap is wide enough to lose the race.
+        # `Acquire 1` is the *last* command in that block and the commands run
+        # in order, so seeing it echoed means the whole block has run. That ties
+        # us to a pinned submodule's config (example-services, tag 2025.8.2): if
+        # a command is ever appended after it, this goes back to being too early.
+        ready_log_line="dbpf BL01T-DI-CAM-01:DET:Acquire 1",
     )
