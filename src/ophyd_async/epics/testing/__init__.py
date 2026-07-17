@@ -7,6 +7,7 @@ from ._devices import (
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
+    EpicsTestPviDisagreeingSuffixDevice,
     EpicsTestSubsetEnum,
     EpicsTestSupersetEnum,
     EpicsTestTable,
@@ -14,7 +15,11 @@ from ._devices import (
 from ._launch import generate_random_pv_prefix, start_ioc
 from ._pvi_nested_devices import (
     PVI_NESTED_RECORDS,
+    EpicsTestPviAgreeingPvSuffixDevice,
+    EpicsTestPviDisagreeingDeviceDevice,
     EpicsTestPviLeafDevice,
+    EpicsTestPviMapDevice,
+    EpicsTestPviMapOverVectorDevice,
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
 )
@@ -35,8 +40,13 @@ __all__ = [
     "EpicsTestSubsetEnum",
     "EpicsTestSupersetEnum",
     "EpicsTestPvaDevice",
+    "EpicsTestPviAgreeingPvSuffixDevice",
     "EpicsTestPviDevice",
+    "EpicsTestPviDisagreeingDeviceDevice",
+    "EpicsTestPviDisagreeingSuffixDevice",
     "EpicsTestPviLeafDevice",
+    "EpicsTestPviMapDevice",
+    "EpicsTestPviMapOverVectorDevice",
     "EpicsTestPviNestedDevice",
     "EpicsTestPviNestedDeviceMissingChild",
     "EpicsTestTable",
