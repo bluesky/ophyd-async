@@ -20,7 +20,6 @@ from bluesky.protocols import (
     Stageable,
     StreamAsset,
     Triggerable,
-    WritesStreamAssets,
 )
 from event_model import DataKey
 from event_model.documents import PartialEventPage
@@ -407,7 +406,7 @@ class StandardDetector(
     Preparable,
     Flyable,
     Collectable,
-    WritesStreamAssets,
+    HasHints,
 ):
     """Detector base class for step and fly scanning detectors.
 
@@ -423,6 +422,14 @@ class StandardDetector(
     data keys. `trigger()` prepares implicitly, so a step scan never has to do
     it explicitly. `read_configuration()` and `describe_configuration()` have no
     such requirement.
+
+    `WritesStreamAssets` (and its `collect_asset_docs`) and
+    `EventPageCollectable` (and its `collect_pages`) are *not* inherited: a
+    detector writes stream assets or emits event pages depending on which data
+    logics it carries, never both, and the bluesky bundler treats the two as
+    mutually exclusive. The relevant method is exposed via `__getattr__` only
+    when a data logic supporting it is present, so the bundler's structural
+    isinstance check sees exactly the one that applies.
     """
 
     # Logic for the detector
@@ -497,6 +504,39 @@ class StandardDetector(
                 self._data_logics = (*self._data_logics, logic)
             else:
                 raise TypeError(f"Unknown logic type: {type(logic)}")
+        # A detector may not mix bounded and unbounded data logics: it would expose
+        # both collect_pages and collect_asset_docs and produce data from both in a
+        # fly scan, which the bluesky bundler treats as mutually exclusive. A file
+        # writer that also wants stats should carry them in the file (as NDAttributes)
+        # rather than as a separate bounded logic.
+        has_bounded = any(
+            _data_logic_supported(dl.prepare_bounded) for dl in self._data_logics
+        )
+        has_unbounded = any(
+            _data_logic_supported(dl.prepare_unbounded) for dl in self._data_logics
+        )
+        if has_bounded and has_unbounded:
+            raise TypeError(
+                f"Detector {self.name} has both bounded and unbounded data logics; "
+                "these cannot be combined on one detector"
+            )
+
+    def __getattr__(self, name: str):
+        # Expose collect_asset_docs / collect_pages only when a data logic that
+        # produces that kind of document is present, so the bluesky bundler's
+        # structural isinstance checks (WritesStreamAssets vs EventPageCollectable)
+        # match exactly the one that applies. __getattr__ runs only for attributes
+        # not found normally, and _data_logics has a class-level default, so this
+        # never recurses.
+        if name == "collect_asset_docs" and any(
+            _data_logic_supported(dl.prepare_unbounded) for dl in self._data_logics
+        ):
+            return self._collect_asset_docs
+        if name == "collect_pages" and any(
+            _data_logic_supported(dl.prepare_bounded) for dl in self._data_logics
+        ):
+            return self._collect_pages
+        raise AttributeError(name)
 
     # Back compat - delete before 1.0
     def add_config_signals(self, *signals: SignalR) -> None:
@@ -929,10 +969,12 @@ class StandardDetector(
             if fields := dl.get_hinted_fields(self.name + dl.datakey_suffix):
                 yield _HintedFields(fields)
 
-    async def collect_asset_docs(
+    async def _collect_asset_docs(
         self, index: int | None = None
     ) -> AsyncIterator[StreamAsset]:
-        # Collect stream datum documents for all indices written.
+        # Collect stream datum documents for all indices written. Exposed as
+        # collect_asset_docs via __getattr__ only when an unbounded data logic is
+        # present, so the bluesky bundler dispatches it in place of collect_pages.
         ctx = error_if_none(self._prepare_ctx, "Prepare not called")
         if index is None:
             # The index is optional, and provided for fly scans, if there is
