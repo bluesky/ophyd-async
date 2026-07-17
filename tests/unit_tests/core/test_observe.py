@@ -210,7 +210,18 @@ async def test_observe_signals_value_timeout_message():
                 recv2.append(value)
 
     async def main_test(tmo):
-        await asyncio.gather(tick2(), tick1(), watch(timeout=tmo, done_timeout=None))
+        # Run the tickers as explicit tasks so that, once `watch` times out,
+        # we can cancel them rather than sleeping out their remaining delays.
+        # (`asyncio.gather` propagates `watch`'s TimeoutError but leaves the
+        # tickers running as orphaned tasks, which filterwarnings=error would
+        # escalate to a failure if they were garbage collected while pending.)
+        tickers = [asyncio.create_task(tick1()), asyncio.create_task(tick2())]
+        try:
+            await watch(timeout=tmo, done_timeout=None)
+        finally:
+            for ticker in tickers:
+                ticker.cancel()
+            await asyncio.gather(*tickers, return_exceptions=True)
 
     with pytest.raises(
         asyncio.TimeoutError,
@@ -225,6 +236,3 @@ async def test_observe_signals_value_timeout_message():
     # Assert first default and set values only
     assert recv1 == [0.0, 10.0]
     assert recv2 == [0.0, 100.0]
-
-    # let all tasks finish correctly
-    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 2)

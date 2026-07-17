@@ -645,11 +645,15 @@ async def test_put_completion(
     stop = time.monotonic()
     assert stop - start == pytest.approx(0.5, rel=0.1)
 
-    # Then, make sure if we don't wait it returns ~instantly
+    # Then, make sure if we don't wait it returns ~instantly. It actually takes
+    # 0.5-2.5ms, so this bound is not measuring speed - it only has to tell "did
+    # not wait" from "waited", and the set above shows waiting costs ~0.5s. It
+    # must stay well under that or it stops catching a put that wrongly blocks,
+    # so widening it is not the answer if a loaded runner overshoots again.
     start = time.monotonic()
     await slow_seq.set(2)
     stop = time.monotonic()
-    assert stop - start < 0.1
+    assert stop - start < 0.2
 
     # Time for completion callback to have finished before moving to
     # next test / iteration - without this, running this test multiple

@@ -15,7 +15,7 @@ fi
 echo "Using container CLI: $PODMAN_CLI"
 
 THIS_DIR=$(realpath $(dirname "${0}"))
-REPO_ROOT="${THIS_DIR}/../../../.."
+REPO_ROOT="${THIS_DIR}/../.."
 SERVICES_REPO_LOCAL="${REPO_ROOT}/example-services"
 COMPOSE_FILE="${SERVICES_REPO_LOCAL}/compose.yaml"
 
