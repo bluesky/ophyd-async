@@ -193,6 +193,8 @@ obj_ignore = [
     # TypeVars documented on StandardFlyable, added in #1359
     "PrepareT",
     "CtxT",
+    # event_model publishes no intersphinx entry for this TypedDict
+    "event_model.documents.PartialEventPage",
 ]
 nitpick_ignore = []
 for var in obj_ignore:
