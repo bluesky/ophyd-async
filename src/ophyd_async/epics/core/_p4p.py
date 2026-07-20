@@ -483,8 +483,9 @@ class PvaCommandBackend(EpicsCommandBackend):
         typeid = value.getID()
         specifier = _get_specifier(value)
 
-        is_bool = typeid == "epics:nt/NTScalar:1.0" and specifier == "?"
-        is_int = typeid == "epics:nt/NTScalar:1.0" and specifier in _int_specifiers
+        is_scalar = typeid == "epics:nt/NTScalar:1.0"
+        is_bool = is_scalar and specifier == "?"
+        is_int = is_scalar and specifier in _int_specifiers
         is_enum = typeid == "epics:nt/NTEnum:1.0"
 
         if not (is_bool or is_int or is_enum):
