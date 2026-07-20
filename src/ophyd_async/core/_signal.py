@@ -306,10 +306,7 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     @_add_timeout
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
-        setpoint, readback = await asyncio.gather(
-            self._connector.backend.get_setpoint(), self._backend_or_cache().get_value()
-        )
-        return Location(setpoint=setpoint, readback=readback)
+        return await self._connector.backend.get_location()
 
 
 class SignalX(Signal):

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import sys
@@ -19,7 +20,7 @@ from aioca import (
     caput,
 )
 from aioca.types import AugmentedValue, Dbr, Format
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from epicscorelibs.ca import dbr
 from event_model import DataKey, Limits, LimitsRange
 
@@ -370,9 +371,21 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         value = await self._caget(self.read_pv, FORMAT_RAW)
         return self.converter.value(value)
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        value = await self._caget(self.write_pv, FORMAT_RAW)
-        return self.converter.value(value)
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        if self.write_pv == self.read_pv:
+            # one fetch when read and write PVs are identical
+            raw_value = await self._caget(self.read_pv, FORMAT_RAW)
+            setpoint = self.converter.value(raw_value)
+            readback = self.converter.value(raw_value)
+        else:
+            # otherwise retrieve PVs separately
+            raw_setpoint, raw_readback = await asyncio.gather(
+                self._caget(self.write_pv, FORMAT_RAW),
+                self._caget(self.read_pv, FORMAT_RAW),
+            )
+            setpoint = self.converter.value(raw_setpoint)
+            readback = self.converter.value(raw_readback)
+        return Location(setpoint=setpoint, readback=readback)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.subscription:

@@ -9,7 +9,7 @@ from math import isnan, nan
 from typing import Any, Generic
 
 import numpy as np
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey, Limits, LimitsRange
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
@@ -433,10 +433,22 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         value = await context().get(self.read_pv, request=request)
         return self.converter.value(value)
 
-    async def get_setpoint(self) -> SignalDatatypeT:
+    async def get_location(self) -> Location[SignalDatatypeT]:
         request = _pva_request_string(self.converter.value_fields)
-        value = await context().get(self.write_pv, request=request)
-        return self.converter.value(value)
+        if self.read_pv == self.write_pv:
+            # one fetch when read and write PVs are identical
+            raw_value = await context().get(self.read_pv, request=request)
+            setpoint = self.converter.value(raw_value)
+            readback = self.converter.value(raw_value)
+        else:
+            # otherwise retrieve PVs separately
+            raw_setpoint, raw_readback = await asyncio.gather(
+                context().get(self.write_pv, request=request),
+                context().get(self.read_pv, request=request),
+            )
+            setpoint = self.converter.value(raw_setpoint)
+            readback = self.converter.value(raw_readback)
+        return Location(setpoint=setpoint, readback=readback)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.subscription:
