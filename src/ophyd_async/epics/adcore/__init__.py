@@ -31,6 +31,8 @@ from ._io import (
     NDROIStatIO,
     NDROIStatNIO,
     NDStatsIO,
+    NDStatsTSAcquireMode,
+    NDStatsTSControl,
 )
 from ._ndattribute import (
     NDAttributeDataType,
@@ -40,6 +42,7 @@ from ._ndattribute import (
     ndattributes_to_xml,
 )
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
+from ._stats_time_series import StatsTimeSeriesDataLogic, StatsTimeSeriesProvider
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
     prepare_exposures,
@@ -57,6 +60,8 @@ __all__ = [
     "NDPluginBaseIO",
     "NDROIIO",
     "NDStatsIO",
+    "NDStatsTSControl",
+    "NDStatsTSAcquireMode",
     "NDROIStatNIO",
     "NDROIStatIO",
     "NDCBFlushOnSoftTrgMode",
@@ -79,6 +84,8 @@ __all__ = [
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
     "ADWriterFactory",
+    "StatsTimeSeriesDataLogic",
+    "StatsTimeSeriesProvider",
     # Detector
     "AreaDetector",
     "ContAcqDetector",
