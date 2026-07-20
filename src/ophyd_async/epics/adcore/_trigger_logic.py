@@ -30,7 +30,7 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
-async def trigger_info_from_num_images(driver: ADBaseIO) -> TriggerInfo:
+async def trigger_info_from_driver(driver: ADBaseIO) -> TriggerInfo:
     """Default TriggerInfo for AD detectors, read back from the driver.
 
     Reads num_images, acquire_time and acquire_period so the returned
