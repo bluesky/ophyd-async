@@ -5,6 +5,7 @@ from unittest.mock import ANY
 
 import numpy as np
 import pytest
+from bluesky.protocols import EventPageCollectable, WritesStreamAssets
 from event_model import DataKey
 from event_model.documents import PartialEventPage
 
@@ -1218,3 +1219,67 @@ async def test_data_logic_not_implemented_errors():
 
     # stop() should not raise (has default implementation)
     await logic.stop()  # Should pass
+
+
+async def test_streamable_logic_looks_like_writes_stream_assets(tmp_path):
+    """An unbounded logic exposes collect_asset_docs, and only that.
+
+    The bluesky bundler picks up stream assets via a structural isinstance
+    against WritesStreamAssets (a hasattr check for collect_asset_docs). A
+    detector must look like exactly one of WritesStreamAssets /
+    EventPageCollectable so the bundler routes it down a single path.
+    """
+    det = StandardDetector()
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
+
+    assert isinstance(det, WritesStreamAssets)
+    assert not isinstance(det, EventPageCollectable)
+    assert hasattr(det, "collect_asset_docs")
+    assert not hasattr(det, "collect_pages")
+
+
+async def test_bounded_logic_looks_like_event_page_collectable():
+    """A bounded logic exposes collect_pages, and only that."""
+    det = StandardDetector()
+    det.add_detector_logics(BoundedOnlyDataLogic())
+
+    assert isinstance(det, EventPageCollectable)
+    assert not isinstance(det, WritesStreamAssets)
+    assert hasattr(det, "collect_pages")
+    assert not hasattr(det, "collect_asset_docs")
+
+
+async def test_readable_logic_looks_like_neither():
+    """A single/readable logic emits neither stream assets nor event pages."""
+    det = StandardDetector()
+    det.add_detector_logics(ReadableOnlyDataLogic())
+
+    assert not isinstance(det, WritesStreamAssets)
+    assert not isinstance(det, EventPageCollectable)
+    assert not hasattr(det, "collect_asset_docs")
+    assert not hasattr(det, "collect_pages")
+
+
+async def test_missing_attribute_raises_standard_attribute_error():
+    """__getattr__ falls through to a normal AttributeError for other names."""
+    det = StandardDetector()
+    with pytest.raises(
+        AttributeError,
+        match=r"'StandardDetector' object has no attribute 'does_not_exist'",
+    ):
+        det.does_not_exist  # noqa: B018
+
+
+async def test_mixing_bounded_and_unbounded_logics_raises(tmp_path):
+    """Bounded and unbounded logics are mutually exclusive on one detector."""
+    det = StandardDetector()
+    with pytest.raises(
+        TypeError,
+        match=(
+            r"has both bounded data logics \(BoundedOnlyDataLogic\) and unbounded "
+            r"data logics \(StreamableOnlyDataLogic\)"
+        ),
+    ):
+        det.add_detector_logics(
+            BoundedOnlyDataLogic(), StreamableOnlyDataLogic(tmp_path)
+        )

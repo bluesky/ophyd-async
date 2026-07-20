@@ -36,8 +36,9 @@ To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
 without a preceding `prepare()`, implement:
 - `default_trigger_info()` - Return the [](#TriggerInfo) to use for the implicit
-  prepare. For AD detectors call `await trigger_info_from_num_images(self.driver)` to
-  read back the current `num_images` from the driver rather than resetting it to 1.
+  prepare. For AD detectors call `await trigger_info_from_driver(self.driver)` to
+  read back the current `num_images`, `acquire_time` and `acquire_period` from the
+  driver rather than resetting them.
 
 
 

@@ -353,31 +353,43 @@ class DetectorDataLogic:
 _data_logic_supported = functools.partial(_logic_supported, DetectorDataLogic)
 
 
-def _data_logic_tier(dl: DetectorDataLogic) -> str:
+class _DataLogicTier(Enum):
+    """Which prepare tier a data logic implements.
+
+    Discovered by method-override detection (see `_data_logic_tier`); a data
+    logic must override exactly one of the three `prepare_*` methods.
+    """
+
+    UNBOUNDED = "unbounded"
+    BOUNDED = "bounded"
+    SINGLE = "single"
+
+
+def _data_logic_tier(dl: DetectorDataLogic) -> _DataLogicTier:
     """Return which prepare tier a data logic has overridden.
 
     Tiers are discovered by method-override detection, the same mechanism used
     for trigger logic. A data logic must override exactly one.
     """
     if _data_logic_supported(dl.prepare_unbounded):
-        return "unbounded"
+        return _DataLogicTier.UNBOUNDED
     if _data_logic_supported(dl.prepare_bounded):
-        return "bounded"
+        return _DataLogicTier.BOUNDED
     if _data_logic_supported(dl.prepare_single):
-        return "single"
+        return _DataLogicTier.SINGLE
     raise RuntimeError(f"DataLogic hasn't overridden any prepare_* methods {dl}")
 
 
-def _tier_can_serve(tier: str, num_collections: int) -> bool:
+def _tier_can_serve(tier: _DataLogicTier, num_collections: int) -> bool:
     """Whether a tier can serve the requested number of collections.
 
     - unbounded serves any number, including 0 (infinite)
     - bounded serves any finite number, so not 0
     - single serves exactly 1
     """
-    if tier == "unbounded":
+    if tier is _DataLogicTier.UNBOUNDED:
         return True
-    if tier == "bounded":
+    if tier is _DataLogicTier.BOUNDED:
         return num_collections != 0
     return num_collections == 1
 
@@ -498,16 +510,23 @@ class StandardDetector(
         # fly scan, which the bluesky bundler treats as mutually exclusive. A file
         # writer that also wants stats should carry them in the file (as NDAttributes)
         # rather than as a separate bounded logic.
-        has_bounded = any(
-            _data_logic_supported(dl.prepare_bounded) for dl in self._data_logics
-        )
-        has_unbounded = any(
-            _data_logic_supported(dl.prepare_unbounded) for dl in self._data_logics
-        )
-        if has_bounded and has_unbounded:
+        bounded = [
+            dl for dl in self._data_logics if _data_logic_supported(dl.prepare_bounded)
+        ]
+        unbounded = [
+            dl
+            for dl in self._data_logics
+            if _data_logic_supported(dl.prepare_unbounded)
+        ]
+        if bounded and unbounded:
+
+            def _describe(logics: Sequence[DetectorDataLogic]) -> str:
+                return ", ".join(type(dl).__name__ for dl in logics)
+
             raise TypeError(
-                f"Detector {self.name} has both bounded and unbounded data logics; "
-                "these cannot be combined on one detector"
+                f"Detector {self.name} has both bounded data logics "
+                f"({_describe(bounded)}) and unbounded data logics "
+                f"({_describe(unbounded)}); these cannot be combined on one detector"
             )
 
     def __getattr__(self, name: str):
@@ -525,7 +544,12 @@ class StandardDetector(
             _data_logic_supported(dl.prepare_bounded) for dl in self._data_logics
         ):
             return self._collect_pages
-        raise AttributeError(name)
+        # No base class defines __getattr__, so there is nothing to delegate to;
+        # raise the same AttributeError the default attribute lookup would, so
+        # hasattr()/getattr() and error messages behave as normal.
+        raise AttributeError(
+            f"{type(self).__name__!r} object has no attribute {name!r}"
+        )
 
     def add_config_signals(self, *signals: SignalR) -> None:
         """Add a signal to read_configuration().
@@ -600,7 +624,7 @@ class StandardDetector(
         # that cannot serve this scan is left out with a warning, so a detector can
         # carry, say, an unbounded file writer plus a single-only stats signal and
         # still fly with only the stats dropped.
-        serving: list[tuple[DetectorDataLogic, str]] = []
+        serving: list[tuple[DetectorDataLogic, _DataLogicTier]] = []
         for dl in self._data_logics:
             tier = _data_logic_tier(dl)
             if _tier_can_serve(tier, num_collections):
@@ -609,7 +633,7 @@ class StandardDetector(
                 logger.warning(
                     "%s data logic %s cannot serve %d collections, "
                     "dropping it from this prepare",
-                    tier,
+                    tier.value,
                     self.name + dl.datakey_suffix,
                     num_collections,
                 )
@@ -632,15 +656,19 @@ class StandardDetector(
             # Stop the non-bounded logics we are replacing before making new ones
             if self._prepare_ctx is not None:
                 await asyncio.gather(
-                    *(dl.stop() for dl, tier in serving if tier != "bounded")
+                    *(
+                        dl.stop()
+                        for dl, tier in serving
+                        if tier is not _DataLogicTier.BOUNDED
+                    )
                 )
             streamable_coros: list[Awaitable[StreamableDataProvider]] = []
             readable_coros: list[Awaitable[ReadableDataProvider]] = []
             for dl, tier in serving:
                 datakey_name = self.name + dl.datakey_suffix
-                if tier == "unbounded":
+                if tier is _DataLogicTier.UNBOUNDED:
                     streamable_coros.append(dl.prepare_unbounded(datakey_name))
-                elif tier == "single":
+                elif tier is _DataLogicTier.SINGLE:
                     readable_coros.append(dl.prepare_single(datakey_name))
             streamable_data_providers, readable_data_providers = await asyncio.gather(
                 asyncio.gather(*streamable_coros),
@@ -649,7 +677,7 @@ class StandardDetector(
         # Bounded providers are always (re)built, re-arming their buffers.
         if self._prepare_ctx is not None:
             await asyncio.gather(
-                *(dl.stop() for dl, tier in serving if tier == "bounded")
+                *(dl.stop() for dl, tier in serving if tier is _DataLogicTier.BOUNDED)
             )
         pageable_data_providers = await asyncio.gather(
             *(
@@ -657,7 +685,7 @@ class StandardDetector(
                     self.name + dl.datakey_suffix, num_collections, period
                 )
                 for dl, tier in serving
-                if tier == "bounded"
+                if tier is _DataLogicTier.BOUNDED
             )
         )
         # Stash the prepare context so we can use it in trigger/kickoff
