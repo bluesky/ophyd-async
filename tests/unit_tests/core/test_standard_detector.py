@@ -153,7 +153,9 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
         self.stop_count = 0
         self.tmp_path = tmp_path
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(
+        self, datakey_name: str, period: float
+    ) -> StreamableDataProvider:
         resource = StreamResourceInfo(
             data_key=datakey_name,
             shape=(10, 15),
@@ -1215,7 +1217,7 @@ async def test_data_logic_not_implemented_errors():
         await logic.prepare_single("test")
 
     with pytest.raises(NotImplementedError):
-        await logic.prepare_unbounded("test")
+        await logic.prepare_unbounded("test", 0.1)
 
     # stop() should not raise (has default implementation)
     await logic.stop()  # Should pass

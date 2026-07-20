@@ -25,7 +25,12 @@ class PandaHDFDataLogic(DetectorDataLogic):
         self.path_provider = path_provider
         self.data_block = data_block
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(
+        self, datakey_name: str, period: float
+    ) -> StreamableDataProvider:
+        # TODO: derive the PandA flush period / chunk size from `period` once the
+        # IOC exposes the chunk-size signal (see the chunk_shape TODO below).
+        del period
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Set create dir depth first to guarantee that callback when setting

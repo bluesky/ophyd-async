@@ -25,7 +25,11 @@ class BlobDataLogic(DetectorDataLogic):
         self.path_provider = path_provider
         self.pattern_generator = pattern_generator
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(
+        self, datakey_name: str, period: float
+    ) -> StreamableDataProvider:
+        # The sim blob writer uses a fixed chunk shape, so the period is unused.
+        del period
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Open the file
