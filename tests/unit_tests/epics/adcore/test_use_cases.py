@@ -656,7 +656,12 @@ async def test_step_scan_keep_numimages(
         },
     )
 
-    # Check we can prepare and change the exposure
+    # Check we can prepare and change the exposure. Changing the exposure changes
+    # the frame period, which (per ADR 0020) determines the HDF chunk shape, so a
+    # new StreamResource is opened rather than the old file being reused. Here the
+    # chunk shape is unchanged because this writer leaves flush_period unset and so
+    # reads the chunk size back from the IOC, but the period change still starts a
+    # fresh file.
     await det.prepare(
         TriggerInfo(collections_per_event=42, livetime=0.01, exposure_timeout=0.1)
     )
@@ -666,16 +671,20 @@ async def test_step_scan_keep_numimages(
     assert await det.driver.acquire_time.get_value() == 0.01
     await det.trigger()
     readings = await det.read()
+    # The stats plugin is opted into read() by this test, so its signals are
+    # still reported alongside the file-backed data
     assert "det-stats-total" in readings
-    docs = [doc async for doc in det.collect_asset_docs()]
-    (doc,) = docs
-    assert doc == (
+    new_sr, new_sd = [doc async for doc in det.collect_asset_docs()]
+    assert new_sr[0] == "stream_resource"
+    assert new_sr[1]["uid"] != sr[1]["uid"]
+    assert new_sr[1]["parameters"]["chunk_shape"] == (1, 768, 1024)
+    assert new_sd == (
         "stream_datum",
         {
             "descriptor": "",
-            "indices": {"start": 1, "stop": 2},
+            "indices": {"start": 0, "stop": 2},
             "seq_nums": {"start": 0, "stop": 0},
-            "stream_resource": sr[1]["uid"],
+            "stream_resource": new_sr[1]["uid"],
             "uid": ANY,
         },
     )

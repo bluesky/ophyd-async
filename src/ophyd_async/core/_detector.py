@@ -342,8 +342,15 @@ class DetectorDataLogic:
         """
         raise NotImplementedError(self)
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
-        """Provider can work for an unbounded number of collections."""
+    async def prepare_unbounded(
+        self, datakey_name: str, period: float
+    ) -> StreamableDataProvider:
+        """Provider can work for an unbounded number of collections.
+
+        :param period: how long each collection takes, livetime + deadtime, so
+            the provider can size its chunks or set a flush rate. 0 means "use
+            whatever is currently set on the hardware".
+        """
         raise NotImplementedError(self)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
@@ -671,16 +678,18 @@ class StandardDetector(
                     num_collections,
                 )
         # Unbounded providers depend on collections_per_event (it sets the
-        # StreamResource shape), so may be reused across prepares when it is unchanged
-        # (this avoids reopening files on every step-scan point). Bounded providers are
+        # StreamResource shape) and on the period (it sets the chunk shape), so may be
+        # reused across prepares when both are unchanged (this avoids reopening files on
+        # every step-scan point). A period change invalidates reuse because the chunk
+        # shape is baked into the StreamResource at construction and, for areaDetector,
+        # num_frames_chunks can only be set before capture starts. Bounded providers are
         # never reused: they hold a finite buffer that must be re-armed for each event,
         # and re-calling prepare_bounded on every trigger() is what re-arms it.
-        # (Slice 5 will also invalidate reuse on an exposure-period change, once
-        # prepare_unbounded uses the period to size its chunks.)
+        previous = self._prepare_ctx.trigger_info if self._prepare_ctx else None
         reusable = (
-            self._prepare_ctx is not None
-            and self._prepare_ctx.trigger_info.collections_per_event
-            == trigger_info.collections_per_event
+            previous is not None
+            and previous.collections_per_event == trigger_info.collections_per_event
+            and previous.livetime + previous.deadtime == period
         )
         if reusable and self._prepare_ctx is not None:
             streamable_data_providers = self._prepare_ctx.streamable_data_providers
@@ -696,7 +705,7 @@ class StandardDetector(
                 )
             streamable_data_providers = await asyncio.gather(
                 *(
-                    dl.prepare_unbounded(self.name + dl.datakey_suffix)
+                    dl.prepare_unbounded(self.name + dl.datakey_suffix, period)
                     for dl, tier in serving
                     if tier is _DataLogicTier.UNBOUNDED
                 )
