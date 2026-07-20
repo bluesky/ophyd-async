@@ -183,6 +183,8 @@ obj_ignore = [
     "0.001",
     "1.0",
     "bluesky.protocols.T_co",
+    # event_model publishes no intersphinx entry for this TypedDict
+    "event_model.documents.PartialEventPage",
 ]
 nitpick_ignore = []
 for var in obj_ignore:
