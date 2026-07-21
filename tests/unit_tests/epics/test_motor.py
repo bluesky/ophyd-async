@@ -284,64 +284,51 @@ async def test_prepare_valid_limits(motor: Motor):
 
 
 @pytest.mark.parametrize(
-    "expected_velocity, target_position, expected_run_up",
+    "end_position, expected_speed, expected_run_up, expected_end",
     [
-        (10, -10, 5),
-        (8, 8, -4),
+        (-10, 10, 1, -11),  # -ve direction
+        (15, 5, -0.5, 15.5),  # +ve direction
     ],
 )
-async def test_prepare(
+async def test_fly_scan(
     motor: Motor,
-    target_position: float,
-    expected_velocity: float,
+    end_position: float,
+    expected_speed: float,
     expected_run_up: float,
+    expected_end: float,
 ):
-    set_mock_value(motor.acceleration_time, 1)
+    """Happy-path prepare -> kickoff -> complete through the public interface."""
+    # A small acceleration time keeps the up-to-speed wait in kickoff() negligible
+    set_mock_value(motor.acceleration_time, 0.2)
     set_mock_value(motor.low_limit_travel, -15)
     set_mock_value(motor.high_limit_travel, 20)
-    set_mock_value(motor.max_velocity, 10)
-    await motor.prepare(
-        FlyMotorInfo(
-            start_position=0,
-            end_position=target_position,
-            time_for_move=1,
-        )
+    set_mock_value(motor.max_velocity, 100)
+    time_for_move = abs(end_position) / expected_speed
+    fly_info = FlyMotorInfo(
+        start_position=0, end_position=end_position, time_for_move=time_for_move
     )
     # prepare only resolves once the run-up move has completed, so the setpoint
-    # has reached the run-up start position...
-    assert await motor.user_setpoint.get_value() == expected_run_up
-    # ...and the fly-scan velocity (not the max velocity) has been applied
-    assert await motor.velocity.get_value() == expected_velocity
-
-
-async def test_kickoff(motor: Motor):
-    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
-        await motor.kickoff()
-    set_mock_value(motor.acceleration_time, 0.2)
-    set_mock_value(motor.max_velocity, 100)
-    await motor.prepare(
-        FlyMotorInfo(start_position=12, end_position=2, time_for_move=1)
-    )
-    await motor.kickoff()
-    # kickoff starts the move to the ramp-down end position (1.0)
-    await motor.complete()
-    assert await motor.user_setpoint.get_value() == 1.0
-
-
-async def test_complete(motor: Motor) -> None:
-    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
-        await motor.complete()
-    set_mock_value(motor.acceleration_time, 0.2)
-    set_mock_value(motor.max_velocity, 100)
-    await motor.prepare(
-        FlyMotorInfo(start_position=0, end_position=10, time_for_move=1)
-    )
+    # has reached the run-up start position and the fly-scan speed (not the max
+    # velocity) has been applied
+    await motor.prepare(fly_info)
+    assert await motor.user_setpoint.get_value() == pytest.approx(expected_run_up)
+    assert await motor.velocity.get_value() == expected_speed
+    # kickoff then complete drive the motor to the ramp-down end position
     await motor.kickoff()
     status = motor.complete()
     await status
     assert status.done
-    # complete resolves once the move to the ramp-down end position (11.0) finishes
-    assert await motor.user_setpoint.get_value() == 11.0
+    assert await motor.user_setpoint.get_value() == pytest.approx(expected_end)
+
+
+async def test_kickoff_before_prepare_raises(motor: Motor):
+    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
+        await motor.kickoff()
+
+
+async def test_complete_before_kickoff_raises(motor: Motor):
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
+        await motor.complete()
 
 
 @pytest.mark.parametrize(
