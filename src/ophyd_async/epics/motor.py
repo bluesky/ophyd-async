@@ -194,9 +194,9 @@ class MotorFlyableMovableLogic(
         max_speed, egu = await asyncio.gather(
             self.max_velocity.get_value(), self.motor_egu.get_value()
         )
-        if abs(value.velocity) > max_speed:
+        if value.speed > max_speed:
             raise MotorLimitsError(
-                f"Velocity {abs(value.velocity)} {egu}/s was requested for motor "
+                f"Speed {value.speed} {egu}/s was requested for motor "
                 f"{self.readback.name} with max speed of {max_speed} {egu}/s."
             )
         # Check the run-up and run-down positions are within limits
@@ -212,7 +212,7 @@ class MotorFlyableMovableLogic(
         timeout = await self.calculate_timeout(old_position, ramp_up_start_pos)
         await self.move(ramp_up_start_pos, lambda: timeout)
         # Set the velocity we will use for the fly scan
-        await self.velocity.set(abs(value.velocity))
+        await self.velocity.set(value.speed)
         return MotorFlyCtx(fly_info=value)
 
     async def on_kickoff(self, ctx: MotorFlyCtx) -> MotorFlyCtx:

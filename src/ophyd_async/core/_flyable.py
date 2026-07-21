@@ -109,17 +109,25 @@ class FlyMotorInfo(ConfinedModel):
     Defaults to `time_for_move` + run up and run down times + 10s."""
 
     @property
-    def velocity(self) -> float:
-        """Calculate the velocity of the constant velocity phase."""
-        return (self.end_position - self.start_position) / self.time_for_move
+    def speed(self) -> float:
+        """Calculate the speed of the constant velocity phase, always positive."""
+        return abs(self.end_position - self.start_position) / self.time_for_move
 
     def ramp_up_start_pos(self, acceleration_time: float) -> float:
         """Calculate the start position with run-up distance added on."""
-        return self.start_position - acceleration_time * self.velocity / 2
+        return self.start_position - self._ramp_distance(acceleration_time)
 
     def ramp_down_end_pos(self, acceleration_time: float) -> float:
         """Calculate the end position with run-down distance added on."""
-        return self.end_position + acceleration_time * self.velocity / 2
+        return self.end_position + self._ramp_distance(acceleration_time)
+
+    def _ramp_distance(self, acceleration_time: float) -> float:
+        # Signed so run-up/run-down land on the correct side for either direction.
+        return (
+            acceleration_time
+            * (self.end_position - self.start_position)
+            / (2 * self.time_for_move)
+        )
 
 
 class _FlyStage(Enum):

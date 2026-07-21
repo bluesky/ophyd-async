@@ -161,7 +161,7 @@ class SimMotor(StandardReadable, StandardMovable[float]):
             value.ramp_up_start_pos(await self.acceleration_time.get_value())
         )
         # Set the velocity for the actual move
-        await self.velocity.set(value.velocity)
+        await self.velocity.set(value.speed)
 
     @AsyncStatus.wrap
     async def kickoff(self):
