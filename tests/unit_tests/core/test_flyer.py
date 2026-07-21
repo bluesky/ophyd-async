@@ -40,24 +40,6 @@ class RecordingFlyableLogic(FlyableLogic[int, None]):
         self.calls.append("stop")
 
 
-async def test_ephemeral_flyable_drives_logic_hooks():
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    assert flyer.name == "flyer"
-    assert isinstance(flyer, StandardFlyable)
-    # The ephemeral device exposes the same logic instance
-    assert flyer.flyable_logic is logic
-
-    await flyer.prepare(5)
-    await flyer.kickoff()
-    await flyer.complete()
-
-    assert logic.calls == ["on_prepare", "on_kickoff", "on_complete"]
-    assert logic.prepared_with == [5]
-
-
 @dataclass
 class CtxFlyableLogic(FlyableLogic[int, dict]):
     """A `FlyableLogic` that threads a context dict between its stages."""
@@ -74,75 +56,6 @@ class CtxFlyableLogic(FlyableLogic[int, dict]):
 
     async def on_complete(self, ctx: dict) -> None:
         self.seen.append(("complete", dict(ctx)))
-
-
-async def test_flyable_threads_context_between_stages():
-    logic = CtxFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    await flyer.prepare(5)
-    await flyer.kickoff()
-    await flyer.complete()
-
-    # kickoff sees exactly what prepare produced; complete sees what kickoff added
-    assert logic.seen == [
-        ("kickoff", {"prepared": 5}),
-        ("complete", {"prepared": 5, "kicked": True}),
-    ]
-
-
-async def test_flyable_kickoff_before_prepare_raises():
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
-        await flyer.kickoff()
-    assert logic.calls == []
-
-
-async def test_flyable_complete_before_kickoff_raises():
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    await flyer.prepare(5)
-    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
-        await flyer.complete()
-    assert logic.calls == ["on_prepare"]
-
-
-async def test_flyable_stage_resets_lifecycle():
-    # After prepare+kickoff, staging should reset so a later complete errors again.
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    await flyer.prepare(5)
-    await flyer.kickoff()
-    await flyer.stage()
-    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
-        await flyer.complete()
-
-
-async def test_flyable_complete_without_movable_logic_yields_no_updates():
-    # A flyer whose logic is not a MovableLogic has no readback to report, so
-    # complete() is still a WatchableAsyncStatus but calls no watchers.
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
-
-    await flyer.prepare(5)
-    await flyer.kickoff()
-    status = flyer.complete()
-    assert isinstance(status, WatchableAsyncStatus)
-    updates: list[dict] = []
-    status.watch(lambda **kwargs: updates.append(kwargs))
-    await status
-
-    assert logic.calls == ["on_prepare", "on_kickoff", "on_complete"]
-    assert updates == []
 
 
 @dataclass
@@ -186,6 +99,93 @@ class MovableFlyer(StandardMovable[float], StandardFlyable[float, None]):
         return self._logic
 
 
+@pytest.fixture
+async def recording_flyer():
+    """An ephemeral `StandardFlyable` wrapping a fresh `RecordingFlyableLogic`."""
+    logic = RecordingFlyableLogic()
+    async with init_devices(mock=True):
+        flyer = logic.with_device(name="flyer")
+    return logic, flyer
+
+
+async def test_ephemeral_flyable_drives_logic_hooks(recording_flyer):
+    logic, flyer = recording_flyer
+
+    assert flyer.name == "flyer"
+    assert isinstance(flyer, StandardFlyable)
+    # The ephemeral device exposes the same logic instance
+    assert flyer.flyable_logic is logic
+
+    await flyer.prepare(5)
+    await flyer.kickoff()
+    await flyer.complete()
+
+    assert logic.calls == ["on_prepare", "on_kickoff", "on_complete"]
+    assert logic.prepared_with == [5]
+
+
+async def test_flyable_threads_context_between_stages():
+    logic = CtxFlyableLogic()
+    async with init_devices(mock=True):
+        flyer = logic.with_device(name="flyer")
+
+    await flyer.prepare(5)
+    await flyer.kickoff()
+    await flyer.complete()
+
+    # kickoff sees exactly what prepare produced; complete sees what kickoff added
+    assert logic.seen == [
+        ("kickoff", {"prepared": 5}),
+        ("complete", {"prepared": 5, "kicked": True}),
+    ]
+
+
+async def test_flyable_kickoff_before_prepare_raises(recording_flyer):
+    logic, flyer = recording_flyer
+
+    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
+        await flyer.kickoff()
+    assert logic.calls == []
+
+
+async def test_flyable_complete_before_kickoff_raises(recording_flyer):
+    logic, flyer = recording_flyer
+
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
+        await flyer.complete()
+    assert logic.calls == []
+
+
+async def test_flyable_stage_resets_lifecycle(recording_flyer):
+    # After prepare+kickoff, staging should reset so a later complete errors again.
+    logic, flyer = recording_flyer
+
+    await flyer.prepare(5)
+    await flyer.kickoff()
+    await flyer.stage()
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
+        await flyer.complete()
+
+
+async def test_flyable_complete_without_movable_logic_yields_no_updates(
+    recording_flyer,
+):
+    # A flyer whose logic is not a MovableLogic has no readback to report, so
+    # complete() is still a WatchableAsyncStatus but calls no watchers.
+    logic, flyer = recording_flyer
+
+    await flyer.prepare(5)
+    await flyer.kickoff()
+    status = flyer.complete()
+    assert isinstance(status, WatchableAsyncStatus)
+    updates: list[dict] = []
+    status.watch(lambda **kwargs: updates.append(kwargs))
+    await status
+
+    assert logic.calls == ["on_prepare", "on_kickoff", "on_complete"]
+    assert updates == []
+
+
 async def test_flyable_complete_watches_movable_logic():
     async with init_devices(mock=True):
         flyer = MovableFlyer(name="flyer")
@@ -210,10 +210,8 @@ async def test_flyable_complete_watches_movable_logic():
     assert {u["name"] for u in updates} == {"flyer"}
 
 
-async def test_flyable_stage_unstage_default_to_stop():
-    logic = RecordingFlyableLogic()
-    async with init_devices(mock=True):
-        flyer = logic.with_device(name="flyer")
+async def test_flyable_stage_unstage_default_to_stop(recording_flyer):
+    logic, flyer = recording_flyer
 
     await flyer.stage()
     await flyer.unstage()
