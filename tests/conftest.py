@@ -1,10 +1,12 @@
 import asyncio
 import os
 import pprint
+import shutil
 import signal
 import subprocess
 import time
-from collections.abc import Callable
+import uuid
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +46,40 @@ EXTRA_BLOCKS_RECORD = str(
 )
 
 
+# Compose override giving the cam IOC a directory pytest and the IOC agree on.
+SHARED_TMP_COMPOSE_FILE = str(Path(__file__).parent / "compose-shared-tmp.yaml")
+
+# IOCs are started against the *host's* container engine, so a directory handed
+# to an IOC over Channel Access must have the same absolute path for pytest and
+# for the IOC. The default is the bare-host shape (CI, or running the tests
+# directly on a workstation): pytest and the engine already share a filesystem,
+# so one host path bound to itself needs no translation. A devcontainer does not
+# share the host's filesystem and must point these at something the engine
+# resolves identically for every container - it sets both itself, see
+# .devcontainer/devcontainer.json. OPHYD_ASYNC_SHARED_TMP_SOURCE is a host path
+# or a volume name; OPHYD_ASYNC_SHARED_TMP_DIR is the path both sides use.
+os.environ.setdefault("OPHYD_ASYNC_SHARED_TMP_DIR", "/tmp/ophyd-async-shared-tmp")
+os.environ.setdefault(
+    "OPHYD_ASYNC_SHARED_TMP_SOURCE", os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]
+)
+
+
+@pytest.fixture
+def shared_tmp_path(request: FixtureRequest) -> Iterator[Path]:
+    """A tmp_path that IOC containers can also see, at the same absolute path.
+
+    `tmp_path` lives under the pytest process's own /tmp, which no IOC container
+    mounts, so a directory handed to an IOC over Channel Access does not resolve
+    there and the IOC reports it missing. Each test gets a unique directory,
+    removed afterwards, so concurrent runs sharing the volume cannot collide.
+    """
+    root = Path(os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]) / "pytest-shared-tmp"
+    path = root / f"{request.node.name}-{uuid.uuid4().hex[:8]}"
+    path.mkdir(parents=True)
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
+
+
 def fixture_is_used(fixture_name, session):
     """
     Helper function to check if a fixture is used in a pytest session
@@ -56,9 +92,8 @@ def fixture_is_used(fixture_name, session):
 
 
 def pytest_collection_modifyitems(session, config, items):
-    # Raise a runtime error if docker cannot communicate to the host
-    # This is needed when we want to run docker fixtures in subprocesses
-    # as pytest-insubprocess doesn't report fixture errors
+    # Fail at collection, with a clear message, if the container engine cannot
+    # be reached - rather than once per test, as an opaque fixture error.
     if fixture_is_used("docker_composer", session):
         check_docker_sock()
 
@@ -345,23 +380,67 @@ def docker_composer():
     yield inner_docker_composer
 
 
+def example_services_compose_file() -> str:
+    """The compose file describing the IOCs the system tests run against.
+
+    Raises loudly when EXAMPLE_SERVICES_PATH is unset. The fixtures below used to
+    skip starting anything instead, on the grounds that the services might have
+    been started by hand - but a fixture generator has to yield exactly once, so
+    that branch only ever produced
+
+        ValueError: ca_gateway did not yield a value
+
+    which names neither the variable nor the environment, and reads like a bug in
+    the test suite rather than a missing setting.
+    """
+    path = os.environ.get("EXAMPLE_SERVICES_PATH")
+    if not path:
+        raise RuntimeError(
+            "EXAMPLE_SERVICES_PATH is not set, so the IOCs these tests need "
+            "cannot be started.\n"
+            "Set it to the example-services directory as the *host* sees it - "
+            "docker compose runs against the host's container engine, so a path "
+            "only this process can see will not resolve:\n"
+            "    export EXAMPLE_SERVICES_PATH=<path to repo>/example-services\n"
+            "A devcontainer sets this for you (see .devcontainer/"
+            "devcontainer.json); if you are in one and still seeing this, the "
+            "variable has not reached this process."
+        )
+    return f"{path}/compose.yaml"
+
+
 @pytest.fixture(scope="module")
 def ca_gateway(docker_composer):
-    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # user may start services manually
-        yield from docker_composer(
-            ["-f", f"{example_services_path}/compose.yaml"],
-            docker_services="ca-gateway",
-            ready_log_line="Running as user ",
-        )
+    yield from docker_composer(
+        ["-f", example_services_compose_file()],
+        docker_services="ca-gateway",
+        ready_log_line="Running as user ",
+    )
 
 
 @pytest.fixture(scope="module")
 def bl01t_di_cam_01(ca_gateway, docker_composer):
-    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # user may start services manually
-        yield from docker_composer(
-            ["-f", f"{example_services_path}/compose.yaml"],
-            docker_services="bl01t-di-cam-01",
-            ready_log_line="iocRun: All initialization complete",
-        )
+    # Create it before compose binds it: a rootful engine would otherwise
+    # create the source as root, which pytest could then not write to.
+    Path(os.environ["OPHYD_ASYNC_SHARED_TMP_DIR"]).mkdir(parents=True, exist_ok=True)
+    yield from docker_composer(
+        [
+            "-f",
+            example_services_compose_file(),
+            "-f",
+            SHARED_TMP_COMPOSE_FILE,
+        ],
+        docker_services="bl01t-di-cam-01",
+        # Not "iocRun: All initialization complete": the IOC configures itself
+        # *after* iocInit, from the epics.PostStartupCommand in its ioc.yaml,
+        # and the first thing that block does is
+        # `dbpf BL01T-DI-CAM-01:DET:AcquireTime 0.1`. A test that connects
+        # while that is still in flight has its own exposure overwritten with
+        # 0.1 - which is what made test_prepare_is_idempotent... flake, and only
+        # ever on a cold start, where the gap is wide enough to lose the race.
+        # `Acquire 1` is the *last* command in that block and the commands run
+        # in order, so seeing it echoed means the whole block has run. That ties
+        # us to a pinned submodule's config (example-services, tag 2025.8.2): if
+        # a command is ever appended after it, this goes back to being too early.
+        ready_log_line="dbpf BL01T-DI-CAM-01:DET:Acquire 1",
+    )

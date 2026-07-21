@@ -2,10 +2,20 @@ import os
 
 import pytest
 
-from ophyd_async.core import Device, DeviceVector
+from ophyd_async.core import (
+    Device,
+    DeviceMap,
+    DeviceVector,
+    NotConnectedError,
+    SignalRW,
+)
 from ophyd_async.epics.testing import (
     IOC,
+    EpicsTestPviAgreeingPvSuffixDevice,
+    EpicsTestPviDisagreeingDeviceDevice,
     EpicsTestPviLeafDevice,
+    EpicsTestPviMapDevice,
+    EpicsTestPviMapOverVectorDevice,
     EpicsTestPviNestedDevice,
     EpicsTestPviNestedDeviceMissingChild,
     generate_random_pv_prefix,
@@ -33,6 +43,16 @@ async def nested_device(nested_ioc_and_prefix) -> EpicsTestPviNestedDevice:
     # Explicit name: constructing outside init_devices() doesn't auto-name
     # from the assigned variable, unlike the mocked with_pvi_connector tests.
     device = EpicsTestPviNestedDevice(prefix, with_pvi=True, name="nested_device")
+    await device.connect(timeout=TIMEOUT)
+    return device
+
+
+@pytest.fixture
+async def map_device(nested_ioc_and_prefix) -> EpicsTestPviMapDevice:
+    _, prefix = nested_ioc_and_prefix
+    # The DeviceMap structure is served under its own "mapd:" group (see
+    # _pvi_nested_records.db) so it doesn't perturb EpicsTestPviNestedDevice.
+    device = EpicsTestPviMapDevice(f"{prefix}mapd:", with_pvi=True, name="map_device")
     await device.connect(timeout=TIMEOUT)
     return device
 
@@ -142,3 +162,81 @@ async def test_undeclared_device_vector_of_devices(
     assert isinstance(extra_devices[1], Device)
     assert await extra_devices[1].signal_rw.get_value() == 30
     assert await extra_devices[2].signal_rw.get_value() == 40
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_of_signals(map_device: EpicsTestPviMapDevice):
+    # A DeviceMap is filled from its node's normal named entries (a, b), keyed
+    # by name, each type-checked against the map's SignalRW[float] element type.
+    assert isinstance(map_device.signal_map, DeviceMap)
+    assert set(map_device.signal_map) == {"a", "b"}
+    assert isinstance(map_device.signal_map["a"], SignalRW)
+    assert await map_device.signal_map["a"].get_value() == 1.5
+    assert await map_device.signal_map["b"].get_value() == 2.5
+    await map_device.signal_map["a"].set(15.5)
+    assert await map_device.signal_map["a"].get_value() == 15.5
+    assert await map_device.signal_map["b"].get_value() == 2.5
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_naming_and_parenting(map_device: EpicsTestPviMapDevice):
+    assert map_device.signal_map.name == "map_device-signal_map"
+    assert map_device.signal_map["a"].name == "map_device-signal_map-a"
+    assert map_device.signal_map.parent is map_device
+    assert map_device.signal_map["a"].parent is map_device.signal_map
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_of_devices(map_device: EpicsTestPviMapDevice):
+    # A DeviceMap of Devices: each named entry (one, two) is created as the
+    # map's EpicsTestPviLeafDevice element type and recursed into.
+    assert isinstance(map_device.device_map, DeviceMap)
+    assert set(map_device.device_map) == {"one", "two"}
+    assert isinstance(map_device.device_map["one"], EpicsTestPviLeafDevice)
+    assert await map_device.device_map["one"].signal_rw.get_value() == 11
+    assert await map_device.device_map["two"].signal_rw.get_value() == 22
+    await map_device.device_map["one"].signal_x.trigger()
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_device_map_over_vector_children_raises(nested_ioc_and_prefix):
+    # device_vector is served as integer-keyed "__N" entries, which a DeviceMap
+    # cannot hold: connecting must say so rather than hand back a map that has
+    # silently dropped them.
+    _, prefix = nested_ioc_and_prefix
+    device = EpicsTestPviMapOverVectorDevice(
+        prefix, with_pvi=True, name="map_over_vector"
+    )
+    # device_vector is filled while connecting as a child, so its TypeError
+    # arrives aggregated into the parent's NotConnectedError.
+    with pytest.raises(NotConnectedError, match="only a DeviceVector can hold"):
+        await device.connect(timeout=TIMEOUT)
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_pv_suffix_agreeing_with_pvi_connects(nested_ioc_and_prefix):
+    # A PvSuffix that names the same PV PVI serves is redundant, not wrong, so
+    # it connects and works normally -- the counterpart to the two tests below.
+    _, prefix = nested_ioc_and_prefix
+    device = EpicsTestPviAgreeingPvSuffixDevice(prefix, with_pvi=True, name="agreeing")
+    await device.connect(timeout=TIMEOUT)
+    # Round-trip rather than assert the db's initial values: the IOC is shared
+    # across this module and other tests write to these same records.
+    await device.signal_rw.set(101)
+    assert await device.signal_rw.get_value() == 101
+    await device.child.signal_rw.set(202)
+    assert await device.child.signal_rw.get_value() == 202
+
+
+@pytest.mark.timeout(TIMEOUT)
+async def test_sub_device_pv_suffix_disagreeing_with_pvi_raises(nested_ioc_and_prefix):
+    # If a sub-device is addressed both by a PvSuffix annotation and by PVI, and
+    # the two name different PVI PVs, then one of them is wrong -- say so rather
+    # than silently letting PVI win. The Signal counterpart of this lives in
+    # test_epics_signal_mechanisms.py.
+    _, prefix = nested_ioc_and_prefix
+    device = EpicsTestPviDisagreeingDeviceDevice(
+        prefix, with_pvi=True, name="disagreeing_device"
+    )
+    with pytest.raises(TypeError, match="child is addressed at .*not_child:PVI"):
+        await device.connect(timeout=TIMEOUT)

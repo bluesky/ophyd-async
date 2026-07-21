@@ -14,6 +14,7 @@ src/ophyd_async/      # library source
 docs/                 # Sphinx docs (MyST + Diataxis)
 tests/unit_tests/     # fast, mock-based, single-process (soft signals, connect(mock=True))
 tests/system_tests/   # needs a live external process (e.g. epics/core → EPICS IOC, tango/core → Tango device server)
+tests/container_tests/ # needs IOCs in containers; own pytest invocation, must not share a process with anything importing pyepics
 pyproject.toml        # all tool config: pytest, ruff, pyright, tox
 ```
 
@@ -31,6 +32,7 @@ tox -p                  # all envs in parallel (CI equivalent)
 - `ruff` runs on save in VS Code; `pytest` also runs doctests in `docs/` and `src/`.
 - **pyright ad hoc** (not via tox): always `pyright src --pythonpath "$(which python)"`. A bare `pyright src` reports ~115 false positives here (stale numpy-stub resolution) — never trust its count.
 - System tests need a live backend; scope runs to `tests/system_tests/epics` or `.../tango` and run 2–3× to catch flakiness.
+- `tests/container_tests` must be a **separate** `pytest` invocation from `tests/system_tests` — never one session. They reach their IOC via the ca-gateway, which needs `EPICS_CA_NAME_SERVERS`, and EPICS reads that once at libca init; `epics/core` imports pyepics, which initialises libca during *collection*, so a shared session silently breaks them. Needs `EXAMPLE_SERVICES_PATH` (a host path).
 
 ## Testing conventions
 
@@ -57,7 +59,8 @@ tox -p                  # all envs in parallel (CI equivalent)
 - **STATE.md schema:** Done (with SHAs) / In progress (with exact next command) / Decisions + rationale / Invariants / Open questions.
 - **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md. Make an ADR as part of the PR for anything substantial.
 - **One PR-sized slice per session.** Never rely on context surviving across sessions — files and git are the source of truth.
-- **PR closes its issues:** a PR body must have a `Fixes #NNN` (or `Closes #NNN`) line for **every** issue it resolves, so GitHub auto-closes them on merge — one line per issue on a multi-issue PR. After editing a PR body, re-read it back (web-UI edits can trim it) and confirm each closing line is present.
+- **PR closes its issues:** a PR body must have a `Fixes #NNN` (or `Closes #NNN`) line for **every** issue it resolves, so GitHub auto-closes them on merge — one line per issue on a multi-issue PR.
+- **Set a PR body with `gh api`, not `gh pr edit`:** `gh pr edit --body-file` silently no-ops here — it exits 0, warns only about Projects-classic deprecation, and leaves the body unchanged. Use `gh api -X PATCH repos/bluesky/ophyd-async/pulls/NNNN -F body=@file`. Read the body back either way (web-UI edits trim it) and confirm each closing line survived.
 
 ## Updating this guide
 

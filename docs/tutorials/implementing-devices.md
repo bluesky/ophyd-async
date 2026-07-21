@@ -341,7 +341,7 @@ TODO
 
 ### `DemoStage`
 
-Finally we get to the `DemoStage`, which is responsible for instantiating two `DemoMotor`s. It also inherits from [](#StandardReadable), which allows it to be used in plans that `read()` devices. It ensures that the output of `read()` is the same as if you were to `read()` both the `DemoMotor`s, and merge the result:
+Finally we get to the `DemoStage`, which groups two `DemoMotor`s called `x` and `y`. It also inherits from [](#StandardReadable), which allows it to be used in plans that `read()` devices. It ensures that the output of `read()` is the same as if you were to `read()` both the `DemoMotor`s, and merge the result:
 
 ::::{tab-set}
 :sync-group: cs
@@ -352,7 +352,15 @@ Finally we get to the `DemoStage`, which is responsible for instantiating two `D
 ```{literalinclude} ../../src/ophyd_async/epics/demo/_stage.py
 :language: python
 ```
-Like `DemoPointDetector`, the PV concatenation is done explicitly in code, and the children are added within a [](#StandardReadable.add_children_as_readables) context manager.
+Unlike `DemoPointDetector`, the stage has a *fixed* set of child Devices — always an `x` and a `y` — rather than a runtime-sized `DeviceVector`. So instead of instantiating them in an `__init__`, we can declare them the same way as Signals: via a type hint annotated with a [](#PvSuffix) and [](#StandardReadableFormat.CHILD). The [](#EpicsDevice) baseclass prepends the [](#PvSuffix) to the stage's prefix to address each motor, so a `DemoStage(prefix="PREFIX:")` gives `x` the prefix `PREFIX:X:`. [](#StandardReadableFormat.CHILD) adds each motor's `read()` and `read_configuration()` into the stage's, just as if we had used [](#StandardReadable.add_children_as_readables). Declared sub-devices may themselves declare sub-devices, so this nests to any depth.
+
+```{note}
+A sub-device of a static [](#EpicsDevice) like this one **must** be given a [](#PvSuffix); a bare annotation such as `x: DemoMotor` raises a `TypeError`, because there would be no way to address its Signals. Under PVI the suffix is optional, as the PVI structure addresses the children at connection time.
+```
+
+```{seealso}
+For when to declare children with type hints versus instantiating them procedurally in an `__init__`, see [](../explanations/declarative-vs-procedural).
+```
 
 :::
 

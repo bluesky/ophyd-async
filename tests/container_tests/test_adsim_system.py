@@ -1,3 +1,31 @@
+"""System tests driving a real areaDetector IOC.
+
+These are the only tests in the suite that run containers, so the rules they live
+by are written down here rather than somewhere more general.
+
+**Paths must mean the same thing on both sides.** The IOC is started by `docker
+compose` against the *host's* container engine (see the `bl01t_di_cam_01`
+fixture), so every path in a compose file resolves on the host - not here. A
+directory handed to the IOC, as `StaticPathProvider` does below, travels over
+Channel Access as a plain string and is opened by the IOC in *its own*
+filesystem, so it has to resolve to the same directory there as it does here.
+pytest's `tmp_path` does not: a devcontainer's /tmp is not the host's /tmp, and
+no IOC container mounts /tmp either way, so the IOC reports the directory missing
+and refuses to write. Use `shared_tmp_path`, which is mounted into the IOC at the
+same absolute path - see tests/compose-shared-tmp.yaml for how, and note it must
+keep working both in a devcontainer and on a bare host (CI), which resolve that
+path by different means.
+
+**The IOC outlives each test.** It is started once per module, so whatever a test
+leaves configured is what the next test finds, however narrowly the device
+fixture is scoped - the device object is not the state that persists, the IOC is.
+`reset_adsim_to_baseline` puts it back to a known state before every test, which
+is what lets these pass in any order.
+
+**These tests only pass in a pytest session of their own**, which is why they
+live here rather than under tests/system_tests - see this directory's conftest.
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -39,6 +67,12 @@ from ophyd_async.plan_stubs import (
 
 TIMEOUT = 60.0  # allow extra time for docker compose
 
+# Applies to every test here, not just the one that used to carry it: they all
+# need the IOC, and the IOC needs services that are not set up on Windows.
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Services not set up on Windows"
+)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def with_env():
@@ -64,9 +98,9 @@ def _aioca_cleanup(event_loop):
 
 
 @pytest.fixture
-def adsim(RE: RunEngine, tmp_path) -> AreaDetector:
+def adsim(RE: RunEngine, shared_tmp_path: Path) -> AreaDetector:
     prefix = "BL01T"
-    provider = StaticPathProvider(StaticFilenameProvider("adsim"), tmp_path)
+    provider = StaticPathProvider(StaticFilenameProvider("adsim"), shared_tmp_path)
     with init_devices():
         adsim = SimDetector(
             f"{prefix}-DI-CAM-01:",
@@ -74,9 +108,20 @@ def adsim(RE: RunEngine, tmp_path) -> AreaDetector:
             driver_suffix="DET:",
         )
 
-    RE(apply_baseline_settings(adsim))
-
     return adsim
+
+
+@pytest.fixture(autouse=True)
+def reset_adsim_to_baseline(RE: RunEngine, adsim: SimDetector) -> None:
+    """Put the detector back to a known state before every test.
+
+    The IOC is shared by the whole module, so its state outlives any one test
+    however narrowly the device is scoped: a test that leaves the driver
+    configured differently - `test_prepare_is_idempotent_and_sets_exposure_time`
+    sets a 0.2s exposure - would otherwise decide what the next test sees. Every
+    test starts from the baseline instead, so they pass in any order.
+    """
+    RE(apply_baseline_settings(adsim))
 
 
 def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
@@ -94,11 +139,7 @@ def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
     )
 
 
-@pytest.mark.insubprocess
 @pytest.mark.timeout(TIMEOUT + 3.0)
-@pytest.mark.xfail(
-    raises=AssertionError, reason="https://github.com/bluesky/ophyd-async/issues/998"
-)
 def test_prepare_is_idempotent_and_sets_exposure_time(
     RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None
 ) -> None:
@@ -116,13 +157,9 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
     assert actual_exposure_time == 0.2
 
 
-@pytest.mark.insubprocess
-@pytest.mark.skipif(
-    sys.platform.startswith("win"), reason="Services not set up on Windows"
-)
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(
-    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None, tmp_path
+    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None, shared_tmp_path: Path
 ) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
     assert docs == [
@@ -186,7 +223,12 @@ def test_software_triggering(
             },
             data_keys={
                 "adsim": {
-                    "source": "ca://BL01T-DI-CAM-01:HDF5:FullFileName_RBV",
+                    # The main dataset's source is the file it is written to;
+                    # only NDAttributes carry a PV as their source.
+                    "source": (
+                        f"file://localhost/"
+                        f"{shared_tmp_path.as_posix().lstrip('/')}/adsim.h5"
+                    ),
                     "shape": [1, 1024, 1024],
                     "dtype": "array",
                     "dtype_numpy": "|i1",
@@ -203,7 +245,7 @@ def test_software_triggering(
             run_start=ANY,
             data_key="adsim",
             mimetype="application/x-hdf5",
-            uri=f"file://localhost/{tmp_path.as_posix().lstrip('/')}/adsim.h5",
+            uri=f"file://localhost/{shared_tmp_path.as_posix().lstrip('/')}/adsim.h5",
             parameters={
                 "dataset": "/entry/data/data",
                 "chunk_shape": (1, 1024, 1024),

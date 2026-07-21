@@ -20,6 +20,18 @@
         // Help external service fixtures match docker compose working directory with the host
         "EXAMPLE_SERVICES_PATH": "${localWorkspaceFolder}/example-services"
     },
+    // Not remoteEnv: these must reach *any* process in the container, including
+    // agents and nested tools that VS Code did not spawn.
+    "containerEnv": {
+        // IOCs run on the host's engine, so a directory handed to an IOC must
+        // have the same absolute path here and inside the IOC. /cache is a named
+        // volume, which the engine resolves to the same storage for every
+        // container whoever launched it - unlike /tmp, which is ours alone. A
+        // bare host shares its filesystem with the engine and needs neither of
+        // these; see the defaults in tests/conftest.py.
+        "OPHYD_ASYNC_SHARED_TMP_SOURCE": "devcontainer-shared-cache",
+        "OPHYD_ASYNC_SHARED_TMP_DIR": "/cache"
+    },
     "customizations": {
         "vscode": {
             // Set *default* container specific settings.json values on container create.

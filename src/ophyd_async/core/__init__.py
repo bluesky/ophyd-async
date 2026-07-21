@@ -36,6 +36,7 @@ from ._detector import (
 from ._device import (
     Device,
     DeviceConnector,
+    DeviceMap,
     DeviceMock,
     DeviceProcessor,
     DeviceVector,
@@ -182,6 +183,7 @@ __all__ = [
     "DeviceConnector",
     "DeviceFiller",
     "DeviceAnnotation",
+    "DeviceMap",
     "DeviceVector",
     "DeviceProcessor",
     "init_devices",
