@@ -62,6 +62,7 @@ from ._mock_signal_utils import (
     get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_attr,
     set_mock_precision,
     set_mock_put_proceeds,
     set_mock_units,
@@ -236,6 +237,7 @@ __all__ = [
     "default_mock_class",
     # Mocking utilities
     "get_mock",
+    "set_mock_attr",
     "set_mock_value",
     "set_mock_values",
     "get_mock_put",

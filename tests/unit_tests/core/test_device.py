@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 import traceback
-from unittest.mock import MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
@@ -17,6 +17,7 @@ from ophyd_async.core import (
     Reference,
     SignalRW,
     init_devices,
+    set_mock_attr,
     soft_signal_rw,
     wait_for_connection,
 )
@@ -114,6 +115,29 @@ def test_attr_in_bluesky_protocols(attr_name):
     expected_msg = f"Please use `{attr_name}_` instead"
     with pytest.raises(NameError, match=expected_msg):
         DeviceWithProtocolName("bar")
+
+
+@pytest.mark.parametrize("value", ["YES", "yes", "Yes"])
+def test_reserved_attr_allowed_by_env_var(monkeypatch, value):
+    monkeypatch.setenv("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", value)
+    device = Device()
+    mock = AsyncMock()
+    device.set = mock
+    assert device.set is mock
+
+
+@pytest.mark.parametrize("value", ["NO", "", "true", "1"])
+def test_reserved_attr_still_raises_when_env_var_not_yes(monkeypatch, value):
+    monkeypatch.setenv("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", value)
+    device = Device()
+    with pytest.raises(NameError, match="Please use `set_` instead"):
+        device.set = AsyncMock()
+
+
+def test_set_mock_attr_overrides_reserved_name_and_returns_mock():
+    device = Device()
+    mock = set_mock_attr(device, "set", AsyncMock())
+    assert device.set is mock
 
 
 async def test_device_connect_missing_connector() -> None:
