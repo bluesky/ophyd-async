@@ -438,9 +438,9 @@ class StandardDetector(
     `EventPageCollectable` (and its `collect_pages`) are *not* inherited: a
     detector writes stream assets or emits event pages depending on which data
     logics it carries, never both, and the bluesky bundler treats the two as
-    mutually exclusive. The relevant method is exposed via `__getattr__` only
-    when a data logic supporting it is present, so the bundler's structural
-    isinstance check sees exactly the one that applies.
+    mutually exclusive. The relevant method is bound as an instance attribute in
+    `add_detector_logics` only when a data logic supporting it is present, so the
+    bundler's structural isinstance check sees exactly the one that applies.
     """
 
     # Logic for the detector
@@ -535,28 +535,17 @@ class StandardDetector(
                 f"({_describe(bounded)}) and unbounded data logics "
                 f"({_describe(unbounded)}); these cannot be combined on one detector"
             )
-
-    def __getattr__(self, name: str):
-        # Expose collect_asset_docs / collect_pages only when a data logic that
-        # produces that kind of document is present, so the bluesky bundler's
-        # structural isinstance checks (WritesStreamAssets vs EventPageCollectable)
-        # match exactly the one that applies. __getattr__ runs only for attributes
-        # not found normally, and _data_logics has a class-level default, so this
-        # never recurses.
-        if name == "collect_asset_docs" and any(
-            _data_logic_supported(dl.prepare_unbounded) for dl in self._data_logics
-        ):
-            return self._collect_asset_docs
-        if name == "collect_pages" and any(
-            _data_logic_supported(dl.prepare_bounded) for dl in self._data_logics
-        ):
-            return self._collect_pages
-        # No base class defines __getattr__, so there is nothing to delegate to;
-        # raise the same AttributeError the default attribute lookup would, so
-        # hasattr()/getattr() and error messages behave as normal.
-        raise AttributeError(
-            f"{type(self).__name__!r} object has no attribute {name!r}"
-        )
+        # Expose collect_asset_docs / collect_pages as real instance attributes so
+        # the bluesky bundler's runtime-checkable isinstance checks (WritesStreamAssets
+        # vs EventPageCollectable) match exactly the one that applies. Python 3.12+
+        # resolves those checks with inspect.getattr_static, which does not invoke
+        # __getattr__, so a dynamic hook is invisible to them while a real instance
+        # attribute is not. Both names are bluesky protocol names reserved by Device,
+        # so bypass its reserved-name guard with object.__setattr__.
+        if unbounded:
+            object.__setattr__(self, "collect_asset_docs", self._collect_asset_docs)
+        if bounded:
+            object.__setattr__(self, "collect_pages", self._collect_pages)
 
     def add_config_signals(self, *signals: SignalR) -> None:
         """Add a signal to read_configuration().
