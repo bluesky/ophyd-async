@@ -423,7 +423,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     def _get_read_pv(self) -> str:
-        """returns read pv with subarray index when requested."""
+        """Read pv with subarray index when requested."""
         if self.options.element_count is None:
             return self.read_pv
         return f"{self.read_pv}.[0:{self.options.element_count - 1:d}]"

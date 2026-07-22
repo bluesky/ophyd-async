@@ -11,6 +11,8 @@ from ophyd_async.core import (
     DeviceMock,
     SignalRW,
     StandardReadable,
+)
+from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
