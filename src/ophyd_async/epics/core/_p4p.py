@@ -374,7 +374,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         # with p4p: single element seems not feasible
         #           have a look to :meth:`_get_read_pv
         if options and options.element_count is not None:
-            if options.element_count <=  1:
+            if options.element_count <= 1:
                 raise ValueError(
                     "p4p backend can only support epics options element_count above 1"
                 )
@@ -444,7 +444,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     async def get_value(self) -> SignalDatatypeT:
         request = _pva_request_string(self.converter.value_fields)
-        value = await context().get(self.read_pv, request=request)
+        value = await context().get(self._get_read_pv(), request=request)
         return self.converter.value(value)
 
     async def get_setpoint(self) -> SignalDatatypeT:
