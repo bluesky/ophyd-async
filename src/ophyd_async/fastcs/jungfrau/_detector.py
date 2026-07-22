@@ -2,7 +2,7 @@ from ophyd_async.core import PathProvider, StandardDetector, soft_signal_rw
 from ophyd_async.fastcs import odin
 from ophyd_async.fastcs.core import fastcs_connector
 
-from ._arm_logic import JungfrauArmLogic
+from ._acquire_logic import JungfrauAcquireLogic
 from ._io import AcquisitionType, JungfrauDriverIO
 from ._trigger_logic import JungfrauTriggerLogic
 
@@ -31,7 +31,7 @@ class JungfrauDetector(StandardDetector):
         )
         self.add_detector_logics(
             JungfrauTriggerLogic(self.detector, self.acquisition_type),
-            JungfrauArmLogic(self.detector),
+            JungfrauAcquireLogic(self.detector),
             odin.OdinDataLogic(
                 path_provider=path_provider,
                 odin=self.odin,

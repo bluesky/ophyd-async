@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import inspect
+import logging
 import types
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
@@ -13,16 +15,28 @@ from typing import (
     Union,
     cast,
     get_args,
+    get_origin,
     runtime_checkable,
 )
 
-from ._device import Device, DeviceConnector, DeviceVector
+from ._command import Command, CommandBackend
+from ._device import (
+    DEVICE_RESERVED_ATTRS,
+    Device,
+    DeviceConnector,
+    DeviceMap,
+    DeviceVector,
+)
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
-from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
+from ._utils import T, V, cached_get_origin, cached_get_type_hints, get_origin_class
+
+logger = logging.getLogger("ophyd_async")
+
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
+CommandBackendT = TypeVar("CommandBackendT", bound=CommandBackend)
 # Unique name possibly with trailing understore, the attribute name on the Device
 UniqueName = NewType("UniqueName", str)
 # Logical name without trailing underscore, the name in the control system
@@ -42,20 +56,42 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
-    # If passed a Device, try to get the original class
-    # extracting DeviceVector[SomeDevice] from a <DeviceVector>
+def _get_command_signature(annotation: Any) -> inspect.Signature | None:
+    """Extract Signature from Command[[type_in...], type_out] annotations."""
+    if get_origin(annotation) is not Command:
+        return None
+    args = get_args(annotation)
+    if len(args) != 2:
+        return None
+    param_types, return_type = args
+
+    if not isinstance(param_types, tuple):
+        param_types = tuple(param_types)
+    parameters = [
+        inspect.Parameter(
+            f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t
+        )
+        for i, t in enumerate(param_types)
+    ]
+
+    sig = inspect.Signature(parameters, return_annotation=return_type)
+    return sig
+
+
+def _get_device_dict_child_datatype(vector: Device | type[Device]) -> type | None:
+    # Extract SomeDevice from a `DeviceVector[SomeDevice]` or `DeviceMap[SomeDevice]`,
+    # whether type-hinted directly or via a subclass.
     if generic_class := getattr(vector, "__orig_class__", None):
-        # Type hinted DeviceVector
+        # Type hinted DeviceVector/DeviceMap
         # e.g., DeviceVector[SomeDevice]
         return _get_datatype(generic_class)
     else:
-        # Sub class of type hinted DeviceVector
+        # Sub class of type hinted DeviceVector/DeviceMap
         # We must extract the original base, which we can do from a type or cls
         # e.g., instance of `class CustomVector(DeviceVector[SomeDevice])`
         for base in getattr(vector, "__orig_bases__", ()):
             origin = get_origin_class(base)
-            if origin is DeviceVector:
+            if origin in (DeviceVector, DeviceMap):
                 return _get_datatype(base)
 
     return None
@@ -78,7 +114,7 @@ class DeviceAnnotation(Protocol):
     def __call__(self, parent: Device, child: Device): ...
 
 
-class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
+class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
     """For filling signals on introspected devices.
 
     :param device: The device to fill.
@@ -91,16 +127,19 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         device: Device,
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
+        command_backend_factory: Callable[[inspect.Signature | None], CommandBackendT],
     ):
         self._device = device
         self._signal_backend_factory = signal_backend_factory
         self._device_connector_factory = device_connector_factory
+        self._command_backend_factory = command_backend_factory
         # Annotations stored ready for the creation phase
         self._uncreated_signals: dict[UniqueName, type[Signal]] = {}
+        self._uncreated_commands: dict[UniqueName, type[Command]] = {}
         self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
-        self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
+        self._command_signature: dict[LogicalName, inspect.Signature | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
         # Backends and Connectors stored ready for the connection phase
@@ -109,10 +148,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         ] = {}
         self._unfilled_connectors: dict[LogicalName, DeviceConnectorT] = {}
         # Once they are filled they go here in case we reconnect
+        self._unfilled_command_backends: dict[
+            LogicalName, tuple[CommandBackendT, type[Command]]
+        ] = {}
         self._filled_backends: dict[
             LogicalName, tuple[SignalBackendT, type[Signal]]
         ] = {}
         self._filled_connectors: dict[LogicalName, DeviceConnectorT] = {}
+        self._filled_command_backends: dict[
+            LogicalName, tuple[CommandBackendT, type[Command]]
+        ] = {}
         self._scan_for_annotations()
 
     def _raise(self, name: str, error: str) -> NoReturn:
@@ -134,6 +179,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def _store_signal_datatype(self, name: UniqueName, annotation: Any):
         datatype = self._validate_signal_datatype(name, annotation)
         self._signal_datatype[_logical(name)] = datatype
+
+    def _store_command_datatype(self, name: UniqueName, annotation: Any):
+        origin = get_origin_class(annotation)
+        signature = _get_command_signature(annotation)
+        if origin and issubclass(origin, Command):
+            self._command_signature[_logical(name)] = signature
+        else:
+            self._raise(
+                name,
+                f"Expected Command or Command[[type], type], got {annotation}",
+            )
 
     def _scan_for_annotations(self):
         # Get type hints on the class, not the instance
@@ -174,41 +230,82 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             if issubclass(origin, Signal):
                 self._store_signal_datatype(name, annotation)
                 self._uncreated_signals[name] = origin
+            elif issubclass(origin, Command):
+                self._store_command_datatype(name, annotation)
+                self._uncreated_commands[name] = origin
             # We either have an annotation of a Device, or we have a generic alias of
-            # a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable
-            # and returns a DeviceVector.
+            # a DeviceVector/DeviceMap (e.g. DeviceVector[SomeDevice]), which must be
+            # callable and returns a DeviceVector/DeviceMap.
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
                 isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
-                # Check for DeviceVector generic alias type hint
+                # Check for DeviceVector/DeviceMap generic alias type hint
                 # If this is a plain `type`, then _get_datatype will return None
-                if vector_child_class := _get_datatype(annotation):
+                if device_dict_child_class := _get_datatype(annotation):
                     # Get the origin class of the type hint
-                    child_origin = get_origin_class(vector_child_class)
+                    child_origin = get_origin_class(device_dict_child_class)
                     if child_origin and issubclass(child_origin, Signal):
-                        # This is a DeviceVector of Signals, so validate hint
+                        # This is a DeviceVector/DeviceMap of Signals, so validate hint
                         # i.e., Check that Signal hint contains datatype
-                        self._validate_signal_datatype(name, vector_child_class)
-                # We may have a sub-class of DeviceVector
+                        self._validate_signal_datatype(name, device_dict_child_class)
+                # We may have a sub-class of DeviceVector/DeviceMap
                 # If it is not a sub-class, then its a Device, so continue
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
                     isinstance(annotation, type)
-                    and issubclass(annotation, DeviceVector)
-                    and not _get_device_vector_child_datatype(annotation)
+                    and issubclass(annotation, (DeviceVector, DeviceMap))
+                    and not _get_device_dict_child_datatype(annotation)
                 ):
-                    # DeviceVector has no type parameter
+                    # DeviceVector/DeviceMap has no type parameter
+                    cls_name = annotation.__name__
                     self._raise(
-                        name, f"Expected DeviceVector[SomeDevice], got {annotation}."
+                        name,
+                        f"Expected {cls_name}[SomeDevice], got {annotation}.",
                     )
                 self._uncreated_devices[name] = annotation
 
     def check_created(self):
         """Check that all Signals and Devices declared in annotations are created."""
-        uncreated = sorted(set(self._uncreated_signals).union(self._uncreated_devices))
+        uncreated = sorted(
+            set(self._uncreated_signals)
+            .union(self._uncreated_devices)
+            .union(self._uncreated_commands)
+        )
         if uncreated:
             raise RuntimeError(
                 f"{self._device.name}: {uncreated} have not been created yet"
+            )
+
+    def _apply_device_annotations(self, child: Device, extras: list[Any]) -> None:
+        for anno in extras:
+            _check_device_annotation(anno)(self._device, child)
+
+    def _create_children_iter(
+        self,
+        uncreated: dict[UniqueName, type],
+        factory: Callable[[T | None], V],
+        type_lookup: dict[LogicalName, T | None],
+        filled_dest: dict,
+        unfilled_dest: dict,
+        filled: bool,
+    ) -> Iterator[tuple[Any, list[Any]]]:
+        """Shared creation loop used by signals and commands.
+
+        Yields `(backend, extras)` to the caller, who may mutate `backend`
+        (e.g. set PV suffixes), then resumes to finish child construction and
+        registration.
+        """
+        for name in list(uncreated):
+            child_type = uncreated.pop(name)
+            backend = factory(type_lookup[_logical(name)])
+            extras = list(self._extras[name])
+            yield backend, extras
+            child = child_type(backend)
+            self._apply_device_annotations(child, extras)
+            setattr(self._device, name, child)
+            (filled_dest if filled else unfilled_dest)[_logical(name)] = (
+                backend,
+                child_type,
             )
 
     def create_signals_from_annotations(
@@ -230,26 +327,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             list so this class can handle them, e.g. `StandardReadableFormat`
             instances.
         """
-        for name in list(self._uncreated_signals):
-            child_type = self._uncreated_signals.pop(name)
-            backend = self._signal_backend_factory(
-                self._signal_datatype[_logical(name)]
-            )
-            extras = list(self._extras[name])
-            yield backend, extras
-            signal = child_type(backend)
-            for anno in extras:
-                device_annotation = _check_device_annotation(annotation=anno)
-                device_annotation(self._device, signal)
-            setattr(self._device, name, signal)
-            dest = self._filled_backends if filled else self._unfilled_backends
-            dest[_logical(name)] = (backend, child_type)
+        yield from self._create_children_iter(
+            self._uncreated_signals,
+            self._signal_backend_factory,
+            self._signal_datatype,
+            self._filled_backends,
+            self._unfilled_backends,
+            filled,
+        )
 
     def create_devices_from_annotations(
         self,
         filled=True,
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
-        """Create all Signals from annotations.
+        """Create all Devices from annotations.
 
         :param filled:
             If True then the Devices created should be considered already filled
@@ -257,8 +348,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             calling at parent device connection time before the child Device can
             be connected.
         :yields: `(connector, extras)`
-            The `DeviceConnector` that has been created for this Signal, and the list of
-            extra annotations that could be used to customize it.
+            The `DeviceConnector` that has been created for this child Device, and
+            the list of extra annotations that could be used to customize it. The
+            child Device is only constructed (with this connector) *after* the
+            caller resumes the iterator, so the caller may configure the connector
+            here (e.g. an `EpicsDeviceConnector` consuming a `PvSuffix` to set the
+            child's prefix) and the child's own signals will then be created with
+            that configuration. Any address annotations the caller handles should
+            be removed from `extras`; only `DeviceAnnotation`s (e.g.
+            `StandardReadableFormat`) may remain, as this class applies them to the
+            constructed child.
         """
         for name in list(self._uncreated_devices):
             child_type = self._uncreated_devices.pop(name)
@@ -266,32 +365,59 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             extras = list(self._extras[name])
             yield connector, extras
             device = child_type(connector=connector)
-            for anno in extras:
-                device_annotation = _check_device_annotation(annotation=anno)
-                device_annotation(self._device, device)
+            self._apply_device_annotations(device, extras)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
-    def create_device_vector_entries_to_mock(self, num: int):
-        """Create num entries for each `DeviceVector`.
+    def create_commands_from_annotations(
+        self,
+        filled=True,
+    ) -> Iterator[tuple[CommandBackendT, list[Any]]]:
+        """Create all Command children from annotations.
 
-        This is used when the Device is being connected in mock mode.
+        :param filled: If True the Commands are considered already filled with
+            connection data.  If False then `fill_child_command` must be called
+            before the Command can be connected.
+        :yields: `(command_backend, extras)`
+            The `CommandBackend` created for this Command and the list of extra
+            annotations that may be used to customise it.  Unhandled extras should
+            be left on the list so this class can handle them (e.g.
+            `StandardReadableFormat` instances).
+        :raises RuntimeError: If no `command_backend_factory` was supplied at
+            construction time.
         """
-        hinted_child_cls = _get_device_vector_child_datatype(self._device)
+        yield from self._create_children_iter(
+            self._uncreated_commands,
+            self._command_backend_factory,
+            self._command_signature,
+            self._filled_command_backends,
+            self._unfilled_command_backends,
+            filled,
+        )
+
+    def create_device_dict_entries_to_mock(self, entries: list[Any]):
+        """Create an entry per key for a `DeviceVector` or `DeviceMap`.
+
+        This is used when the Device is being connected in mock mode. `entries`
+        holds the keys to create (ints for a `DeviceVector`, strs for a `DeviceMap`).
+        """
+        hinted_child_cls = _get_device_dict_child_datatype(self._device)
         if not hinted_child_cls:
-            msg = "Malformed device vector"
+            msg = "Malformed DeviceVector/DeviceMap"
             raise TypeError(msg)
         # Get base class for subclass checks, as
         # generic classes are not direct subclasses
         base_cls = get_origin_class(hinted_child_cls) or Device
 
-        # Fill DeviceVector
+        # Fill the DeviceVector/DeviceMap itself
         self.fill_child_device(self._device.name)
         # Then handle children
-        for i in range(1, num + 1):
+        for i in entries:
             if issubclass(base_cls, Signal):
                 self.fill_child_signal(self._device.name, hinted_child_cls, i)
+            elif issubclass(base_cls, Command):
+                self.fill_child_command(self._device.name, hinted_child_cls, i)
             elif issubclass(base_cls, Device):
                 self.fill_child_device(self._device.name, hinted_child_cls, i)
             else:
@@ -316,16 +442,29 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_vector(self) -> DeviceVector:
-        if not isinstance(self._device, DeviceVector):
-            self._raise(self._device.name, f"Expected DeviceVector, got {self._device}")
-        return self._device
+    def _set_dict_child(self, map_key: int | str, value: Device) -> None:
+        # A DeviceVector has int keys, a DeviceMap str keys. Checking the key
+        # type against the container here narrows it so the assignment
+        # type-checks without a cast (each __setitem__ re-validates at runtime).
+        if isinstance(self._device, DeviceVector):
+            if not isinstance(map_key, int):
+                self._raise(self._device.name, f"Expected int key, got {map_key!r}")
+            self._device[map_key] = value
+        elif isinstance(self._device, DeviceMap):
+            if not isinstance(map_key, str):
+                self._raise(self._device.name, f"Expected str key, got {map_key!r}")
+            self._device[map_key] = value
+        else:
+            self._raise(
+                self._device.name,
+                f"Expected DeviceVector or DeviceMap, got {self._device}",
+            )
 
     def fill_child_signal(
         self,
         name: str,
         signal_type: type[Signal],
-        vector_index: int | None = None,
+        map_key: int | str | None = None,
     ) -> SignalBackendT:
         """Mark a Signal as filled, and return its backend for filling.
 
@@ -333,7 +472,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             The name without trailing underscore, the name in the control system
         :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param map_key: If the child is in a `DeviceVector`/`DeviceMap`, its key
         :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
@@ -344,14 +483,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
-        elif vector_index:
-            # We need to add a new entry to a DeviceVector
+        elif map_key is not None:
+            # We need to add a new entry to a DeviceVector/DeviceMap
             backend = self._signal_backend_factory(_get_datatype(signal_type))
-            vector = self._ensure_device_vector()
             expected_signal_type = (
-                _get_device_vector_child_datatype(vector) or signal_type
+                _get_device_dict_child_datatype(self._device) or signal_type
             )
-            vector[vector_index] = signal_type(backend)
+            self._set_dict_child(map_key, signal_type(backend))
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -359,8 +497,22 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We need to add a new child to the top level Device
             backend = self._signal_backend_factory(None)
             expected_signal_type = signal_type
+            # Prevent shadowing bluesky protocol with new signal by
+            # adding a trailing underscore
+            if name in DEVICE_RESERVED_ATTRS:
+                logger.info(
+                    f"Signal `{name}` is used in one of the bluesky protocols. "
+                    f"Using `{name}_` instead."
+                )
+                name = f"{name}_"
             setattr(self._device, name, signal_type(backend))
-        if signal_type is not expected_signal_type:
+        # Compare origin classes (e.g. SignalRW) rather than the raw objects:
+        # `expected_signal_type` may be a parameterized generic alias like
+        # `SignalRW[float]` (from a `DeviceVector[SignalRW[float]]` annotation),
+        # while a real (non-mock) connection reports `signal_type` as the bare
+        # class inferred from the "r"/"w"/"rw" PVI designator -- these should
+        # be considered equal as long as they agree on the Signal kind.
+        if get_origin_class(signal_type) is not get_origin_class(expected_signal_type):
             self._raise(
                 name,
                 f"is a {signal_type.__name__} not a {expected_signal_type.__name__}",
@@ -370,15 +522,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def fill_child_device(
         self,
         name: str,
-        device_type: type[Device | DeviceVector] = Device,
-        vector_index: int | None = None,
+        device_type: type[Device] = Device,
+        map_key: int | str | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
 
         :param name:
             The name without trailing underscore, the name in the control system
         :param device_type: The `Device` subclass to be created
-        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :param map_key: If the child is in a `DeviceVector`/`DeviceMap`, its key
         :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
@@ -386,25 +538,24 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We made it above
             connector = self._unfilled_connectors.pop(name)
             self._filled_connectors[name] = connector
-        elif name in self._filled_backends:
+        elif name in self._filled_connectors:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
-        elif vector_index is not None:
-            # We need to add a new entry to a DeviceVector
-            vector = self._ensure_device_vector()
-            vector_device_type = (
-                _get_device_vector_child_datatype(vector) or device_type
+        elif map_key is not None:
+            # We need to add a new entry to a DeviceVector/DeviceMap
+            dict_device_type = (
+                _get_device_dict_child_datatype(self._device) or device_type
             )
-            if not issubclass(vector_device_type, Device):
-                # Raise if adding Non-Device to DeviceVector
+            if not issubclass(dict_device_type, Device):
+                # Raise if adding Non-Device to DeviceVector/DeviceMap
                 self._raise(
                     name,
                     f"Expected {type(self._device).__name__}"
-                    f"[{vector_device_type.__name__}], "
-                    f"but {vector_device_type} is not a subclass of `Device`",
+                    f"[{dict_device_type.__name__}], "
+                    f"but {dict_device_type} is not a subclass of `Device`",
                 )
             connector = self._device_connector_factory()
-            vector[vector_index] = vector_device_type(connector=connector)
+            self._set_dict_child(map_key, dict_device_type(connector=connector))
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -413,3 +564,72 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             connector = self._device_connector_factory()
             setattr(self._device, name, device_type(connector=connector))
         return connector
+
+    def fill_child_command(
+        self,
+        name: str,
+        command_type: type[Command] = Command,
+        map_key: str | int | None = None,
+    ) -> CommandBackendT:
+        """Mark a Command as filled and return its backend.
+
+        :param name: Logical name (without trailing underscore).
+        :param command_type: The `Command` subclass to create.
+        :param map_key: Key within a `DeviceVector` or `DeviceMap`, if applicable.
+        :return: The `CommandBackend` for the filled Command.
+        :raises RuntimeError: If no `command_backend_factory` was provided.
+        """
+        if self._command_backend_factory is None:
+            raise RuntimeError(
+                f"{self._device.name}: cannot fill Command child '{name}' — "
+                "no command_backend_factory was provided to DeviceFiller"
+            )
+
+        logical_name = cast(LogicalName, name)
+        # First check unfilled command backends
+        if logical_name in self._unfilled_command_backends:
+            backend, expected_command_type = self._unfilled_command_backends.pop(
+                logical_name
+            )
+            self._filled_command_backends[logical_name] = backend, expected_command_type
+
+        # Then check filled command backends
+        elif logical_name in self._filled_command_backends:
+            backend, expected_command_type = self._filled_command_backends[logical_name]
+
+        # Handle DeviceVector/DeviceMap case
+        elif map_key is not None:
+            backend = self._command_backend_factory(
+                self._command_signature.get(logical_name)
+            )
+            # A DeviceVector[FooCommand] holds FooCommands, so instantiate the
+            # element type it was hinted with rather than the bare class the
+            # control system reported, as `fill_child_device` does.
+            expected_command_type = (
+                _get_device_dict_child_datatype(self._device) or command_type
+            )
+            self._set_dict_child(map_key, expected_command_type(backend))
+
+        # Shadowing check
+        elif child := getattr(self._device, name, None):
+            self._raise(name, f"Cannot make child as it would shadow {child}")
+
+        # Create new command
+        else:
+            backend = self._command_backend_factory(None)
+            expected_command_type = command_type
+            setattr(self._device, name, command_type(backend))
+
+        # Compare origin classes, as `expected_command_type` may be a
+        # parameterized generic alias (e.g. `Command[[], int]` from a
+        # `DeviceVector[Command[[], int]]` annotation) while `command_type` is
+        # the bare class the control system reported. See `fill_child_signal`.
+        if get_origin_class(command_type) is not get_origin_class(
+            expected_command_type
+        ):
+            self._raise(
+                name,
+                f"is a {command_type.__name__} not a {expected_command_type.__name__}",
+            )
+
+        return cast(CommandBackendT, backend)

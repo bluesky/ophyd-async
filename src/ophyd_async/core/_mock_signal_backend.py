@@ -51,13 +51,10 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
+        self._mock_put_callback = callback
         if "put_mock" in self.__dict__:
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
-        else:
-            # put_mock doesn't exist, don't create it as that would be slow
-            # so just keep it internally
-            self._mock_put_callback = callback
 
     @cached_property
     def put_mock(self) -> AsyncMock:
@@ -75,6 +72,12 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     def set_value(self, value: SignalDatatypeT):
         """Set the value of the signal."""
         self.soft_backend.set_value(value)
+
+    def set_units(self, units: str):
+        self.soft_backend.metadata["units"] = units
+
+    def set_precision(self, precision: int):
+        self.soft_backend.metadata["precision"] = precision
 
     def source(self, name: str, read: bool) -> str:
         return f"mock+{self.initial_backend.source(name, read)}"

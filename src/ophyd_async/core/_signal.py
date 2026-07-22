@@ -5,7 +5,8 @@ import contextlib
 import functools
 import inspect
 import time
-from collections.abc import AsyncGenerator, Awaitable, Callable
+import warnings
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
@@ -24,23 +25,16 @@ from ._device import Device, DeviceConnector, LazyMock
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
-from ._soft_signal_backend import SoftSignalBackend
+from ._soft_signal_backend import Getter, Setter, SoftSignalBackend
 from ._status import AsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
-    T,
+    _wait_for,
     error_if_none,
 )
-
-
-async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
-    try:
-        return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as exc:
-        raise TimeoutError(source) from exc
 
 
 def _add_timeout(func):
@@ -106,7 +100,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def datatype(self) -> type[SignalDatatypeT] | None:
-        """Returns the datatype of the signal."""
+        """Returns the datatype of the signal.
+
+        This will return what was passed at construction time. None means the
+        backend will calculate it from the control system on connection.
+        """
         return self._connector.backend.datatype
 
 
@@ -315,7 +313,25 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
 
 
 class SignalX(Signal):
-    """Signal that puts the default value."""
+    """Signal that puts the default value.
+
+    ```{version-deprecated} 0.19
+    Use [](#TriggerableCommand) instead.
+    ```
+    """
+
+    def __init__(
+        self,
+        backend: SignalBackend,
+        timeout: float | None = DEFAULT_TIMEOUT,
+        name: str = "",
+    ) -> None:
+        warnings.warn(
+            "SignalX is deprecated, use TriggerableCommand instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(backend, timeout=timeout, name=name)
 
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
@@ -337,6 +353,10 @@ def soft_signal_rw(
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
+    *,
+    getter: Getter[SignalDatatypeT] | None = None,
+    setter: Setter[SignalDatatypeT] | None = None,
+    poll_period: float | None = None,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-writable Signal with a [](#SoftSignalBackend).
 
@@ -347,8 +367,26 @@ def soft_signal_rw(
     :param name: The name of the signal.
     :param units: The units of the signal.
     :param precision: The precision of the signal.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param setter:
+        Optional callable performing the set action. May return the settled
+        value; if it returns None and a getter is configured, the getter is
+        called to refresh the cache.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     """
-    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    backend = SoftSignalBackend(
+        datatype,
+        initial_value,
+        units,
+        precision,
+        getter=getter,
+        setter=setter,
+        poll_period=poll_period,
+    )
     signal = SignalRW(backend=backend, name=name)
     return signal
 
@@ -359,6 +397,9 @@ def soft_signal_r_and_setter(
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
+    *,
+    getter: Getter[SignalDatatypeT] | None = None,
+    poll_period: float | None = None,
 ) -> tuple[SignalR[SignalDatatypeT], Callable[[SignalDatatypeT], None]]:
     """Create a read-only Signal with a [](#SoftSignalBackend).
 
@@ -370,9 +411,22 @@ def soft_signal_r_and_setter(
     :param name: The name of the signal.
     :param units: The units of the signal.
     :param precision: The precision of the signal.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     :return: A tuple of the created SignalR and a callable to set its value.
     """
-    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    backend = SoftSignalBackend(
+        datatype,
+        initial_value,
+        units,
+        precision,
+        getter=getter,
+        poll_period=poll_period,
+    )
     signal = SignalR(backend=backend, name=name)
     return (signal, backend.set_value)
 
@@ -622,8 +676,18 @@ async def set_and_wait_for_other_value(
 
     # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
-        async with asyncio.timeout(timeout):
-            await checker.got_first_value.wait()
+        # NOTE: this timeout races wait_task's own internal timeout (same
+        # duration, started moments earlier) - whichever elapses first wins.
+        # That race is harmless because each path reports its own distinct,
+        # helpful message.
+        try:
+            async with asyncio.timeout(timeout):
+                await checker.got_first_value.wait()
+        except TimeoutError as exc:
+            raise TimeoutError(
+                f"{match_signal.name} didn't provide an initial value within "
+                f"{timeout}s, is it connected?"
+            ) from exc
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)

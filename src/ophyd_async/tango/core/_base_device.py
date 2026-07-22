@@ -3,13 +3,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
+from tango import DevFailed as TangoDevFailed
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
+from ophyd_async.core import (
+    Command,
+    Device,
+    DeviceConnector,
+    DeviceFiller,
+    DeviceVector,
+    LazyMock,
+    NotConnectedError,
+    Signal,
+)
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
-from ._utils import get_full_attr_trl
+from ._tango_command_backend import TangoCommandBackend
+from ._utils import get_full_attr_trl, sig_from_types
 
 T = TypeVar("T")
 
@@ -22,10 +33,14 @@ class TangoDevice(Device):
     :param trl: Tango resource locator, typically of the device server.
         An asynchronous DeviceProxy object will be created using the
         trl and awaited when the device is connected.
+    :param connector: A pre-built `DeviceConnector`, used when this device is
+        created as a declarative sub-device of another `TangoDevice` (the parent
+        connector builds it). Mutually exclusive with `trl`: pass one or the
+        other, not both. When given, `support_events`/`auto_fill_signals` are
+        ignored (they are configured on the supplied connector instead).
     """
 
-    trl: str = ""
-    proxy: DeviceProxy | None = None
+    _trl: str = ""
 
     def __init__(
         self,
@@ -33,13 +48,27 @@ class TangoDevice(Device):
         support_events: bool = False,
         name: str = "",
         auto_fill_signals: bool = True,
+        connector: DeviceConnector | None = None,
     ) -> None:
-        connector = TangoDeviceConnector(
-            trl=trl,
-            support_events=support_events,
-            auto_fill_signals=auto_fill_signals,
-        )
+        if connector is not None and trl:
+            raise ValueError("TangoDevice takes either `trl` or `connector`, not both")
+        self._trl = trl
+        if connector is None:
+            connector = TangoDeviceConnector(
+                trl=trl,
+                support_events=support_events,
+                auto_fill_signals=auto_fill_signals,
+            )
         super().__init__(name=name, connector=connector)
+
+    def get_trl(self) -> str:
+        return self._trl
+
+    def get_proxy(self) -> DeviceProxy | None:
+        connector = self._connector
+        if isinstance(connector, TangoDeviceConnector):
+            return connector.proxy
+        return None
 
 
 @dataclass
@@ -77,6 +106,7 @@ class TangoDeviceConnector(DeviceConnector):
         auto_fill_signals: bool = True,
     ) -> None:
         self.trl = trl
+        self.proxy: DeviceProxy | None = None
         self._support_events = support_events
         self._auto_fill_signals = auto_fill_signals
 
@@ -91,17 +121,21 @@ class TangoDeviceConnector(DeviceConnector):
                 device_connector_factory=lambda: TangoDeviceConnector(
                     None, self._support_events
                 ),
+                command_backend_factory=TangoCommandBackend,
             )
             list(self.filler.create_devices_from_annotations(filled=False))
             for backend, annotations in self.filler.create_signals_from_annotations(
                 filled=False
             ):
                 fill_backend_with_polling(self._support_events, backend, annotations)
+            list(self.filler.create_commands_from_annotations(filled=False))
+
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        # Make 2 entries for each DeviceVector
-        self.filler.create_device_vector_entries_to_mock(2)
+        if isinstance(device, DeviceVector):
+            # Make 2 entries for this DeviceVector
+            self.filler.create_device_dict_entries_to_mock([1, 2])
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
@@ -109,11 +143,13 @@ class TangoDeviceConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-        self.proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        try:
+            proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        except TangoDevFailed as ex:
+            raise NotConnectedError(f"tango://{self.trl}") from ex
+        self.proxy = proxy
         children = sorted(
-            set()
-            .union(self.proxy.get_attribute_list())
-            .union(self.proxy.get_command_list())
+            set().union(proxy.get_attribute_list()).union(proxy.get_command_list())
         )  # type: ignore
 
         children = [
@@ -128,13 +164,31 @@ class TangoDeviceConnector(DeviceConnector):
             if self._auto_fill_signals or name in not_filled:
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
-                signal_type = await infer_signal_type(full_trl, self.proxy)
-                if signal_type:
+                signal_type = await infer_signal_type(full_trl, proxy)
+                if signal_type is not None and issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
-                    # don't overlaod datatype if provided by annotation
+                elif signal_type is not None and issubclass(signal_type, Command):
+                    backend = self.filler.fill_child_command(name, signal_type)
+                else:
+                    raise TypeError(
+                        f"Cannot infer type for {full_trl} (type {signal_type})"
+                    )
+                # don't overload datatype if provided by annotation
+                if isinstance(backend, TangoCommandBackend):
+                    if backend.signature is None:
+                        in_type, out_type = await infer_python_type(full_trl, proxy)
+                        sig = sig_from_types(in_type, out_type)
+
+                        # # Pyright still thinks backend could be a
+                        # # TangoSignalBackend somehow
+                        backend.signature = sig  # type: ignore
+                elif isinstance(backend, TangoSignalBackend):
                     if backend.datatype is None:
-                        backend.datatype = await infer_python_type(full_trl, self.proxy)
-                    backend.set_trl(full_trl)
+                        _, out_type = await infer_python_type(full_trl, proxy)
+                        backend.datatype = out_type
+                else:
+                    raise TypeError(f"Unknown backend type {backend}")
+                backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")

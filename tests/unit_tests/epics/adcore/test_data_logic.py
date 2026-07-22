@@ -24,7 +24,7 @@ async def hdf_det(
     async with init_devices(mock=True):
         detector = adsimdetector.SimDetector(
             "PREFIX:",
-            static_path_provider,
+            adcore.ADWriterFactory.hdf(static_path_provider),
             plugins={"stats": adcore.NDStatsIO("PREFIX:STATS:")},
         )
     set_mock_value(detector.driver.array_size_x, 1024)
@@ -45,9 +45,11 @@ async def test_hdf_writer_passes_parent_name_to_path_provider(tmp_path: Path):
         StaticFilenameProvider("test"), tmp_path, max_digits=3
     )
     async with init_devices(mock=True):
-        det = adsimdetector.SimDetector("PREFIX:", pp, name="sim_detector")
+        det = adsimdetector.SimDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(pp), name="sim_detector"
+        )
 
-    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -61,7 +63,7 @@ async def test_prepare_hdf(
     static_path_provider: StaticPathProvider,
     hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await hdf_det.prepare(TriggerInfo(number_of_events=3))
     assert_has_calls(
@@ -70,32 +72,38 @@ async def test_prepare_hdf(
             # From prepare
             call.driver.image_mode.put(adcore.ADImageMode.MULTIPLE),
             call.driver.num_images.put(3),
-            call.writer.num_frames_chunks.put(1),
-            call.writer.chunk_size_auto.put(True),
-            call.writer.num_extra_dims.put(0),
-            call.writer.lazy_open.put(True),
-            call.writer.swmr_mode.put(True),
-            call.writer.xml_file_name.put(""),
-            call.writer.enable_callbacks.put(EnableDisable.ENABLE),
-            call.writer.create_directory.put(0),
-            call.writer.file_path.put(
-                f"{static_path_provider().directory_path}{os.sep}"
-            ),
-            call.writer.file_name.put("ophyd_async_tests"),
-            call.writer.file_template.put("%s%s.h5"),
-            call.writer.auto_increment.put(True),
-            call.writer.file_number.put(0),
-            call.writer.file_write_mode.put(adcore.ADFileWriteMode.STREAM),
-            call.writer.num_capture.put(0),
-            call.writer.capture.put(True),
+            call.hdf.num_frames_chunks.put(1),
+            call.hdf.chunk_size_auto.put(True),
+            call.hdf.num_extra_dims.put(0),
+            call.hdf.lazy_open.put(True),
+            call.hdf.swmr_mode.put(True),
+            call.hdf.xml_file_name.put(""),
+            call.hdf.enable_callbacks.put(EnableDisable.ENABLE),
+            call.hdf.create_directory.put(0),
+            call.hdf.file_path.put(f"{static_path_provider().directory_path}{os.sep}"),
+            call.hdf.file_name.put("ophyd_async_tests"),
+            call.hdf.file_template.put("%s%s.h5"),
+            call.hdf.auto_increment.put(True),
+            call.hdf.file_number.put(0),
+            call.hdf.file_write_mode.put(adcore.ADFileWriteMode.STREAM),
+            call.hdf.num_capture.put(0),
+            call.hdf.capture.put(True),
         ],
     )
 
 
-@pytest.mark.parametrize("writer_type", adcore.ADWriterType.__members__.values())
+@pytest.mark.parametrize(
+    "factory_cls,is_hdf",
+    [
+        (adcore.ADWriterFactory.hdf, True),
+        (adcore.ADWriterFactory.jpeg, False),
+        (adcore.ADWriterFactory.tiff, False),
+    ],
+)
 async def test_can_specify_different_uri_and_path(
     tmp_path: Path,
-    writer_type: adcore.ADWriterType,
+    factory_cls,
+    is_hdf: bool,
 ):
     # Create a static path provider that will return a specific directory
     expected_uri = f"file://nfs-share-host{tmp_path.absolute().as_posix()}/different/"
@@ -105,10 +113,8 @@ async def test_can_specify_different_uri_and_path(
     path_info = path_provider()
 
     async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(
-            "PREFIX:", path_provider, writer_type=writer_type
-        )
-    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+        det = adsimdetector.SimDetector("PREFIX:", factory_cls(path_provider))
+    writer = det.get_plugin(factory_cls.__name__, adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -124,7 +130,7 @@ async def test_can_specify_different_uri_and_path(
 
     # With HDF writer, the URI points directly to the file. For other writers, since a
     # dataset is many files, point to the directory instead.
-    if writer_type == adcore.ADWriterType.HDF:
+    if is_hdf:
         expected_uri += path_info.filename + ".h5"
 
     assert stream_resource["uri"] == expected_uri
@@ -143,11 +149,19 @@ async def test_can_specify_different_uri_and_path(
         ),
     ],
 )
-@pytest.mark.parametrize("writer_type", adcore.ADWriterType.__members__.values())
+@pytest.mark.parametrize(
+    "factory_cls,is_hdf",
+    [
+        (adcore.ADWriterFactory.hdf, True),
+        (adcore.ADWriterFactory.jpeg, False),
+        (adcore.ADWriterFactory.tiff, False),
+    ],
+)
 async def test_can_override_uri_with_different_path_semantics(
     expected_separator: str,
     write_path: PurePath,
-    writer_type: adcore.ADWriterType,
+    factory_cls,
+    is_hdf: bool,
 ):
     expected_uri = "file://nfs-share/something/"
     path_provider = StaticPathProvider(
@@ -156,10 +170,8 @@ async def test_can_override_uri_with_different_path_semantics(
     path_info = path_provider()
 
     async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(
-            "PREFIX:", path_provider, writer_type=writer_type
-        )
-    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+        det = adsimdetector.SimDetector("PREFIX:", factory_cls(path_provider))
+    writer = det.get_plugin(factory_cls.__name__, adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -172,7 +184,7 @@ async def test_can_override_uri_with_different_path_semantics(
 
     # With HDF writer, the URI points directly to the file. For other writers, since a
     # dataset is many files, point to the directory instead.
-    if writer_type == adcore.ADWriterType.HDF:
+    if is_hdf:
         expected_uri += path_info.filename + ".h5"
 
     assert stream_resource["uri"] == expected_uri
@@ -182,7 +194,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     stats = hdf_det.get_plugin("stats")
-    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(
         stats.nd_attributes_file,
@@ -222,7 +234,7 @@ async def test_describe_different_color_modes(
     color_mode: adcore.ADBaseColorMode,
     shape: list[int] | type[RuntimeError],
 ):
-    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(hdf_det.driver.color_mode, color_mode)
     if shape is RuntimeError:
@@ -249,7 +261,7 @@ async def test_describe_different_color_modes(
 
 
 async def test_3d_dataset_shape(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):
-    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(hdf_det.driver.array_size_z, 10)
     await hdf_det.prepare(TriggerInfo())

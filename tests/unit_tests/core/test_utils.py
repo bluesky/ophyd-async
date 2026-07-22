@@ -14,7 +14,9 @@ from ophyd_async.core import (
     NotConnectedError,
     SignalRW,
     AsyncStatus,
+    callback_on_mock_put,
     get_mock_put,
+    merge_gathered_dicts,
     set_mock_value,
     soft_signal_rw,
 )
@@ -265,6 +267,35 @@ def test_not_connected_error_output():
     )
 
 
+@pytest.mark.asyncio
+async def test_merge_gathered_dicts_raises_for_duplicate_keys():
+    with pytest.raises(
+        ValueError, match="Duplicate keys found while merging dictionaries"
+    ) as exc:
+        await merge_gathered_dicts(
+            [
+                asyncio.sleep(0, result={"a": 1}),
+                asyncio.sleep(0, result={"a": 2}),
+                asyncio.sleep(0, result={"b": 3}),
+                asyncio.sleep(0, result={"c": 4}),
+                asyncio.sleep(0, result={"c": 5}),
+            ]
+        )
+
+    assert "a, c" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_merge_gathered_dicts_raises_for_blank_duplicate_keys_message():
+    with pytest.raises(ValueError, match="Have you remembered to name the Device"):
+        await merge_gathered_dicts(
+            [
+                asyncio.sleep(0, result={"": 1}),
+                asyncio.sleep(0, result={"": 2}),
+            ]
+        )
+
+
 async def test_combining_top_level_signal_and_child_device():
     dummy_device1 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     with pytest.raises(NotConnectedError) as exc:
@@ -402,7 +433,7 @@ async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
     motor_device = MotorDevice("my_motor_device")
     await motor_device.connect(mock=True)
     _patch_motor(motor_device.omega)
-    get_mock_put(motor_device.omega.user_setpoint).side_effect = motor_device.set_omega
+    callback_on_mock_put(motor_device.omega.user_setpoint, motor_device.set_omega)
 
     gather_awaitable = asyncio.gather(
         plain_awaitable,

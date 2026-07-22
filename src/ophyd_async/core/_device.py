@@ -20,6 +20,34 @@ from ._utils import (
 
 DeviceT = TypeVar("DeviceT", bound="Device")
 
+DEVICE_RESERVED_ATTRS = {
+    "name",
+    "collect_asset_docs",
+    "get_index",
+    "read_configuration",
+    "describe_configuration",
+    "trigger",
+    "prepare",
+    "read",
+    "describe",
+    "describe_collect",
+    "collect",
+    "collect_pages",
+    "set",
+    "locate",
+    "kickoff",
+    "complete",
+    "stage",
+    "unstage",
+    "pause",
+    "resume",
+    "stop",
+    "subscribe",
+    "clear_sub",
+    "check_value",
+    "hints",
+}
+
 
 class DeviceMock(Generic[DeviceT]):
     """A lazily created Mock to be used when connecting in mock mode.
@@ -126,6 +154,29 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
+def _fail_if_overwriting_parent(self: Device, name: str, value: Any):
+    if self.parent not in (value, None):
+        raise TypeError(
+            f"Cannot set the parent of {self} to be {value}: "
+            f"it is already a child of {self.parent}"
+        )
+    object.__setattr__(self, name, value)
+
+
+def _set_device_child(self: Device, name: str, value: Device | None):
+    if value is None:
+        # Remove optional devices that have resolved to None
+        self._child_devices.pop(name, None)
+    else:
+        value.parent = self
+        self._child_devices[name] = value
+        # And if the name is set, then set the name of all children,
+        # including the child
+        if self._name:
+            self.set_name(self._name)
+    object.__setattr__(self, name, value)
+
+
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -144,6 +195,20 @@ class Device(HasName):
     _mock: DeviceMock | None = None
     # The separator to use when making child names
     _child_name_separator: str = "-"
+    # Methods to call on setattr
+    _setattr_methods: dict[str, Callable[[Device, str, Any], None]]
+
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+        # These are guaranteed not to be devices, so don't check them
+        setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
+            # parent needs special handling
+            "parent": _fail_if_overwriting_parent,
+        }
+        # Assign _setattr_methods in __new__ instead of __init__,
+        # as this is called before any __setattr__ calls are made
+        object.__setattr__(self, "_setattr_methods", setattr_methods)
+        return self
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -200,24 +265,24 @@ class Device(HasName):
 
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
-        # we need to make sure nothing expensive happens in it...
-        if name == "parent":
-            if self.parent not in (value, None):
-                raise TypeError(
-                    f"Cannot set the parent of {self} to be {value}: "
-                    f"it is already a child of {self.parent}"
+        # we need to make sure nothing expensive happens in it, hence the
+        # dictionary of setattr functions
+        func = self._setattr_methods.get(name, None)
+        if func is None:
+            if name in DEVICE_RESERVED_ATTRS:
+                raise NameError(
+                    f"`{name}` is used in one of the bluesky protocols. "
+                    f"Please use `{name}_` instead."
                 )
-        # ...hence not doing an isinstance check for attributes we
-        # know not to be Devices
-        elif name not in _not_device_attrs and isinstance(value, Device):
-            value.parent = self
-            self._child_devices[name] = value
-            # And if the name is set, then set the name of all children,
-            # including the child
-            if self._name:
-                self.set_name(self._name)
-        # ...and avoiding the super call as we know it resolves to `object`
-        return object.__setattr__(self, name, value)
+            # First encounter, so assign correct
+            # __setattr__ method depending on `value` type
+            if isinstance(value, Device):
+                func = _set_device_child
+            else:
+                func = object.__setattr__
+            self._setattr_methods[name] = func
+        # Dispatch the correct __setattr__ method
+        func(self, name, value)
 
     async def connect(
         self,
@@ -279,6 +344,8 @@ _not_device_attrs = {
     "_timeout",
     "_mock",
     "_connect_task",
+    "_child_name_separator",
+    "_attempts",
 }
 
 
@@ -328,6 +395,68 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         yield from super().children()
 
     def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
+        return hash(id(self))
+
+
+class DeviceMap(MutableMapping[str, DeviceT], Device):
+    """Defines a dictionary of Device children with arbitrary string keys.
+
+    Like [](#DeviceVector) but indexed by `str` rather than `int`, for when
+    sub-devices are more naturally addressed by name than by number.
+
+    :see-also: [](#implementing-devices) for examples of how to use this class.
+    """
+
+    def __init__(
+        self,
+        children: Mapping[str, DeviceT] | None = None,
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ) -> None:
+        self._children: dict[str, DeviceT] = {}
+        self.update(children or {})
+        super().__init__(name=name, connector=connector)
+
+    def __getitem__(self, key: str) -> DeviceT:
+        return self._children[key]
+
+    def __setitem__(self, key: str, value: DeviceT) -> None:
+        # Check the types on entry to dict to make sure we can't accidentally
+        # make a non-string named child
+        if not isinstance(key, str):
+            msg = f"Expected str, got {key}"
+            raise TypeError(msg)
+        if not isinstance(value, Device):
+            msg = f"Expected Device, got {value}"
+            raise TypeError(msg)
+        self._children[key] = value
+        value.parent = self
+
+    def __setattr__(self, name: str, child: Any) -> None:
+        # Child Devices must be set via `device_map[key] = child` so they get a
+        # string key; setting them as attributes would give them no key.
+        if name != "parent" and isinstance(child, Device):
+            raise AttributeError(
+                "DeviceMap can only have string named children, "
+                "set via device_map[key] = child"
+            )
+        super().__setattr__(name, child)
+
+    def __delitem__(self, key: str) -> None:
+        del self._children[key]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self._children
+
+    def __len__(self) -> int:
+        return len(self._children)
+
+    def children(self) -> Iterator[tuple[str, Device]]:
+        # Keys are already str, so yield them directly (no str() needed)
+        yield from self._children.items()
+        yield from super().children()
+
+    def __hash__(self):  # to allow DeviceMap to be used as dict keys and in sets
         return hash(id(self))
 
 

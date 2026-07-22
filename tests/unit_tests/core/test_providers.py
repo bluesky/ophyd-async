@@ -20,6 +20,21 @@ from ophyd_async.core import (
 )
 
 
+def test_path_info_invalid_directory_path():
+    with pytest.raises(ValueError, match="directory_path must be an absolute path"):
+        PathInfo(directory_path=Path("relative/path"), filename="file.txt")
+
+
+def test_path_info_invalid_directory_uri(tmp_path: Path):
+    err_msg = "Directory URI must include a scheme, netlocation, and path."
+    with pytest.raises(ValueError, match=err_msg):
+        PathInfo(
+            directory_path=tmp_path,
+            filename="file.txt",
+            directory_uri="not_a_valid_uri",
+        )
+
+
 def test_auto_increment_filename_provider(static_path_provider_factory):
     auto_inc_fp = AutoIncrementFilenameProvider(inc_delimeter="", max_digits=3)
     dp = static_path_provider_factory(auto_inc_fp)

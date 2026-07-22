@@ -22,6 +22,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
+T_co = TypeVar("T_co", covariant=True)
 V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
@@ -304,8 +305,20 @@ async def merge_gathered_dicts(
     ```
     """
     ret: dict[str, T] = {}
+    duplicates: list[str] = []
     for result in await asyncio.gather(*coros):
-        ret.update(result)
+        for key in result:
+            if key in ret:
+                duplicates.append(key)
+            else:
+                ret[key] = result[key]
+    if duplicates:
+        duplicate_keys = ", ".join(sorted(set(duplicates)))
+        if duplicate_keys:
+            msg = f"Duplicate keys found while merging dictionaries: {duplicate_keys}"
+        else:
+            msg = "Have you remembered to name the Device?"
+        raise ValueError(msg)
     return ret
 
 
@@ -413,3 +426,10 @@ def error_if_none(value: T | None, msg: str) -> T:
 def non_zero(value):
     """Return True if the value cast to an int is not zero."""
     return int(value) != 0
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc
