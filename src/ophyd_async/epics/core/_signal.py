@@ -160,7 +160,7 @@ def epics_signal_r(
     read_pv: str,
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
-    element_count: int | None = None
+    element_count: int | None = None,
 ) -> SignalR[SignalDatatypeT]:
     """Create a `SignalR` backed by 1 EPICS PV.
 

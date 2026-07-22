@@ -373,8 +373,11 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
     ):
         # with p4p: single element seems not feasible
         #           have a look to :meth:`_get_read_pv
-        if options:
-            assert options.element_count is None or options.element_count > 1
+        if options and options.element_count is not None:
+            if options.element_count <=  1:
+                raise ValueError(
+                    "p4p backend can only support epics options element_count above 1"
+                )
 
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
@@ -420,11 +423,10 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     def _get_read_pv(self) -> str:
-        """get read pv added with subarray if required
-        """
+        "returns read pv with subarray index when requested."
         if self.options.element_count is None:
             return self.read_pv
-        return f"{self.read_pv}.[0:{self.options.element_count-1:d}]"
+        return f"{self.read_pv}.[0:{self.options.element_count - 1:d}]"
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await context().get(self._get_read_pv())

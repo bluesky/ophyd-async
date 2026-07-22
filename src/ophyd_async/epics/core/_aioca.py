@@ -317,7 +317,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         #         by default. If this is provided values do change
         # Todo:
         #         need to check what pvaccess and p4p provide
-        kws = dict()
+        kws = {}
         if self.options.element_count is not None:
             kws["count"] = self.options.element_count
         return await caget(
