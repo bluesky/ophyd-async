@@ -645,11 +645,15 @@ async def test_put_completion(
     stop = time.monotonic()
     assert stop - start == pytest.approx(0.5, rel=0.1)
 
-    # Then, make sure if we don't wait it returns ~instantly
+    # Then, make sure if we don't wait it returns ~instantly. It actually takes
+    # 0.5-2.5ms, so this bound is not measuring speed - it only has to tell "did
+    # not wait" from "waited", and the set above shows waiting costs ~0.5s. It
+    # must stay well under that or it stops catching a put that wrongly blocks,
+    # so widening it is not the answer if a loaded runner overshoots again.
     start = time.monotonic()
     await slow_seq.set(2)
     stop = time.monotonic()
-    assert stop - start < 0.1
+    assert stop - start < 0.2
 
     # Time for completion callback to have finished before moving to
     # next test / iteration - without this, running this test multiple
@@ -753,14 +757,25 @@ async def test_command_backends_accept_enum(
     await triggerable_enum.connect()
 
 
-@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_command_backends_accept_pva_bool(ioc_devices: MechanismIocAndDevices):
+    triggerable_bool = epics_triggerable_command(ioc_devices.get_pv("pva", "bool"))
+    await triggerable_bool.connect()
+
+
+@pytest.mark.parametrize(
+    ("protocol", "error_message"),
+    [
+        ("ca", "requires a scalar numeric PV"),
+        ("pva", "requires a scalar boolean, scalar numeric, or enum PV"),
+    ],
+)
 async def test_command_backends_raise_with_float(
-    ioc_devices: MechanismIocAndDevices, protocol
+    ioc_devices: MechanismIocAndDevices, protocol: Protocol, error_message: str
 ):
     triggerable_float = epics_triggerable_command(
         ioc_devices.get_pv(protocol, "float_prec_1")
     )
-    with pytest.raises(TypeError, match=re.escape("requires a scalar numeric PV")):
+    with pytest.raises(TypeError, match=re.escape(error_message)):
         await triggerable_float.connect()
 
 

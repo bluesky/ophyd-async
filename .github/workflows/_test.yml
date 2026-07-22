@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -60,13 +60,26 @@ jobs:
           }
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v8.3.2
 
       - name: Run tests
         run: uv run --locked tox -e tests -- --durations=20 ${{ inputs.tests-path}}
 
+      # A separate invocation, not another matrix entry: these need a process
+      # that has never touched EPICS, so they cannot share a session with the
+      # rest of the system tests. See tests/container_tests/conftest.py.
+      #
+      # --cov-append because this is a second pytest run writing the same
+      # cov.xml as the step above: without it, this run's coverage *replaces*
+      # theirs rather than adding to it, and the two adsim tests here touch
+      # almost nothing, so Codecov is handed ~32% where the step above measured
+      # ~62% and reports a large drop that never happened.
+      - name: Run container tests
+        if: inputs.tests-path == 'tests/system_tests' && runner.os == 'Linux'
+        run: uv run --locked tox -e tests -- --durations=20 --cov-append tests/container_tests
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           name: ${{ inputs.python-version }}/${{ inputs.runs-on }}/${{ inputs.tests-path }}
           files: cov.xml
