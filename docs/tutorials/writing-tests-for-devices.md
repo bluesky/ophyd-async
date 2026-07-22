@@ -111,6 +111,7 @@ Now let's pretend to be a progress bar and check that we get the right outputs. 
 
 Here we call the verb, but don't wait for it to complete (as that would wait forever). Instead we attach a [](#StatusWatcher) to the [](#WatchableAsyncStatus) that `set()` returns, and periodically call [](#set_mock_value) on the readback, checking that our watcher was called with the right values. When we give it a value that should make `set()` terminate, we call [](#wait_for_pending_wakeups) to make sure the background tasks get some time to finish correctly before checking the status completed successfully.
 
+(mocking-put)=
 ## Setting side effects on mocks
 
 By default, a [](#Signal) connected in mock mode records all `put()` calls and stores the put value as the readback. Use [](#callback_on_mock_put) to inject side effects — for example, to propagate a setpoint write through to a readback:
@@ -129,24 +130,34 @@ For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python fu
 
 ## Mocking out a verb
 
-Sometimes a test wants to replace a whole verb with a mock, rather than mock the
-Signals underneath it — for example to check that `kickoff()` calls `set()` with
-the right target without actually running the move:
+Sometimes a test wants to intervene at the level of a whole verb — for example to
+check that `kickoff()` calls `set()` with the right target without actually running
+the move. There are three ways to do this, in order of preference:
 
-```python
-mock_set = set_mock_attr(motor, "set", MagicMock())
-await motor.kickoff()
-mock_set.assert_called_once_with(-3.0)
-```
+1. **Make the underlying mock Signals behave so the real verb "just works."** Drive
+   the Signals the verb reads and writes with [](#set_mock_value) and
+   [](#callback_on_mock_put) (see [above](#mocking-put)) so the verb completes
+   against mock hardware and you assert on its effects. This is the closest thing to
+   the real device, so prefer it — the trade-off is that it won't let you easily
+   exercise what a plan does when a verb *fails*, since the real logic still runs.
+2. **Replace the verb with a mock using [](#set_mock_attr).** Reach for this when you
+   specifically want to bypass the verb's logic — e.g. to assert it was called with
+   the right argument, or to make it fail on demand:
 
-A plain `motor.set = MagicMock()` raises `NameError`, because [](#Device) reserves
-the bluesky protocol method names (`set`, `read`, `trigger`, ...) to stop a Signal
-accidentally shadowing a verb. [](#set_mock_attr) sets the attribute anyway and
-returns the mock, so the override and the assertion fit in one expression.
+   ```python
+   mock_set = set_mock_attr(motor, "set", MagicMock())
+   await motor.kickoff()
+   mock_set.assert_called_once_with(-3.0)
+   ```
 
-If you are bringing an existing test suite onto a version of ophyd-async that adds
-this check and want it passing again before migrating each call site, set
-[](#OPHYD_ASYNC_ALLOW_RESERVED_ATTRS) to `YES` to disable the check globally.
+   A plain `motor.set = MagicMock()` raises `NameError`, because [](#Device) reserves
+   the bluesky protocol method names (`set`, `read`, `trigger`, ...) to stop a Signal
+   accidentally shadowing a verb. [](#set_mock_attr) sets the attribute anyway and
+   returns the mock, so the override and the assertion fit in one expression.
+3. **Disable the check globally with [](#OPHYD_ASYNC_ALLOW_RESERVED_ATTRS)`=YES`.**
+   This is a migration escape hatch only: if you are bringing an existing test suite
+   onto a version of ophyd-async that adds this check, set it to turn the suite green
+   before migrating each `motor.set = ...` call site over to `set_mock_attr`.
 
 ## Other test utilities
 
