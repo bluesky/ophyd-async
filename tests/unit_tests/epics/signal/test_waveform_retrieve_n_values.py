@@ -1,6 +1,7 @@
 import asyncio
 from typing import Annotated as A
 
+import aioca
 import numpy as np
 import pytest
 import pytest_asyncio
@@ -8,12 +9,11 @@ import pytest_asyncio
 from ophyd_async.core import (
     Array1D,
     DeviceMock,
+    SignalRW,
     StandardReadable,
     StandardReadableFormat as Format,
-    SignalRW,
 )
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
-import aioca
 
 
 @pytest_asyncio.fixture
@@ -22,7 +22,7 @@ async def epics_server():
         await asyncio.wait_for(
             aioca.caget("mfp:SR12C:BPM7:signals:tdp_synth:Y"), timeout=5
         )
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         pytest.skip(f"no connection to epics server: {exc}")
 
 
@@ -88,7 +88,7 @@ async def test_waveform_mock(device_cls, prefix, expected_len):
         (DevCa, "pva://mfp:SR12C:BPM7:", 200),
         (DevCaFirstElements, "ca://mfp:SR12C:BPM7:", 10),
         (DevCaFirstElements, "pva://mfp:SR12C:BPM7:", 10),
-    ]
+    ],
 )
 async def test_waveform_server(device_cls, prefix, expected_len, epics_server):
     dev = device_cls(prefix, name="test")
