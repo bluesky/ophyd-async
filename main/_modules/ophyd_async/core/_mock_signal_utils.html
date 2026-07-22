@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.20.1.dev4+g10d485d60 documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=70f8996f"></script>
+    <script src="../../../_static/documentation_options.js?v=0dd504af"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
   
   
 </a></div>
@@ -900,6 +900,7 @@ window.runMermaid = runMermaid;</script>
   <h1>Source code for ophyd_async.core._mock_signal_utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncMock</span><span class="p">,</span> <span class="n">Mock</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._command</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span><span class="p">,</span> <span class="n">CommandConnector</span><span class="p">,</span> <span class="n">MockCommandBackend</span><span class="p">,</span> <span class="n">MockExecuteCallback</span>
@@ -907,6 +908,37 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockPutCallback</span><span class="p">,</span> <span class="n">MockSignalBackend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">,</span> <span class="n">SignalR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalDatatypeT</span>
+
+<span class="n">MockT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;MockT&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="set_mock_attr">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_mock_attr</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">MockT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MockT</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Override a Device attribute in a test, bypassing the reserved-name check.</span>
+
+<span class="sd">    `Device` raises `NameError` if you assign to an attribute whose name collides</span>
+<span class="sd">    with a bluesky protocol method (`set`, `read`, `trigger`, ...), to stop a</span>
+<span class="sd">    Signal accidentally shadowing a verb. That guard gets in the way of the common</span>
+<span class="sd">    test pattern of mocking out a verb, so use this to do it explicitly.</span>
+
+<span class="sd">    Returns the `mock` it just set, so the override and the assertion can be a</span>
+<span class="sd">    single expression.</span>
+
+<span class="sd">    :param device: The Device to set the attribute on.</span>
+<span class="sd">    :param attr: The attribute name to override, e.g. `&quot;set&quot;`.</span>
+<span class="sd">    :param mock: The value to set it to, usually a mock. Returned unchanged.</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    mock_set = set_mock_attr(motor, &quot;set&quot;, MagicMock())</span>
+<span class="sd">    await motor.kickoff()</span>
+<span class="sd">    mock_set.assert_called_once_with(-3.0)</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mock</span></div>
+
 
 
 <div class="viewcode-block" id="get_mock">

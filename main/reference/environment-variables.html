@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Environment Variables &#8212; ophyd-async 0.20.1.dev4+g10d485d60 documentation</title>
+    <title>Environment Variables &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=70f8996f"></script>
+    <script src="../_static/documentation_options.js?v=0dd504af"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
   
   
 </a></div>
@@ -587,6 +587,31 @@ keep up with a PV’s updates.</p>
 <p>See <a class="reference internal" href="../explanations/decisions/0011-buffer-updates-camonitor.html"><span class="std std-doc">ADR 0011</span></a> for
 rationale.</p>
 </section>
+<section id="ophyd-async-allow-reserved-attrs">
+<span id="id3"></span><h2><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_ALLOW_RESERVED_ATTRS</span></code><a class="headerlink" href="#ophyd-async-allow-reserved-attrs" title="Link to this heading">#</a></h2>
+<p>Disables the check that stops a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> attribute being given a name that
+collides with a bluesky protocol method (<code class="docutils literal notranslate"><span class="pre">set</span></code>, <code class="docutils literal notranslate"><span class="pre">read</span></code>, <code class="docutils literal notranslate"><span class="pre">trigger</span></code>, …).</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Behaviour</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">YES</span></code></p></td>
+<td><p>Assigning to a reserved name is allowed, e.g. <code class="docutils literal notranslate"><span class="pre">device.set</span> <span class="pre">=</span> <span class="pre">AsyncMock()</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>anything else (default)</p></td>
+<td><p>Assigning to a reserved name raises <code class="docutils literal notranslate"><span class="pre">NameError</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Intended as a quick escape for downstream test suites that mock protocol methods
+this way, so they can be turned back on without editing every call site. To
+override a single attribute instead, prefer
+<a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr" title="ophyd_async.core.set_mock_attr"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.set_mock_attr</span></code></a>, which does not disable the check globally.</p>
+</section>
 <section id="test-suite">
 <h2>Test suite<a class="headerlink" href="#test-suite" title="Link to this heading">#</a></h2>
 <p>These are read by the tests only, and are irrelevant to using ophyd-async as a
@@ -594,7 +619,7 @@ library. They are needed to run <a class="reference internal" href="../how-to/co
 tests, which start real IOCs in containers. A devcontainer sets all of them for
 you; see <code class="docutils literal notranslate"><span class="pre">.devcontainer/devcontainer.json</span></code>.</p>
 <section id="example-services-path">
-<span id="id3"></span><h3><code class="docutils literal notranslate"><span class="pre">EXAMPLE_SERVICES_PATH</span></code><a class="headerlink" href="#example-services-path" title="Link to this heading">#</a></h3>
+<span id="id4"></span><h3><code class="docutils literal notranslate"><span class="pre">EXAMPLE_SERVICES_PATH</span></code><a class="headerlink" href="#example-services-path" title="Link to this heading">#</a></h3>
 <p>Path to the <code class="docutils literal notranslate"><span class="pre">example-services</span></code> directory holding the compose files for those IOCs.
 No default: the tests that need it raise if it is unset.</p>
 <p>It must be the path <strong>as the host sees it</strong>, not as the pytest process does. Those
@@ -602,7 +627,7 @@ IOCs are started with <code class="docutils literal notranslate"><span class="pr
 path that only the test process can see does not resolve.</p>
 </section>
 <section id="ophyd-async-shared-tmp-dir">
-<span id="id4"></span><h3><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_SHARED_TMP_DIR</span></code><a class="headerlink" href="#ophyd-async-shared-tmp-dir" title="Link to this heading">#</a></h3>
+<span id="id5"></span><h3><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_SHARED_TMP_DIR</span></code><a class="headerlink" href="#ophyd-async-shared-tmp-dir" title="Link to this heading">#</a></h3>
 <p>The absolute path of a directory that resolves to the same place for both the
 pytest process and inside an IOC container. Defaults to
 <code class="docutils literal notranslate"><span class="pre">/tmp/ophyd-async-shared-tmp</span></code>.</p>
@@ -612,7 +637,7 @@ on each side makes the IOC report the directory missing. pytest’s own <code cl
 is exactly such a path.</p>
 </section>
 <section id="ophyd-async-shared-tmp-source">
-<span id="id5"></span><h3><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_SHARED_TMP_SOURCE</span></code><a class="headerlink" href="#ophyd-async-shared-tmp-source" title="Link to this heading">#</a></h3>
+<span id="id6"></span><h3><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_SHARED_TMP_SOURCE</span></code><a class="headerlink" href="#ophyd-async-shared-tmp-source" title="Link to this heading">#</a></h3>
 <p>What gets mounted at <a class="reference internal" href="#ophyd-async-shared-tmp-dir"><span class="std std-ref">OPHYD_ASYNC_SHARED_TMP_DIR</span></a> in the IOC container: either a
 host path or a named volume. Defaults to the same value as
 <a class="reference internal" href="#ophyd-async-shared-tmp-dir"><span class="std std-ref">OPHYD_ASYNC_SHARED_TMP_DIR</span></a>.</p>
@@ -675,6 +700,7 @@ same storage for every container whatever launched it.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime">Runtime</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd-async-preserve-detector-state"><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_PRESERVE_DETECTOR_STATE</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd-async-epics-ca-keep-all-updates"><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_EPICS_CA_KEEP_ALL_UPDATES</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd-async-allow-reserved-attrs"><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_ALLOW_RESERVED_ATTRS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-suite">Test suite</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-services-path"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_SERVICES_PATH</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd-async-shared-tmp-dir"><code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_SHARED_TMP_DIR</span></code></a></li>

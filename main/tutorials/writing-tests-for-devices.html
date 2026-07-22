@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.20.1.dev4+g10d485d60 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=70f8996f"></script>
+    <script src="../_static/documentation_options.js?v=0dd504af"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
   
   
 </a></div>
@@ -699,7 +699,7 @@ or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.c
 <p>Here we call the verb, but don’t wait for it to complete (as that would wait forever). Instead we attach a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.StatusWatcher" title="ophyd_async.testing.StatusWatcher"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a> to the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a> that <code class="docutils literal notranslate"><span class="pre">set()</span></code> returns, and periodically call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> on the readback, checking that our watcher was called with the right values. When we give it a value that should make <code class="docutils literal notranslate"><span class="pre">set()</span></code> terminate, we call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.wait_for_pending_wakeups" title="ophyd_async.testing.wait_for_pending_wakeups"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">wait_for_pending_wakeups</span></code></a> to make sure the background tasks get some time to finish correctly before checking the status completed successfully.</p>
 </section>
 <section id="setting-side-effects-on-mocks">
-<h2>Setting side effects on mocks<a class="headerlink" href="#setting-side-effects-on-mocks" title="Link to this heading">#</a></h2>
+<span id="mocking-put"></span><h2>Setting side effects on mocks<a class="headerlink" href="#setting-side-effects-on-mocks" title="Link to this heading">#</a></h2>
 <p>By default, a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> connected in mock mode records all <code class="docutils literal notranslate"><span class="pre">put()</span></code> calls and stores the put value as the readback. Use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to inject side effects — for example, to propagate a setpoint write through to a readback:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">set_mock_value</span><span class="p">(</span><span class="n">motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">v</span><span class="p">)):</span>
     <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
@@ -710,10 +710,42 @@ or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.c
 <p>For a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_command" title="ophyd_async.core.soft_command"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">soft_command</span></code></a> and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute" title="ophyd_async.core.get_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a> to assert the call was made, or use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_execute" title="ophyd_async.core.callback_on_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code></a> to suppress the real function and return something else.</p>
 <p>For hardware-backed <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a>s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured “empty” default for the declared return type (e.g. 0 for ints, [] for arrays). The same <code class="docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code> override applies.</p>
 </section>
+<section id="mocking-out-a-verb">
+<h2>Mocking out a verb<a class="headerlink" href="#mocking-out-a-verb" title="Link to this heading">#</a></h2>
+<p>Sometimes a test wants to intervene at the level of a whole verb — for example to
+check that <code class="docutils literal notranslate"><span class="pre">kickoff()</span></code> calls <code class="docutils literal notranslate"><span class="pre">set()</span></code> with the right target without actually running
+the move. There are three ways to do this, in order of preference:</p>
+<ol class="arabic">
+<li><p><strong>Make the underlying mock Signals behave so the real verb “just works.”</strong> Drive
+the Signals the verb reads and writes with <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> and
+<a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> (see <a class="reference internal" href="#mocking-put">above</a>) so the verb completes
+against mock hardware and you assert on its effects. This is the closest thing to
+the real device, so prefer it — the trade-off is that it won’t let you easily
+exercise what a plan does when a verb <em>fails</em>, since the real logic still runs.</p></li>
+<li><p><strong>Replace the verb with a mock using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr" title="ophyd_async.core.set_mock_attr"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_attr</span></code></a>.</strong> Reach for this when you
+specifically want to bypass the verb’s logic — e.g. to assert it was called with
+the right argument, or to make it fail on demand:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mock_set</span> <span class="o">=</span> <span class="n">set_mock_attr</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">())</span>
+<span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">kickoff</span><span class="p">()</span>
+<span class="n">mock_set</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A plain <code class="docutils literal notranslate"><span class="pre">motor.set</span> <span class="pre">=</span> <span class="pre">MagicMock()</span></code> raises <code class="docutils literal notranslate"><span class="pre">NameError</span></code>, because <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> reserves
+the bluesky protocol method names (<code class="docutils literal notranslate"><span class="pre">set</span></code>, <code class="docutils literal notranslate"><span class="pre">read</span></code>, <code class="docutils literal notranslate"><span class="pre">trigger</span></code>, …) to stop a Signal
+accidentally shadowing a verb. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr" title="ophyd_async.core.set_mock_attr"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_attr</span></code></a> sets the attribute anyway and
+returns the mock, so the override and the assertion fit in one expression.</p>
+</li>
+<li><p><strong>Disable the check globally with <a class="reference internal" href="../reference/environment-variables.html#ophyd-async-allow-reserved-attrs"><span class="std std-ref">OPHYD_ASYNC_ALLOW_RESERVED_ATTRS</span></a><code class="docutils literal notranslate"><span class="pre">=YES</span></code>.</strong>
+This is a migration escape hatch only: if you are bringing an existing test suite
+onto a version of ophyd-async that adds this check, set it to turn the suite green
+before migrating each <code class="docutils literal notranslate"><span class="pre">motor.set</span> <span class="pre">=</span> <span class="pre">...</span></code> call site over to <code class="docutils literal notranslate"><span class="pre">set_mock_attr</span></code>.</p></li>
+</ol>
+</section>
 <section id="other-test-utilities">
 <h2>Other test utilities<a class="headerlink" href="#other-test-utilities" title="Link to this heading">#</a></h2>
 <p>There are a few other things we may wish to do in tests:</p>
 <ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr" title="ophyd_async.core.set_mock_attr"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_attr</span></code></a> to override a verb (or any reserved-name attribute) on a Device with a mock</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_values" title="ophyd_async.core.set_mock_values"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_values</span></code></a> if you want to set a series of mock values, with repeated checks at each value</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_units" title="ophyd_async.core.set_mock_units"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_units</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_precision" title="ophyd_async.core.set_mock_precision"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_precision</span></code></a> to set units and precision metadata on a Signal without needing dedicated child signals</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to allow setting a Signal to have side effects, like setting another Signal</p></li>
@@ -834,6 +866,7 @@ or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.c
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-that-commands-and-signals-were-called">Checking that commands and signals were called</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-for-watcher-updates">Checking for watcher updates</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-side-effects-on-mocks">Setting side effects on mocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mocking-out-a-verb">Mocking out a verb</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-test-utilities">Other test utilities</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests-that-execute-a-bluesky-plan">Tests that execute a bluesky plan</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-runengine-in-a-fixture">Create a RunEngine in a fixture</a></li>

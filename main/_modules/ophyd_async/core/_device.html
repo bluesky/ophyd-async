@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.20.1.dev4+g10d485d60 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=70f8996f"></script>
+    <script src="../../../_static/documentation_options.js?v=0dd504af"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev4+g10d485d60 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
   
   
 </a></div>
@@ -901,6 +901,7 @@ window.runMermaid = runMermaid;</script>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
@@ -947,6 +948,15 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">&quot;check_value&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hints&quot;</span><span class="p">,</span>
 <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reserved_attrs_allowed</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># Opt-out for the reserved-name check, mainly so downstream test suites that</span>
+    <span class="c1"># mock protocol methods (e.g. `device.set = AsyncMock()`) can be flipped back</span>
+    <span class="c1"># on without editing every call site. Read from the environment each time so a</span>
+    <span class="c1"># test can toggle it; only reached when a reserved name is actually set, so it</span>
+    <span class="c1"># never touches the hot path. Prefer set_mock_attr() for a single override.</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OPHYD_ASYNC_ALLOW_RESERVED_ATTRS&quot;</span><span class="p">,</span> <span class="s2">&quot;NO&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span>
 
 
 <div class="viewcode-block" id="DeviceMock">
@@ -1195,10 +1205,13 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># dictionary of setattr functions</span>
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setattr_methods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">DEVICE_RESERVED_ATTRS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">DEVICE_RESERVED_ATTRS</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_reserved_attrs_allowed</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` is used in one of the bluesky protocols. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Please use `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_` instead.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Please use `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_` instead. To override this attribute in a &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;test (e.g. with a mock) use ophyd_async.testing.set_mock_attr, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;or set OPHYD_ASYNC_ALLOW_RESERVED_ATTRS=YES to disable this &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;check entirely.&quot;</span>
                 <span class="p">)</span>
             <span class="c1"># First encounter, so assign correct</span>
             <span class="c1"># __setattr__ method depending on `value` type</span>
