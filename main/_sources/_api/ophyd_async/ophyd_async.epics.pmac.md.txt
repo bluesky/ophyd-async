@@ -31,8 +31,8 @@
   - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
     :summary:
     ```
-* - {py:obj}`PmacTrajectoryTriggerLogic <ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic>`
-  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+* - {py:obj}`PmacTrajectoryFlyableLogic <ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic
     :summary:
     ```
 * - {py:obj}`PmacScanInfo <ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo>`
@@ -83,55 +83,55 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-`````{py:class} PmacTrajectoryTriggerLogic(pmac: ~ophyd_async.epics.pmac._pmac_io.PmacIO, name: str = '')
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+`````{py:class} PmacTrajectoryFlyableLogic(pmac: ~ophyd_async.epics.pmac._pmac_io.PmacIO)
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic
 
-Bases: {py:obj}`ophyd_async.core.Device`, {py:obj}`bluesky.protocols.Stageable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Flyable`
+Bases: {py:obj}`ophyd_async.core.FlyableLogic`\[{py:obj}`ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo`\, {py:obj}`ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx`\]
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic
 ```
 
-````{py:method} prepare(value: ~ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo)
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.prepare
+````{py:method} on_prepare(value: ~ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo) -> ~ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_prepare
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.prepare
-```
-
-````
-
-````{py:method} kickoff()
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.kickoff
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.kickoff
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_prepare
 ```
 
 ````
 
-````{py:method} complete()
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.complete
+````{py:method} on_kickoff(ctx: ~ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx) -> ~ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_kickoff
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.complete
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_kickoff
 ```
 
 ````
 
-````{py:method} stage() -> None
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.stage
+````{py:method} on_complete(ctx: ~ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx) -> None
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_complete
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.stage
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_complete
 ```
 
 ````
 
-````{py:method} unstage() -> None
-:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.unstage
+````{py:method} stop() -> None
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.stop
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.unstage
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.stop
+```
+
+````
+
+````{py:method} on_stage() -> None
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_stage
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic.on_stage
 ```
 
 ````

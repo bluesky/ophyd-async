@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.pmac &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>ophyd_async.epics.pmac &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,8 +60,8 @@
     <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ophyd_async.epics.demo" href="ophyd_async.epics.demo.html" />
-    <link rel="prev" title="ophyd_async.epics.adcore" href="ophyd_async.epics.adcore.html" />
+    <link rel="next" title="ophyd_async.epics.motor" href="ophyd_async.epics.motor.html" />
+    <link rel="prev" title="ophyd_async.epics.core" href="ophyd_async.epics.core.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -426,42 +426,42 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.tango.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.testing</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
-</ul>
-</details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.eiger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.jungfrau.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.jungfrau</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.odin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.eiger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adgenicam.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adgenicam</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.admerlin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.admerlin</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.tango.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.testing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
 </ul>
 </details></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.admerlin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.admerlin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adgenicam.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adgenicam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
 </ul>
 </details></li>
 </ul>
@@ -558,8 +558,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacTrajectoryIO" title="ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacTrajectoryIO</span></code></a></p></td>
 <td><p>Device that moves a PMAC Motor record.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic" title="ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic</span></code></a></p></td>
-<td><p>Common base class for all Ophyd Async Devices.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic" title="ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryFlyableLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic</span></code></a></p></td>
+<td><p>Minimum logic needed for controlling a <code class="docutils literal notranslate"><span class="pre">StandardFlyable</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacScanInfo" title="ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacScanInfo</span></code></a></p></td>
 <td></td>
@@ -605,42 +605,67 @@ and pmac/Db/pmacDirectMotor.template</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pmac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacIO" title="ophyd_async.epics.pmac._pmac_io.PmacIO"><span class="pre">PmacIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stageable" title="(in bluesky v1.15.2.dev66+g6f839a1a2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Stageable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="(in bluesky v1.15.2.dev66+g6f839a1a2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Preparable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="(in bluesky v1.15.2.dev66+g6f839a1a2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Flyable</span></code></a></p>
-<p>Common base class for all Ophyd Async Devices.</p>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryFlyableLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pmac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacIO" title="ophyd_async.epics.pmac._pmac_io.PmacIO"><span class="pre">PmacIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyableLogic" title="ophyd_async.core.FlyableLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyableLogic</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.pmac.PmacScanInfo" title="ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac._pmac_trajectory.PmacFlyCtx</span></code>]</p>
+<p>Minimum logic needed for controlling a <code class="docutils literal notranslate"><span class="pre">StandardFlyable</span></code>.</p>
+<p>Inherit and fill in the hooks for a particular flyable (e.g. a motion or
+trigger system). This base holds no state; concrete subclasses are typically
+<code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code>es that hold whatever signals or sub-devices they need as fields.</p>
+<p>State that must be carried between stages is threaded through an explicit
+context object rather than stored on the logic: <code class="docutils literal notranslate"><span class="pre">on_prepare</span></code> returns it,
+<code class="docutils literal notranslate"><span class="pre">on_kickoff</span></code> receives and returns it, and <code class="docutils literal notranslate"><span class="pre">on_complete</span></code> receives it.
+<code class="docutils literal notranslate"><span class="pre">StandardFlyable</span></code> owns that context and enforces the call ordering, so
+subclasses do not need to guard against being called out of order. A flyer
+with no cross-stage state uses <code class="docutils literal notranslate"><span class="pre">None</span></code> for the context (see the PandA trigger
+logics).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_prepare">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">on_prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacScanInfo" title="ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo"><span class="pre">PmacScanInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PmacFlyCtx</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic.on_prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_prepare" title="Link to this definition">#</a></dt>
+<dd><p>Move to the start of the fly scan, set it up, and return its context.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – Optional name of the Device</p></li>
-<li><p><strong>connector</strong> – Optional DeviceConnector instance to use at connect()</p></li>
-</ul>
+<dd class="field-odd"><p><strong>value</strong> – the per-scan info for this fly scan.</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacScanInfo" title="ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo"><span class="pre">PmacScanInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_kickoff">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">on_kickoff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PmacFlyCtx</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PmacFlyCtx</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic.on_kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_kickoff" title="Link to this definition">#</a></dt>
+<dd><p>Start the fly scan.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ctx</strong> – the context returned by <code class="docutils literal notranslate"><span class="pre">on_prepare</span></code>.</p>
+</dd>
+</dl>
+<p>Return the (possibly updated) context to be passed to <code class="docutils literal notranslate"><span class="pre">on_complete</span></code>.</p>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_complete">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">on_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PmacFlyCtx</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic.on_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_complete" title="Link to this definition">#</a></dt>
+<dd><p>Block until the fly scan is done.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ctx</strong> – the context returned by <code class="docutils literal notranslate"><span class="pre">on_kickoff</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.stop">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop/disarm the flyer and wait for everything to be stopped.</p>
+<p>Called by <code class="docutils literal notranslate"><span class="pre">on_stage</span></code> and <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> by default; override those instead
+if stage and unstage need to differ.</p>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">unstage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.unstage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_stage">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">on_stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryFlyableLogic.on_stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_stage" title="Link to this definition">#</a></dt>
+<dd><p>Set the flyer up on <code class="docutils literal notranslate"><span class="pre">stage()</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">stop</span></code>.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -682,20 +707,20 @@ and pmac/Db/pmacDirectMotor.template</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.adcore.html"
+       href="ophyd_async.epics.core.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.epics.demo.html"
+       href="ophyd_async.epics.motor.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -725,12 +750,12 @@ and pmac/Db/pmacDirectMotor.template</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacCoordIO"><code class="docutils literal notranslate"><span class="pre">PmacCoordIO</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacIO"><code class="docutils literal notranslate"><span class="pre">PmacIO</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryIO"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryIO</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.prepare()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.kickoff()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.complete()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.stage()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.unstage()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_prepare"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic.on_prepare()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_kickoff"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic.on_kickoff()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_complete"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic.on_complete()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.stop"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic.stop()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryFlyableLogic.on_stage"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryFlyableLogic.on_stage()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacScanInfo"><code class="docutils literal notranslate"><span class="pre">PmacScanInfo</span></code></a><ul class="nav section-nav flex-column">

@@ -251,16 +251,16 @@
   - ```{autodoc2-docstring} ophyd_async.core._data_providers.StreamResourceDataProvider
     :summary:
     ```
-* - {py:obj}`StandardFlyer <ophyd_async.core._flyer.StandardFlyer>`
-  - ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer
+* - {py:obj}`StandardFlyable <ophyd_async.core._flyable.StandardFlyable>`
+  - ```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable
     :summary:
     ```
-* - {py:obj}`FlyMotorInfo <ophyd_async.core._flyer.FlyMotorInfo>`
-  - ```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo
+* - {py:obj}`FlyMotorInfo <ophyd_async.core._flyable.FlyMotorInfo>`
+  - ```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo
     :summary:
     ```
-* - {py:obj}`FlyerController <ophyd_async.core._flyer.FlyerController>`
-  - ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController
+* - {py:obj}`FlyableLogic <ophyd_async.core._flyable.FlyableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic
     :summary:
     ```
 * - {py:obj}`Settings <ophyd_async.core._settings.Settings>`
@@ -2260,28 +2260,10 @@ Bases: {py:obj}`dict`\[{py:obj}`ophyd_async.core._signal.SignalR`\, {py:obj}`typ
 `````{py:class} StandardReadable(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.core._readable.StandardReadable
 
-Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`ophyd_async.core._protocol.AsyncConfigurable`, {py:obj}`ophyd_async.core._protocol.AsyncStageable`, {py:obj}`bluesky.protocols.HasHints`
+Bases: {py:obj}`ophyd_async.core._standard_base._StandardBase`, {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`ophyd_async.core._protocol.AsyncConfigurable`, {py:obj}`bluesky.protocols.HasHints`
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable
 ```
-
-````{py:method} stage() -> None
-:canonical: ophyd_async.core._readable.StandardReadable.stage
-:async:
-
-```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.stage
-```
-
-````
-
-````{py:method} unstage() -> None
-:canonical: ophyd_async.core._readable.StandardReadable.unstage
-:async:
-
-```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.unstage
-```
-
-````
 
 ````{py:method} describe_configuration() -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.core._readable.StandardReadable.describe_configuration
@@ -3267,63 +3249,46 @@ Bases: {py:obj}`ophyd_async.core._data_providers.StreamableDataProvider`
 
 `````
 
-`````{py:class} StandardFlyer(trigger_logic: ~ophyd_async.core._flyer.FlyerController[~ophyd_async.core._utils.T], name: str = '')
-:canonical: ophyd_async.core._flyer.StandardFlyer
+`````{py:class} StandardFlyable(*args, **kwargs)
+:canonical: ophyd_async.core._flyable.StandardFlyable
 
-Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Stageable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
+Bases: {py:obj}`ophyd_async.core._standard_base._StandardBase`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._flyable.PrepareT`\, {py:obj}`ophyd_async.core._flyable.CtxT`\]
 
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer
+```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable
 ```
 
-````{py:property} trigger_logic
-:canonical: ophyd_async.core._flyer.StandardFlyer.trigger_logic
-:type: ~ophyd_async.core._flyer.FlyerController[~ophyd_async.core._utils.T]
+````{py:method} flyable_logic() -> ~ophyd_async.core._flyable.FlyableLogic[~ophyd_async.core._flyable.PrepareT, ~ophyd_async.core._flyable.CtxT]
+:canonical: ophyd_async.core._flyable.StandardFlyable.flyable_logic
+:abstractmethod:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.trigger_logic
+```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable.flyable_logic
 ```
 
 ````
 
-````{py:method} stage() -> None
-:canonical: ophyd_async.core._flyer.StandardFlyer.stage
+````{py:method} prepare(value: ~ophyd_async.core._flyable.PrepareT) -> None
+:canonical: ophyd_async.core._flyable.StandardFlyable.prepare
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.stage
-```
-
-````
-
-````{py:method} unstage() -> None
-:canonical: ophyd_async.core._flyer.StandardFlyer.unstage
-:async:
-
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.unstage
-```
-
-````
-
-````{py:method} prepare(value: ~ophyd_async.core._utils.T) -> ~ophyd_async.core._status.AsyncStatus
-:canonical: ophyd_async.core._flyer.StandardFlyer.prepare
-
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.prepare
+```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable.prepare
 ```
 
 ````
 
 ````{py:method} kickoff() -> None
-:canonical: ophyd_async.core._flyer.StandardFlyer.kickoff
+:canonical: ophyd_async.core._flyable.StandardFlyable.kickoff
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.kickoff
+```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable.kickoff
 ```
 
 ````
 
-````{py:method} complete() -> None
-:canonical: ophyd_async.core._flyer.StandardFlyer.complete
+````{py:method} complete() -> ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate]
+:canonical: ophyd_async.core._flyable.StandardFlyable.complete
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.complete
+```{autodoc2-docstring} ophyd_async.core._flyable.StandardFlyable.complete
 ```
 
 ````
@@ -3331,128 +3296,153 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 `````
 
 `````{py:class} FlyMotorInfo(/, **data: ~typing.Any)
-:canonical: ophyd_async.core._flyer.FlyMotorInfo
+:canonical: ophyd_async.core._flyable.FlyMotorInfo
 
 Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo
 ```
 
 ````{py:attribute} start_position
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.start_position
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.start_position
 :type: float
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.start_position
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.start_position
 ```
 
 ````
 
 ````{py:attribute} end_position
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.end_position
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.end_position
 :type: float
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.end_position
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.end_position
 ```
 
 ````
 
 ````{py:attribute} time_for_move
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.time_for_move
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.time_for_move
 :type: float
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.time_for_move
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.time_for_move
 ```
 
 ````
 
 ````{py:attribute} timeout
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.timeout
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.timeout
 :type: ~ophyd_async.core._utils.CalculatableTimeout
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.timeout
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.timeout
 ```
 
 ````
 
-````{py:property} velocity
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.velocity
+````{py:property} speed
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.speed
 :type: float
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.velocity
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.speed
 ```
 
 ````
 
 ````{py:method} ramp_up_start_pos(acceleration_time: float) -> float
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.ramp_up_start_pos
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.ramp_up_start_pos
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.ramp_up_start_pos
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.ramp_up_start_pos
 ```
 
 ````
 
 ````{py:method} ramp_down_end_pos(acceleration_time: float) -> float
-:canonical: ophyd_async.core._flyer.FlyMotorInfo.ramp_down_end_pos
+:canonical: ophyd_async.core._flyable.FlyMotorInfo.ramp_down_end_pos
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.ramp_down_end_pos
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyMotorInfo.ramp_down_end_pos
 ```
 
 ````
 
 `````
 
-`````{py:class} FlyerController
-:canonical: ophyd_async.core._flyer.FlyerController
+`````{py:class} FlyableLogic
+:canonical: ophyd_async.core._flyable.FlyableLogic
 
-Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._flyable.PrepareT`\, {py:obj}`ophyd_async.core._flyable.CtxT`\]
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic
 ```
 
-````{py:method} prepare(value: ~ophyd_async.core._utils.T) -> ~typing.Any
-:canonical: ophyd_async.core._flyer.FlyerController.prepare
+````{py:method} on_prepare(value: ~ophyd_async.core._flyable.PrepareT) -> ~ophyd_async.core._flyable.CtxT
+:canonical: ophyd_async.core._flyable.FlyableLogic.on_prepare
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.prepare
-```
-
-````
-
-````{py:method} kickoff()
-:canonical: ophyd_async.core._flyer.FlyerController.kickoff
-:abstractmethod:
-:async:
-
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.kickoff
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.on_prepare
 ```
 
 ````
 
-````{py:method} complete()
-:canonical: ophyd_async.core._flyer.FlyerController.complete
+````{py:method} on_kickoff(ctx: ~ophyd_async.core._flyable.CtxT) -> ~ophyd_async.core._flyable.CtxT
+:canonical: ophyd_async.core._flyable.FlyableLogic.on_kickoff
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.complete
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.on_kickoff
 ```
 
 ````
 
-````{py:method} stop()
-:canonical: ophyd_async.core._flyer.FlyerController.stop
+````{py:method} on_complete(ctx: ~ophyd_async.core._flyable.CtxT) -> None
+:canonical: ophyd_async.core._flyable.FlyableLogic.on_complete
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.stop
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.on_complete
+```
+
+````
+
+````{py:method} stop() -> None
+:canonical: ophyd_async.core._flyable.FlyableLogic.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.stop
+```
+
+````
+
+````{py:method} on_stage() -> None
+:canonical: ophyd_async.core._flyable.FlyableLogic.on_stage
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.on_stage
+```
+
+````
+
+````{py:method} on_unstage() -> None
+:canonical: ophyd_async.core._flyable.FlyableLogic.on_unstage
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.on_unstage
+```
+
+````
+
+````{py:method} with_device(name: str = '') -> ~ophyd_async.core._flyable.StandardFlyable
+:canonical: ophyd_async.core._flyable.FlyableLogic.with_device
+
+```{autodoc2-docstring} ophyd_async.core._flyable.FlyableLogic.with_device
 ```
 
 ````

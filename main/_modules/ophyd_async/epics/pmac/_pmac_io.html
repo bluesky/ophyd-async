@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pmac._pmac_io &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>ophyd_async.epics.pmac._pmac_io &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../../../../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -970,7 +970,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_message</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileAppendMessage_RBV&quot;</span><span class="p">)</span>
         <span class="c1"># This should be a SignalX, but because it is a Busy record, must</span>
-        <span class="c1"># be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.</span>
+        <span class="c1"># be a SignalRW to be waited on in PmacTrajectoryFlyableLogic.</span>
         <span class="c1"># TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">execute_profile</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ProfileExecute&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">execute_state</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>

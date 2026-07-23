@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../../../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -909,21 +909,22 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DeviceMock</span><span class="p">,</span>
+    <span class="n">FlyableLogic</span><span class="p">,</span>
     <span class="n">FlyMotorInfo</span><span class="p">,</span>
     <span class="n">MovableLogic</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">SignalW</span><span class="p">,</span>
+    <span class="n">StandardFlyable</span><span class="p">,</span>
     <span class="n">StandardMovable</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
     <span class="n">TimeoutCalculator</span><span class="p">,</span>
-    <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
     <span class="n">callback_on_mock_put</span><span class="p">,</span>
     <span class="n">default_mock_class</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
@@ -988,8 +989,26 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">MotorMoveLogic</span><span class="p">(</span><span class="n">MovableLogic</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add the specific logic for moving a motor.&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MotorFlyCtx</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;State threaded through a motor fly scan (prepare -&gt; kickoff -&gt; complete).&quot;&quot;&quot;</span>
+
+    <span class="c1">#: The info the scan was prepared with, produced by `on_prepare`.</span>
+    <span class="n">fly_info</span><span class="p">:</span> <span class="n">FlyMotorInfo</span>
+    <span class="c1">#: The move to the end position, produced by `on_kickoff`.</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MotorFlyableMovableLogic</span><span class="p">(</span>
+    <span class="n">MovableLogic</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">FlyableLogic</span><span class="p">[</span><span class="n">FlyMotorInfo</span><span class="p">,</span> <span class="n">MotorFlyCtx</span><span class="p">]</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combined move + fly logic for a motor record.</span>
+
+<span class="sd">    A single logic object backs a `Motor`&#39;s `movable_logic` and `flyable_logic`:</span>
+<span class="sd">    it implements `MovableLogic` (the motor-record move, limit and timeout logic)</span>
+<span class="sd">    and `FlyableLogic` (the fly hooks, which reuse `move`/`check_move` and carry</span>
+<span class="sd">    all per-scan state in a `MotorFlyCtx` rather than on the logic).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">motor_stop</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">low_limit_travel</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
@@ -998,10 +1017,20 @@ window.runMermaid = runMermaid;</script>
     <span class="n">dial_high_limit_travel</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">acceleration_time</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">motor_done_move</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">max_velocity</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">motor_egu</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request to stop moving.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request to stop moving, but only if the motor is currently moving.</span>
+
+<span class="sd">        This makes stop idempotent when the motor is already stopped, so a motor</span>
+<span class="sd">        that is both moved and staged in a run (e.g. `bp.scan`) is not stopped</span>
+<span class="sd">        twice -- once by the RunEngine (it stops everything it set) and once by</span>
+<span class="sd">        `unstage`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_done_move</span><span class="o">.</span><span class="n">get_value</span><span class="p">():</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check the positions are within limits.</span>
@@ -1068,6 +1097,57 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Move by setting the setpoint and waiting for put completion.&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">())</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlyMotorInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyCtx</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the beginning of a run-up distance ready for a fly scan.&quot;&quot;&quot;</span>
+        <span class="c1"># Velocity at which the motor travels from start to end, in motor egu/s.</span>
+        <span class="n">max_speed</span><span class="p">,</span> <span class="n">egu</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_egu</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">speed</span> <span class="o">&gt;</span> <span class="n">max_speed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MotorLimitsError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Speed </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">speed</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s was requested for motor &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with max speed of </span><span class="si">{</span><span class="n">max_speed</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Check the run-up and run-down positions are within limits</span>
+        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">ramp_up_start_pos</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">ramp_up_start_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
+        <span class="n">ramp_down_end_pos</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">ramp_down_end_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_move</span><span class="p">(</span><span class="n">ramp_up_start_pos</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_move</span><span class="p">(</span><span class="n">ramp_down_end_pos</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Move to the run-up start at maximum velocity</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
+        <span class="n">old_position</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_timeout</span><span class="p">(</span><span class="n">old_position</span><span class="p">,</span> <span class="n">ramp_up_start_pos</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ramp_up_start_pos</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="c1"># Set the velocity we will use for the fly scan</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">speed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MotorFlyCtx</span><span class="p">(</span><span class="n">fly_info</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">MotorFlyCtx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyCtx</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Begin moving the motor from the prepared position to the final position.&quot;&quot;&quot;</span>
+        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">fly_info</span><span class="o">.</span><span class="n">ramp_down_end_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">fly_info</span><span class="o">.</span><span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
+            <span class="n">initial</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_timeout</span><span class="p">(</span><span class="n">initial</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">fly_info</span><span class="o">.</span><span class="n">timeout</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">timeout</span><span class="p">))</span>
+        <span class="c1"># Wait out the run-up so the motor is at constant velocity before</span>
+        <span class="c1"># kickoff() returns. A plan can then kickoff the motor and afterwards</span>
+        <span class="c1"># kickoff internally-triggered detectors, which is more accurate for</span>
+        <span class="c1"># long acceleration times.</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ctx</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">MotorFlyCtx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Block until the motor reaches the fly-scan end position.&quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;kickoff for motor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> not called.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">status</span>
+
 
 <div class="viewcode-block" id="InstantMotorMock">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.InstantMotorMock">[docs]</a>
@@ -1099,7 +1179,9 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="Motor">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
 <span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span>
+    <span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">StandardFlyable</span><span class="p">[</span><span class="n">FlyMotorInfo</span><span class="p">,</span> <span class="n">MotorFlyCtx</span><span class="p">],</span> <span class="n">StandardReadable</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1139,18 +1221,12 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># the move in set, so need to pass wait=False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span> <span class="o">=</span> <span class="n">epics_signal_w</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.STOP&quot;</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="c1"># Currently requested fly info, stored in prepare</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="p">:</span> <span class="n">FlyMotorInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="c1"># Set on kickoff(), complete when motor reaches self._fly_completed_position</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return MotorMoveLogic for this motor.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">MotorMoveLogic</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyableMovableLogic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The combined move + fly logic, shared by movable_logic and flyable_logic.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MotorFlyableMovableLogic</span><span class="p">(</span>
             <span class="n">readback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span>
             <span class="n">setpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span>
             <span class="n">motor_stop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="p">,</span>
@@ -1160,68 +1236,18 @@ window.runMermaid = runMermaid;</script>
             <span class="n">dial_high_limit_travel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dial_high_limit_travel</span><span class="p">,</span>
             <span class="n">velocity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span>
             <span class="n">acceleration_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="p">,</span>
+            <span class="n">motor_done_move</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span>
+            <span class="n">max_velocity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+            <span class="n">motor_egu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">motor_egu</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Motor.prepare">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.prepare">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlyMotorInfo</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the beginning of a suitable run-up distance ready for a fly scan.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyableMovableLogic</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logic</span>
 
-        <span class="c1"># Velocity, at which motor travels from start_position to end_position, in motor</span>
-        <span class="c1"># egu/s.</span>
-        <span class="n">max_speed</span><span class="p">,</span> <span class="n">egu</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_egu</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_speed</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">MotorLimitsError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Velocity </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s was requested for motor &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with max speed of </span><span class="si">{</span><span class="n">max_speed</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Check limits are okay</span>
-        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="n">ramp_up_start_pos</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">ramp_up_start_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
-        <span class="n">ramp_down_end_pos</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">ramp_down_end_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">ramp_up_start_pos</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">ramp_down_end_pos</span><span class="p">)</span>
-        <span class="p">)</span>
-
-        <span class="c1"># move to prepare position at maximum velocity</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ramp_up_start_pos</span><span class="p">)</span>
-
-        <span class="c1"># Set velocity we will be using for the fly scan</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">velocity</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="Motor.kickoff">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.kickoff">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Begin moving motor from prepared position to final position.&quot;&quot;&quot;</span>
-        <span class="n">fly_info</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;Motor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be prepared before attempting to kickoff.&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-            <span class="n">fly_info</span><span class="o">.</span><span class="n">ramp_down_end_pos</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">),</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">fly_info</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Motor.complete">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.complete">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchableAsyncStatus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark as complete once motor reaches completed position.&quot;&quot;&quot;</span>
-        <span class="n">fly_status</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;kickoff for motor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> not called.&quot;</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">fly_status</span></div>
-</div>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flyable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyableMovableLogic</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logic</span></div>
 
 </pre></div>
 

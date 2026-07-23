@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../../../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -910,7 +910,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._standard_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">_StandardBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">merge_gathered_dicts</span>
 
 
@@ -985,9 +985,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="StandardReadable">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">StandardReadable</span><span class="p">(</span>
-    <span class="n">Device</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">HasHints</span>
-<span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StandardReadable</span><span class="p">(</span><span class="n">_StandardBase</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that provides selected child Device values in `read()`.</span>
 
 <span class="sd">    Provides the ability for children to be registered to:</span>
@@ -1005,24 +1003,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">_read_config_funcs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]]],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">_describe_funcs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]]],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">_read_funcs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]]],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="n">_stageables</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">AsyncStageable</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">_has_hints</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HasHints</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="StandardReadable.stage">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.stage">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
-
-
-<div class="viewcode-block" id="StandardReadable.unstage">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.unstage">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
-
 
 <div class="viewcode-block" id="StandardReadable.describe_configuration">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.describe_configuration">[docs]</a>
@@ -1170,7 +1151,8 @@ window.runMermaid = runMermaid;</script>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_stage_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">stage</span><span class="p">,)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unstage_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">unstage</span><span class="p">,)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">:</span>
@@ -1181,7 +1163,8 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stage_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">stage</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_unstage_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">unstage</span><span class="p">,)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_HintsFromName</span><span class="p">(</span><span class="n">signalr_device</span><span class="p">),)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">UNCACHED_SIGNAL</span><span class="p">:</span>
                     <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>

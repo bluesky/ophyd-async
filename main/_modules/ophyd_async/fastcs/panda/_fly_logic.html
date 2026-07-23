@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._fly_logic &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>ophyd_async.fastcs.panda._fly_logic &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../../../../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -901,7 +901,7 @@ window.runMermaid = runMermaid;</script>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -911,7 +911,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConfinedModel</span><span class="p">,</span>
-    <span class="n">FlyerController</span><span class="p">,</span>
+    <span class="n">FlyableLogic</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
@@ -949,17 +949,17 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="StaticSeqTableTriggerLogic">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">StaticSeqTableTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">]):</span>
+<div class="viewcode-block" id="StaticSeqTableFlyableLogic">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableFlyableLogic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StaticSeqTableFlyableLogic</span><span class="p">(</span><span class="n">FlyableLogic</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `SeqTable` when fly scanning.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="n">SeqBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
+    <span class="n">seq</span><span class="p">:</span> <span class="n">SeqBlock</span>
 
-<div class="viewcode-block" id="StaticSeqTableTriggerLogic.prepare">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SeqTableInfo</span><span class="p">):</span>
+<div class="viewcode-block" id="StaticSeqTableFlyableLogic.on_prepare">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableFlyableLogic.on_prepare">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SeqTableInfo</span><span class="p">):</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">prescale_units</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaTimeUnits</span><span class="o">.</span><span class="n">US</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">),</span>
@@ -971,21 +971,21 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticSeqTableTriggerLogic.kickoff">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="StaticSeqTableFlyableLogic.on_kickoff">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableFlyableLogic.on_kickoff">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ONE</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticSeqTableTriggerLogic.complete">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="StaticSeqTableFlyableLogic.on_complete">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableFlyableLogic.on_complete">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticSeqTableTriggerLogic.stop">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop">[docs]</a>
+<div class="viewcode-block" id="StaticSeqTableFlyableLogic.stop">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableFlyableLogic.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
@@ -1015,20 +1015,16 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="ScanSpecSeqTableTriggerLogic">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableTriggerLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ScanSpecSeqTableTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">[</span><span class="n">ScanSpecInfo</span><span class="p">]):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">seq</span><span class="p">:</span> <span class="n">SeqBlock</span><span class="p">,</span>
-        <span class="n">motor_pos_outs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Motor</span><span class="p">,</span> <span class="n">PosOutScaleOffset</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">motor_pos_outs</span> <span class="o">=</span> <span class="n">motor_pos_outs</span> <span class="ow">or</span> <span class="p">{}</span>
+<div class="viewcode-block" id="ScanSpecSeqTableFlyableLogic">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableFlyableLogic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ScanSpecSeqTableFlyableLogic</span><span class="p">(</span><span class="n">FlyableLogic</span><span class="p">[</span><span class="n">ScanSpecInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
+    <span class="n">seq</span><span class="p">:</span> <span class="n">SeqBlock</span>
+    <span class="n">motor_pos_outs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Motor</span><span class="p">,</span> <span class="n">PosOutScaleOffset</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ScanSpecSeqTableTriggerLogic.prepare">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableTriggerLogic.prepare">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">ScanSpecInfo</span><span class="p">):</span>
+<div class="viewcode-block" id="ScanSpecSeqTableFlyableLogic.on_prepare">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableFlyableLogic.on_prepare">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">ScanSpecInfo</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">)</span>
         <span class="nb">slice</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">spec</span><span class="o">.</span><span class="n">calculate</span><span class="p">())</span><span class="o">.</span><span class="n">consume</span><span class="p">()</span>
         <span class="n">slice_duration</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="nb">slice</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span> <span class="s2">&quot;Slice must have duration&quot;</span><span class="p">)</span>
@@ -1091,21 +1087,21 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ScanSpecSeqTableTriggerLogic.kickoff">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableTriggerLogic.kickoff">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ScanSpecSeqTableFlyableLogic.on_kickoff">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableFlyableLogic.on_kickoff">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ONE</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ScanSpecSeqTableTriggerLogic.complete">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableTriggerLogic.complete">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ScanSpecSeqTableFlyableLogic.on_complete">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableFlyableLogic.on_complete">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ScanSpecSeqTableTriggerLogic.stop">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableTriggerLogic.stop">[docs]</a>
+<div class="viewcode-block" id="ScanSpecSeqTableFlyableLogic.stop">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecSeqTableFlyableLogic.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
@@ -1140,17 +1136,17 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="StaticPcompTriggerLogic">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">StaticPcompTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">]):</span>
+<div class="viewcode-block" id="StaticPcompFlyableLogic">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompFlyableLogic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StaticPcompFlyableLogic</span><span class="p">(</span><span class="n">FlyableLogic</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `PcompBlock` when fly scanning.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcomp</span><span class="p">:</span> <span class="n">PcompBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span> <span class="o">=</span> <span class="n">pcomp</span>
+    <span class="n">pcomp</span><span class="p">:</span> <span class="n">PcompBlock</span>
 
-<div class="viewcode-block" id="StaticPcompTriggerLogic.prepare">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PcompInfo</span><span class="p">):</span>
+<div class="viewcode-block" id="StaticPcompFlyableLogic.on_prepare">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompFlyableLogic.on_prepare">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PcompInfo</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">start_position</span><span class="p">),</span>
@@ -1161,21 +1157,21 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticPcompTriggerLogic.kickoff">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="StaticPcompFlyableLogic.on_kickoff">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompFlyableLogic.on_kickoff">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ONE</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticPcompTriggerLogic.complete">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+<div class="viewcode-block" id="StaticPcompFlyableLogic.on_complete">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompFlyableLogic.on_complete">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StaticPcompTriggerLogic.stop">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop">[docs]</a>
+<div class="viewcode-block" id="StaticPcompFlyableLogic.stop">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompFlyableLogic.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">enable</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PandaBitMux</span><span class="o">.</span><span class="n">ZERO</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>

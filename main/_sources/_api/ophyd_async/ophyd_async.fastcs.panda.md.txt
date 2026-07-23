@@ -91,20 +91,20 @@
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.SeqTableInfo
     :summary:
     ```
-* - {py:obj}`StaticPcompTriggerLogic <ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic
+* - {py:obj}`StaticPcompFlyableLogic <ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic
     :summary:
     ```
-* - {py:obj}`StaticSeqTableTriggerLogic <ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic
+* - {py:obj}`StaticSeqTableFlyableLogic <ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic
     :summary:
     ```
 * - {py:obj}`ScanSpecInfo <ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo
     :summary:
     ```
-* - {py:obj}`ScanSpecSeqTableTriggerLogic <ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic
+* - {py:obj}`ScanSpecSeqTableFlyableLogic <ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic
     :summary:
     ```
 * - {py:obj}`PosOutScaleOffset <ophyd_async.fastcs.panda._fly_logic.PosOutScaleOffset>`
@@ -1321,92 +1321,114 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 `````
 
-`````{py:class} StaticPcompTriggerLogic(pcomp: ~ophyd_async.fastcs.panda._block.PcompBlock)
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic
+`````{py:class} StaticPcompFlyableLogic
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic
 
-Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.PcompInfo`\]
+Bases: {py:obj}`ophyd_async.core.FlyableLogic`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.PcompInfo`\, {py:obj}`None`\]
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic
 ```
 
-````{py:method} prepare(value: ~ophyd_async.fastcs.panda._fly_logic.PcompInfo)
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.prepare
-:async:
+````{py:attribute} pcomp
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.pcomp
+:type: ~ophyd_async.fastcs.panda._block.PcompBlock
+:value: >
+   None
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.prepare
-```
-
-````
-
-````{py:method} kickoff() -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.kickoff
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.kickoff
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.pcomp
 ```
 
 ````
 
-````{py:method} complete(timeout: float | None = None) -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.complete
+````{py:method} on_prepare(value: ~ophyd_async.fastcs.panda._fly_logic.PcompInfo)
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_prepare
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.complete
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_prepare
+```
+
+````
+
+````{py:method} on_kickoff(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_kickoff
+```
+
+````
+
+````{py:method} on_complete(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_complete
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.on_complete
 ```
 
 ````
 
 ````{py:method} stop()
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.stop
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.stop
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompTriggerLogic.stop
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticPcompFlyableLogic.stop
 ```
 
 ````
 
 `````
 
-`````{py:class} StaticSeqTableTriggerLogic(seq: ~ophyd_async.fastcs.panda._block.SeqBlock)
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic
+`````{py:class} StaticSeqTableFlyableLogic
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic
 
-Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.SeqTableInfo`\]
+Bases: {py:obj}`ophyd_async.core.FlyableLogic`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.SeqTableInfo`\, {py:obj}`None`\]
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic
 ```
 
-````{py:method} prepare(value: ~ophyd_async.fastcs.panda._fly_logic.SeqTableInfo)
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.prepare
-:async:
+````{py:attribute} seq
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.seq
+:type: ~ophyd_async.fastcs.panda._block.SeqBlock
+:value: >
+   None
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.prepare
-```
-
-````
-
-````{py:method} kickoff() -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.kickoff
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.kickoff
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.seq
 ```
 
 ````
 
-````{py:method} complete() -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.complete
+````{py:method} on_prepare(value: ~ophyd_async.fastcs.panda._fly_logic.SeqTableInfo)
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_prepare
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.complete
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_prepare
+```
+
+````
+
+````{py:method} on_kickoff(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_kickoff
+```
+
+````
+
+````{py:method} on_complete(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_complete
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.on_complete
 ```
 
 ````
 
 ````{py:method} stop()
-:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.stop
+:canonical: ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.stop
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableTriggerLogic.stop
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.StaticSeqTableFlyableLogic.stop
 ```
 
 ````
@@ -1445,46 +1467,68 @@ Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 `````
 
-`````{py:class} ScanSpecSeqTableTriggerLogic(seq: ~ophyd_async.fastcs.panda._block.SeqBlock, motor_pos_outs: dict[~ophyd_async.epics.motor.Motor, ~ophyd_async.fastcs.panda._fly_logic.PosOutScaleOffset] | None = None)
-:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic
+`````{py:class} ScanSpecSeqTableFlyableLogic
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic
 
-Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo`\]
+Bases: {py:obj}`ophyd_async.core.FlyableLogic`\[{py:obj}`ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo`\, {py:obj}`None`\]
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic
 ```
 
-````{py:method} prepare(value: ~ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo)
-:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.prepare
-:async:
+````{py:attribute} seq
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.seq
+:type: ~ophyd_async.fastcs.panda._block.SeqBlock
+:value: >
+   None
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.prepare
-```
-
-````
-
-````{py:method} kickoff() -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.kickoff
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.kickoff
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.seq
 ```
 
 ````
 
-````{py:method} complete() -> None
-:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.complete
+````{py:attribute} motor_pos_outs
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.motor_pos_outs
+:type: dict[~ophyd_async.epics.motor.Motor, ~ophyd_async.fastcs.panda._fly_logic.PosOutScaleOffset]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.motor_pos_outs
+```
+
+````
+
+````{py:method} on_prepare(value: ~ophyd_async.fastcs.panda._fly_logic.ScanSpecInfo)
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_prepare
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.complete
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_prepare
+```
+
+````
+
+````{py:method} on_kickoff(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_kickoff
+```
+
+````
+
+````{py:method} on_complete(ctx: None) -> None
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_complete
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.on_complete
 ```
 
 ````
 
 ````{py:method} stop()
-:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.stop
+:canonical: ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.stop
 :async:
 
-```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableTriggerLogic.stop
+```{autodoc2-docstring} ophyd_async.fastcs.panda._fly_logic.ScanSpecSeqTableFlyableLogic.stop
 ```
 
 ````

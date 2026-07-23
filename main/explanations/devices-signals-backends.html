@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.20.1.dev5+gcb3f68316 documentation</title>
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.20.2.dev1+g1ce94eb98 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=0dd504af"></script>
+    <script src="../_static/documentation_options.js?v=ce2f0849"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.1.dev5+gcb3f68316 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.20.2.dev1+g1ce94eb98 documentation - Home"/>
   
   
 </a></div>
@@ -1140,13 +1140,13 @@ classDiagram
 Device &lt;|-- StandardReadable
 Device &lt;|-- StandardMovable
 Device &lt;|-- StandardDetector
-Device &lt;|-- StandardFlyer
+Device &lt;|-- StandardFlyable
     </pre><p>There are also some <code class="docutils literal notranslate"><span class="pre">Device</span></code> subclasses that provide helpers for implementing particular protocols, namely:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Readable</span></a> protocol using the values of its children</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable" title="ophyd_async.core.StandardMovable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardMovable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Movable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Locatable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Stoppable</span></a>, and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Subscribable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Subscribable</span></a> protocols by composing a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic" title="ophyd_async.core.MovableLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MovableLogic</span></code></a> instance</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">WritesStreamAssets</span></a> protocol using logic classes for the detector driver and writer</p></li>
-<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyer" title="ophyd_async.core.StandardFlyer"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Flyable</span></a> protocol for motion and trigger systems</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyable" title="ophyd_async.core.StandardFlyable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardFlyable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.15.2.dev66+g6f839a1a2"><span class="xref myst">Flyable</span></a> protocol for motion and trigger systems by composing a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.FlyableLogic" title="ophyd_async.core.FlyableLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">FlyableLogic</span></code></a> instance</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
