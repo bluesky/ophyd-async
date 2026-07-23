@@ -10,7 +10,7 @@ from event_model import DataKey
 from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
-from ._status import AsyncStatus
+from ._standard_base import _StandardBase
 from ._utils import merge_gathered_dicts
 
 
@@ -80,9 +80,7 @@ HintedSignal.uncached = _compat_format(
 )
 
 
-class StandardReadable(
-    Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints
-):
+class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints):
     """Device that provides selected child Device values in `read()`.
 
     Provides the ability for children to be registered to:
@@ -100,18 +98,7 @@ class StandardReadable(
     _read_config_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
     _describe_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
     _read_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
-    _stageables: tuple[AsyncStageable, ...] = ()
     _has_hints: tuple[HasHints, ...] = ()
-
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        for sig in self._stageables:
-            await sig.stage().task
-
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        for sig in self._stageables:
-            await sig.unstage().task
 
     async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
@@ -242,7 +229,8 @@ class StandardReadable(
                         self._describe_funcs += (device.describe,)
                         self._read_funcs += (device.read,)
                     if isinstance(device, AsyncStageable):
-                        self._stageables += (device,)
+                        self._stage_funcs += (device.stage,)
+                        self._unstage_funcs += (device.unstage,)
                     if isinstance(device, HasHints):
                         self._has_hints += (device,)
                 case StandardReadableFormat.CONFIG_SIGNAL:
@@ -253,7 +241,8 @@ class StandardReadable(
                     signalr_device = assert_device_is_signalr(device=device)
                     self._describe_funcs += (signalr_device.describe,)
                     self._read_funcs += (signalr_device.read,)
-                    self._stageables += (signalr_device,)
+                    self._stage_funcs += (signalr_device.stage,)
+                    self._unstage_funcs += (signalr_device.unstage,)
                     self._has_hints += (_HintsFromName(signalr_device),)
                 case StandardReadableFormat.UNCACHED_SIGNAL:
                     signalr_device = assert_device_is_signalr(device=device)

@@ -196,8 +196,12 @@ async def test_set_and_wait_for_value_waits_for_error():
         raise RuntimeError("Bad")
 
     callback_on_mock_put(signal, fail)
+    # A generous timeout: the put raises immediately, so the RuntimeError wins
+    # the race against the internal wait timeout deterministically. A tight
+    # timeout (e.g. 0.1s) can let the wait time out first on a slow event loop
+    # (seen on Windows/Python 3.14), surfacing TimeoutError instead.
     with pytest.raises(RuntimeError, match="Bad"):
-        await set_and_wait_for_value(signal, 1, timeout=0.1)
+        await set_and_wait_for_value(signal, 1, timeout=1.0)
 
 
 async def test_set_and_wait_for_value_different_set_and_read():

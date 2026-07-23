@@ -10,7 +10,7 @@ from ophyd_async.epics.pmac import (
 
 # _PmacMotorInfo (internal per-motor accel/resolution dataclass) and
 # calculate_ramp_position_and_duration (internal ramp-math helper) are both
-# implementation details PmacTrajectoryTriggerLogic (the public façade,
+# implementation details PmacTrajectoryFlyableLogic (the public façade,
 # `ophyd_async.epics.pmac`) uses internally, not things a caller would
 # invoke directly - checked, nothing here looks missing from the public
 # interface.
