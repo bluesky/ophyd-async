@@ -157,7 +157,8 @@ def assert_sr_has_attrs(sr: StandardReadable, expected_attrs: dict[str, tuple]):
         "_read_config_funcs",
         "_describe_funcs",
         "_read_funcs",
-        "_stageables",
+        "_stage_funcs",
+        "_unstage_funcs",
         "_has_hints",
     )
     actual = {attr: getattr(sr, attr) for attr in attrs_to_check}
@@ -180,7 +181,8 @@ has_hints = MagicMock(spec=HasHints)
             {
                 "_read_funcs": (signal_r.read,),
                 "_describe_funcs": (signal_r.describe,),
-                "_stageables": (signal_r,),
+                "_stage_funcs": (signal_r.stage,),
+                "_unstage_funcs": (signal_r.unstage,),
             },
         ),
         (
@@ -197,7 +199,13 @@ has_hints = MagicMock(spec=HasHints)
                 "_describe_config_funcs": (async_configurable.describe_configuration,),
             },
         ),
-        (async_stageable, {"_stageables": (async_stageable,)}),
+        (
+            async_stageable,
+            {
+                "_stage_funcs": (async_stageable.stage,),
+                "_unstage_funcs": (async_stageable.unstage,),
+            },
+        ),
         (has_hints, {"_has_hints": (has_hints,)}),
     ],
 )
@@ -242,7 +250,8 @@ def test_standard_readable_hinted_signal():
     sr.add_readables([signal_r], Format.HINTED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
     assert sr._read_funcs == (signal_r.read,)
-    assert sr._stageables == (signal_r,)
+    assert sr._stage_funcs == (signal_r.stage,)
+    assert sr._unstage_funcs == (signal_r.unstage,)
     assert sr._has_hints[0].device == signal_r
 
 
