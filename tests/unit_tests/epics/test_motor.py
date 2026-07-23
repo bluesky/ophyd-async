@@ -1,12 +1,11 @@
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
-    AsyncStatus,
     Device,
     DeviceMock,
     FlyMotorInfo,
@@ -14,13 +13,10 @@ from ophyd_async.core import (
     default_mock_class,
     get_mock_put,
     init_devices,
-    observe_value,
-    set_mock_attr,
     set_mock_precision,
     set_mock_put_proceeds,
     set_mock_units,
     set_mock_value,
-    soft_signal_rw,
 )
 from ophyd_async.epics.motor import Motor, MotorLimitsError
 from ophyd_async.testing import (
@@ -288,76 +284,67 @@ async def test_prepare_valid_limits(motor: Motor):
 
 
 @pytest.mark.parametrize(
-    "expected_velocity, target_position",
+    "end_position, expected_speed, expected_run_up, expected_end",
     [
-        (10, -10),
-        (8, 8),
+        (-10, 10, 1, -11),  # -ve direction
+        (15, 5, -0.5, 15.5),  # +ve direction
     ],
 )
-async def test_prepare(motor: Motor, target_position: float, expected_velocity: float):
-    set_mock_value(motor.acceleration_time, 1)
+async def test_fly_scan(
+    motor: Motor,
+    end_position: float,
+    expected_speed: float,
+    expected_run_up: float,
+    expected_end: float,
+):
+    """Happy-path prepare -> kickoff -> complete through the public interface."""
+    # A small acceleration time keeps the up-to-speed wait in kickoff() negligible
+    set_mock_value(motor.acceleration_time, 0.2)
     set_mock_value(motor.low_limit_travel, -15)
     set_mock_value(motor.high_limit_travel, 20)
-    set_mock_value(motor.max_velocity, 10)
-    fake_set_signal = soft_signal_rw(float)
-    await fake_set_signal.connect()
-
-    async def wait_for_set(_):
-        async for value in observe_value(fake_set_signal, timeout=1):
-            if value == target_position:
-                break
-
-    set_mock_attr(motor, "set", AsyncMock(side_effect=wait_for_set))
-
-    async def do_set(status: AsyncStatus):
-        assert not status.done
-        await fake_set_signal.set(target_position)
-
-    async def wait_for_status(status: AsyncStatus):
-        await status
-
-    status = motor.prepare(
-        FlyMotorInfo(
-            start_position=0,
-            end_position=target_position,
-            time_for_move=1,
-        )
+    set_mock_value(motor.max_velocity, 100)
+    time_for_move = abs(end_position) / expected_speed
+    fly_info = FlyMotorInfo(
+        start_position=0, end_position=end_position, time_for_move=time_for_move
     )
-    # Test that prepare is not marked as complete until correct position is reached
-    await asyncio.gather(do_set(status), wait_for_status(status))
-    assert await motor.velocity.get_value() == expected_velocity
-    assert status.done
-
-
-async def test_kickoff(motor: Motor):
-    mock_set = set_mock_attr(motor, "set", MagicMock())
-    with pytest.raises(
-        RuntimeError,
-        match=f"Motor {motor.name} must be prepared before attempting to kickoff",
-    ):
-        await motor.kickoff()
-    # TODO: why was this called _twice_?
-    # with pytest.raises(RuntimeError):
-    #     await motor.kickoff()
-    set_mock_value(motor.acceleration_time, 1)
-    motor._fly_info = FlyMotorInfo(
-        start_position=12,
-        end_position=2,
-        time_for_move=1,
-    )
+    # prepare only resolves once the run-up move has completed, so the setpoint
+    # has reached the run-up start position and the fly-scan speed (not the max
+    # velocity) has been applied
+    await motor.prepare(fly_info)
+    assert await motor.user_setpoint.get_value() == pytest.approx(expected_run_up)
+    assert await motor.velocity.get_value() == expected_speed
+    # kickoff then complete drive the motor to the ramp-down end position
     await motor.kickoff()
-    mock_set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
+    status = motor.complete()
+    await status
+    assert status.done
+    assert await motor.user_setpoint.get_value() == pytest.approx(expected_end)
 
 
-async def test_complete(motor: Motor) -> None:
-    with pytest.raises(
-        RuntimeError, match=f"kickoff for motor {motor.name} not called"
-    ):
-        motor.complete()
-    motor._fly_status = motor.set(20)
-    assert not motor._fly_status.done
-    await motor.complete()
-    assert motor._fly_status.done
+async def test_kickoff_before_prepare_raises(motor: Motor):
+    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
+        await motor.kickoff()
+
+
+async def test_complete_before_kickoff_raises(motor: Motor):
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
+        await motor.complete()
+
+
+@pytest.mark.parametrize(
+    "done_move, expect_stop",
+    [
+        (0, True),  # moving -> stop is issued
+        (1, False),  # already stopped -> no redundant STOP write
+    ],
+)
+async def test_stop_only_when_moving(motor: Motor, done_move: int, expect_stop: bool):
+    set_mock_value(motor.motor_done_move, done_move)
+    await motor.stop()
+    if expect_stop:
+        get_mock_put(motor.motor_stop).assert_called_once_with(1)
+    else:
+        get_mock_put(motor.motor_stop).assert_not_called()
 
 
 def test_core_notconnected_emits_deprecation_warning():
