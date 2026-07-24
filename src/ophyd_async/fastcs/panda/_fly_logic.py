@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from dataclasses import dataclass, field
 from typing import cast
 
 import numpy as np
 from pydantic import Field
-from scanspec.core import Path
+from scanspec.core import Path, Slice
 from scanspec.specs import Spec
 
 from ophyd_async.core import (
+    AsyncStatus,
     ConfinedModel,
     FlyableLogic,
     SignalRW,
     error_if_none,
+    observe_value,
     wait_for_value,
 )
 from ophyd_async.epics.motor import Motor
@@ -23,11 +26,25 @@ from ._block import (
     PandaBitMux,
     PandaPcompDirection,
     PandaPosMux,
+    PandaSeqWrite,
     PandaTimeUnits,
     PcompBlock,
     SeqBlock,
 )
 from ._table import SeqTable, SeqTrigger
+
+MAX_REPEATS = 5000  # 2**16 - 1
+PANDA_SLICE_SIZE = 1000
+PANDA_QUEUE_THRESHOLD = 2
+
+
+@dataclass
+class PandaPrepareContext:
+    path: Path
+    deadtime: float
+    scale: float
+    offset: float
+    has_pos_out: bool
 
 
 class SeqTableInfo(ConfinedModel):
@@ -89,24 +106,25 @@ class PosOutScaleOffset:
 
 
 @dataclass
-class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
+class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContext]):
     seq: SeqBlock
     motor_pos_outs: dict[Motor, PosOutScaleOffset] = field(default_factory=dict)
+    _append_status: AsyncStatus | None = None  # Put in pandapreparecontext
 
-    async def on_prepare(self, value: ScanSpecInfo):
-        await self.seq.enable.set(PandaBitMux.ZERO)
-        slice = Path(value.spec.calculate()).consume()
-        slice_duration = error_if_none(slice.duration, "Slice must have duration")
+    def _append_to_table(self, repeats: int):
+        filled_rows, remainder = divmod(repeats, MAX_REPEATS)
+        repeats_list = [MAX_REPEATS] * filled_rows
+        if remainder:
+            repeats_list.append(remainder)
+        return repeats_list
 
-        # Start of window is where the is a gap to the previous point
-        window_start = np.nonzero(slice.gap)[0]
-        # End of window is either the next gap, or the end of the scan
-        window_end = np.append(window_start[1:], len(slice))
+    async def _get_pos_out_scale_offset(self, slice: Slice):
         fast_axis = slice.axes()[-1]
         pos_out = self.motor_pos_outs.get(fast_axis)
         # If we have a motor to compare against, get its scale and offset
         # otherwise don't connect POSA to anything
         if pos_out is not None:
+            has_pos_out = True
             scale, offset = await asyncio.gather(
                 pos_out.scale.get_value(),
                 pos_out.offset.get_value(),
@@ -115,6 +133,23 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
         else:
             scale, offset = 1, 0
             compare_pos_name = PandaPosMux.ZERO
+            has_pos_out = False
+        return has_pos_out, compare_pos_name, scale, offset
+
+    def _build_rows(
+        self,
+        slice: Slice,
+        deadtime: float,
+        scale: float,
+        offset: float,
+        has_pos_out: bool,
+    ) -> SeqTable:
+        # Start of window is where the is a gap to the previous point
+        slice_duration = error_if_none(slice.duration, "Slice must have duration")
+        window_start = np.nonzero(slice.gap)[0]
+        # End of window is either the next gap, or the end of the scan
+        window_end = np.append(window_start[1:], len(slice))
+        fast_axis = slice.axes()[-1]
 
         rows = SeqTable.empty()
         for start, end in zip(window_start, window_end, strict=True):
@@ -122,7 +157,8 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
             rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
             rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
             # Wait for position if we are comparing against a motor
-            if pos_out is not None:
+
+            if has_pos_out:
                 lower = (slice.lower[fast_axis][start] - offset) / scale
                 midpoint = (slice.midpoints[fast_axis][start] - offset) / scale
                 if midpoint > lower:
@@ -138,14 +174,92 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
                     )
 
             # Time based Triggers
-            rows += SeqTable.row(
-                repeats=end - start,
-                trigger=SeqTrigger.IMMEDIATE,
-                time1=int((slice_duration[0] - value.deadtime) * 10**6),
-                time2=int(value.deadtime * 10**6),
-                outa1=True,
-                outa2=False,
+            repeats = end - start
+            for repeat in self._append_to_table(repeats):
+                rows += SeqTable.row(
+                    repeats=repeat,
+                    trigger=SeqTrigger.IMMEDIATE,
+                    time1=int((slice_duration[0] - deadtime) * 10**6),
+                    time2=int(deadtime * 10**6),
+                    outa1=True,
+                    outa2=False,
+                )
+
+        return rows
+
+    async def _append_and_monitor(self):
+        ctx = error_if_none(PandaPrepareContext, "Missing prepare context")
+        table_next_write = error_if_none(
+            self.seq.table_next_write,
+            "table_next_write signal is not available on this PandA",
+        )
+
+        table_queued_lines = error_if_none(
+            self.seq.table_queued_lines,
+            "table_queued_lines signal is not available on this PandA",
+        )
+
+        async for queued_lines in observe_value(table_queued_lines):
+            if len(ctx.path) == 0:
+                return
+            if queued_lines >= PANDA_QUEUE_THRESHOLD:
+                continue
+            next_slice = ctx.path.consume(PANDA_SLICE_SIZE)
+            next_rows = self._build_rows(
+                next_slice,
+                ctx.deadtime,
+                ctx.scale,
+                ctx.offset,
+                ctx.has_pos_out,
             )
+
+            is_last = len(ctx.path) == 0
+            await table_next_write.set(
+                PandaSeqWrite.APPEND_LAST if is_last else PandaSeqWrite.APPEND
+            )
+            await self.seq.table.set(next_rows)
+
+            if is_last:
+                return
+
+    async def on_prepare(self, value: ScanSpecInfo) -> PandaPrepareContext:
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        path = Path(value.spec.calculate())
+        first_slice = path.consume(PANDA_SLICE_SIZE)
+
+        (
+            has_pos_out,
+            compare_pos_name,
+            scale,
+            offset,
+        ) = await self._get_pos_out_scale_offset(first_slice)
+
+        rows = self._build_rows(
+            first_slice,
+            deadtime=value.deadtime,
+            scale=scale,
+            offset=offset,
+            has_pos_out=has_pos_out,
+        )
+
+        ctx = PandaPrepareContext(
+            path=path,
+            deadtime=value.deadtime,
+            scale=scale,
+            offset=offset,
+            has_pos_out=has_pos_out,
+        )
+
+        if len(path) > 0:
+            error_if_none(
+                self.seq.table_next_write,
+                "table_next_write is unavailable on this PandA",
+            )
+        error_if_none(
+            self.seq.table_queued_lines,
+            "table_queued_lines is unavailable on this PandA",
+        )
+
         # Need to do units before value for PandA, otherwise it scales the current value
         await self.seq.prescale_units.set(PandaTimeUnits.US)
         await asyncio.gather(
@@ -154,15 +268,30 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
             self.seq.repeats.set(1),
             self.seq.table.set(rows),
         )
+        return ctx
 
-    async def on_kickoff(self, ctx: None) -> None:
+    async def on_kickoff(self, ctx: PandaPrepareContext) -> PandaPrepareContext:
         await self.seq.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
 
-    async def on_complete(self, ctx: None) -> None:
+        if len(ctx.path) > 0:
+            self._append_status = AsyncStatus(self._append_and_monitor())
+        return ctx
+
+    async def on_complete(self, ctx: PandaPrepareContext) -> None:
+        if self._append_status is not None:
+            await self._append_status
+            self._append_status = None
+
         await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
+        if self._append_status is not None:
+            self._append_status.task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._append_status
+            self._append_status = None
+
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
 

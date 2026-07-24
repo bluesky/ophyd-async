@@ -36,7 +36,7 @@ from ._utils import (
 # (see https://github.com/DiamondLightSource/pmac/blob/afe81f8bb9179c3a20eff351f30bc6cfd1539ad9/pmacApp/pmc/trajectory_scan_code_ppmac.pmc#L241)
 # Therefore, we must divide scanspec durations by 10e-6
 TICK_S = 0.000001
-SLICE_SIZE = 4000
+PMAC_SLICE_SIZE = 4000
 
 
 @dataclass
@@ -79,7 +79,7 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
         self._next_pvt = None
         self._loaded = 0
         path = Path(spec.calculate())
-        slice = path.consume(SLICE_SIZE)
+        slice = path.consume(PMAC_SLICE_SIZE)
         path_length = len(path)
         motors = slice.axes()
         motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
@@ -148,7 +148,7 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
         # containing at least 2 * SLICE_SIZE, as a gapless trajectory
         # will contain 2 points per slice frame. If gaps are present,
         # additional points are inserted, overfilling the buffer.
-        min_buffer_size = SLICE_SIZE * 2
+        min_buffer_size = PMAC_SLICE_SIZE * 2
         async for current_point in observe_value(
             self.pmac.trajectory.total_points,
             done_status=execute_status,
@@ -159,7 +159,7 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
             # Ensure we maintain a minimum buffer size, if we have more points to append
             if len(path) != 0 and self._loaded - current_point < min_buffer_size:
                 # We have less than SLICE_SIZE * 2 points in the buffer, so refill
-                next_slice = path.consume(SLICE_SIZE)
+                next_slice = path.consume(PMAC_SLICE_SIZE)
                 path_length = len(path)
                 await self._append_trajectory(next_slice, path_length, motor_info)
 
