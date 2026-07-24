@@ -2,12 +2,13 @@ import asyncio
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import PureWindowsPath
-from typing import Any, Generic
+from typing import Any, Generic, TypeVar
 from xml.etree import ElementTree as ET
 
 import numpy as np
 
 from ophyd_async.core import (
+    Array1D,
     DetectorDataLogic,
     EnableDisable,
     PathInfo,
@@ -29,9 +30,14 @@ from ._io import (
     NDFileHDF5IO,
     NDPluginBaseIO,
     NDPluginFileIO,
-    NDPluginFileIOT,
+    NDStatsIO,
 )
 from ._ndattribute import NDAttributeDataType, NDAttributePvDbrType
+from ._stats_time_series import StatsTimeSeriesDataLogic
+
+#: A writer plugin built by an `ADWriterFactory`: a file writer (HDF, TIFF, JPEG)
+#: or a stats plugin whose time series is read as event pages.
+NDWriterPluginT = TypeVar("NDWriterPluginT", bound=NDPluginBaseIO)
 
 
 @dataclass
@@ -304,17 +310,17 @@ class ADMultipartDataLogic(DetectorDataLogic):
 
 
 @dataclass
-class ADWriterFactory(Generic[NDPluginFileIOT]):
-    """Factory that creates a file-writer plugin and its matching data logic.
+class ADWriterFactory(Generic[NDWriterPluginT]):
+    """Factory that creates a writer plugin and its matching data logic.
 
-    Construct using the classmethods `hdf`, `jpeg`, or `tiff`, then pass one
-    or more instances to `AreaDetector` as positional `*writer_factories`
+    Construct using the classmethods `hdf`, `jpeg`, `tiff` or `stats`, then pass
+    one or more instances to `AreaDetector` as positional `*writer_factories`
     arguments.  When the detector is initialised `__call__` is invoked with
     the detector's PV `prefix`, its `driver`, and the flat list of extra
     `plugins`; it returns the writer device and the corresponding
     `DetectorDataLogic`.
 
-    :param writer_cls: Concrete `NDPluginFileIO` subclass to instantiate.
+    :param writer_cls: Concrete `NDPluginBaseIO` subclass to instantiate.
     :param writer_suffix: PV suffix appended to *prefix* to form the writer's PV prefix.
     :param writer_name:
         Attribute name under which the writer device is stored on the
@@ -333,7 +339,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         that builds the data logic given the already-constructed writer.
     """
 
-    writer_cls: type[NDPluginFileIOT]
+    writer_cls: type[NDWriterPluginT]
     writer_suffix: str
     writer_name: str
     datakey_suffix: str
@@ -341,7 +347,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         NDArrayDescription | Callable[[ADBaseIO], NDArrayDescription] | None
     )
     data_logic_factory: Callable[
-        [NDPluginFileIOT, NDArrayDescription, ADBaseIO, Sequence[NDPluginBaseIO]],
+        [NDWriterPluginT, NDArrayDescription, ADBaseIO, Sequence[NDPluginBaseIO]],
         DetectorDataLogic,
     ]
 
@@ -350,7 +356,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         prefix: str,
         driver: ADBaseIO,
         plugins: Sequence[NDPluginBaseIO],
-    ) -> tuple[NDPluginFileIOT, DetectorDataLogic]:
+    ) -> tuple[NDWriterPluginT, DetectorDataLogic]:
         """Instantiate the writer plugin and build the data logic.
 
         :param prefix: EPICS PV prefix for the detector (same as `AreaDetector.prefix`).
@@ -503,6 +509,48 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
                     writer=writer,
                     extension=".tiff",
                     mimetype="multipart/related;type=image/tiff",
+                    datakey_suffix=datakey_suffix,
+                )
+            ),
+        )
+
+    @staticmethod
+    def stats(
+        writer_suffix: str = "STAT:",
+        writer_name: str = "stats",
+        datakey_suffix: str = "",
+        stat_signals: Callable[
+            [NDStatsIO], Sequence[tuple[str, SignalR[Array1D[np.float64]]]]
+        ]
+        | None = None,
+    ) -> "ADWriterFactory[NDStatsIO]":
+        """Create a factory for an NDPluginStats time series.
+
+        Unlike `hdf`, `jpeg` and `tiff`, this writes no file: the stats plugin's
+        time series is a fixed-length buffer read back as event pages, for
+        detectors that cannot write assets (see `StatsTimeSeriesDataLogic`).
+
+        :param writer_suffix: PV suffix for the NDPluginStats plugin, defaults to
+            ``STAT:``.
+        :param writer_name:
+            Attribute name for the plugin on the detector, defaults to ``"stats"``.
+        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.
+        :param stat_signals:
+            Callable ``(stats) → [(suffix, array_signal), ...]`` choosing which
+            statistics to expose, given the constructed plugin. Left as ``None``
+            (the default), only the ``Total`` series is exposed under the bare
+            datakey name.
+        """
+        return ADWriterFactory(
+            writer_cls=NDStatsIO,
+            writer_suffix=writer_suffix,
+            writer_name=writer_name,
+            datakey_suffix=datakey_suffix,
+            array_description=None,
+            data_logic_factory=lambda writer, desc, driver, plugins: (
+                StatsTimeSeriesDataLogic(
+                    stats=writer,
+                    stat_signals=list(stat_signals(writer)) if stat_signals else [],
                     datakey_suffix=datakey_suffix,
                 )
             ),
