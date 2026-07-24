@@ -196,20 +196,6 @@ class NDProcessIO(NDPluginBaseIO):
     scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
-class NDStatsTSControl(StrictEnum):
-    """Time-series control command for an NDPluginStats time series.
-
-    Mirrors the ``TSControl`` record in ADCore/db/NDPluginTimeSeries.template.
-    Writing ``ERASE_START`` clears the buffer and resets the current point to 0
-    before it starts filling again.
-    """
-
-    ERASE_START = "Erase/Start"
-    START = "Start"
-    STOP = "Stop"
-    READ = "Read"
-
-
 class NDStatsTSAcquireMode(StrictEnum):
     """Whether an NDPluginStats time series stops when full or wraps around.
 
@@ -249,20 +235,21 @@ class NDStatsIO(StandardReadable, NDPluginBaseIO):
     sigma: A[SignalR[float], PvSuffix("Sigma_RBV")]
     total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
     net: A[SignalR[float], PvSuffix("Net_RBV")]
-    # Time series. NDStats.template includes NDPluginTimeSeries.template with an
-    # inner "TS:" record prefix, so each statistic is also exposed as a fixed-
-    # length array. ts_num_points sizes the buffer, ts_control erases and starts
-    # it, ts_current_point reports progress and ts_total holds the Total series.
+    # Time series. NDStats delegates its time series to an embedded
+    # NDPluginTimeSeries instance under an inner "TS:" prefix, so each statistic
+    # is also exposed as a fixed-length array. ts_num_points sizes the buffer,
+    # ts_acquire erases and starts it (writing 1 clears the arrays and resets
+    # ts_current_point to 0), ts_current_point reports progress, ts_total holds
+    # the Total series and ts_timestamp holds the per-point acquisition times.
     # These are not registered as readables: the scalars above serve read(), and
     # the arrays are consumed by StatsTimeSeriesDataLogic as event pages.
-    # These suffixes are derived from the ADCore templates and want verifying
-    # against a live IOC.
-    ts_control: A[SignalRW[NDStatsTSControl], PvSuffix("TS:TSControl")]
+    ts_acquire: A[SignalRW[bool], PvSuffix("TS:TSAcquire")]
     ts_num_points: A[SignalRW[int], PvSuffix.rbv("TS:TSNumPoints")]
     ts_current_point: A[SignalR[int], PvSuffix("TS:TSCurrentPoint")]
     ts_acquiring: A[SignalR[bool], PvSuffix("TS:TSAcquiring")]
     ts_acquire_mode: A[SignalRW[NDStatsTSAcquireMode], PvSuffix.rbv("TS:TSAcquireMode")]
     ts_total: A[SignalR[Array1D[np.float64]], PvSuffix("TS:TSTotal")]
+    ts_timestamp: A[SignalR[Array1D[np.float64]], PvSuffix("TS:TSTimestamp")]
     # Centroid statistics
     compute_centroid: A[
         SignalRW[bool], PvSuffix.rbv("ComputeCentroid"), Format.CONFIG_SIGNAL

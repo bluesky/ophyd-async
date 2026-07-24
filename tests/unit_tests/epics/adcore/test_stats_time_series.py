@@ -12,7 +12,6 @@ from ophyd_async.core import (
 from ophyd_async.epics import adcore
 from ophyd_async.epics.adcore import (
     NDStatsTSAcquireMode,
-    NDStatsTSControl,
     StatsTimeSeriesDataLogic,
     StatsTimeSeriesProvider,
 )
@@ -32,8 +31,8 @@ async def test_prepare_bounded_sizes_and_arms_the_buffer(stats: adcore.NDStatsIO
     assert isinstance(provider, StatsTimeSeriesProvider)
     assert await stats.ts_num_points.get_value() == 5
     assert await stats.ts_acquire_mode.get_value() == NDStatsTSAcquireMode.FIXED_LENGTH
-    # Erase/Start arms and clears the buffer
-    assert await stats.ts_control.get_value() == NDStatsTSControl.ERASE_START
+    # ts_acquire=1 arms and clears the buffer
+    assert await stats.ts_acquire.get_value() is True
     # The datakey defaults to the Total series under the bare name
     datakeys = await provider.make_datakeys(5)
     assert list(datakeys) == ["det-stats"]
@@ -43,30 +42,36 @@ async def test_prepare_bounded_sizes_and_arms_the_buffer(stats: adcore.NDStatsIO
 
 async def test_stop_stops_the_time_series(stats: adcore.NDStatsIO):
     logic = StatsTimeSeriesDataLogic(stats)
+    set_mock_value(stats.ts_acquire, True)
     await logic.stop()
-    assert await stats.ts_control.get_value() == NDStatsTSControl.STOP
+    assert await stats.ts_acquire.get_value() is False
 
 
 @pytest.mark.parametrize(
-    "collections_per_event,num_events,expected",
+    "collections_per_event,expected_data,expected_times",
     [
-        # step scan: one event holds the whole 5-point buffer
-        (5, 1, [[10.0, 11.0, 12.0, 13.0, 14.0]]),
-        # fly scan: five events of one point each
-        (1, 5, [[10.0], [11.0], [12.0], [13.0], [14.0]]),
+        # step scan: one event holds the whole 5-point buffer, timed by its
+        # last point
+        (5, [[10.0, 11.0, 12.0, 13.0, 14.0]], [104.0]),
+        # fly scan: five events of one point each, timed point by point
+        (
+            1,
+            [[10.0], [11.0], [12.0], [13.0], [14.0]],
+            [100.0, 101.0, 102.0, 103.0, 104.0],
+        ),
     ],
 )
 async def test_provider_slices_array_into_events(
     stats: adcore.NDStatsIO,
     collections_per_event: int,
-    num_events: int,
-    expected: list[list[float]],
+    expected_data: list[list[float]],
+    expected_times: list[float],
 ):
-    total = np.array([10.0, 11.0, 12.0, 13.0, 14.0])
-    set_mock_value(stats.ts_total, total)
+    set_mock_value(stats.ts_total, np.array([10.0, 11.0, 12.0, 13.0, 14.0]))
+    set_mock_value(stats.ts_timestamp, np.array([100.0, 101.0, 102.0, 103.0, 104.0]))
     set_mock_value(stats.ts_current_point, 5)
     provider = StatsTimeSeriesProvider(
-        {"det-stats": stats.ts_total}, stats.ts_current_point
+        {"det-stats": stats.ts_total}, stats.ts_current_point, stats.ts_timestamp
     )
 
     pages = [
@@ -76,20 +81,8 @@ async def test_provider_slices_array_into_events(
         )
     ]
     (page,) = pages
-    assert page["data"]["det-stats"] == expected
-    assert len(page["time"]) == num_events
-
-
-async def test_provider_make_readings_derives_single_reading(stats: adcore.NDStatsIO):
-    """A step-scan read derives one reading holding the whole buffer."""
-    total = np.array([1.0, 2.0, 3.0])
-    set_mock_value(stats.ts_total, total)
-    set_mock_value(stats.ts_current_point, 3)
-    provider = StatsTimeSeriesProvider(
-        {"det-stats": stats.ts_total}, stats.ts_current_point
-    )
-    readings = await provider.make_readings(collections_per_event=3)
-    assert readings["det-stats"]["value"] == [1.0, 2.0, 3.0]
+    assert page["data"]["det-stats"] == expected_data
+    assert page["time"] == expected_times
 
 
 class _JustInternal(DetectorTriggerLogic):
@@ -102,12 +95,14 @@ class _JustInternal(DetectorTriggerLogic):
 class _FillStatsAcquireLogic(DetectorAcquireLogic):
     """Fills the mock time series when acquisition starts."""
 
-    def __init__(self, stats: adcore.NDStatsIO, values: np.ndarray):
+    def __init__(self, stats: adcore.NDStatsIO, values: np.ndarray, times: np.ndarray):
         self.stats = stats
         self.values = values
+        self.times = times
 
     async def start_acquiring(self):
         set_mock_value(self.stats.ts_total, self.values)
+        set_mock_value(self.stats.ts_timestamp, self.times)
         set_mock_value(self.stats.ts_current_point, len(self.values))
 
     async def wait_for_idle(self): ...
@@ -115,15 +110,23 @@ class _FillStatsAcquireLogic(DetectorAcquireLogic):
     async def ensure_stopped(self): ...
 
 
-async def test_step_scan_collect_pages_end_to_end(stats: adcore.NDStatsIO):
-    """A writer-less detector with a stats time series emits event pages."""
+@pytest.fixture
+def stats_detector(stats: adcore.NDStatsIO) -> StandardDetector:
+    """A writer-less detector whose only data logic is a stats time series."""
     values = np.array([5.0, 6.0, 7.0, 8.0])
+    times = np.array([200.0, 201.0, 202.0, 203.0])
     det = StandardDetector(name="det")
     det.add_detector_logics(
         _JustInternal(),
-        _FillStatsAcquireLogic(stats, values),
+        _FillStatsAcquireLogic(stats, values, times),
         StatsTimeSeriesDataLogic(stats),
     )
+    return det
+
+
+async def test_step_scan_collect_pages_end_to_end(stats_detector: StandardDetector):
+    """A writer-less detector with a stats time series emits event pages."""
+    det = stats_detector
     # A bounded logic exposes collect_pages, not collect_asset_docs
     assert hasattr(det, "collect_pages")
     assert not hasattr(det, "collect_asset_docs")
@@ -134,4 +137,17 @@ async def test_step_scan_collect_pages_end_to_end(stats: adcore.NDStatsIO):
     pages = [page async for page in det.collect_pages()]
     (page,) = pages
     assert page["data"]["det"] == [[5.0, 6.0, 7.0, 8.0]]
+    await det.unstage()
+
+
+async def test_step_scan_read_derives_single_reading(stats_detector: StandardDetector):
+    """A step-scan read derives one reading holding the whole buffer, timed by
+    the last point's ts_timestamp."""
+    det = stats_detector
+    await det.stage()
+    await det.prepare(TriggerInfo(collections_per_event=4))
+    await det.trigger()
+    reading = await det.read()
+    assert reading["det"]["value"] == [5.0, 6.0, 7.0, 8.0]
+    assert reading["det"]["timestamp"] == 203.0
     await det.unstage()

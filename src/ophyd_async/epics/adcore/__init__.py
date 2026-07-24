@@ -31,7 +31,6 @@ from ._io import (
     NDROIStatNIO,
     NDStatsIO,
     NDStatsTSAcquireMode,
-    NDStatsTSControl,
 )
 from ._ndattribute import (
     NDAttributeDataType,
@@ -59,7 +58,6 @@ __all__ = [
     "NDPluginBaseIO",
     "NDROIIO",
     "NDStatsIO",
-    "NDStatsTSControl",
     "NDStatsTSAcquireMode",
     "NDROIStatNIO",
     "NDROIStatIO",

@@ -1,5 +1,4 @@
 import asyncio
-import time
 from collections.abc import AsyncIterator, Mapping, Sequence
 from dataclasses import dataclass, field
 
@@ -13,9 +12,10 @@ from ophyd_async.core import (
     EnableDisable,
     PageableDataProvider,
     SignalR,
+    gather_dict,
 )
 
-from ._io import NDStatsIO, NDStatsTSAcquireMode, NDStatsTSControl
+from ._io import NDStatsIO, NDStatsTSAcquireMode
 
 
 class StatsTimeSeriesProvider(PageableDataProvider):
@@ -24,19 +24,24 @@ class StatsTimeSeriesProvider(PageableDataProvider):
     The plugin holds one fixed-length array per statistic, filled by NDArray
     callbacks as the detector acquires. Progress is read from
     ``ts_current_point``, and each configured array is sliced into
-    ``collections_per_event``-length chunks, one per event.
+    ``collections_per_event``-length chunks, one per event. The plugin's
+    ``ts_timestamp`` array gives the acquisition time of each point, so the last
+    point of an event supplies that event's timestamp.
 
     :param arrays: datakey (already suffixed) to the array signal that backs it
     :param current_point: the plugin's ``ts_current_point`` progress signal
+    :param timestamps: the plugin's ``ts_timestamp`` per-point time signal
     """
 
     def __init__(
         self,
         arrays: Mapping[str, SignalR[Array1D[np.float64]]],
         current_point: SignalR[int],
+        timestamps: SignalR[Array1D[np.float64]],
     ) -> None:
         self.arrays = dict(arrays)
         self.collections_written_signal = current_point
+        self.timestamps = timestamps
         self.last_emitted = 0
 
     async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
@@ -58,27 +63,35 @@ class StatsTimeSeriesProvider(PageableDataProvider):
         if events <= self.last_emitted:
             return
         new = range(self.last_emitted, events)
-        # A single timestamp per event: the plugin does not expose a per-point
-        # time, so use the read time.
-        now = time.time()
-        values = {
-            datakey: await signal.get_value() for datakey, signal in self.arrays.items()
-        }
+        # Read every array and the per-point timestamps in one parallel batch.
+        read: dict[
+            SignalR[Array1D[np.float64]], Array1D[np.float64]
+        ] = await gather_dict(
+            {
+                signal: signal.get_value()
+                for signal in (*self.arrays.values(), self.timestamps)
+            }
+        )
+        stamps = read[self.timestamps]
+        # One timestamp per event: the acquisition time of that event's last point.
+        event_times = [
+            float(stamps[(event + 1) * collections_per_event - 1]) for event in new
+        ]
         page: PartialEventPage = {
             "data": {
                 datakey: [
                     list(
-                        array[
+                        read[signal][
                             event * collections_per_event : (event + 1)
                             * collections_per_event
                         ]
                     )
                     for event in new
                 ]
-                for datakey, array in values.items()
+                for datakey, signal in self.arrays.items()
             },
-            "time": [now for _ in new],
-            "timestamps": {datakey: [now for _ in new] for datakey in values},
+            "time": event_times,
+            "timestamps": dict.fromkeys(self.arrays, event_times),
         }
         self.last_emitted = events
         yield page
@@ -91,14 +104,14 @@ class StatsTimeSeriesDataLogic(DetectorDataLogic):
     For detectors that write no file: the stats plugin holds each statistic in a
     fixed-length buffer that must be sized before acquisition, so this is a
     bounded (`prepare_bounded`) data logic that emits event pages. One plugin has
-    one time-series control (`ts_control`, `ts_num_points`) shared across many
+    one time-series control (`ts_acquire`, `ts_num_points`) shared across many
     arrays, so one logic covers many arrays with the control embedded.
 
-    The buffer is sized and erased in `prepare_bounded` by writing
-    ``Erase/Start`` to ``ts_control``; the detector's acquire logic then drives
-    the camera as usual and its frames feed the time series via NDArray
-    callbacks. A detector that writes a file should pull stats into the file as
-    NDAttributes instead (see `ADHDFDataLogic`).
+    The buffer is sized and armed in `prepare_bounded` by writing 1 to
+    ``ts_acquire``, which erases the arrays and resets the current point before
+    the detector's acquire logic drives the camera; its frames then feed the time
+    series via NDArray callbacks. A detector that writes a file should pull stats
+    into the file as NDAttributes instead (see `ADHDFDataLogic`).
 
     :param stats: the stats plugin whose time series to read
     :param stat_signals: datakey suffix to the array signal for each statistic to
@@ -127,17 +140,19 @@ class StatsTimeSeriesDataLogic(DetectorDataLogic):
             self.stats.ts_num_points.set(num_collections),
             self.stats.ts_acquire_mode.set(NDStatsTSAcquireMode.FIXED_LENGTH),
         )
-        # Erase and start clears the arrays and resets ts_current_point to 0, so
-        # the buffer is armed and empty before the detector's frames arrive. This
-        # is the data logic performing the erase itself, which is why trigger()'s
-        # zero baseline is correct (see ADR 0020).
-        await self.stats.ts_control.set(NDStatsTSControl.ERASE_START)
+        # Writing 1 to ts_acquire clears the arrays and resets ts_current_point to
+        # 0, so the buffer is armed and empty before the detector's frames arrive.
+        # This is the data logic performing the erase itself, which is why
+        # trigger()'s zero baseline is correct (see ADR 0020).
+        await self.stats.ts_acquire.set(True)
         return StatsTimeSeriesProvider(
-            self._arrays(datakey_name), self.stats.ts_current_point
+            self._arrays(datakey_name),
+            self.stats.ts_current_point,
+            self.stats.ts_timestamp,
         )
 
     async def stop(self) -> None:
-        await self.stats.ts_control.set(NDStatsTSControl.STOP)
+        await self.stats.ts_acquire.set(False)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         return list(self._arrays(datakey_name))
