@@ -33,9 +33,9 @@ from ._block import (
 )
 from ._table import SeqTable, SeqTrigger
 
-MAX_REPEATS = 5000  # 2**16 - 1
-PANDA_SLICE_SIZE = 1000
-PANDA_QUEUE_THRESHOLD = 2
+MAX_REPEATS = 2**16 - 1
+PANDA_SLICE_SIZE = 62500
+PANDA_QUEUE_THRESHOLD = 1000
 
 
 @dataclass
