@@ -2,7 +2,7 @@ from abc import abstractmethod
 from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
-from bluesky.protocols import Reading, StreamAsset
+from bluesky.protocols import StreamAsset
 from event_model import ComposeStreamResource, DataKey, StreamRange
 from event_model.documents import PartialEventPage
 
@@ -45,7 +45,7 @@ class PageableDataProvider:
     stream datums as it goes.
 
     A step-scan event has a single collection window, so `make_pages` yields
-    one page of one event which the base `make_readings` extracts to a single
+    one page of one event, which `StandardDetector.read` extracts to a single
     reading; the same `make_pages` serves fly-scan collection.
     """
 
@@ -69,22 +69,6 @@ class PageableDataProvider:
         :param collections_written: how many collections have been written so far
         :param collections_per_event: how many collections make up one event
         """
-
-    async def make_readings(self, collections_per_event: int) -> dict[str, Reading]:
-        """Derive readings from the pages for the collections written so far.
-
-        A step-scan prepare has a single event, so the page holds one event
-        whose per-key value is the `collections_per_event`-length array; this
-        extracts to a single reading per key.
-        """
-        collections_written = await self.collections_written_signal.get_value()
-        readings: dict[str, Reading] = {}
-        async for page in self.make_pages(collections_written, collections_per_event):
-            times = page["time"]
-            for key, values in page["data"].items():
-                for value, timestamp in zip(values, times, strict=True):
-                    readings[key] = Reading(value=value, timestamp=timestamp)
-        return readings
 
 
 class StreamResourceInfo(ConfinedModel):

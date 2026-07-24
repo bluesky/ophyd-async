@@ -17,6 +17,7 @@ from bluesky.protocols import (
     Flyable,
     HasHints,
     Preparable,
+    Reading,
     Stageable,
     StreamAsset,
     Triggerable,
@@ -968,11 +969,14 @@ class StandardDetector(
         ctx = error_if_none(self._prepare_ctx, "Prepare not run")
         cpe = ctx.trigger_info.collections_per_event
         # Bounded providers hold a single-event page for this step-scan point,
-        # which read() extracts back to a reading.
+        # which _pageable_readings extracts back to a reading. That extraction
+        # lives here rather than on the provider so a provider cannot override
+        # it -- see the review note on #1367.
         for pdp in ctx.pageable_data_providers:
-            yield functools.partial(
-                pdp.make_datakeys if verb is _Verb.DESCRIBE else pdp.make_readings, cpe
-            )
+            if verb is _Verb.DESCRIBE:
+                yield functools.partial(pdp.make_datakeys, cpe)
+            else:
+                yield functools.partial(self._pageable_readings, pdp, cpe)
         if verb is _Verb.DESCRIBE:
             # Streamable providers describe their shape for a step scan, but
             # produce their data through collect_asset_docs rather than read()
@@ -993,6 +997,33 @@ class StandardDetector(
         for dl in self._data_logics:
             if fields := dl.get_hinted_fields(self.name + dl.datakey_suffix):
                 yield _HintedFields(fields)
+
+    async def _pageable_readings(
+        self, provider: PageableDataProvider, collections_per_event: int
+    ) -> dict[str, Reading]:
+        """Derive readings from a bounded provider's pages for a step-scan read.
+
+        A step-scan prepare has a single event, so the page holds one event
+        whose per-key value is the `collections_per_event`-length array; this
+        extracts to a single reading per key. More than one value in a page
+        would mean `read()` was asked for a single reading from a multi-event
+        buffer, where the answer is ambiguous, so raise rather than silently
+        keep the last.
+        """
+        collections_written = await provider.collections_written_signal.get_value()
+        readings: dict[str, Reading] = {}
+        async for page in provider.make_pages(
+            collections_written, collections_per_event
+        ):
+            times = page["time"]
+            for key, values in page["data"].items():
+                if len(values) != 1:
+                    raise ValueError(
+                        f"read() expected a single event for {key!r}, "
+                        f"got a page of {len(values)}"
+                    )
+                readings[key] = Reading(value=values[0], timestamp=times[0])
+        return readings
 
     async def _collect_asset_docs(
         self, index: int | None = None
