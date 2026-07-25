@@ -509,6 +509,69 @@ async def test_preserve_detector_state_multi_collection_watcher_and_assets(
     assert all(update["target"] == 5 for update in updates)
 
 
+@pytest.mark.xfail(
+    reason="collect_asset_docs() checks ``dl.collections_written`` again after "
+    "``trigger()``",
+    strict=True,
+)
+async def test_collect_asset_docs_uses_trigger_observed_event(
+    tmp_path,
+):
+    """When ``trigger()`` observes that ``dl.collections_written`` hit its target,
+    ``collect_asset_docs`` should not check *again* for the same condition.
+
+    It could be the case that ``dl.collections_written`` changes between ``trigger()``
+    and ``collect_asset_docs``."""
+    det = StandardDetector(name="det")
+    dl = StreamableOnlyDataLogic(tmp_path)
+    dl.collections_written, set_collections_written = soft_signal_r_and_setter(
+        int, getter=lambda: 0
+    )
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+    await det.prepare(TriggerInfo(collections_per_event=5, exposure_timeout=0.1))
+
+    status = det.trigger()
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    set_collections_written(5)
+    await status
+
+    assert await det.read() == {}
+    docs = [doc async for doc in det.collect_asset_docs()]
+    assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
+    assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
+
+
+async def test_kickoff_respects_prepare_bounds(tmp_path):
+    """Test that multiple kickoff() calls respect prepared bounds."""
+    det = StandardDetector()
+    tl = JustInternalTriggerLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
+    det.add_detector_logics(tl, dl)
+
+    # Prepare for 5 events
+    await det.prepare(TriggerInfo(number_of_events=5))
+
+    # Update collections_written signal to simulate data being written
+
+    # First kickoff for 3 events
+    await det.events_to_kickoff.set(3)
+    await det.kickoff()
+    await dl.collections_written.set(3)
+
+    # Second kickoff for 2 events should work (total = 5)
+    await det.events_to_kickoff.set(2)
+    await det.kickoff()
+    await dl.collections_written.set(5)
+
+    # Third kickoff should fail (would exceed 5)
+    await det.events_to_kickoff.set(1)
+    with pytest.raises(
+        RuntimeError,
+        match="Kickoff requested 5:6, but detector was only prepared up to 5",
+    ):
+        await det.kickoff()
+
+
 async def test_stage_resets_state():
     """Test that stage() resets detector state."""
     det = StandardDetector()
