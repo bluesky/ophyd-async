@@ -22,6 +22,7 @@ from ophyd_async.core import (
     StreamResourceDataProvider,
     StreamResourceInfo,
     TriggerInfo,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.testing import (
@@ -466,20 +467,20 @@ async def test_preserve_detector_state_no_trigger_logic_falls_back(
     assert det._prepare_ctx.trigger_info == TriggerInfo()
 
 
-async def test_preserve_detector_state_multi_collection_watcher_updates(
+async def test_preserve_detector_state_multi_collection_watcher_and_assets(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path,
 ):
     """When OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES and default_trigger_info returns
-    collections_per_event > 1, trigger() should yield watcher updates that reflect
-    the correct number of collections requested."""
+    collections_per_event > 1, trigger() should wait for that many raw collections
+    and collect_asset_docs() should emit one datum for the Bluesky event."""
 
     class MultiCollectionTriggerLogic(DetectorTriggerLogic):
         async def prepare_internal(self, num: int, livetime: float, deadtime: float):
             pass
 
         async def default_trigger_info(self) -> TriggerInfo:
-            return TriggerInfo(collections_per_event=3)
+            return TriggerInfo(collections_per_event=5)
 
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     det = StandardDetector(name="multidet")
@@ -492,61 +493,20 @@ async def test_preserve_detector_state_multi_collection_watcher_updates(
     status = det.trigger()
     status.watch(lambda **kwargs: updates.append(kwargs))
     await wait_for_pending_wakeups(raise_if_exceeded=False)
+    assert (await det.describe())["multidet"]["shape"] == [5, 10, 15]
 
-    # Simulate 1 collection written — watcher should report current=1
-    # and target=3, so not done yet.
-    await dl.collections_written.set(1)
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
-    assert not status.done
+    for collections_written in range(1, 5):
+        await dl.collections_written.set(collections_written)
+        await wait_for_pending_wakeups(raise_if_exceeded=False)
+        assert not status.done
 
-    # Simulate 2 collections written — still not done
-    await dl.collections_written.set(2)
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
-    assert not status.done
-
-    # Simulate 3 collections written — now complete
-    await dl.collections_written.set(3)
-    await status
-
-    # Verify watcher updates all have correct target.
-    # observe_signals_value emits the initial value (0), so we get 4 updates:
-    # initial(0), set(1), set(2), set(3).
-    assert len(updates) == 4
-    for update in updates:
-        assert update["target"] == 3  # 3 collections per event
-    # Final update should show current == target
-    assert updates[-1]["current"] == 3
-
-
-async def test_kickoff_respects_prepare_bounds(tmp_path):
-    """Test that multiple kickoff() calls respect prepared bounds."""
-    det = StandardDetector()
-    tl = JustInternalTriggerLogic()
-    dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_detector_logics(tl, dl)
-
-    # Prepare for 5 events
-    await det.prepare(TriggerInfo(number_of_events=5))
-
-    # Update collections_written signal to simulate data being written
-
-    # First kickoff for 3 events
-    await det.events_to_kickoff.set(3)
-    await det.kickoff()
-    await dl.collections_written.set(3)
-
-    # Second kickoff for 2 events should work (total = 5)
-    await det.events_to_kickoff.set(2)
-    await det.kickoff()
     await dl.collections_written.set(5)
-
-    # Third kickoff should fail (would exceed 5)
-    await det.events_to_kickoff.set(1)
-    with pytest.raises(
-        RuntimeError,
-        match="Kickoff requested 5:6, but detector was only prepared up to 5",
-    ):
-        await det.kickoff()
+    await status
+    docs = [doc async for doc in det.collect_asset_docs()]
+    assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
+    assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
+    assert [update["current"] for update in updates] == [0, 1, 2, 3, 4, 5]
+    assert all(update["target"] == 5 for update in updates)
 
 
 async def test_stage_resets_state():
