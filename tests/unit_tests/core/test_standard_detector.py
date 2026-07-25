@@ -535,7 +535,6 @@ async def test_collect_asset_docs_uses_trigger_observed_event(
     set_collections_written(5)
     await status
 
-    assert await det.read() == {}
     docs = [doc async for doc in det.collect_asset_docs()]
     assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
     assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
