@@ -63,6 +63,28 @@ would not run it. Python will normally warn that the coroutine was never awaited
 Except for environments that support top-level `await`, use `await` inside an
 `async def` function.
 
+## Call synchronous hardware APIs
+
+Some third-party hardware libraries provide only blocking, synchronous methods.
+Calling one directly from a coroutine stops every task on the event-loop thread
+until it returns. [](#asyncio.to_thread) lets the function run in a separate
+thread while the event loop continues:
+
+```python
+reading = await asyncio.to_thread(blocking_detector.read)
+```
+
+Pass the function itself to `to_thread()`, followed by any positional or keyword
+arguments, rather than calling the function first:
+
+```python
+await asyncio.to_thread(blocking_motor.move, position, timeout=5)
+```
+
+Prefer an async API when the library provides one. Otherwise, use `to_thread()`
+for blocking I/O after checking that the library supports calls from a worker
+thread. It is not normally a way to parallelize CPU-bound Python code.
+
 ## Choose sequence or concurrency
 
 Two `await` expressions in a row are sequential. The second operation starts
