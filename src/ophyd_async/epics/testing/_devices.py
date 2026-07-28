@@ -156,3 +156,17 @@ class EpicsTestPviDisagreeingSuffixDevice(EpicsDevice):
     """
 
     overridden_float: A[SignalRW[float], PvSuffix("float_prec_1")]
+
+
+class EpicsTestCaDeviceInitMustFail(StandardReadable, EpicsDevice):
+    """Dedicated device for signals that fail at initialisation.
+
+    Don't add them to :class:`EpicsTestCaDevice`. as this will break
+    test_epics_signal_lifecycle
+    """
+
+    float32al5o1: A[
+        SignalRW[Array1D[np.float32]],
+        PvSuffix("float32al5"),
+        EpicsOptions(element_count=1),
+    ]

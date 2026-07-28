@@ -67,6 +67,7 @@ from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     IOC,
     EpicsTestCaDevice,
+    EpicsTestCaDeviceInitMustFail,
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
@@ -884,3 +885,26 @@ async def test_waveform_cb(
         sig.clear_sub(cb)
 
     assert got_len == expected_len
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_waveform_invalid_length(
+    ioc_devices: MechanismIocAndDevices, protocol: str
+):
+    dev = EpicsTestCaDeviceInitMustFail(
+        f"{protocol}://{ioc_devices.prefix}{protocol}:", name="test_fail"
+    )
+    sig = dev.float32al5o1
+    assert sig.source.startswith(f"{protocol}://")
+    if protocol == "ca":
+        await sig.connect()
+    elif protocol == "pva":
+        chk, pv_name = sig.source.split("pva://")
+        assert chk == ""
+        with pytest.raises(
+            ValueError,
+            match=f'"{pv_name}": p4p can only support epics option element_count >=2',
+        ):
+            await sig.connect()
+    else:
+        raise NotImplementedError(f"not handling {protocol}")
