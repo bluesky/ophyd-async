@@ -471,7 +471,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 self.converter.value_fields + self.converter.reading_fields
             )
             self.subscription = context().monitor(
-                self.read_pv, async_callback, request=request
+                self._get_read_pv(), async_callback, request=request
             )
 
 

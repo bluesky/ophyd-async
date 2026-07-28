@@ -393,12 +393,18 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = None
 
         if callback:
+            # see argumentation of _caget for details
+            kws = {}
+            if self.options.element_count is not None:
+                kws["count"] = self.options.element_count
+
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
                 all_updates=self._all_updates,
+                **kws,
             )
 
 

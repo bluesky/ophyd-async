@@ -851,32 +851,36 @@ async def test_waveform_different_length(
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_waveform_requesting_only_one_element(
-    ioc_devices: MechanismIocAndDevices, protocol: str
+@pytest.mark.parametrize(
+    "signal_name, expected_len",
+    [
+        ("float32al5", 5),
+        ("float32al5o3", 3),
+    ],
+)
+async def test_waveform_cb(
+    ioc_devices: MechanismIocAndDevices,
+    protocol: str,
+    signal_name: str,
+    expected_len: int,
 ):
-    """shall work for ca, pva only supports slices above 2"""
-    from typing import Annotated as A
-    from ophyd_async.core import StandardReadable
-    from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
+    sig = ioc_devices.get_signal(protocol, signal_name)
+    await sig.connect()
 
-    class TestDevice(StandardReadable, EpicsDevice):
-        sig: A[
-            SignalRW[Array1D[np.float32]],
-            PvSuffix("float32al5"),
-            EpicsOptions(element_count=1),
-        ]
+    got_len = None
+    event = asyncio.Event()
 
-    if protocol == "ca":
-        dev = TestDevice(f"{protocol}://{ioc_devices.prefix}{protocol}:", name="test")
-        sig = dev.sig
-        await sig.connect()
-    elif protocol == "pva":
-        dev = TestDevice(f"{protocol}://{ioc_devices.prefix}{protocol}:", name="test")
-        sig = dev.sig
-        assert sig.source.startswith("pva://")
-        chk, pv_name = sig.source.split("pva://")
-        assert chk == ""
-        with pytest.raises(ValueError, match=f'"{pv_name}": p4p can only support epics option element_count >=2'):
-            await sig.connect()
-    else:
-        raise NotImplementedError(f"Not handling {protocol=}")
+    def cb(d):
+        nonlocal got_len
+        data = d[f"test_{protocol}-{signal_name}"]["value"]
+        got_len = len(data)
+        event.set()
+
+    sig.subscribe(cb)
+
+    try:
+        await asyncio.wait_for(event.wait(), timeout=4.0)
+    finally:
+        sig.clear_sub(cb)
+
+    assert got_len == expected_len
