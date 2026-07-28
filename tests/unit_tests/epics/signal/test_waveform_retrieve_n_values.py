@@ -9,6 +9,7 @@ import pytest_asyncio
 from ophyd_async.core import (
     Array1D,
     DeviceMock,
+    NotConnectedError,
     SignalRW,
     StandardReadable,
 )
@@ -97,3 +98,24 @@ async def test_waveform_server(device_cls, prefix, expected_len, epics_server):
     await dev.connect()
     data = await wf_verify_data(dev, expected_len=expected_len)
     assert len(data) == expected_len
+
+
+class OnlyOneElement(StandardReadable, EpicsDevice):
+    wf: A[SignalRW[Array1D[np.float64]], PvSuffix("signals:tdp_synth:Y"),  EpicsOptions(element_count=1), Format.UNCACHED_SIGNAL, ]
+
+
+@pytest.mark.asyncio
+async def test_pva_one_element_only():
+    """pva only supports 2 or more elements"""
+
+    oe = OnlyOneElement("pva://mfp:SR12C:BPM7:", name="test")
+    with pytest.raises(NotConnectedError):
+        await oe.connect()
+    del oe
+
+    # should work for ca protocol
+    oe = OnlyOneElement("ca://mfp:SR12C:BPM7:", name="test")
+    # with pytest.raises(ValueError) as exc:
+    await oe.connect()
+    r = await oe.read()
+    del oe
