@@ -99,8 +99,8 @@ class MechanismIocAndDevices:
         self.prefix = generate_random_pv_prefix()
         ca_prefix = f"{self.prefix}ca:"
         pva_prefix = f"{self.prefix}pva:"
-        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
-        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
+        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}", name="test_ca")
+        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}", name="test_pva")
         self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
 
     def get_device(self, protocol: str) -> EpicsTestCaDevice | EpicsTestPvaDevice:
@@ -132,7 +132,7 @@ async def assert_monitor_then_put(
     metadata: dict,
 ):
     assert isinstance(signal, SignalRW)
-    await signal.connect(timeout=1)
+    await signal.connect()
     with MonitorQueue(signal) as q:
         await q.assert_updates(initial_value)
         if isinstance(initial_value, np.ndarray):
@@ -818,3 +818,45 @@ async def test_pvi_adds_undeclared_signal_dynamically(pvi_device: EpicsTestPviDe
     extra_int = pvi_device.extra_int  # type: ignore[attr-defined]
     assert isinstance(extra_int, SignalRW)
     assert await extra_int.get_value() == 42
+
+
+async def wf_verify_data(sig, identifier, expected_len):
+    des = await sig.describe()
+    assert list(des) == [identifier]
+
+    shape = tuple(des[identifier]["shape"])
+    assert shape == (expected_len,)
+
+    t_data = await sig.get_value()
+    assert len(t_data) == expected_len
+
+    data = await sig.read()
+    assert list(data) == [identifier]
+
+    wf_data = data[identifier]["value"]
+    assert len(wf_data) == shape[0]
+    return wf_data
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_waveform_different_length(ioc_devices: MechanismIocAndDevices, protocol: str):
+    sig = ioc_devices.get_signal(protocol, "float32al5")
+    await sig.connect()
+    data = await wf_verify_data(sig, sig.name, expected_len=5)
+
+    sig_lim = ioc_devices.get_signal(protocol, "float32al5o3")
+    await sig_lim.connect()
+    data = await wf_verify_data(sig_lim, sig_lim.name, expected_len=3)
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_waveform_requesting_only_one_element(ioc_devices: MechanismIocAndDevices, protocol: str):
+    """shall work for ca, pva only supports slices above 2"""
+    sig = ioc_devices.get_signal(protocol, "float32al5o1")
+    if protocol == "ca":
+        await sig.connect()
+    elif protocol == "pva":
+        with pytest.raises(ValueError):
+            await sig.connect()
+    else:
+        raise NotImplementedError(f"Not handling {protocol=}")
