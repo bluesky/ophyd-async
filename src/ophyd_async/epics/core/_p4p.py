@@ -373,12 +373,6 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
     ):
         # with p4p: single element seems not feasible
         #           have a look to :meth:`_get_read_pv
-        if options and options.element_count is not None:
-            if options.element_count <= 1:
-                raise ValueError(
-                    "p4p backend can only support epics options element_count above 1"
-                )
-
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
@@ -391,6 +385,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.initial_values[pv] = await pvget_with_timeout(pv, timeout)
 
     async def connect(self, timeout: float):
+        # options are only available at connetion time
+        if self.options and self.options.element_count is not None:
+            if self.options.element_count <= 1:
+                raise ValueError(
+                    f'p4p backend for "{self.read_pv}" can only support epics options element_count >=2'
+                )
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
