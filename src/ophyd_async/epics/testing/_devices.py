@@ -4,6 +4,8 @@ from typing import Annotated as A
 
 import numpy as np
 
+from ophyd_async.core import StandardReadable
+from ophyd_async.epics.core import EpicsOptions
 from ophyd_async.core import (
     Array1D,
     SignalR,
@@ -14,6 +16,9 @@ from ophyd_async.core import (
     SupersetEnum,
     Table,
     TriggerableCommand,
+)
+from ophyd_async.core import (
+    StandardReadableFormat as Format,
 )
 from ophyd_async.epics.core import (
     EpicsDevice,
@@ -66,7 +71,7 @@ class EpicsTestTable(Table):
     a_enum: Sequence[EpicsTestEnum]
 
 
-class EpicsTestCaDevice(EpicsDevice):
+class EpicsTestCaDevice(StandardReadable, EpicsDevice):
     """Device for use in a channel access test IOC."""
 
     a_int: A[SignalRW[int], PvSuffix("int")]
@@ -90,6 +95,11 @@ class EpicsTestCaDevice(EpicsDevice):
     int16a: A[SignalRW[Array1D[np.int16]], PvSuffix("int16a")]
     int32a: A[SignalRW[Array1D[np.int32]], PvSuffix("int32a")]
     float32a: A[SignalRW[Array1D[np.float32]], PvSuffix("float32a")]
+    # todo: check if it can be combined with int32a above
+    #       if its user tolerate a length of 5 with elements set
+    float32al5: A[SignalRW[Array1D[np.float32]], PvSuffix("float32al5")]
+    float32al5o3: A[SignalRW[Array1D[np.float32]], PvSuffix("float32al5"), EpicsOptions(element_count=3)]
+    float32al5o1: A[SignalRW[Array1D[np.float32]], PvSuffix("float32al5"), EpicsOptions(element_count=1)]
     float64a: A[SignalRW[Array1D[np.float64]], PvSuffix("float64a")]
     stra: A[SignalRW[Sequence[str]], PvSuffix("stra")]
     mbb_direct_bit_r: A[SignalR[bool], PvSuffix("mbb_direct.B0")]
