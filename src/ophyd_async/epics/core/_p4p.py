@@ -389,7 +389,8 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         if self.options and self.options.element_count is not None:
             if self.options.element_count <= 1:
                 raise ValueError(
-                    f'p4p backend for "{self.read_pv}" can only support epics options element_count >=2'
+                    f'"{self.read_pv}": p4p can only support epics option'
+                    " element_count >=2"
                 )
         if self.read_pv != self.write_pv:
             # Different, need to connect both
