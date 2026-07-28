@@ -101,7 +101,12 @@ async def test_waveform_server(device_cls, prefix, expected_len, epics_server):
 
 
 class OnlyOneElement(StandardReadable, EpicsDevice):
-    wf: A[SignalRW[Array1D[np.float64]], PvSuffix("signals:tdp_synth:Y"),  EpicsOptions(element_count=1), Format.UNCACHED_SIGNAL, ]
+    wf: A[
+        SignalRW[Array1D[np.float64]],
+        PvSuffix("signals:tdp_synth:Y"),
+        EpicsOptions(element_count=1),
+        Format.UNCACHED_SIGNAL,
+    ]
 
 
 @pytest.mark.asyncio
@@ -117,5 +122,5 @@ async def test_pva_one_element_only():
     oe = OnlyOneElement("ca://mfp:SR12C:BPM7:", name="test")
     # with pytest.raises(ValueError) as exc:
     await oe.connect()
-    r = await oe.read()
+    await oe.read()
     del oe
