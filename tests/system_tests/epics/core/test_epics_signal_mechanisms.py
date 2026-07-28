@@ -835,22 +835,25 @@ async def wf_verify_data(sig, identifier, expected_len):
 
     wf_data = data[identifier]["value"]
     assert len(wf_data) == shape[0]
-    return wf_data
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_waveform_different_length(ioc_devices: MechanismIocAndDevices, protocol: str):
+async def test_waveform_different_length(
+    ioc_devices: MechanismIocAndDevices, protocol: str
+):
     sig = ioc_devices.get_signal(protocol, "float32al5")
     await sig.connect()
-    data = await wf_verify_data(sig, sig.name, expected_len=5)
+    await wf_verify_data(sig, sig.name, expected_len=5)
 
     sig_lim = ioc_devices.get_signal(protocol, "float32al5o3")
     await sig_lim.connect()
-    data = await wf_verify_data(sig_lim, sig_lim.name, expected_len=3)
+    await wf_verify_data(sig_lim, sig_lim.name, expected_len=3)
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_waveform_requesting_only_one_element(ioc_devices: MechanismIocAndDevices, protocol: str):
+async def test_waveform_requesting_only_one_element(
+    ioc_devices: MechanismIocAndDevices, protocol: str
+):
     """shall work for ca, pva only supports slices above 2"""
     sig = ioc_devices.get_signal(protocol, "float32al5o1")
     if protocol == "ca":
