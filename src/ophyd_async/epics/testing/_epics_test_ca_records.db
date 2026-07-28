@@ -407,15 +407,8 @@ record("*", "$(device)float32a") {
 record("*", "$(device)float32al5") {
     info(Q:group, {
         "$(device)PVI": {
-            "value.float32al5.rw": {"+channel": "NAME", "+type": "plain"}
-        }
-    })
-}
-
-record("*", "$(device)float32al5o3") {
-     info(Q:group, {
-         "$(device)PVI": {
-             "value.float32al5o3.rw": {"+channel": "NAME", "+type": "plain"}
+            "value.float32al5.rw": {"+channel": "NAME", "+type": "plain"},
+            "value.float32al5o3.rw": {"+channel": "NAME", "+type": "plain"},
         }
     })
 }
