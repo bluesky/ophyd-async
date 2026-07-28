@@ -95,15 +95,11 @@ class EpicsTestCaDevice(StandardReadable, EpicsDevice):
     # todo: check if it can be combined with int32a above
     #       if its user tolerate a length of 5 with elements set
     float32al5: A[SignalRW[Array1D[np.float32]], PvSuffix("float32al5")]
+    # need a separate entry to be compatible with singal test
     float32al5o3: A[
         SignalRW[Array1D[np.float32]],
-        PvSuffix("float32al5"),
+        PvSuffix("float32al5o3"),
         EpicsOptions(element_count=3),
-    ]
-    float32al5o1: A[
-        SignalRW[Array1D[np.float32]],
-        PvSuffix("float32al5"),
-        EpicsOptions(element_count=1),
     ]
     float64a: A[SignalRW[Array1D[np.float64]], PvSuffix("float64a")]
     stra: A[SignalRW[Sequence[str]], PvSuffix("stra")]
