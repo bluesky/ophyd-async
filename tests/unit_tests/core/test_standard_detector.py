@@ -672,6 +672,7 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 10, 15),
+                    "join_method": "stack",
                     "dataset": "/data",
                 },
                 "uid": ANY,
@@ -978,6 +979,7 @@ async def test_collect_asset_docs_with_explicit_index(tmp_path):
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 10, 15),
+                    "join_method": "stack",
                     "dataset": "/data",
                 },
                 "uid": ANY,

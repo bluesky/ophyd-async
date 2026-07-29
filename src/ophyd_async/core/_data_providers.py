@@ -113,6 +113,7 @@ class StreamResourceDataProvider(StreamableDataProvider):
                 data_key=resource.data_key,
                 parameters={
                     "chunk_shape": resource.chunk_shape,
+                    "join_method": "stack",
                     **resource.parameters,
                 },
                 uid=None,
