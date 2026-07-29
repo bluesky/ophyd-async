@@ -127,12 +127,15 @@ def test_standard_readable_add_children_cm_device_with_mappings(device_type, key
     mock = MagicMock()
     sr.add_readables = mock
 
+    # Create a mock for the DeviceVector/DeviceMap.children() call
     devices = [MagicMock(spec=SignalR) for _ in range(3)]
     device = device_type(dict(zip(keys, devices, strict=True)))
 
     with sr.add_children_as_readables():
         sr.a = device
 
+    # Can't use assert_called_once_with() as the order of items returned from
+    # internal dict comprehension is not guaranteed
     mock.assert_called_once()
     assert set(mock.call_args.args[0]) == set(devices)
 
