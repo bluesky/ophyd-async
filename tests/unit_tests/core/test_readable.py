@@ -119,7 +119,7 @@ def test_standard_readable_add_children_context_manager():
     "device_type, keys",
     [
         (DeviceVector, [1, 2, 3]),
-        (DeviceMap, ["dev1", "dev2", "dev3"]),
+        (DeviceMap, ["a", "b", "c"]),
     ],
 )
 def test_standard_readable_add_children_cm_device_with_mappings(device_type, keys):
