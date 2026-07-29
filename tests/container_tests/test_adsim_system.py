@@ -248,6 +248,7 @@ def test_software_triggering(
             uri=f"file://localhost/{shared_tmp_path.as_posix().lstrip('/')}/adsim.h5",
             parameters={
                 "dataset": "/entry/data/data",
+                "join_method": "stack",
                 "chunk_shape": (1, 1024, 1024),
             },
         ),
