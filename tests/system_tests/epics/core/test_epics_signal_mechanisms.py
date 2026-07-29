@@ -133,7 +133,7 @@ async def assert_monitor_then_put(
     metadata: dict,
 ):
     assert isinstance(signal, SignalRW)
-    await signal.connect()
+    await signal.connect(timeout=1)
     with MonitorQueue(signal) as q:
         await q.assert_updates(initial_value)
         if isinstance(initial_value, np.ndarray):
