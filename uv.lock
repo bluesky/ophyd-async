@@ -1625,7 +1625,6 @@ dev = [
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
-    { name = "scanspec" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc2" },
     { name = "sphinx-copybutton" },
@@ -1653,7 +1652,7 @@ requires-dist = [
     { name = "pytango", marker = "extra == 'tango'", specifier = ">=10.1.3" },
     { name = "pytest", marker = "extra == 'demo'" },
     { name = "pyyaml" },
-    { name = "scanspec", specifier = ">=0.8" },
+    { name = "scanspec", specifier = ">=1.0.0" },
     { name = "stamina", specifier = ">=23.1.0" },
     { name = "velocity-profile" },
 ]
@@ -1685,7 +1684,6 @@ dev = [
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
-    { name = "scanspec", specifier = ">=1.0a1" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc2" },
     { name = "sphinx-copybutton" },
@@ -2741,16 +2739,16 @@ wheels = [
 
 [[package]]
 name = "scanspec"
-version = "1.0a2"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "numpy" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/31/00559414e85c6f41dfab25a365c6a9375ebe2eefc9a8ab5f8a05b9cbe80e/scanspec-1.0a2.tar.gz", hash = "sha256:9b61e4956aed77fb07d6df5e3fc8599541944d9b73d02dcad794923fb8f45e1c", size = 147986, upload-time = "2025-09-09T13:36:36.702Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/c3/7b3621a0eec53b7e348457de68a33a93314c5626523ab1481395811aa09e/scanspec-1.0.0.tar.gz", hash = "sha256:31d297861978e56bb6cfcaa15527bad5ba3dc158b3fc52142ecb5611a22e1b5a", size = 285029, upload-time = "2026-04-28T12:12:54.378Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/48/f3d9e0a811788691c70cab67dcf98cd34f1ff1759b7a4a4e758085912b81/scanspec-1.0a2-py3-none-any.whl", hash = "sha256:a86feeeed84da853ab23a06d86031dd66c235f62f22615016a84703dd5e6c79b", size = 40264, upload-time = "2025-09-09T13:36:35.423Z" },
+    { url = "https://files.pythonhosted.org/packages/68/b9/f44b139096467996b4d85589d9880fd55f0c80a204d298a1b73d0adc2654/scanspec-1.0.0-py3-none-any.whl", hash = "sha256:4ad6dccd6ac19dbd8af888c80c5db53c70d6b8aee9d26c0ca174cebd3c396730", size = 37825, upload-time = "2026-04-28T12:12:53.084Z" },
 ]
 
 [[package]]
