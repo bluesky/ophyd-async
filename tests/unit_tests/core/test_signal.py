@@ -341,6 +341,37 @@ async def test_status_of_set_and_wait_for_value():
 
 
 @pytest.mark.timeout(3)
+async def test_set_and_wait_for_other_value_cancels_a_set_that_outlives_the_match():
+    # asyncio.gather() reraises the first exception but leaves the other
+    # awaitable running, so a match timeout used to return with the set still
+    # in flight and owned by nobody. That is what a loaded CI runner hits:
+    # the set is slower than the match timeout, not faster.
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    async def set_slower_than_the_match_timeout(value: Any, **kwargs):
+        await asyncio.sleep(1.0)
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+    callback_on_mock_put(set_signal, set_slower_than_the_match_timeout)  # type: ignore
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 30, match_signal, -1, timeout=0.1
+        )
+
+    # Nothing is left running: fail_test_on_unclosed_tasks in conftest.py also
+    # catches this, but assert it here so the failure names the cause.
+    dangling = [
+        task
+        for task in asyncio.all_tasks()
+        if not task.done() and task is not asyncio.current_task()
+    ]
+    assert dangling == []
+
+
+@pytest.mark.timeout(3)
 async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
