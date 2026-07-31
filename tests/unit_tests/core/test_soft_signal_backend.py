@@ -204,3 +204,152 @@ async def test_soft_signal_coerces_numpy_types():
     soft_signal._connector.backend.set_value(np.float64(2.2))
     assert await soft_signal.get_value() == 2.2
     assert type(await soft_signal.get_value()) is float
+
+
+async def test_soft_signal_backend_getter():
+    store = [42.0]
+    backend = SoftSignalBackend(float, getter=lambda: store[0])
+    await backend.connect(timeout=1)
+    assert await backend.get_value() == 42.0
+    store[0] = 99.0
+    assert await backend.get_value() == 99.0
+
+
+async def test_soft_signal_backend_async_getter():
+    store = [42.0]
+
+    async def getter():
+        return store[0]
+
+    backend = SoftSignalBackend(float, getter=getter)
+    await backend.connect(timeout=1)
+    store[0] = 99.0
+    assert await backend.get_value() == 99.0
+
+
+async def test_soft_signal_backend_getter_updates_reading():
+    store = [1.0]
+    backend = SoftSignalBackend(float, getter=lambda: store[0])
+    await backend.connect(timeout=1)
+    store[0] = 2.0
+    reading = await backend.get_reading()
+    assert reading["value"] == 2.0
+
+
+async def test_soft_signal_backend_getter_does_not_affect_setpoint():
+    store = [1.0]
+    backend = SoftSignalBackend(float, getter=lambda: store[0])
+    await backend.connect(timeout=1)
+    await backend.put(5.0)
+    store[0] = 99.0
+    assert await backend.get_setpoint() == 5.0
+    assert await backend.get_value() == 99.0
+    assert await backend.get_setpoint() == 5.0
+
+
+async def test_soft_signal_backend_setter_homogeneous_types():
+    store = [0.0]
+
+    def setter(v):
+        store[0] = v
+
+    backend = SoftSignalBackend(float, setter=setter)
+    await backend.connect(timeout=1)
+    await backend.put(7.0)
+    assert store[0] == 7.0
+
+
+async def test_soft_signal_backend_async_setter():
+    store = [0.0]
+
+    async def setter(v):
+        store[0] = v
+
+    backend = SoftSignalBackend(float, setter=setter)
+    await backend.connect(timeout=1)
+    await backend.put(7.0)
+    assert store[0] == 7.0
+
+
+async def test_soft_signal_backend_setter_returns_settled_value():
+    def clamping_setter(v):
+        return max(0.0, min(10.0, v))
+
+    backend = SoftSignalBackend(float, setter=clamping_setter)
+    await backend.connect(timeout=1)
+    await backend.put(50.0)
+    assert await backend.get_value() == 10.0
+
+
+async def test_soft_signal_backend_setter_none_with_getter_refreshes():
+    store = [0.0]
+
+    def setter(v):
+        store[0] = v
+
+    backend = SoftSignalBackend(float, setter=setter, getter=lambda: store[0])
+    await backend.connect(timeout=1)
+    await backend.put(3.0)
+    assert await backend.get_value() == 3.0
+
+
+async def test_soft_signal_backend_setter_none_without_getter_stores_write_value():
+    called_with = []
+
+    def setter(v):
+        called_with.append(v)
+
+    backend = SoftSignalBackend(float, setter=setter)
+    await backend.connect(timeout=1)
+    await backend.put(6.0)
+    assert called_with == [6.0]
+    assert await backend.get_value() == 6.0
+
+
+async def test_soft_signal_backend_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        SoftSignalBackend(float, poll_period=0.1)
+
+
+async def test_soft_signal_backend_poll_period_updates_via_callback():
+    store = [0.0]
+    backend = SoftSignalBackend(float, getter=lambda: store[0], poll_period=0.05)
+    await backend.connect(timeout=1)
+
+    updates: asyncio.Queue[Reading] = asyncio.Queue()
+    backend.set_callback(updates.put_nowait)
+
+    # Consume the initial callback fired by set_callback
+    await updates.get()
+
+    store[0] = 5.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading["value"] == 5.0
+
+    backend.set_callback(None)
+
+
+async def test_soft_signal_backend_poll_task_starts_and_stops():
+    backend = SoftSignalBackend(float, getter=lambda: 0.0, poll_period=0.05)
+    await backend.connect(timeout=1)
+
+    updates: asyncio.Queue[Reading] = asyncio.Queue()
+    assert backend._poll_task is None
+
+    backend.set_callback(updates.put_nowait)
+    assert backend._poll_task is not None
+    assert not backend._poll_task.cancelled()
+
+    backend.set_callback(None)
+    assert backend._poll_task is None
+
+
+async def test_soft_signal_backend_no_poll_without_poll_period():
+    # A getter without poll_period should not start a background task.
+    backend = SoftSignalBackend(float, getter=lambda: 0.0)
+    await backend.connect(timeout=1)
+
+    updates: asyncio.Queue[Reading] = asyncio.Queue()
+    backend.set_callback(updates.put_nowait)
+    assert backend._poll_task is None
+    backend.set_callback(None)

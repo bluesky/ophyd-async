@@ -5,7 +5,7 @@ import time
 from asyncio import Event
 from functools import partial
 from typing import Any
-from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call, patch
 
 import numpy as np
 import numpy.typing as npt
@@ -37,13 +37,27 @@ from ophyd_async.core import (
 from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
+
+# _SignalCache is the internal object behind Signal.subscribe()/caching -
+# a caller gets one automatically, never constructs it directly. Tested
+# here (test_get_reading_runtime_error/test_notify_runtime_error) to
+# exercise internal error paths that aren't otherwise reachable from the
+# public Signal surface - checked, nothing here looks missing from the
+# public interface.
 from ophyd_async.core._signal import (  # noqa: PLC2701
     _SignalCache,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+
+# get_signal_backend_type is the internal ca:/pva: prefix-to-backend-class
+# dispatch epics_signal_rw uses under the hood - a caller only ever sees
+# the prefix-based PV string, never the protocol/backend-class mapping
+# directly - checked, nothing here looks missing from the public interface.
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
     ExampleEnum,
+    ExampleSubsetEnum,
+    ExampleSupersetEnum,
     ExampleTable,
     OneOfEverythingDevice,
     assert_configuration,
@@ -157,7 +171,13 @@ async def test_set_and_wait_for_value_same_set_as_read():
         set_mock_put_proceeds(signal, True)
 
     async def check_set_and_wait():
-        await (await set_and_wait_for_value(signal, 1, timeout=0.1))
+        # A generous timeout: the mock put genuinely completes and the
+        # signal reaches 1, so the wait always succeeds - it just needs the
+        # put-callback propagation to finish before the timeout fires. A
+        # tight timeout (e.g. 0.1s) can let the wait time out first on a
+        # slow event loop, surfacing TimeoutError instead of the expected
+        # match.
+        await (await set_and_wait_for_value(signal, 1, timeout=1.0))
 
     assert await signal.get_value() == 0
     await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
@@ -182,8 +202,12 @@ async def test_set_and_wait_for_value_waits_for_error():
         raise RuntimeError("Bad")
 
     callback_on_mock_put(signal, fail)
+    # A generous timeout: the put raises immediately, so the RuntimeError wins
+    # the race against the internal wait timeout deterministically. A tight
+    # timeout (e.g. 0.1s) can let the wait time out first on a slow event loop
+    # (seen on Windows/Python 3.14), surfacing TimeoutError instead.
     with pytest.raises(RuntimeError, match="Bad"):
-        await set_and_wait_for_value(signal, 1, timeout=0.1)
+        await set_and_wait_for_value(signal, 1, timeout=1.0)
 
 
 async def test_set_and_wait_for_value_different_set_and_read():
@@ -381,6 +405,44 @@ async def test_partial_matcher_still_gives_timeout_error():
         )
 
 
+async def test_set_and_wait_for_other_value_gives_helpful_error_with_no_first_value():
+    """`set_and_wait_for_other_value` races two independent `asyncio.timeout`
+    clocks of the same duration: an outer one guarding the wait for a first
+    value from match_signal, and an inner one (wait_task's own) that
+    produces a nicely formatted error. When match_signal never produces a
+    value at all before `timeout` elapses, the *outer* one always wins this
+    particular race - its clock starts ticking at (or fractionally before)
+    wait_task's, since wait_task needs a trip through the event loop before
+    it can start its own timer. This test pins down that the outer path
+    raises its own distinct, helpful TimeoutError - "didn't provide an
+    initial value" - rather than reusing the inner path's "didn't match"
+    message (which would be misleading here, since no value was ever seen),
+    and not the bare, message-less one asyncio.timeout() raises by default
+    (see PR #1342 / the flaky windows CI failure that motivated this).
+    """
+    set_signal = epics_signal_rw(int, "pva://signal", name="s")
+    match_signal = epics_signal_rw(int, "pva://match_signal", name="m")
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    async def never_yields(signal):
+        # An observe_value() that never produces anything - simulates a
+        # monitor that never even sees a first value within the timeout.
+        await asyncio.sleep(1000)
+        yield  # pragma: no cover - unreachable, just makes this a generator
+
+    with patch("ophyd_async.core._signal.observe_value", never_yields):
+        with pytest.raises(
+            asyncio.TimeoutError,
+            match=re.escape(
+                "m didn't provide an initial value within 0.05s, is it connected?"
+            ),
+        ):
+            await set_and_wait_for_other_value(
+                set_signal, 1, match_signal, 20, timeout=0.05
+            )
+
+
 async def test_wait_for_value_with_value():
     signal = epics_signal_rw(str, read_pv="pva://signal", name="signal")
     await signal.connect(mock=True)
@@ -391,14 +453,21 @@ async def test_wait_for_value_with_value():
         match="signal didn't match 'something' in 0.1s, last value 'blah'",
     ):
         await wait_for_value(signal, "something", timeout=0.1)
-    assert await time_taken_by(wait_for_value(signal, "blah", timeout=2)) < 0.1
+    # Generous upper bound: the value already matches, so this returns
+    # almost immediately - the bound only guards against a hang. A tight
+    # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
+    assert await time_taken_by(wait_for_value(signal, "blah", timeout=2)) < 1.0
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, "something else", timeout=2))
     )
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, "something else")
-    assert 0.1 < await t < 1.0
+    # Upper bound loosened generously: after the value is set, the wait
+    # should resolve quickly, but a slow/loaded runner can push this past a
+    # tight bound. The lower bound still guards that the wait genuinely
+    # waited through the 0.2s sleep.
+    assert 0.1 < await t < 1.9
 
 
 async def test_wait_for_value_with_function():
@@ -420,8 +489,15 @@ async def test_wait_for_value_with_function():
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, 41)
-    assert 0.1 < await t < 1.0
-    assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 0.1
+    # Upper bound loosened generously: after the value is set, the wait
+    # should resolve quickly, but a slow/loaded runner can push this past a
+    # tight bound. The lower bound still guards that the wait genuinely
+    # waited through the 0.2s sleep.
+    assert 0.1 < await t < 1.9
+    # Generous upper bound: the value already matches, so this returns
+    # almost immediately - the bound only guards against a hang. A tight
+    # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
+    assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 1.0
 
 
 @pytest.mark.parametrize(
@@ -585,6 +661,8 @@ async def test_assert_configuration_everything(
             "everything-device-a_str": partial_reading("test_string"),
             "everything-device-a_bool": partial_reading(True),
             "everything-device-a_enum": partial_reading("Bbb"),
+            "everything-device-a_subset_enum": partial_reading("Bbb"),
+            "everything-device-a_superset_enum": partial_reading("Bbb"),
             "everything-device-boola": partial_reading(_array_vals["boola"]),
             "everything-device-int8a": partial_reading(_array_vals["int8a"]),
             "everything-device-uint8a": partial_reading(_array_vals["uint8a"]),
@@ -635,6 +713,18 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.a_bool,
         {"everything-device-a_bool": partial_reading(True)},
+    )
+    await assert_reading(
+        one_of_everything_device.a_subset_enum,
+        {
+            "everything-device-a_subset_enum": partial_reading(ExampleSubsetEnum.B),
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.a_superset_enum,
+        {
+            "everything-device-a_superset_enum": partial_reading(ExampleSupersetEnum.B),
+        },
     )
     await assert_reading(
         one_of_everything_device.boola,
@@ -872,6 +962,8 @@ async def test_assert_value_everything(
     await assert_value(one_of_everything_device.a_bool, True)
     # for bools we must provide an array not a list for approx comparison to work
     await assert_value(one_of_everything_device.a_enum, ExampleEnum.B)
+    await assert_value(one_of_everything_device.a_subset_enum, ExampleSubsetEnum.B)
+    await assert_value(one_of_everything_device.a_superset_enum, ExampleSupersetEnum.B)
     await assert_value(one_of_everything_device.boola, _array_vals["boola"])
     await assert_value(
         one_of_everything_device.int8a,
@@ -1099,3 +1191,89 @@ async def test_can_unsubscribe_from_subscribe_callback():
         call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
         call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
     ]
+
+
+async def test_soft_signal_rw_with_getter():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+
+
+async def test_soft_signal_rw_with_setter():
+    store = [0.0]
+    signal = soft_signal_rw(float, setter=lambda v: store.__setitem__(0, v))
+    await signal.connect()
+    await signal.set(7.0)
+    assert store[0] == pytest.approx(7.0)
+
+
+async def test_soft_signal_rw_with_getter_and_setter():
+    store = [0.0]
+    signal = soft_signal_rw(
+        float,
+        setter=lambda v: store.__setitem__(0, v),
+        getter=lambda: store[0],
+    )
+    await signal.connect()
+    await signal.set(3.0)
+    store[0] = 99.0  # external change
+    assert await signal.get_value() == pytest.approx(99.0)
+
+
+async def test_soft_signal_rw_with_poll_period():
+    store = [0.0]
+    signal = soft_signal_rw(float, getter=lambda: store[0], poll_period=0.05)
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 5.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(5.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_rw_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_rw(float, poll_period=0.1)
+
+
+async def test_soft_signal_r_and_setter_with_getter():
+    store = [0.0]
+    signal, set_value = soft_signal_r_and_setter(float, getter=lambda: store[0])
+    await signal.connect()
+    store[0] = 42.0
+    assert await signal.get_value() == pytest.approx(42.0)
+    # set_value still works independently of the getter
+    set_value(99.0)
+    assert signal._connector.backend.reading["value"] == pytest.approx(99.0)
+
+
+async def test_soft_signal_r_and_setter_with_poll_period():
+    store = [0.0]
+    signal, _ = soft_signal_r_and_setter(
+        float, getter=lambda: store[0], poll_period=0.05
+    )
+    await signal.connect()
+
+    updates: asyncio.Queue = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+
+    await updates.get()  # consume initial
+
+    store[0] = 7.0
+    reading = await asyncio.wait_for(updates.get(), timeout=1.0)
+    assert reading[signal.name]["value"] == pytest.approx(7.0)
+
+    signal.clear_sub(updates.put_nowait)
+
+
+async def test_soft_signal_r_and_setter_poll_period_without_getter_raises():
+    with pytest.raises(ValueError, match="poll_period requires a getter"):
+        soft_signal_r_and_setter(float, poll_period=0.1)

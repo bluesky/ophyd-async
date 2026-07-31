@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
@@ -19,6 +20,43 @@ from ._utils import (
 )
 
 DeviceT = TypeVar("DeviceT", bound="Device")
+
+DEVICE_RESERVED_ATTRS = {
+    "name",
+    "collect_asset_docs",
+    "get_index",
+    "read_configuration",
+    "describe_configuration",
+    "trigger",
+    "prepare",
+    "read",
+    "describe",
+    "describe_collect",
+    "collect",
+    "collect_pages",
+    "set",
+    "locate",
+    "kickoff",
+    "complete",
+    "stage",
+    "unstage",
+    "pause",
+    "resume",
+    "stop",
+    "subscribe",
+    "clear_sub",
+    "check_value",
+    "hints",
+}
+
+
+def _reserved_attrs_allowed() -> bool:
+    # Opt-out for the reserved-name check, mainly so downstream test suites that
+    # mock protocol methods (e.g. `device.set = AsyncMock()`) can be flipped back
+    # on without editing every call site. Read from the environment each time so a
+    # test can toggle it; only reached when a reserved name is actually set, so it
+    # never touches the hot path. Prefer set_mock_attr() for a single override.
+    return os.environ.get("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", "NO").upper() == "YES"
 
 
 class DeviceMock(Generic[DeviceT]):
@@ -172,10 +210,10 @@ class Device(HasName):
 
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
-        # These are guarateed not to be devices, so don't check them
+        # These are guaranteed not to be devices, so don't check them
         setattr_methods = dict.fromkeys(_not_device_attrs, object.__setattr__) | {
             # parent needs special handling
-            "parent": _fail_if_overwriting_parent
+            "parent": _fail_if_overwriting_parent,
         }
         # Assign _setattr_methods in __new__ instead of __init__,
         # as this is called before any __setattr__ calls are made
@@ -241,6 +279,14 @@ class Device(HasName):
         # dictionary of setattr functions
         func = self._setattr_methods.get(name, None)
         if func is None:
+            if name in DEVICE_RESERVED_ATTRS and not _reserved_attrs_allowed():
+                raise NameError(
+                    f"`{name}` is used in one of the bluesky protocols. "
+                    f"Please use `{name}_` instead. To override this attribute in a "
+                    f"test (e.g. with a mock) use ophyd_async.testing.set_mock_attr, "
+                    f"or set OPHYD_ASYNC_ALLOW_RESERVED_ATTRS=YES to disable this "
+                    f"check entirely."
+                )
             # First encounter, so assign correct
             # __setattr__ method depending on `value` type
             if isinstance(value, Device):
@@ -362,6 +408,68 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         yield from super().children()
 
     def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
+        return hash(id(self))
+
+
+class DeviceMap(MutableMapping[str, DeviceT], Device):
+    """Defines a dictionary of Device children with arbitrary string keys.
+
+    Like [](#DeviceVector) but indexed by `str` rather than `int`, for when
+    sub-devices are more naturally addressed by name than by number.
+
+    :see-also: [](#implementing-devices) for examples of how to use this class.
+    """
+
+    def __init__(
+        self,
+        children: Mapping[str, DeviceT] | None = None,
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ) -> None:
+        self._children: dict[str, DeviceT] = {}
+        self.update(children or {})
+        super().__init__(name=name, connector=connector)
+
+    def __getitem__(self, key: str) -> DeviceT:
+        return self._children[key]
+
+    def __setitem__(self, key: str, value: DeviceT) -> None:
+        # Check the types on entry to dict to make sure we can't accidentally
+        # make a non-string named child
+        if not isinstance(key, str):
+            msg = f"Expected str, got {key}"
+            raise TypeError(msg)
+        if not isinstance(value, Device):
+            msg = f"Expected Device, got {value}"
+            raise TypeError(msg)
+        self._children[key] = value
+        value.parent = self
+
+    def __setattr__(self, name: str, child: Any) -> None:
+        # Child Devices must be set via `device_map[key] = child` so they get a
+        # string key; setting them as attributes would give them no key.
+        if name != "parent" and isinstance(child, Device):
+            raise AttributeError(
+                "DeviceMap can only have string named children, "
+                "set via device_map[key] = child"
+            )
+        super().__setattr__(name, child)
+
+    def __delitem__(self, key: str) -> None:
+        del self._children[key]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self._children
+
+    def __len__(self) -> int:
+        return len(self._children)
+
+    def children(self) -> Iterator[tuple[str, Device]]:
+        # Keys are already str, so yield them directly (no str() needed)
+        yield from self._children.items()
+        yield from super().children()
+
+    def __hash__(self):  # to allow DeviceMap to be used as dict keys and in sets
         return hash(id(self))
 
 

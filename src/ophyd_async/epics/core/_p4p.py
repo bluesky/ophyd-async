@@ -483,14 +483,18 @@ class PvaCommandBackend(EpicsCommandBackend):
         typeid = value.getID()
         specifier = _get_specifier(value)
 
-        is_int = typeid == "epics:nt/NTScalar:1.0" and specifier in _int_specifiers
+        is_scalar = typeid == "epics:nt/NTScalar:1.0"
+        is_bool = is_scalar and specifier == "?"
+        is_int = is_scalar and specifier in _int_specifiers
         is_enum = typeid == "epics:nt/NTEnum:1.0"
 
-        if not (is_int or is_enum):
+        if not (is_bool or is_int or is_enum):
             raise TypeError(
-                f"pva://{self.write_pv} is not a scalar numeric PV "
+                f"pva://{self.write_pv} is not a scalar boolean, scalar numeric, "
+                "or enum PV "
                 f"(typeid={typeid!r}, specifier={specifier!r}); "
-                "PvaCommandBackend requires a scalar numeric PV"
+                "PvaCommandBackend requires a scalar boolean, scalar numeric, "
+                "or enum PV"
             )
 
     async def execute(self) -> None:

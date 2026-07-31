@@ -11,6 +11,8 @@ from ophyd_async.core import (
     SignalRW,
     StandardReadable,
     StrictEnum,
+    SubsetEnum,
+    SupersetEnum,
     Table,
     soft_signal_r_and_setter,
     soft_signal_rw,
@@ -24,6 +26,22 @@ class ExampleEnum(StrictEnum):
     A = "Aaa"
     B = "Bbb"
     C = "Ccc"
+
+
+class ExampleSubsetEnum(SubsetEnum):
+    """Example of a subset Enum datatype: the backend may have extra choices."""
+
+    A = "Aaa"
+    B = "Bbb"
+
+
+class ExampleSupersetEnum(SupersetEnum):
+    """Example of a superset Enum datatype: not all choices need exist in backend."""
+
+    A = "Aaa"
+    B = "Bbb"
+    C = "Ccc"
+    D = "Ddd"
 
 
 class ExampleTable(Table):
@@ -82,6 +100,10 @@ class OneOfEverythingDevice(StandardReadable):
             self.a_str = soft_signal_rw(str, "test_string")
             self.a_bool = soft_signal_rw(bool, True)
             self.a_enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
+            self.a_subset_enum = soft_signal_rw(ExampleSubsetEnum, ExampleSubsetEnum.B)
+            self.a_superset_enum = soft_signal_rw(
+                ExampleSupersetEnum, ExampleSupersetEnum.B
+            )
             self.boola = soft_signal_rw(
                 Array1D[np.bool_], np.array([False, False, True])
             )
