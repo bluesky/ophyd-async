@@ -312,8 +312,8 @@ def derived_signal_rw(
     set_derived_arg_datatype = _get_first_arg_datatype(set_derived)
     if raw_to_derived_datatype != set_derived_arg_datatype:
         msg = (
-            f"{raw_to_derived} has datatype {raw_to_derived_datatype} "
-            f"!= {set_derived_arg_datatype} datatype {set_derived_arg_datatype}"
+            f"{raw_to_derived} has return datatype {raw_to_derived_datatype} "
+            f"!= {set_derived} set datatype {set_derived_arg_datatype}"
         )
         raise TypeError(msg)
 
