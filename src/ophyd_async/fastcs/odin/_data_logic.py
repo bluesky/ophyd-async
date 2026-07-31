@@ -34,7 +34,7 @@ class OdinDataLogic(DetectorDataLogic):
         # Get the current bit depth
         datatype = f"uint{await self.detector_bit_depth.get_value()}"
         # Setup the HDF writer
-        filename = f"{path_info.filename}.h5"
+        filename = f"{path_info.filename}"
         await self.odin.acquisition_id.set("")
         await asyncio.gather(
             self.odin.file_prefix.set(filename),
