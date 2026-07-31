@@ -56,7 +56,7 @@ async def test_describe_gives_detector_shape(odin_det: OdinDet, tmp_path):
                 768,
                 1024,
             ],
-            "source": f"file://localhost/{tmp_path.as_posix().lstrip('/')}/filename.h5_000001.h5",
+            "source": f"file://localhost/{tmp_path.as_posix().lstrip('/')}/filename_000001.h5",
         },
     }
 
@@ -89,7 +89,7 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
         odin,
         [
             call.acquisition_id.put(""),
-            call.file_prefix.put("filename.h5"),
+            call.file_prefix.put("filename"),
             call.file_path.put(str(tmp_path)),
             call.fp.data_compression.put("BSLZ4"),
             call.fp.data_datatype.put("uint16"),
