@@ -186,7 +186,7 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         flattened_values = []
         for value in new_values:
             # DeviceVector and DeviceMap case.
-            if isinstance(value, MutableMapping):
+            if isinstance(value, (DeviceVector, DeviceMap)):
                 flattened_values.extend(value.values())
             else:
                 flattened_values.append(value)
