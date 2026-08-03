@@ -1,7 +1,7 @@
 import asyncio
 import math
 import re
-from typing import TypeVar
+from typing import Generic, TypeVar
 from unittest.mock import ANY, call
 
 import pytest
@@ -9,6 +9,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    Device,
     EnableDisable,
     EnumTypes,
     SignalRW,
@@ -298,3 +299,44 @@ async def test_derived_signal_with_motor_devices(
     assert await m1.movable_logic.readback.get_value() == 3
     assert await m2.movable_logic.readback.get_value() == 3
     assert await derived_sig.get_value() == 6
+
+
+T = TypeVar("T", bound=float | int)
+
+
+class GenericExample(Device, Generic[T]):
+    def __init__(self, datatype: type[T], name: str = ""):
+        self.sig = soft_signal_rw(datatype, 5.0)
+        self.offset = soft_signal_rw(datatype, 1.0)
+        self.value = derived_signal_rw(
+            self._get,
+            self._set,
+            datatype=datatype,
+            sig=self.sig,
+            offset=self.offset,
+        )
+        self.datatype = datatype
+        super().__init__(name)
+
+    def _get(self, sig: T, offset: T) -> T:
+        return self.datatype(sig + offset)
+
+    async def _set(self, value: T) -> None:
+        offset = await self.offset.get_value()
+        await self.sig.set(value - offset)
+
+
+@pytest.mark.parametrize("datatype", [int, float])
+async def test_generic_example_describe(datatype: type[int] | type[float]):
+    example = GenericExample(datatype, name="example")
+    await example.connect(mock=True)
+
+    await example.value.describe()
+
+
+def test_generic_derived_signal_rejects_incompatible_datatype():
+    with pytest.raises(
+        TypeError,
+        match=r"Provided datatype .*str.* is not compatible with .*T.*bound",
+    ):
+        GenericExample(str)  # type: ignore

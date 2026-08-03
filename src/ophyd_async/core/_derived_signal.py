@@ -239,6 +239,85 @@ def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
     return {k: v.annotation for k, v in sig.parameters.items() if k not in exclude_keys}
 
 
+def _datatype_description(datatype: type[SignalDatatypeT]) -> str:
+    if isinstance(datatype, TypeVar):
+        if datatype.__bound__ is not None:
+            return f"{datatype} (bound={datatype.__bound__})"
+
+        if datatype.__constraints__:
+            return f"{datatype} (constraints={datatype.__constraints__})"
+
+    return str(datatype)
+
+
+def _is_datatype_compatible(
+    actual_datatype: type[SignalDatatypeT],
+    expected_datatype: type[SignalDatatypeT] | TypeVar,
+) -> bool:
+    if actual_datatype == expected_datatype:
+        return True
+
+    if isinstance(expected_datatype, TypeVar):
+        if expected_datatype.__constraints__:
+            return any(
+                _is_datatype_compatible(actual_datatype, constraint)
+                for constraint in expected_datatype.__constraints__
+            )
+
+        if expected_datatype.__bound__ is not None:
+            return _is_datatype_compatible(
+                actual_datatype,
+                expected_datatype.__bound__,
+            )
+
+        return True
+
+    origin = get_origin(expected_datatype)
+    if origin is not None:
+        return any(
+            _is_datatype_compatible(actual_datatype, arg)
+            for arg in get_args(expected_datatype)
+        )
+
+    if isinstance(expected_datatype, type):
+        return issubclass(actual_datatype, expected_datatype)
+
+    return False
+
+
+def _validate_datatype(
+    datatype: type[SignalDatatypeT],
+    raw_to_derived_datatype: type[SignalDatatypeT],
+    set_derived_arg_datatype: type[SignalDatatypeT],
+) -> None:
+    if not _is_datatype_compatible(datatype, raw_to_derived_datatype):
+        raise TypeError(
+            f"Provided datatype {_datatype_description(datatype)} is not "
+            f"compatible with the return datatype "
+            f"{_datatype_description(raw_to_derived_datatype)} of raw_to_derived."
+        )
+
+    if not _is_datatype_compatible(datatype, set_derived_arg_datatype):
+        raise TypeError(
+            f"Provided datatype {_datatype_description(datatype)} is not "
+            f"compatible with the argument datatype "
+            f"{_datatype_description(set_derived_arg_datatype)} of set_derived."
+        )
+
+
+def _validate_datatype_compatibility(
+    actual_datatype: type[SignalDatatypeT],
+    expected_datatype: type[SignalDatatypeT],
+    *,
+    context: str,
+) -> None:
+    if not _is_datatype_compatible(actual_datatype, expected_datatype):
+        raise TypeError(
+            f"{actual_datatype} is not compatible with {expected_datatype} "
+            f"for {context}."
+        )
+
+
 def _make_factory(
     raw_to_derived_func: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
@@ -292,6 +371,7 @@ def derived_signal_rw(
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
+    datatype: type[SignalDatatypeT] | None = None,
     **raw_devices_and_constants: Device | Primitive,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-write derived signal.
@@ -304,18 +384,34 @@ def derived_signal_rw(
         either be an async function, or return an [](#AsyncStatus)
     :param derived_units: Engineering units for the derived signal
     :param derived_precision: Number of digits after the decimal place to display
+    :param datatype:
+        The concrete datatype of the derived signal. If not provided, the datatype
+        is inferred from the return type of ``raw_to_derived``. This should be
+        provided when the functions use generic type variables, as their concrete
+        runtime datatype cannot be inferred from the type annotations alone. The
+        return datatype of ``raw_to_derived`` and argument datatype of ``set_derived``
+        must still match.
     :param raw_devices_and_constants:
         A dictionary of Devices and Constants to provide the values for raw_to_derived.
         The names of these arguments must match the arguments of raw_to_derived.
     """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)
     set_derived_arg_datatype = _get_first_arg_datatype(set_derived)
-    if raw_to_derived_datatype != set_derived_arg_datatype:
-        msg = (
-            f"{raw_to_derived} has datatype {raw_to_derived_datatype} "
-            f"!= {set_derived_arg_datatype} datatype {set_derived_arg_datatype}"
+
+    _validate_datatype_compatibility(
+        raw_to_derived_datatype,
+        set_derived_arg_datatype,
+        context="raw_to_derived return and set_derived argument",
+    )
+
+    if datatype is not None:
+        _validate_datatype(
+            datatype,
+            raw_to_derived_datatype,
+            set_derived_arg_datatype,
         )
-        raise TypeError(msg)
+    else:
+        datatype = raw_to_derived_datatype
 
     factory = _make_factory(
         raw_to_derived_func=raw_to_derived,
@@ -323,7 +419,7 @@ def derived_signal_rw(
         raw_devices_and_constants=raw_devices_and_constants,
     )
     return factory.derived_signal_rw(
-        datatype=raw_to_derived_datatype,
+        datatype=datatype,
         name="value",
         units=derived_units,
         precision=derived_precision,
