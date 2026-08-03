@@ -1,5 +1,5 @@
 import warnings
-from collections.abc import Awaitable, Callable, Generator, MutableMapping, Sequence
+from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
 from typing import Any, cast
@@ -7,7 +7,7 @@ from typing import Any, cast
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
 
-from ._device import Device
+from ._device import Device, DeviceMap, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
 from ._standard_base import _StandardBase
