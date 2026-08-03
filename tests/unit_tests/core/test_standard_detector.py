@@ -22,6 +22,7 @@ from ophyd_async.core import (
     StreamResourceDataProvider,
     StreamResourceInfo,
     TriggerInfo,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.testing import (
@@ -466,20 +467,20 @@ async def test_preserve_detector_state_no_trigger_logic_falls_back(
     assert det._prepare_ctx.trigger_info == TriggerInfo()
 
 
-async def test_preserve_detector_state_multi_collection_watcher_updates(
+async def test_preserve_detector_state_multi_collection_watcher_and_assets(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path,
 ):
     """When OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES and default_trigger_info returns
-    collections_per_event > 1, trigger() should yield watcher updates that reflect
-    the correct number of collections requested."""
+    collections_per_event > 1, trigger() should wait for that many raw collections
+    and collect_asset_docs() should emit one datum for the Bluesky event."""
 
     class MultiCollectionTriggerLogic(DetectorTriggerLogic):
         async def prepare_internal(self, num: int, livetime: float, deadtime: float):
             pass
 
         async def default_trigger_info(self) -> TriggerInfo:
-            return TriggerInfo(collections_per_event=3)
+            return TriggerInfo(collections_per_event=5)
 
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     det = StandardDetector(name="multidet")
@@ -492,30 +493,51 @@ async def test_preserve_detector_state_multi_collection_watcher_updates(
     status = det.trigger()
     status.watch(lambda **kwargs: updates.append(kwargs))
     await wait_for_pending_wakeups(raise_if_exceeded=False)
+    assert (await det.describe())["multidet"]["shape"] == [5, 10, 15]
 
-    # Simulate 1 collection written — watcher should report current=1
-    # and target=3, so not done yet.
-    await dl.collections_written.set(1)
+    for collections_written in range(1, 5):
+        await dl.collections_written.set(collections_written)
+        await wait_for_pending_wakeups(raise_if_exceeded=False)
+        assert not status.done
+
+    await dl.collections_written.set(5)
+    await status
+    docs = [doc async for doc in det.collect_asset_docs()]
+    assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
+    assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
+    assert [update["current"] for update in updates] == [0, 1, 2, 3, 4, 5]
+    assert all(update["target"] == 5 for update in updates)
+
+
+@pytest.mark.xfail(
+    reason="collect_asset_docs() checks ``dl.collections_written`` again after "
+    "``trigger()``",
+    strict=True,
+)
+async def test_collect_asset_docs_uses_trigger_observed_event(
+    tmp_path,
+):
+    """When ``trigger()`` observes that ``dl.collections_written`` hit its target,
+    ``collect_asset_docs`` should not check *again* for the same condition.
+
+    It could be the case that ``dl.collections_written`` changes between ``trigger()``
+    and ``collect_asset_docs``."""
+    det = StandardDetector(name="det")
+    dl = StreamableOnlyDataLogic(tmp_path)
+    dl.collections_written, set_collections_written = soft_signal_r_and_setter(
+        int, getter=lambda: 0
+    )
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+    await det.prepare(TriggerInfo(collections_per_event=5, exposure_timeout=0.1))
+
+    status = det.trigger()
     await wait_for_pending_wakeups(raise_if_exceeded=False)
-    assert not status.done
-
-    # Simulate 2 collections written — still not done
-    await dl.collections_written.set(2)
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
-    assert not status.done
-
-    # Simulate 3 collections written — now complete
-    await dl.collections_written.set(3)
+    set_collections_written(5)
     await status
 
-    # Verify watcher updates all have correct target.
-    # observe_signals_value emits the initial value (0), so we get 4 updates:
-    # initial(0), set(1), set(2), set(3).
-    assert len(updates) == 4
-    for update in updates:
-        assert update["target"] == 3  # 3 collections per event
-    # Final update should show current == target
-    assert updates[-1]["current"] == 3
+    docs = [doc async for doc in det.collect_asset_docs()]
+    assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
+    assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
 
 
 async def test_kickoff_respects_prepare_bounds(tmp_path):
