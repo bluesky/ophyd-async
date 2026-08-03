@@ -1,0 +1,31 @@
+# {py:mod}`ophyd_async.epics.adgenicam`
+
+```{py:module} ophyd_async.epics.adgenicam
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adgenicam
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`get_camera_deadtime <ophyd_async.epics.adgenicam.get_camera_deadtime>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adgenicam.get_camera_deadtime
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} get_camera_deadtime(model: str, override_deadtime: float | None = None) -> float
+:canonical: ophyd_async.epics.adgenicam.get_camera_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adgenicam.get_camera_deadtime
+```
+````
