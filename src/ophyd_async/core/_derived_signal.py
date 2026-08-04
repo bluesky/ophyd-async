@@ -302,15 +302,14 @@ def _validate_datatype(
 
 
 def _validate_datatype_compatibility(
-    actual_datatype: type[SignalDatatypeT],
+    datatype: type[SignalDatatypeT],
     expected_datatype: type[SignalDatatypeT],
-    *,
     context: str,
 ) -> None:
-    if not _is_datatype_compatible(actual_datatype, expected_datatype):
+    if not _is_datatype_compatible(datatype, expected_datatype):
         raise TypeError(
-            f"{actual_datatype} is not compatible with {expected_datatype} "
-            f"for {context}."
+            f"{datatype} is not compatible with "
+            f"{_datatype_description(expected_datatype)} for {context}."
         )
 
 

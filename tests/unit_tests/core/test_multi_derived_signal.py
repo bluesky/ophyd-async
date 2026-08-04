@@ -17,7 +17,9 @@ from ophyd_async.core import (
     StrictEnum,
     Table,
     Transform,
+    derived_signal_r,
     derived_signal_rw,
+    derived_signal_w,
     get_mock,
     set_mock_value,
     soft_signal_rw,
@@ -340,3 +342,69 @@ def test_generic_derived_signal_rejects_incompatible_datatype():
         match=r"Provided datatype .*str.* is not compatible with .*T.*bound",
     ):
         GenericExample(str)  # type: ignore
+
+
+def _get_generic(value: T) -> T:
+    return value
+
+
+async def _set_generic(value: T) -> None:
+    pass
+
+
+def _get_int(value: int) -> int:
+    return value
+
+
+async def _set_int(value: int) -> None:
+    pass
+
+
+def _get_str(value: str) -> str:
+    return value
+
+
+async def _set_str(value: str) -> None:
+    pass
+
+
+async def test_generic_derived_read_signal():
+    value = soft_signal_rw(int, initial_value=1, name="value")
+    sig = derived_signal_r(_get_generic, datatype=int, value=value)
+    await sig.connect(mock=True)
+    await value.connect(mock=True)
+
+    await sig.describe()
+
+
+async def test_generic_derived_read_signal_raise_error_using_wrong_datatype():
+    value = soft_signal_rw(int, initial_value=1, name="value")
+    await value.connect(mock=True)
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with ~T (bound=float | int) for "
+            "raw_to_derived return and explicit datatype."
+        ),
+    ):
+        derived_signal_r(_get_generic, datatype=str, value=value)
+
+
+async def test_generic_derived_write_signal_using_valid_datatype():
+    value = soft_signal_rw(int, initial_value=1, name="value")
+    sig = derived_signal_w(_set_generic, datatype=int)
+    await sig.connect(mock=True)
+    await value.connect(mock=True)
+
+
+async def test_generic_derived_write_signal_raise_error_using_wrong_datatype():
+    value = soft_signal_rw(int, initial_value=1, name="value")
+    await value.connect(mock=True)
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with ~T (bound=float | int) for "
+            "set_derived argument and explicit datatype."
+        ),
+    ):
+        derived_signal_w(_set_generic, datatype=str)  # type: ignore
