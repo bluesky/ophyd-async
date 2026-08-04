@@ -1,7 +1,7 @@
 import asyncio
 import math
 import re
-from typing import TypeVar
+from typing import Generic, TypeVar
 from unittest.mock import ANY, call
 
 import pytest
@@ -9,6 +9,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    Device,
     EnableDisable,
     EnumTypes,
     SignalRW,
@@ -303,6 +304,58 @@ async def test_derived_signal_with_motor_devices(
 
 
 T = TypeVar("T", bound=float | int)
+
+
+class GenericDerivedExample(Device, Generic[T]):
+    def __init__(self, datatype: type[T], name: str = ""):
+        self.datatype = datatype
+        self.sig = soft_signal_rw(datatype, datatype(5))
+        self.offset = soft_signal_rw(datatype, datatype(1))
+
+        self.value = derived_signal_rw(
+            self._get,
+            self._set,
+            derived_datatype=datatype,
+            sig=self.sig,
+            offset=self.offset,
+        )
+        super().__init__(name)
+
+    def _get(self, sig: T, offset: T) -> T:
+        return self.datatype(sig + offset)
+
+    async def _set(self, value: T) -> None:
+        offset = await self.offset.get_value()
+        await self.sig.set(self.datatype(value - offset))
+
+
+@pytest.mark.parametrize(
+    "datatype, value, expected_sig", [(int, 10, 9), (float, 10.0, 9.0)]
+)
+async def test_generic_derived_example_sets_derived_value(
+    datatype: type[int] | type[float], value: int | float, expected_sig: int | float
+):
+    example = GenericDerivedExample(datatype, name="example")
+    await example.connect(mock=True)
+    await example.value.set(value)
+    assert await example.sig.get_value() == expected_sig
+
+
+@pytest.mark.parametrize("datatype", [int, float])
+def test_generic_derived_example_infers_derived_datatype(
+    datatype: type[int] | type[float],
+):
+    example = GenericDerivedExample(datatype, name="example")
+    assert example.value.datatype is datatype
+
+
+@pytest.mark.parametrize("datatype, expected", [(int, 6), (float, 6.0)])
+async def test_generic_derived_example_reads_derived_value(
+    datatype: type[int] | type[float], expected: int | float
+):
+    example = GenericDerivedExample(datatype, name="example")
+    await example.connect(mock=True)
+    assert await example.value.get_value() == expected
 
 
 def _get_generic(value: T) -> T:
