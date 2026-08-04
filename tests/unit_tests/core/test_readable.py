@@ -9,6 +9,7 @@ from ophyd_async.core import (
     AsyncStageable,
     ConfigSignal,
     Device,
+    DeviceMap,
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
@@ -114,23 +115,29 @@ def test_standard_readable_add_children_context_manager():
     assert set(mock.call_args.args[0]) == {sr.a, sr.b, sr.c}
 
 
-def test_standard_readable_add_children_cm_device_vector():
+@pytest.mark.parametrize(
+    "device_type, keys",
+    [
+        (DeviceVector, [1, 2, 3]),
+        (DeviceMap, ["a", "b", "c"]),
+    ],
+)
+def test_standard_readable_add_children_cm_device_with_mappings(device_type, keys):
     sr = StandardReadable()
     mock = MagicMock()
     sr.add_readables = mock
 
-    # Create a mock for the DeviceVector.children() call
-    mock_d1 = MagicMock(spec=SignalR)
-    mock_d2 = MagicMock(spec=SignalR)
-    mock_d3 = MagicMock(spec=SignalR)
-    vector = DeviceVector({1: mock_d1, 2: mock_d2, 3: mock_d3})
+    # Create a mock for the DeviceVector/DeviceMap.children() call
+    devices = [MagicMock(spec=SignalR) for _ in range(3)]
+    device = device_type(dict(zip(keys, devices, strict=True)))
+
     with sr.add_children_as_readables():
-        sr.a = vector
+        sr.a = device
 
     # Can't use assert_called_once_with() as the order of items returned from
     # internal dict comprehension is not guaranteed
     mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == {mock_d1, mock_d2, mock_d3}
+    assert set(mock.call_args.args[0]) == set(devices)
 
 
 def test_standard_readable_add_children_cm_filters_non_devices():
