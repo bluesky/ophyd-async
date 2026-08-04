@@ -336,14 +336,18 @@ async def sig() -> SignalRW[int]:
     return sig
 
 
-@pytest.mark.parametrize("datatype", [int, float])
+@pytest.mark.parametrize(
+    "datatype, expected_datatype", [(int, "integer"), (float, "number")]
+)
 async def test_derived_signal_r_accepts_generic_typevar(
     datatype: type[int] | type[float],
+    expected_datatype: str,
     sig: SignalRW[int],
 ):
     derived = derived_signal_r(_get_generic, datatype=datatype, value=sig)
     await derived.connect(mock=True)
-    await sig.describe()
+    describe = await derived.describe()
+    assert describe[derived.name]["dtype"] == expected_datatype
 
 
 @pytest.mark.parametrize("datatype", [int, float])
@@ -382,30 +386,38 @@ async def test_derived_signal_rejects_incompatible_generic_datatype(
         factory(callback, datatype=str)
 
 
-def test_derived_signal_rw_accepts_matching_concrete_types(sig: SignalRW[int]):
+async def test_derived_signal_rw_accepts_matching_concrete_types(sig: SignalRW[int]):
     derived = derived_signal_rw(_get_int, _set_int, value=sig)
-    assert derived is not None
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
 
 
-def test_derived_signal_rw_accepts_matching_generic_types_with_explicit_datatype(
+async def test_derived_signal_rw_accepts_matching_generic_types_with_explicit_datatype(
     sig: SignalRW[int],
 ):
     derived = derived_signal_rw(_get_generic, _set_generic, datatype=int, value=sig)
-    assert derived is not None
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
 
 
-def test_derived_signal_rw_accepts_generic_get_with_concrete_set(
+async def test_derived_signal_rw_accepts_generic_get_with_concrete_set(
     sig: SignalRW[int],
 ):
     derived = derived_signal_rw(_get_generic, _set_int, datatype=int, value=sig)
-    assert derived is not None
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
 
 
-def test_derived_signal_rw_accepts_concrete_get_with_generic_set(
+async def test_derived_signal_rw_accepts_concrete_get_with_generic_set(
     sig: SignalRW[int],
 ):
     derived = derived_signal_rw(_get_int, _set_generic, datatype=int, value=sig)
-    assert derived is not None
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
 
 
 def test_derived_signal_rw_rejects_generic_get_with_incompatible_concrete_set(
@@ -442,7 +454,7 @@ def test_derived_signal_rw_rejects_explicit_datatype_incompatible_with_get(
 @pytest.mark.parametrize(
     "datatype, expected_datatype", [(int, "integer"), (float, "number")]
 )
-async def test_derived_signal_rw_accepts_generic_callbacks_with_explicit_datatype(
+async def test_derived_signal_rw_accepts_generics_with_explicit_datatype_on_describe(
     datatype: type[int] | type[float], expected_datatype: str, sig: SignalRW[int]
 ):
     derived = derived_signal_rw(
