@@ -439,12 +439,36 @@ def test_derived_signal_rw_rejects_explicit_datatype_incompatible_with_get(
         derived_signal_rw(_get_int, _set_int, datatype=str, value=sig)  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("datatype", [int, float])
+@pytest.mark.parametrize(
+    "datatype, expected_datatype", [(int, "integer"), (float, "number")]
+)
 async def test_derived_signal_rw_accepts_generic_callbacks_with_explicit_datatype(
-    datatype: type[int] | type[float], sig: SignalRW[int]
+    datatype: type[int] | type[float], expected_datatype: str, sig: SignalRW[int]
 ):
     derived = derived_signal_rw(
         _get_generic, _set_generic, datatype=datatype, value=sig
     )
     await derived.connect(mock=True)
-    await sig.describe()
+    describe = await derived.describe()
+    assert describe[derived.name]["dtype"] == expected_datatype
+
+
+ConstrainedT = TypeVar("ConstrainedT", int, float)
+
+
+def _get_constrained_generic(value: ConstrainedT) -> ConstrainedT:
+    return value
+
+
+async def test_derived_signal_r_reports_typevar_constraints():
+    value = soft_signal_rw(int, initial_value=1)
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with "
+            "~ConstrainedT (constraints=(<class 'int'>, <class 'float'>)) "
+            "for raw_to_derived return and explicit datatype."
+        ),
+    ):
+        derived_signal_r(_get_constrained_generic, datatype=str, value=value)  # type: ignore[arg-type]

@@ -321,10 +321,8 @@ def derived_signal_r(
     :param raw_to_derived:
         A function that takes the raw values as individual keyword arguments and
         returns the derived value.
-    :param derived_units:
-        Engineering units for the derived signal.
-    :param derived_precision:
-        Number of digits after the decimal place to display.
+    :param derived_units: Engineering units for the derived signal.
+    :param derived_precision: Number of digits after the decimal place to display.
     :param datatype:
         The concrete datatype of the derived signal. If not provided, the datatype
         is inferred from the return type of ``raw_to_derived``. This should be
@@ -428,10 +426,8 @@ def derived_signal_w(
     :param set_derived:
         A function that takes the derived value and sets the raw signals. It can
         either be an async function, or return an [](#AsyncStatus).
-    :param derived_units:
-        Engineering units for the derived signal.
-    :param derived_precision:
-        Number of digits after the decimal place to display.
+    :param derived_units: Engineering units for the derived signal.
+    :param derived_precision: Number of digits after the decimal place to display.
     :param datatype:
         The concrete datatype of the derived signal. If not provided, the datatype
         is inferred from the first argument of ``set_derived``. This should be
