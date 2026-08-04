@@ -249,67 +249,44 @@ def _datatype_description(datatype: type[SignalDatatypeT] | TypeVar) -> str:
 
 
 def _is_datatype_compatible(
-    actual_datatype: type[SignalDatatypeT],
-    expected_datatype: type[SignalDatatypeT] | TypeVar,
+    actual: type[SignalDatatypeT] | TypeVar, expected: type[SignalDatatypeT] | TypeVar
 ) -> bool:
-    if actual_datatype == expected_datatype:
+    if actual == expected:
         return True
 
-    if isinstance(expected_datatype, TypeVar):
-        if expected_datatype.__constraints__:
-            return any(
-                _is_datatype_compatible(actual_datatype, constraint)
-                for constraint in expected_datatype.__constraints__
-            )
-        if expected_datatype.__bound__ is not None:
-            return _is_datatype_compatible(
-                actual_datatype,
-                expected_datatype.__bound__,
-            )
-        return True
+    if isinstance(actual, TypeVar):
+        return _is_typevar_compatible(actual, expected)
 
-    origin = get_origin(expected_datatype)
-    if origin is not None:
+    if isinstance(expected, TypeVar):
+        return _is_typevar_compatible(expected, actual)
+
+    if get_origin(expected) is not None:
+        return any(_is_datatype_compatible(actual, arg) for arg in get_args(expected))
+    return isinstance(actual, type) and issubclass(actual, expected)
+
+
+def _is_typevar_compatible(
+    typevar: TypeVar, datatype: type[SignalDatatypeT] | TypeVar
+) -> bool:
+    if typevar.__constraints__:
         return any(
-            _is_datatype_compatible(actual_datatype, arg)
-            for arg in get_args(expected_datatype)
+            _is_datatype_compatible(datatype, constraint)
+            for constraint in typevar.__constraints__
         )
-
-    if isinstance(expected_datatype, type):
-        return issubclass(actual_datatype, expected_datatype)
-
-    return False
-
-
-def _validate_datatype(
-    datatype: type[SignalDatatypeT],
-    raw_to_derived_datatype: type[SignalDatatypeT],
-    set_derived_arg_datatype: type[SignalDatatypeT],
-) -> None:
-    if not _is_datatype_compatible(datatype, raw_to_derived_datatype):
-        raise TypeError(
-            f"Provided datatype {_datatype_description(datatype)} is not "
-            f"compatible with the return datatype "
-            f"{_datatype_description(raw_to_derived_datatype)} of raw_to_derived."
-        )
-
-    if not _is_datatype_compatible(datatype, set_derived_arg_datatype):
-        raise TypeError(
-            f"Provided datatype {_datatype_description(datatype)} is not "
-            f"compatible with the argument datatype "
-            f"{_datatype_description(set_derived_arg_datatype)} of set_derived."
-        )
+    if typevar.__bound__ is not None:
+        return _is_datatype_compatible(datatype, typevar.__bound__)
+    return True
 
 
 def _validate_datatype_compatibility(
-    datatype: type[SignalDatatypeT],
-    expected_datatype: type[SignalDatatypeT],
+    actual: type[SignalDatatypeT],
+    expected: type[SignalDatatypeT] | TypeVar,
     context: str,
 ) -> None:
-    if not _is_datatype_compatible(datatype, expected_datatype):
+    if not _is_datatype_compatible(actual, expected):
         raise TypeError(
-            f"{datatype} is not compatible with "
-            f"{_datatype_description(expected_datatype)} for {context}."
+            f"{_datatype_description(actual)} is not compatible with "
+            f"{_datatype_description(expected)} for {context}."
         )
 
 
@@ -412,19 +389,20 @@ def derived_signal_rw(
     """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)
     set_derived_arg_datatype = _get_first_arg_datatype(set_derived)
+
     _validate_datatype_compatibility(
         raw_to_derived_datatype,
         set_derived_arg_datatype,
         context="raw_to_derived return and set_derived argument",
     )
-    if datatype is not None:
-        _validate_datatype(
+    if datatype is None:
+        datatype = raw_to_derived_datatype
+    else:
+        _validate_datatype_compatibility(
             datatype,
             raw_to_derived_datatype,
-            set_derived_arg_datatype,
+            context="raw_to_derived return and explicit datatype",
         )
-    else:
-        datatype = raw_to_derived_datatype
 
     factory = _make_factory(
         raw_to_derived_func=raw_to_derived,
