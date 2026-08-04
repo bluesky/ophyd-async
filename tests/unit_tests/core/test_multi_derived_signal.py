@@ -472,3 +472,19 @@ async def test_derived_signal_r_reports_typevar_constraints():
         ),
     ):
         derived_signal_r(_get_constrained_generic, datatype=str, value=value)  # type: ignore[arg-type]
+
+
+async def test_derived_signal_rw_generic_get_and_set_requires_datatype_on_describe(
+    sig: SignalRW[int],
+):
+    derived = derived_signal_rw(_get_generic, _set_generic, value=sig)
+    await derived.connect(mock=True)
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Cannot determine a NumPy dtype from TypeVar ~T. "
+            "If this is a generic derived signal, provide a concrete datatype "
+            "using the 'datatype' argument."
+        ),
+    ):
+        await derived.describe()

@@ -145,13 +145,11 @@ def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
 def _datakey_dtype_numpy(
     datatype: type[SignalDatatypeT], value: SignalDatatypeT
 ) -> np.dtype:
-
     if isinstance(datatype, TypeVar):
         raise TypeError(
             f"Cannot determine a NumPy dtype from TypeVar {datatype}. "
-            "If this is a generic derived signal, provide the concrete datatype "
-            "using the 'datatype' argument to derived_signal_r(), "
-            "derived_signal_w(), or derived_signal_rw()."
+            "If this is a generic derived signal, provide a concrete datatype "
+            "using the 'datatype' argument."
         )
     if isinstance(value, np.ndarray):
         # The value already has a dtype, use that
