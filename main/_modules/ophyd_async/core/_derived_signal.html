@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.21.1.dev2+g261cc1ea0 documentation</title>
+    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.21.2.dev1+gc4e75cafd documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=60fe8241"></script>
+    <script src="../../../_static/documentation_options.js?v=4ac1c04b"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.1.dev2+g261cc1ea0 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.1.dev2+g261cc1ea0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev1+gc4e75cafd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev1+gc4e75cafd documentation - Home"/>
   
   
 </a></div>
@@ -1027,11 +1027,19 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">_make_signal</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">signal_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalT</span><span class="p">],</span>
-        <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
+            <span class="c1"># Cannot use name here to help identify as it defaults to &quot;value&quot; at this</span>
+            <span class="c1"># stage</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Cannot determine signal datatype from TypeVar &quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s1">&quot;. &#39;</span>
+                <span class="s2">&quot;If this is a generic derived signal, provide a concrete datatype &quot;</span>
+                <span class="s1">&#39;using the &quot;derived_datatype&quot; argument.&#39;</span>
+            <span class="p">)</span>
         <span class="c1"># Check up front the raw_devices are of the right type for what the signal_cls</span>
         <span class="c1"># supports</span>
         <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">signal_cls</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">):</span>
@@ -1154,6 +1162,57 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">annotation</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_keys</span><span class="p">}</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_datatype_description</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datatype</span><span class="o">.</span><span class="n">__bound__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> (bound=</span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="n">__bound__</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">if</span> <span class="n">datatype</span><span class="o">.</span><span class="n">__constraints__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> (constraints=</span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="n">__constraints__</span><span class="si">}</span><span class="s2">)&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_datatype_compatible</span><span class="p">(</span>
+    <span class="n">actual</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_is_typevar_compatible</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_is_typevar_compatible</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">_is_datatype_compatible</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">expected</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_typevar_compatible</span><span class="p">(</span>
+    <span class="n">typevar</span><span class="p">:</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">derived_datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">typevar</span><span class="o">.</span><span class="n">__constraints__</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">_is_datatype_compatible</span><span class="p">(</span><span class="n">derived_datatype</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">typevar</span><span class="o">.</span><span class="n">__constraints__</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">typevar</span><span class="o">.</span><span class="n">__bound__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_is_datatype_compatible</span><span class="p">(</span><span class="n">derived_datatype</span><span class="p">,</span> <span class="n">typevar</span><span class="o">.</span><span class="n">__bound__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_datatype_compatibility</span><span class="p">(</span>
+    <span class="n">actual</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">expected</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">context</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_datatype_compatible</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_datatype_description</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not compatible with &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_datatype_description</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_make_factory</span><span class="p">(</span>
     <span class="n">raw_to_derived_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1179,6 +1238,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">raw_to_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">derived_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived_precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">derived_datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">raw_devices_and_constants</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Primitive</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read only derived signal.</span>
@@ -1186,18 +1246,35 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param raw_to_derived:</span>
 <span class="sd">        A function that takes the raw values as individual keyword arguments and</span>
 <span class="sd">        returns the derived value.</span>
-<span class="sd">    :param derived_units: Engineering units for the derived signal</span>
-<span class="sd">    :param derived_precision: Number of digits after the decimal place to display</span>
+<span class="sd">    :param derived_units: Engineering units for the derived signal.</span>
+<span class="sd">    :param derived_precision: Number of digits after the decimal place to display.</span>
+<span class="sd">    :param derived_datatype:</span>
+<span class="sd">        The concrete datatype of the derived signal. If not provided, the</span>
+<span class="sd">        datatype is inferred from the return type of ``raw_to_derived``. This should be</span>
+<span class="sd">        provided when ``raw_to_derived`` uses a generic type variable, as its</span>
+<span class="sd">        concrete runtime datatype cannot be inferred from the type annotation</span>
+<span class="sd">        alone. The provided datatype must be compatible with the return datatype</span>
+<span class="sd">        of ``raw_to_derived``.</span>
 <span class="sd">    :param raw_devices_and_constants:</span>
-<span class="sd">        A dictionary of Devices and Constants to provide the values for raw_to_derived.</span>
-<span class="sd">        The names of these arguments must match the arguments of raw_to_derived.</span>
+<span class="sd">        A dictionary of Devices and Constants to provide the values for</span>
+<span class="sd">        ``raw_to_derived``. The names of these arguments must match the arguments</span>
+<span class="sd">        of ``raw_to_derived``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw_to_derived_datatype</span> <span class="o">=</span> <span class="n">_get_return_datatype</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">derived_datatype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_validate_datatype_compatibility</span><span class="p">(</span>
+            <span class="n">derived_datatype</span><span class="p">,</span>
+            <span class="n">raw_to_derived_datatype</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">&quot;raw_to_derived return and explicit derived_datatype&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">derived_datatype</span> <span class="o">=</span> <span class="n">raw_to_derived_datatype</span>
     <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span>
         <span class="n">raw_to_derived_func</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span>
         <span class="n">raw_devices_and_constants</span><span class="o">=</span><span class="n">raw_devices_and_constants</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="n">derived_signal_r</span><span class="p">(</span>
-        <span class="n">datatype</span><span class="o">=</span><span class="n">_get_return_datatype</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">),</span>
+        <span class="n">datatype</span><span class="o">=</span><span class="n">derived_datatype</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
         <span class="n">units</span><span class="o">=</span><span class="n">derived_units</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="n">derived_precision</span><span class="p">,</span>
@@ -1212,6 +1289,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
     <span class="n">derived_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived_precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">derived_datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">raw_devices_and_constants</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Primitive</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read-write derived signal.</span>
@@ -1224,18 +1302,33 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        either be an async function, or return an [](#AsyncStatus)</span>
 <span class="sd">    :param derived_units: Engineering units for the derived signal</span>
 <span class="sd">    :param derived_precision: Number of digits after the decimal place to display</span>
+<span class="sd">    :param derived_datatype:</span>
+<span class="sd">        The concrete datatype of the derived signal. If not provided, the datatype</span>
+<span class="sd">        is inferred from the return type of ``raw_to_derived``. This should be</span>
+<span class="sd">        provided when the functions use generic type variables, as their concrete</span>
+<span class="sd">        runtime datatype cannot be inferred from the type annotations alone. The</span>
+<span class="sd">        return datatype of ``raw_to_derived`` and argument datatype of ``set_derived``</span>
+<span class="sd">        must still match.</span>
 <span class="sd">    :param raw_devices_and_constants:</span>
 <span class="sd">        A dictionary of Devices and Constants to provide the values for raw_to_derived.</span>
 <span class="sd">        The names of these arguments must match the arguments of raw_to_derived.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">raw_to_derived_datatype</span> <span class="o">=</span> <span class="n">_get_return_datatype</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">)</span>
     <span class="n">set_derived_arg_datatype</span> <span class="o">=</span> <span class="n">_get_first_arg_datatype</span><span class="p">(</span><span class="n">set_derived</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">raw_to_derived_datatype</span> <span class="o">!=</span> <span class="n">set_derived_arg_datatype</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">raw_to_derived</span><span class="si">}</span><span class="s2"> has datatype </span><span class="si">{</span><span class="n">raw_to_derived_datatype</span><span class="si">}</span><span class="s2"> &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;!= </span><span class="si">{</span><span class="n">set_derived_arg_datatype</span><span class="si">}</span><span class="s2"> datatype </span><span class="si">{</span><span class="n">set_derived_arg_datatype</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">_validate_datatype_compatibility</span><span class="p">(</span>
+        <span class="n">raw_to_derived_datatype</span><span class="p">,</span>
+        <span class="n">set_derived_arg_datatype</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">&quot;raw_to_derived return and set_derived argument&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">derived_datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">derived_datatype</span> <span class="o">=</span> <span class="n">raw_to_derived_datatype</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_validate_datatype_compatibility</span><span class="p">(</span>
+            <span class="n">derived_datatype</span><span class="p">,</span>
+            <span class="n">raw_to_derived_datatype</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">&quot;raw_to_derived return and explicit derived_datatype&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span>
         <span class="n">raw_to_derived_func</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span>
@@ -1243,7 +1336,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">raw_devices_and_constants</span><span class="o">=</span><span class="n">raw_devices_and_constants</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span>
-        <span class="n">datatype</span><span class="o">=</span><span class="n">raw_to_derived_datatype</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="o">=</span><span class="n">derived_datatype</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
         <span class="n">units</span><span class="o">=</span><span class="n">derived_units</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="n">derived_precision</span><span class="p">,</span>
@@ -1257,18 +1350,35 @@ window.runMermaid = runMermaid;</script>
     <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
     <span class="n">derived_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived_precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">derived_datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a write only derived signal.</span>
 
 <span class="sd">    :param set_derived:</span>
 <span class="sd">        A function that takes the derived value and sets the raw signals. It can</span>
-<span class="sd">        either be an async function, or return an [](#AsyncStatus)</span>
-<span class="sd">    :param derived_units: Engineering units for the derived signal</span>
-<span class="sd">    :param derived_precision: Number of digits after the decimal place to display</span>
+<span class="sd">        either be an async function, or return an [](#AsyncStatus).</span>
+<span class="sd">    :param derived_units: Engineering units for the derived signal.</span>
+<span class="sd">    :param derived_precision: Number of digits after the decimal place to display.</span>
+<span class="sd">    :param derived_datatype:</span>
+<span class="sd">        The concrete datatype of the derived signal. If not provided, the datatype</span>
+<span class="sd">        is inferred from the first argument of ``set_derived``. This should be</span>
+<span class="sd">        provided when ``set_derived`` uses a generic type variable, as its</span>
+<span class="sd">        concrete runtime datatype cannot be inferred from the type annotation</span>
+<span class="sd">        alone. The provided derived_datatype must be compatible with the argument</span>
+<span class="sd">        datatype of ``set_derived``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">set_derived_arg_datatype</span> <span class="o">=</span> <span class="n">_get_first_arg_datatype</span><span class="p">(</span><span class="n">set_derived</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">derived_datatype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_validate_datatype_compatibility</span><span class="p">(</span>
+            <span class="n">derived_datatype</span><span class="p">,</span>
+            <span class="n">set_derived_arg_datatype</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">&quot;set_derived argument and explicit derived_datatype&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">derived_datatype</span> <span class="o">=</span> <span class="n">set_derived_arg_datatype</span>
     <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span><span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="n">derived_signal_w</span><span class="p">(</span>
-        <span class="n">datatype</span><span class="o">=</span><span class="n">_get_first_arg_datatype</span><span class="p">(</span><span class="n">set_derived</span><span class="p">),</span>
+        <span class="n">datatype</span><span class="o">=</span><span class="n">derived_datatype</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
         <span class="n">units</span><span class="o">=</span><span class="n">derived_units</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="n">derived_precision</span><span class="p">,</span>
