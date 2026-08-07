@@ -7,7 +7,7 @@ from typing import Any, cast
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
 
-from ._device import Device, DeviceVector
+from ._device import Device, DeviceMap, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
 from ._standard_base import _StandardBase
@@ -185,7 +185,8 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
 
         flattened_values = []
         for value in new_values:
-            if isinstance(value, DeviceVector):
+            # DeviceVector and DeviceMap case.
+            if isinstance(value, (DeviceVector, DeviceMap)):
                 flattened_values.extend(value.values())
             else:
                 flattened_values.append(value)
