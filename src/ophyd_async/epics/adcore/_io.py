@@ -6,11 +6,13 @@ from ophyd_async.core import (
     EnableDisable,
     SignalR,
     SignalRW,
+    StandardReadable,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     non_zero,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
 
 # Common classes for drivers and plugins
@@ -107,7 +109,7 @@ class ADState(StrictEnum):
 ADBaseIOT = TypeVar("ADBaseIOT", bound="ADBaseIO")
 
 
-class ADBaseIO(NDArrayBaseIO):
+class ADBaseIO(StandardReadable, NDArrayBaseIO):
     """Base class from which areaDetector drivers are derived.
 
     This mirrors the interface provided by ADCore/db/ADBase.template.
@@ -118,10 +120,14 @@ class ADBaseIO(NDArrayBaseIO):
     compatibility with changes made in https://github.com/areaDetector/ADCore/blob/master/RELEASE.md#asynndarraydriver-addriver
     """
 
-    acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
-    acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
-    num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
-    image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
+    acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime"), Format.CONFIG_SIGNAL]
+    acquire_period: A[
+        SignalRW[float], PvSuffix.rbv("AcquirePeriod"), Format.CONFIG_SIGNAL
+    ]
+    num_images: A[SignalRW[int], PvSuffix.rbv("NumImages"), Format.CONFIG_SIGNAL]
+    image_mode: A[
+        SignalRW[ADImageMode], PvSuffix.rbv("ImageMode"), Format.CONFIG_SIGNAL
+    ]
     detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
 
     # The following signals have been moved from NDArrayBaseIO for backwards
@@ -131,11 +137,13 @@ class ADBaseIO(NDArrayBaseIO):
     # There is no _RBV for this one
     wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
 
-    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV")]
-    model: A[SignalR[str], PvSuffix("Model_RBV")]
-    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV")]
-    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV")]
-    firmware_version: A[SignalR[str], PvSuffix("FirmwareVersion_RBV")]
+    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV"), Format.CONFIG_SIGNAL]
+    model: A[SignalR[str], PvSuffix("Model_RBV"), Format.CONFIG_SIGNAL]
+    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV"), Format.CONFIG_SIGNAL]
+    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV"), Format.CONFIG_SIGNAL]
+    firmware_version: A[
+        SignalR[str], PvSuffix("FirmwareVersion_RBV"), Format.CONFIG_SIGNAL
+    ]
 
 
 # Classes for plugins
@@ -156,13 +164,15 @@ class NDPluginBaseIO(NDArrayBaseIO):
     queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
 
 
-class NDROIIO(NDPluginBaseIO):
+class NDROIIO(StandardReadable, NDPluginBaseIO):
     """Plugin for taking a region of an NDArray.
 
     This mirrors the interface provided by ADCore/db/NDROI.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
     """
 
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
     size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
     size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
     size_z: A[SignalRW[int], PvSuffix.rbv("SizeZ")]
@@ -170,6 +180,12 @@ class NDROIIO(NDPluginBaseIO):
     bin_x: A[SignalRW[int], PvSuffix.rbv("BinX")]
     bin_y: A[SignalRW[int], PvSuffix.rbv("BinY")]
     bin_z: A[SignalRW[int], PvSuffix.rbv("BinZ")]
+
+    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
+        super().__init__(prefix, with_pvi, name)
+        self.add_readables(
+            [self.min_x, self.min_y, self.size_x, self.size_y], Format.CONFIG_SIGNAL
+        )
 
 
 class NDProcessIO(NDPluginBaseIO):
@@ -183,7 +199,7 @@ class NDProcessIO(NDPluginBaseIO):
     scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
-class NDStatsIO(NDPluginBaseIO):
+class NDStatsIO(StandardReadable, NDPluginBaseIO):
     """Plugin for computing statistics from an image or ROI within an image.
 
     This mirrors the interface provided by ADCore/db/NDStats.template.
@@ -193,10 +209,24 @@ class NDStatsIO(NDPluginBaseIO):
     # Basic statistics
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
     bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
+    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
+    min_x: A[SignalR[float], PvSuffix("MinX_RBV")]
+    min_y: A[SignalR[float], PvSuffix("MinY_RBV")]
+    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
+    max_x: A[SignalR[float], PvSuffix("MaxX_RBV")]
+    max_y: A[SignalR[float], PvSuffix("MaxY_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    sigma: A[SignalR[float], PvSuffix("Sigma_RBV")]
     total: A[SignalR[float], PvSuffix("Total_RBV")]
+    net: A[SignalR[float], PvSuffix("Net_RBV")]
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
+    centroid_x: A[SignalR[float], PvSuffix("CentroidX_RBV")]
+    centroid_y: A[SignalR[float], PvSuffix("CentroidY_RBV")]
+    sigma_x: A[SignalR[float], PvSuffix("SigmaX_RBV")]
+    sigma_y: A[SignalR[float], PvSuffix("SigmaY_RBV")]
+    sigma_xy: A[SignalR[float], PvSuffix("SigmaXY_RBV")]
     # X and Y Profiles
     compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
     profile_size_x: A[SignalR[int], PvSuffix("ProfileSizeX_RBV")]
@@ -209,27 +239,39 @@ class NDStatsIO(NDPluginBaseIO):
     hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
     hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
 
+    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
+        super().__init__(prefix, with_pvi, name)
+        self.add_readables(
+            [
+                self.compute_statistics,
+                self.bgd_width,
+                self.compute_centroid,
+                self.centroid_threshold,
+                self.compute_profiles,
+                self.cursor_x,
+                self.cursor_y,
+                self.compute_histogram,
+                self.hist_size,
+                self.hist_min,
+                self.hist_max,
+            ],
+            Format.CONFIG_SIGNAL,
+        )
+        self.add_readables(
+            [self.total, self.mean_value, self.min_value, self.max_value],
+            Format.HINTED_UNCACHED_SIGNAL,
+        )
+        self.add_readables(
+            [self.min_x, self.min_y, self.max_x, self.max_y],
+            Format.UNCACHED_SIGNAL,
+        )
 
-class NDROIStatNIO(EpicsDevice):
+
+class NDROIStatNIO(StandardReadable, EpicsDevice):
     """Defines the parameters for a single ROI used for statistics calculation.
-
-    Each instance represents a single ROI, with attributes for its position
-    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
 
     This mirrors the interface provided by ADCore/db/NDROIStatN.template.
     See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
-
-    Attributes:
-        name: The name of the ROI.
-        use: Flag indicating whether the ROI is used.
-        min_x: The start X-coordinate of the ROI.
-        min_y: The start Y-coordinate of the ROI.
-        size_x: The width of the ROI.
-        size_y: The height of the ROI.
-        min_value: Minimum count value in the ROI.
-        max_value: Maximum count value in the ROI.
-        mean_value: Mean counts value in the ROI.
-        total: Total counts in the ROI.
     """
 
     name_: A[SignalRW[str], PvSuffix("Name")]
@@ -238,11 +280,21 @@ class NDROIStatNIO(EpicsDevice):
     min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
     size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
     size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
-    # stats
     min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
     max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
     mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
     total: A[SignalR[float], PvSuffix("Total_RBV")]
+
+    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
+        super().__init__(prefix, with_pvi, name)
+        self.add_readables(
+            [self.use, self.min_x, self.min_y, self.size_x, self.size_y],
+            Format.CONFIG_SIGNAL,
+        )
+        self.add_readables(
+            [self.min_value, self.max_value, self.mean_value, self.total],
+            Format.HINTED_UNCACHED_SIGNAL,
+        )
 
 
 class NDROIStatIO(NDPluginBaseIO):

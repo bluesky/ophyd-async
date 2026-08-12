@@ -12,7 +12,6 @@ from ophyd_async.core import (
     EnableDisable,
     PathInfo,
     PathProvider,
-    SignalDataProvider,
     SignalR,
     StreamableDataProvider,
     StreamResourceDataProvider,
@@ -33,22 +32,6 @@ from ._io import (
     NDPluginFileIOT,
 )
 from ._ndattribute import NDAttributeDataType, NDAttributePvDbrType
-
-
-@dataclass
-class PluginSignalDataLogic(DetectorDataLogic):
-    driver: ADBaseIO
-    signal: SignalR
-    hinted: bool = True
-
-    async def prepare_single(self, datakey_name: str) -> SignalDataProvider:
-        # Need to wait for all the plugins to have finished before we can read
-        # the plugin signal
-        await self.driver.wait_for_plugins.set(True)
-        return SignalDataProvider(self.signal)
-
-    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        return [self.signal.name] if self.hinted else []
 
 
 @dataclass
