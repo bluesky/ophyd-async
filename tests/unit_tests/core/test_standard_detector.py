@@ -18,6 +18,7 @@ from ophyd_async.core import (
     SignalDict,
     SignalR,
     StandardDetector,
+    StandardReadable,
     StreamableDataProvider,
     StreamResourceDataProvider,
     StreamResourceInfo,
@@ -98,8 +99,7 @@ class DeadtimeTriggerLogic(DetectorTriggerLogic):
     def __init__(self, deadtime_signal: SignalR[float]):
         self.deadtime_signal = deadtime_signal
 
-    def config_sigs(self) -> set[SignalR]:
-        """Return the deadtime signal as a config signal."""
+    def deadtime_sigs(self) -> set[SignalR]:
         return {self.deadtime_signal}
 
     def get_deadtime(self, config_values: SignalDict) -> float:
@@ -1022,6 +1022,61 @@ async def test_collect_asset_docs_with_explicit_index(tmp_path):
             },
         ),
     ]
+
+
+async def test_child_readable_config_signals_in_describe_configuration():
+    """Child StandardReadable CONFIG_SIGNALs appear in describe_configuration."""
+    child = StandardReadable(name="child")
+    config_sig = soft_signal_rw(float, initial_value=1.5, name="child-exposure")
+    child.add_readables([config_sig], Format.CONFIG_SIGNAL)
+
+    det = StandardDetector(name="det")
+    det.add_readables([child], Format.CHILD)
+    det.add_detector_logics(ReadableOnlyDataLogic())
+    await det.prepare(TriggerInfo())
+
+    config = await det.describe_configuration()
+    assert "child-exposure" in config
+    reading = await det.read_configuration()
+    assert "child-exposure" in reading
+    assert reading["child-exposure"]["value"] == 1.5
+
+
+async def test_child_readable_read_signals_in_read():
+    """Child StandardReadable HINTED_SIGNALs appear in read/describe."""
+    child = StandardReadable(name="child")
+    read_sig = soft_signal_rw(int, initial_value=99, name="child-counts")
+    child.add_readables([read_sig], Format.HINTED_SIGNAL)
+
+    det = StandardDetector(name="det")
+    det.add_readables([child], Format.CHILD)
+    det.add_detector_logics(ReadableOnlyDataLogic())
+    await det.prepare(TriggerInfo())
+
+    desc = await det.describe()
+    assert "child-counts" in desc
+    assert "foo-value" in desc
+
+    reading = await det.read()
+    assert "child-counts" in reading
+    assert reading["child-counts"]["value"] == 99
+    # Data provider signal is also present
+    assert "foo-value" in reading
+
+
+async def test_child_readable_hints_merged():
+    """Child StandardReadable hints are merged with data logic hints."""
+    child = StandardReadable(name="child")
+    hinted_sig = soft_signal_rw(float, name="child-intensity")
+    child.add_readables([hinted_sig], Format.HINTED_SIGNAL)
+
+    det = StandardDetector(name="det")
+    det.add_readables([child], Format.CHILD)
+    det.add_detector_logics(ReadableOnlyDataLogic())
+
+    assert "fields" in det.hints
+    assert "child-intensity" in det.hints["fields"]
+    assert "foo-value" in det.hints["fields"]
 
 
 async def test_trigger_logic_not_implemented_errors():

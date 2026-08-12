@@ -136,18 +136,18 @@ class DetectorTriggerLogic:
 
     Subclasses must implement the appropriate `prepare_*` method for any trigger
     mode the detector supports, `get_deadtime` if it supports external
-    triggering, and `config_sigs` if the deadtime would vary according to
+    triggering, and `deadtime_sigs` if the deadtime would vary according to
     detector parameters.
     """
 
-    def config_sigs(self) -> set[SignalR]:
-        """Return the signals that should appear in read_configuration."""
+    def deadtime_sigs(self) -> set[SignalR]:
+        """Return the signals whose values are needed to compute deadtime."""
         return set()
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         """Return the deadtime in seconds for the detector.
 
-        :param config_values: the value of each signal in `config_sigs`
+        :param config_values: the value of each signal in `deadtime_sigs`
         """
         raise NotImplementedError(self)
 
@@ -425,9 +425,6 @@ class StandardDetector(
                 self._trigger_logic = logic
                 # Store the triggers that are supported
                 self._supported_triggers = _get_supported_triggers(logic)
-                # Add the config signals it needs
-                for sig in logic.config_sigs():
-                    self.set_readable_format(sig, StandardReadableFormat.CONFIG_SIGNAL)
             elif isinstance(logic, DetectorAcquireLogic):
                 if self._acquire_logic is not None:
                     raise RuntimeError("Detector already has acquire logic")
@@ -465,7 +462,7 @@ class StandardDetector(
             self._trigger_logic.get_deadtime
         ):
             config_values = SignalDict()
-            for sig in self._trigger_logic.config_sigs():
+            for sig in self._trigger_logic.deadtime_sigs():
                 if settings and sig in settings:
                     # Use value from settings if it is in there
                     # cast to a SignalRW because settings can only contain those
