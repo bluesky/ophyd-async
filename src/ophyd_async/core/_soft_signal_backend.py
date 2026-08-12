@@ -92,6 +92,13 @@ class TableSoftConverter(SoftConverter[TableT]):
             raise TypeError(f"Cannot convert {value} to {self.datatype}")
 
 
+_SUPPORTED_NDARRAY_DTYPES = frozenset(
+    get_dtype(datatype)
+    for datatype in get_args(SignalDatatype)
+    if cached_get_origin(datatype) is np.ndarray
+)
+
+
 @lru_cache
 def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
@@ -102,9 +109,12 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
     elif cached_get_origin(datatype) == np.ndarray:
-        if datatype not in get_args(SignalDatatype):
+        # Only the dtype is constrained, so any shape (Array1D's tuple[int],
+        # or an unrestricted Any) is accepted.
+        dtype = get_dtype(datatype)
+        if dtype not in _SUPPORTED_NDARRAY_DTYPES:
             raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-        return NDArraySoftConverter(get_dtype(datatype))
+        return NDArraySoftConverter(dtype)
     elif enum_cls:
         return EnumSoftConverter(enum_cls)
     elif issubclass(datatype, Table):

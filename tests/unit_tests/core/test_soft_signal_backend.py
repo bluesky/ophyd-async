@@ -42,7 +42,7 @@ def enum_d(value):
 
 
 def waveform_d(value):
-    return {"dtype": "array", "shape": [len(value)]}
+    return {"dtype": "array", "shape": list(np.shape(value))}
 
 
 def enumwf_d(value):
@@ -51,6 +51,14 @@ def enumwf_d(value):
 
 def table_d(value):
     return {"dtype": "array", "shape": [len(value)]}
+
+
+def float_array_2d():
+    return np.array([[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
+
+
+def uint_array_2d():
+    return np.array([[1, 1], [2, 2], [3, 3], [4, 4]])
 
 
 # Can be removed once numpy >=2 is pinned.
@@ -76,6 +84,20 @@ scalar_int_dtype = (
         (Array1D[np.uint64], np.array([]), np.array([995444]), waveform_d, "<u8"),
         (Array1D[np.float32], np.array([]), np.array([1.0]), waveform_d, "<f4"),
         (Array1D[np.float64], np.array([]), np.array([0.2]), waveform_d, "<f8"),
+        (
+            np.ndarray[Any, np.dtype[np.uint16]],
+            np.zeros([2, 2], dtype=np.float64),
+            uint_array_2d(),
+            waveform_d,
+            "<u2",
+        ),
+        (
+            np.ndarray[Any, np.dtype[np.float64]],
+            np.zeros([2, 2], dtype=np.float64),
+            float_array_2d(),
+            waveform_d,
+            "<f8",
+        ),
         (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
         (Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
         (typing.Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
