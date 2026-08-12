@@ -9,7 +9,6 @@ from ._data_logic import (
     ADMultipartDataLogic,
     ADWriterFactory,
     NDArrayDescription,
-    PluginSignalDataLogic,
 )
 from ._detector import AreaDetector, ContAcqDetector
 from ._io import (
@@ -75,7 +74,6 @@ __all__ = [
     "ADContAcqAcquireLogic",
     # DataLogic
     "NDArrayDescription",
-    "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
     "ADWriterFactory",
