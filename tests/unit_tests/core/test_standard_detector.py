@@ -5,6 +5,9 @@ from unittest.mock import ANY
 
 import numpy as np
 import pytest
+from bluesky.protocols import EventPageCollectable, WritesStreamAssets
+from event_model import DataKey
+from event_model.documents import PartialEventPage
 
 from ophyd_async.core import (
     Array1D,
@@ -12,6 +15,7 @@ from ophyd_async.core import (
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
+    PageableDataProvider,
     ReadableDataProvider,
     Settings,
     SignalDataProvider,
@@ -150,7 +154,9 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
         self.stop_count = 0
         self.tmp_path = tmp_path
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(
+        self, datakey_name: str, period: float
+    ) -> StreamableDataProvider:
         resource = StreamResourceInfo(
             data_key=datakey_name,
             shape=(10, 15),
@@ -165,6 +171,61 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
             collections_written_signal=self.collections_written,
         )
         return provider
+
+    async def stop(self) -> None:
+        self.stop_count += 1
+
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
+        return [datakey_name]
+
+
+class MockPageableProvider(PageableDataProvider):
+    """A finite buffer emitted as event pages, one value per collection."""
+
+    def __init__(self, datakey_name: str, collections_written_signal: SignalR[int]):
+        self.datakey_name = datakey_name
+        self.collections_written_signal = collections_written_signal
+        self.last_emitted = 0
+
+    async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
+        return {
+            self.datakey_name: DataKey(
+                source="mock",
+                shape=[collections_per_event],
+                dtype="array",
+                dtype_numpy="<i8",
+                external="",
+            )
+        }
+
+    async def make_pages(self, collections_written: int, collections_per_event: int):
+        events = collections_written // collections_per_event
+        if events > self.last_emitted:
+            new = range(self.last_emitted, events)
+            page: PartialEventPage = {
+                "data": {self.datakey_name: [[0] * collections_per_event for _ in new]},
+                "time": [0.0 for _ in new],
+                "timestamps": {self.datakey_name: [0.0 for _ in new]},
+            }
+            self.last_emitted = events
+            yield page
+
+
+class BoundedOnlyDataLogic(DetectorDataLogic):
+    """Produces bounded data held in a finite buffer, sized at prepare_bounded."""
+
+    def __init__(self):
+        self.collections_written = soft_signal_rw(int)
+        self.prepare_calls: list[tuple[int, float]] = []
+        self.stop_count = 0
+
+    async def prepare_bounded(
+        self, datakey_name: str, num_collections: int, period: float
+    ) -> PageableDataProvider:
+        self.prepare_calls.append((num_collections, period))
+        # A real buffer clears its progress counter when armed
+        await self.collections_written.set(0)
+        return MockPageableProvider(datakey_name, self.collections_written)
 
     async def stop(self) -> None:
         self.stop_count += 1
@@ -663,10 +724,11 @@ async def test_kickoff_without_streamable_data_raises():
     await det.prepare(TriggerInfo())
     await det.trigger()  # This works
 
-    # Readable-only logic doesn't support kickoff
+    # Readable-only logic doesn't support kickoff. It is single-only so it is
+    # dropped for a 5-event prepare, leaving the detector with no collectable data.
     await det.prepare(TriggerInfo(number_of_events=5))
     with pytest.raises(
-        ValueError, match="Detector foo is not streamable, so cannot kickoff"
+        ValueError, match="Detector foo has no collectable data, so cannot kickoff"
     ):
         await det.kickoff()
 
@@ -822,6 +884,22 @@ async def test_add_unknown_logic_type_raises():
         det.add_detector_logics(UnknownLogic())
 
 
+async def test_add_logic_filling_two_roles_raises():
+    """An object satisfying two logic protocols must not be silently half-registered."""
+    det = StandardDetector()
+
+    class BothAcquireAndData(DetectorAcquireLogic, DetectorDataLogic):
+        async def start_acquiring(self): ...
+        async def wait_for_idle(self): ...
+        async def ensure_stopped(self): ...
+
+    with pytest.raises(
+        TypeError,
+        match="is both DetectorAcquireLogic, DetectorDataLogic",
+    ):
+        det.add_detector_logics(BothAcquireAndData())
+
+
 @pytest.mark.parametrize("initial_shutter_closed", [True, False])
 async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool):
     """ensure_ready and ensure_stopped are separate hooks.
@@ -865,13 +943,127 @@ async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool
     assert al.shutter_closed is True  # unstage() must close the shutter
 
 
-async def test_multiple_collections_with_single_only_logic_raises():
-    """Test that requesting multiple collections fails with single-only data logic."""
+async def test_multiple_collections_with_single_only_logic_warns_and_drops(caplog):
+    """A single-only data logic is dropped with a warning when many are requested."""
     det = StandardDetector()
     det.add_detector_logics(ReadableOnlyDataLogic())
 
-    with pytest.raises(RuntimeError, match="Multiple collections not supported"):
+    with caplog.at_level("WARNING"):
         await det.prepare(TriggerInfo(number_of_events=5))
+
+    assert "cannot serve 5 collections" in caplog.text
+    ctx = det._prepare_ctx
+    assert ctx is not None
+    assert ctx.readable_data_providers == []
+    assert ctx.streamable_data_providers == []
+    assert ctx.pageable_data_providers == []
+
+
+async def test_bounded_step_scan_reads_derived_from_page():
+    """A bounded buffer describes as an array and read() derives one reading."""
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+
+    ti = TriggerInfo(
+        number_of_events=1, collections_per_event=5, livetime=0.1, deadtime=0.0
+    )
+    await det.prepare(ti)
+    desc = await det.describe()
+    assert desc["foo"]["shape"] == [5]
+    # prepare sized the buffer for 5 collections at the 0.1s period
+    assert dl.prepare_calls == [(5, pytest.approx(0.1))]
+
+    status = det.trigger()
+    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await dl.collections_written.set(5)
+    assert status.done
+    assert status.success
+    # trigger() re-armed the buffer, so prepare_bounded ran a second time
+    assert dl.prepare_calls == [(5, pytest.approx(0.1)), (5, pytest.approx(0.1))]
+    reading = await det.read()
+    assert reading["foo"]["value"] == [0, 0, 0, 0, 0]
+
+
+async def test_bounded_fly_scan_accumulates_across_kickoffs():
+    """A bounded buffer is armed once at prepare and not re-armed per kickoff."""
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
+
+    await det.prepare(
+        TriggerInfo(number_of_events=10, collections_per_event=1, livetime=0.1)
+    )
+    assert dl.prepare_calls == [(10, pytest.approx(0.1))]
+
+    # First kickoff of 5 events, buffer fills 0 -> 5
+    await det.events_to_kickoff.set(5)
+    await det.kickoff()
+    status = det.complete()
+    await dl.collections_written.set(5)
+    pages = [page async for page in det._collect_pages()]
+    assert pages[0]["data"]["foo"] == [[0]] * 5
+    assert status.done
+
+    # Second kickoff of 5 more, buffer continues 5 -> 10 (monotonic, no reset)
+    await det.events_to_kickoff.set(5)
+    await det.kickoff()
+    status = det.complete()
+    await dl.collections_written.set(10)
+    pages = [page async for page in det._collect_pages()]
+    assert pages[0]["data"]["foo"] == [[0]] * 5
+    assert status.done
+    # kickoff() never re-arms: prepare_bounded was only ever called once
+    assert dl.prepare_calls == [(10, pytest.approx(0.1))]
+
+
+@pytest.mark.parametrize(
+    "requested_livetime,default,expected_period",
+    [
+        # livetime unset -> resolved from the trigger logic's current state
+        (0.0, TriggerInfo(livetime=0.1, deadtime=0.02), 0.12),
+        # livetime given -> used as-is, no readback substitution
+        (0.05, TriggerInfo(livetime=0.1, deadtime=0.02), 0.05),
+        # livetime unset but trigger logic has nothing set -> stays 0
+        (0.0, TriggerInfo(), 0.0),
+    ],
+)
+async def test_prepare_resolves_zero_livetime_for_bounded_period(
+    requested_livetime, default, expected_period
+):
+    """A livetime of 0 is filled in from the trigger logic before sizing a buffer."""
+
+    class PeriodTriggerLogic(DetectorTriggerLogic):
+        async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+            pass
+
+        async def default_trigger_info(self) -> TriggerInfo:
+            return default
+
+    det = StandardDetector(name="foo")
+    dl = BoundedOnlyDataLogic()
+    det.add_detector_logics(PeriodTriggerLogic(), dl)
+
+    await det.prepare(
+        TriggerInfo(
+            number_of_events=1, collections_per_event=3, livetime=requested_livetime
+        )
+    )
+    assert dl.prepare_calls == [(3, pytest.approx(expected_period))]
+
+
+async def test_bounded_dropped_for_infinite_events(caplog):
+    """A bounded buffer cannot serve an infinite scan, so is dropped with a warning."""
+    det = StandardDetector(name="foo")
+    det.add_detector_logics(JustInternalTriggerLogic(), BoundedOnlyDataLogic())
+
+    with caplog.at_level("WARNING"):
+        await det.prepare(TriggerInfo(number_of_events=0))
+
+    assert "cannot serve 0 collections" in caplog.text
+    ctx = det._prepare_ctx
+    assert ctx is not None
+    assert ctx.pageable_data_providers == []
 
 
 async def test_data_logic_with_no_prepare_methods_raises():
@@ -1047,7 +1239,71 @@ async def test_data_logic_not_implemented_errors():
         await logic.prepare_single("test")
 
     with pytest.raises(NotImplementedError):
-        await logic.prepare_unbounded("test")
+        await logic.prepare_unbounded("test", 0.1)
 
     # stop() should not raise (has default implementation)
     await logic.stop()  # Should pass
+
+
+async def test_streamable_logic_looks_like_writes_stream_assets(tmp_path):
+    """An unbounded logic exposes collect_asset_docs, and only that.
+
+    The bluesky bundler picks up stream assets via a structural isinstance
+    against WritesStreamAssets (a hasattr check for collect_asset_docs). A
+    detector must look like exactly one of WritesStreamAssets /
+    EventPageCollectable so the bundler routes it down a single path.
+    """
+    det = StandardDetector()
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
+
+    assert isinstance(det, WritesStreamAssets)
+    assert not isinstance(det, EventPageCollectable)
+    assert hasattr(det, "collect_asset_docs")
+    assert not hasattr(det, "collect_pages")
+
+
+async def test_bounded_logic_looks_like_event_page_collectable():
+    """A bounded logic exposes collect_pages, and only that."""
+    det = StandardDetector()
+    det.add_detector_logics(BoundedOnlyDataLogic())
+
+    assert isinstance(det, EventPageCollectable)
+    assert not isinstance(det, WritesStreamAssets)
+    assert hasattr(det, "collect_pages")
+    assert not hasattr(det, "collect_asset_docs")
+
+
+async def test_readable_logic_looks_like_neither():
+    """A single/readable logic emits neither stream assets nor event pages."""
+    det = StandardDetector()
+    det.add_detector_logics(ReadableOnlyDataLogic())
+
+    assert not isinstance(det, WritesStreamAssets)
+    assert not isinstance(det, EventPageCollectable)
+    assert not hasattr(det, "collect_asset_docs")
+    assert not hasattr(det, "collect_pages")
+
+
+async def test_missing_attribute_raises_standard_attribute_error():
+    """__getattr__ falls through to a normal AttributeError for other names."""
+    det = StandardDetector()
+    with pytest.raises(
+        AttributeError,
+        match=r"'StandardDetector' object has no attribute 'does_not_exist'",
+    ):
+        det.does_not_exist  # noqa: B018
+
+
+async def test_mixing_bounded_and_unbounded_logics_raises(tmp_path):
+    """Bounded and unbounded logics are mutually exclusive on one detector."""
+    det = StandardDetector()
+    with pytest.raises(
+        TypeError,
+        match=(
+            r"has both bounded data logics \(BoundedOnlyDataLogic\) and unbounded "
+            r"data logics \(StreamableOnlyDataLogic\)"
+        ),
+    ):
+        det.add_detector_logics(
+            BoundedOnlyDataLogic(), StreamableOnlyDataLogic(tmp_path)
+        )

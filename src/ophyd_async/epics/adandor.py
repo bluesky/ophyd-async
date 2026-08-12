@@ -21,7 +21,7 @@ from ophyd_async.epics.adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    trigger_info_from_driver,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -79,7 +79,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(self.driver)
 
 
 class AndorDetector(AreaDetector[Andor2DriverIO]):

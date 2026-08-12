@@ -93,6 +93,47 @@ async def test_prepare_hdf(
 
 
 @pytest.mark.parametrize(
+    "flush_period,livetime,deadtime,expected_frames_per_chunk",
+    [
+        # 0.5s flush / 0.01s period -> 50 frames per chunk (#1309)
+        (0.5, 0.01, 0.0, 50),
+        # 0.5s flush / 0.05s period -> 10 frames per chunk
+        (0.5, 0.04, 0.01, 10),
+        # A sub-frame flush period floors to a single frame per chunk
+        (0.001, 0.05, 0.0, 1),
+    ],
+)
+async def test_hdf_chunk_sized_from_flush_period(
+    static_path_provider: StaticPathProvider,
+    flush_period: float,
+    livetime: float,
+    deadtime: float,
+    expected_frames_per_chunk: int,
+):
+    """A configured flush_period sizes the HDF chunk from the frame period."""
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider, flush_period=flush_period),
+        )
+    set_mock_value(det.driver.array_size_x, 1024)
+    set_mock_value(det.driver.array_size_y, 768)
+    set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UINT16)
+    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    await det.prepare(
+        TriggerInfo(livetime=livetime, deadtime=deadtime, number_of_events=3)
+    )
+    assert await writer.num_frames_chunks.get_value() == expected_frames_per_chunk
+    (sr, *_) = [doc async for doc in det.collect_asset_docs(3)]
+    assert sr[1]["parameters"]["chunk_shape"] == (
+        expected_frames_per_chunk,
+        768,
+        1024,
+    )
+
+
+@pytest.mark.parametrize(
     "factory_cls,is_hdf",
     [
         (adcore.ADWriterFactory.hdf, True),

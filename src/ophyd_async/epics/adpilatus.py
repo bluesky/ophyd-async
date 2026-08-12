@@ -23,7 +23,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    trigger_info_from_driver,
 )
 from .core import PvSuffix
 
@@ -90,7 +90,7 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(self.driver)
 
 
 class PilatusDetector(AreaDetector[PilatusDriverIO]):
