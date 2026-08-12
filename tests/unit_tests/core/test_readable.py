@@ -290,6 +290,28 @@ def test_standard_readable_add_children_multi_nested():
     assert outer
 
 
+def test_has_child_readables():
+    parent = StandardReadable()
+    assert parent.has_child_readables() is False
+
+    child_a = StandardReadable()
+    sig_a, _ = soft_signal_r_and_setter(float)
+    child_a.add_readables([sig_a], Format.HINTED_SIGNAL)
+    parent.add_readables([child_a], Format.CHILD)
+    assert parent.has_child_readables() is True
+
+    # Filtering out the only child returns False
+    assert parent.has_child_readables(ignore_filter=[child_a]) is False
+
+    # Adding a second child, filtering only one still returns True
+    child_b = StandardReadable()
+    sig_b, _ = soft_signal_r_and_setter(float)
+    child_b.add_readables([sig_b], Format.HINTED_SIGNAL)
+    parent.add_readables([child_b], Format.CHILD)
+    assert parent.has_child_readables(ignore_filter=[child_a]) is True
+    assert parent.has_child_readables(ignore_filter=[child_a, child_b]) is False
+
+
 async def test_duplicate_readable_raises_exception():
     class DummyBaseDevice(StandardReadable):
         def __init__(self, name):
