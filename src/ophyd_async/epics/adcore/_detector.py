@@ -88,14 +88,15 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
         self,
         prefix: str,
         *writer_factories: ADWriterFactory,
-        driver_suffix="cam1:",
-        cb_suffix="CB1:",
+        driver_suffix: str = "cam1:",
+        cb_suffix: str = "CB1:",
+        cb_plugin_name: str = "cb",
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = ADBaseIO(prefix + driver_suffix)
-        cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
+        cb_plugin = NDCircularBuffIO(prefix + cb_suffix, name=cb_plugin_name)
         super().__init__(
             driver,
             prefix,
