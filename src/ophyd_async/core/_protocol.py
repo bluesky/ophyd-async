@@ -94,7 +94,7 @@ class AsyncStageable(Protocol):
     def unstage(self) -> AsyncStatusBase:
         """Clean up the device after acquisition.
 
-        :return: An `Status` that is marked done when the device is done unstaging.
+        :return: A `Status` that is marked done when the device is done unstaging.
         """
 
 
