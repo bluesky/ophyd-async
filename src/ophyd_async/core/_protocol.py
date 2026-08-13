@@ -87,7 +87,7 @@ class AsyncStageable(Protocol):
     def stage(self) -> AsyncStatusBase:
         """Set up the device for acquisition.
 
-        :return: An `Status` that is marked done when the device is done staging.
+        :return: A `Status` that is marked done when the device is done staging.
         """
 
     @abstractmethod
