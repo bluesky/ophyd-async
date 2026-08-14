@@ -1,7 +1,7 @@
 import asyncio
 import math
 import re
-from typing import TypeVar
+from typing import Generic, TypeVar
 from unittest.mock import ANY, call
 
 import pytest
@@ -9,6 +9,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    Device,
     EnableDisable,
     EnumTypes,
     SignalRW,
@@ -16,7 +17,9 @@ from ophyd_async.core import (
     StrictEnum,
     Table,
     Transform,
+    derived_signal_r,
     derived_signal_rw,
+    derived_signal_w,
     get_mock,
     set_mock_value,
     soft_signal_rw,
@@ -298,3 +301,259 @@ async def test_derived_signal_with_motor_devices(
     assert await m1.movable_logic.readback.get_value() == 3
     assert await m2.movable_logic.readback.get_value() == 3
     assert await derived_sig.get_value() == 6
+
+
+T = TypeVar("T", bound=float | int)
+
+
+class GenericDerivedExample(Device, Generic[T]):
+    def __init__(self, datatype: type[T], name: str = ""):
+        self.datatype = datatype
+        self.sig = soft_signal_rw(datatype, datatype(5))
+        self.offset = soft_signal_rw(datatype, datatype(1))
+
+        self.value = derived_signal_rw(
+            self._get,
+            self._set,
+            derived_datatype=datatype,
+            sig=self.sig,
+            offset=self.offset,
+        )
+        super().__init__(name)
+
+    def _get(self, sig: T, offset: T) -> T:
+        return self.datatype(sig + offset)
+
+    async def _set(self, value: T) -> None:
+        offset = await self.offset.get_value()
+        await self.sig.set(self.datatype(value - offset))
+
+
+@pytest.mark.parametrize(
+    "datatype, value, expected_sig", [(int, 10, 9), (float, 10.0, 9.0)]
+)
+async def test_generic_derived_example_sets_derived_value(
+    datatype: type[int] | type[float], value: int | float, expected_sig: int | float
+):
+    example = GenericDerivedExample(datatype, name="example")
+    await example.connect(mock=True)
+    await example.value.set(value)
+    assert await example.sig.get_value() == expected_sig
+
+
+@pytest.mark.parametrize("datatype", [int, float])
+def test_generic_derived_example_infers_derived_datatype(
+    datatype: type[int] | type[float],
+):
+    example = GenericDerivedExample(datatype, name="example")
+    assert example.value.datatype is datatype
+
+
+@pytest.mark.parametrize("datatype, expected", [(int, 6), (float, 6.0)])
+async def test_generic_derived_example_reads_derived_value(
+    datatype: type[int] | type[float], expected: int | float
+):
+    example = GenericDerivedExample(datatype, name="example")
+    await example.connect(mock=True)
+    assert await example.value.get_value() == expected
+
+
+def _get_generic(value: T) -> T:
+    return value
+
+
+async def _set_generic(value: T) -> None:
+    pass
+
+
+def _get_int(value: int) -> int:
+    return value
+
+
+async def _set_int(value: int) -> None:
+    pass
+
+
+def _get_float(value: float) -> float:
+    return value
+
+
+async def _set_str(value: str) -> None:
+    pass
+
+
+@pytest.fixture
+async def sig() -> SignalRW[int]:
+    sig = soft_signal_rw(int, name="sig")
+    await sig.connect(mock=True)
+    return sig
+
+
+@pytest.mark.parametrize(
+    "derived_datatype, expected_datatype", [(int, "integer"), (float, "number")]
+)
+async def test_derived_signal_r_accepts_generic_typevar(
+    derived_datatype: type[int] | type[float],
+    expected_datatype: str,
+    sig: SignalRW[int],
+):
+    derived = derived_signal_r(
+        _get_generic, derived_datatype=derived_datatype, value=sig
+    )
+    await derived.connect(mock=True)
+    describe = await derived.describe()
+    assert describe[derived.name]["dtype"] == expected_datatype
+
+
+@pytest.mark.parametrize("derived_datatype", [int, float])
+async def test_derived_signal_w_accepts_generic_typevar(
+    derived_datatype: type[int] | type[float],
+):
+    sig = derived_signal_w(_set_generic, derived_datatype=derived_datatype)
+    await sig.connect(mock=True)
+
+
+@pytest.mark.parametrize(
+    ("factory", "callback", "context"),
+    [
+        (
+            derived_signal_r,
+            _get_generic,
+            "raw_to_derived return and explicit derived_datatype",
+        ),
+        (
+            derived_signal_w,
+            _set_generic,
+            "set_derived argument and explicit derived_datatype",
+        ),
+    ],
+)
+async def test_derived_signal_rejects_incompatible_generic_datatype(
+    factory, callback, context
+):
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with ~T (bound=float | int) "
+            f"for {context}."
+        ),
+    ):
+        factory(callback, derived_datatype=str)
+
+
+async def test_derived_signal_rw_accepts_matching_concrete_types(sig: SignalRW[int]):
+    derived = derived_signal_rw(_get_int, _set_int, value=sig)
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
+
+
+async def test_derived_signal_rw_accepts_matching_generic_types_with_explicit_datatype(
+    sig: SignalRW[int],
+):
+    derived = derived_signal_rw(
+        _get_generic, _set_generic, derived_datatype=int, value=sig
+    )
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
+
+
+async def test_derived_signal_rw_accepts_generic_get_with_concrete_set(
+    sig: SignalRW[int],
+):
+    derived = derived_signal_rw(_get_generic, _set_int, derived_datatype=int, value=sig)
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
+
+
+async def test_derived_signal_rw_accepts_concrete_get_with_generic_set(
+    sig: SignalRW[int],
+):
+    derived = derived_signal_rw(_get_int, _set_generic, derived_datatype=int, value=sig)
+    await derived.connect(mock=True)
+    assert await derived.get_value() == 0
+    await derived.set(1)
+
+
+def test_derived_signal_rw_rejects_generic_get_with_incompatible_concrete_set(
+    sig: SignalRW[str],
+):
+    with pytest.raises(TypeError):
+        derived_signal_rw(_get_generic, _set_str, derived_datatype=str, value=sig)  # type: ignore[arg-type]
+
+
+def test_derived_signal_rw_rejects_incompatible_get_and_set_types():
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'float'> is not compatible with <class 'int'> for "
+            "raw_to_derived return and set_derived argument."
+        ),
+    ):
+        derived_signal_rw(_get_float, _set_int)  # type: ignore[arg-type]
+
+
+def test_derived_signal_rw_rejects_explicit_datatype_incompatible_with_get(
+    sig: SignalRW[int],
+):
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with <class 'int'> for "
+            "raw_to_derived return and explicit derived_datatype."
+        ),
+    ):
+        derived_signal_rw(_get_int, _set_int, derived_datatype=str, value=sig)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "derived_datatype, expected_datatype", [(int, "integer"), (float, "number")]
+)
+async def test_derived_signal_rw_accepts_generics_with_explicit_datatype_on_describe(
+    derived_datatype: type[int] | type[float],
+    expected_datatype: str,
+    sig: SignalRW[int],
+):
+    derived = derived_signal_rw(
+        _get_generic, _set_generic, derived_datatype=derived_datatype, value=sig
+    )
+    await derived.connect(mock=True)
+    describe = await derived.describe()
+    assert describe[derived.name]["dtype"] == expected_datatype
+
+
+ConstrainedT = TypeVar("ConstrainedT", int, float)
+
+
+def _get_constrained_generic(value: ConstrainedT) -> ConstrainedT:
+    return value
+
+
+async def test_derived_signal_r_reports_typevar_constraints():
+    value = soft_signal_rw(int, initial_value=1)
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "<class 'str'> is not compatible with "
+            "~ConstrainedT (constraints=(<class 'int'>, <class 'float'>)) "
+            "for raw_to_derived return and explicit derived_datatype."
+        ),
+    ):
+        derived_signal_r(_get_constrained_generic, derived_datatype=str, value=value)  # type: ignore[arg-type]
+
+
+async def test_derived_signal_rw_generic_get_and_set_requires_datatype_on_describe(
+    sig: SignalRW[int],
+):
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            f'Cannot determine signal datatype from TypeVar "{T}". '
+            "If this is a generic derived signal, provide a concrete datatype "
+            'using the "derived_datatype" argument.'
+        ),
+    ):
+        derived_signal_rw(_get_generic, _set_generic, value=sig)

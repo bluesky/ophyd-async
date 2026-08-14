@@ -124,7 +124,19 @@ with callback_on_mock_put(motor.setpoint, lambda v: set_mock_value(motor.readbac
 
 The callback is cleared automatically when the context exits. For a persistent side effect across a whole test, call it as a plain function (without `with`).
 
-For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else.
+The callback may be **either a sync function or an `async def` coroutine function**. An async callback is awaited before the `put()` completes, so use one when the side effect itself needs to `await` — for instance setting another Signal via its `set()`:
+
+```python
+async def on_put(value: float) -> None:
+    await motor.velocity.set(value / 2)
+
+with callback_on_mock_put(motor.setpoint, on_put):
+    await motor.setpoint.set(10.0)
+```
+
+Either way, the value the callback returns (if not `None`) becomes the readback; returning `None` leaves the readback as the value that was put.
+
+For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else. Like [](#callback_on_mock_put), it takes a sync or async callback, and its return value becomes the result of `execute()`.
 
 For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
 
@@ -165,8 +177,8 @@ There are a few other things we may wish to do in tests:
 - [](#set_mock_attr) to override a verb (or any reserved-name attribute) on a Device with a mock
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
 - [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
-- [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
-- [](#callback_on_mock_execute) to override the function called when a Command is executed
+- [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal (sync or async callback)
+- [](#callback_on_mock_execute) to override the function called when a Command is executed (sync or async callback)
 - [](#get_mock_put) to get the `AsyncMock` tracking `put()` calls on a Signal
 - [](#get_mock_execute) to get the `AsyncMock` tracking `execute()` calls on a Command
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing

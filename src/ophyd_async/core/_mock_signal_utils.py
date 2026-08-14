@@ -166,8 +166,28 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
     readback. If None is returned then the readback will be set to the setpoint.
 
     :param signal: A signal with a `MockSignalBackend` backend.
-    :param callback: The callback to call when the backend is put to during the
-        context.
+    :param callback:
+        The callback to call when the backend is put to during the context. It
+        takes the value being put, and may be either a sync function or an
+        `async def` coroutine function; an async callback is awaited before the
+        put completes, so it can `await` other Signals.
+
+    :example:
+    ```python
+    # Sync: mirror the setpoint into the readback
+    def mirror(value: float) -> None:
+        set_mock_value(motor.readback, value)
+
+    with callback_on_mock_put(motor.setpoint, mirror):
+        await motor.setpoint.set(10.0)
+
+    # Async: await something else before the put completes
+    async def on_put(value: float) -> None:
+        await other_signal.set(value * 2)
+
+    with callback_on_mock_put(motor.setpoint, on_put):
+        await motor.setpoint.set(10.0)
+    ```
     """
     backend = _get_mock_signal_backend(signal)
     backend.set_mock_put_callback(callback)
@@ -233,7 +253,26 @@ def callback_on_mock_execute(command: Command, callback: MockExecuteCallback):
     something else instead.
 
     :param command: A command connected in mock mode.
-    :param callback: The callback to call when the command is executed.
+    :param callback:
+        The callback to call when the command is executed. It takes the same
+        arguments as the command, and may be either a sync function or an
+        `async def` coroutine function; an async callback is awaited before
+        `execute()` returns. Its return value becomes the command's result.
+
+    :example:
+    ```python
+    # Sync
+    with callback_on_mock_execute(det.arm, lambda: 3):
+        assert await det.arm.execute() == 3
+
+    # Async
+    async def slow_arm() -> int:
+        await asyncio.sleep(0.1)
+        return 3
+
+    with callback_on_mock_execute(det.arm, slow_arm):
+        assert await det.arm.execute() == 3
+    ```
     """
     backend = _get_mock_command_backend(command)
     backend.set_mock_execute_callback(callback)
