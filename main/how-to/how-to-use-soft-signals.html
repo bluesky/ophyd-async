@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to use soft signals &#8212; ophyd-async 0.21.2.dev3+ga3fddca7b documentation</title>
+    <title>How to use soft signals &#8212; ophyd-async 0.21.2.dev4+gd2383e9a3 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=14bdd027"></script>
+    <script src="../_static/documentation_options.js?v=06a9167d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
   
   
 </a></div>
@@ -534,11 +534,23 @@
 <span class="p">)</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">getter</span></code> and <code class="docutils literal notranslate"><span class="pre">setter</span></code> may each be <strong>either a sync function or an <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> coroutine function</strong> — they are independent, so one can be sync and the other async. An async getter is awaited on every <code class="docutils literal notranslate"><span class="pre">get_value()</span></code>/<code class="docutils literal notranslate"><span class="pre">get_reading()</span></code> (and on each poll if <code class="docutils literal notranslate"><span class="pre">poll_period</span></code> is set); an async setter is awaited before the <code class="docutils literal notranslate"><span class="pre">set()</span></code> completes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_position</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move_to</span><span class="p">(</span><span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span>
+
+<span class="n">motor_position</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">setter</span><span class="o">=</span><span class="n">move_to</span><span class="p">,</span> <span class="n">getter</span><span class="o">=</span><span class="n">read_position</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><strong>Rationale</strong>:</p>
 <ul class="simple">
 <li><p>Directly wrap the callable in a <code class="docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code>-backed signal.</p></li>
 <li><p>Avoids the need for separate <code class="docutils literal notranslate"><span class="pre">Command</span></code> + <code class="docutils literal notranslate"><span class="pre">Signal</span></code> pairs when types align.</p></li>
 <li><p>Preserves type hints and integrates seamlessly with scans.</p></li>
+<li><p>An async callable means I/O-bound devices don’t have to block the event loop.</p></li>
 </ul>
 </section>
 <section id="case-c-mismatched-setter-and-getter-types-or-multiple-input-types">
@@ -596,6 +608,7 @@
 <li><p><strong>Combine <code class="docutils literal notranslate"><span class="pre">Command</span></code> + <code class="docutils literal notranslate"><span class="pre">Signal</span></code></strong> when types diverge or actions yield secondary results (Cases C/D).</p></li>
 <li><p><strong>Avoid overloading signals</strong>: If a callable performs an action <em>and</em> returns data, model the action as a <code class="docutils literal notranslate"><span class="pre">Command</span></code> and the data as one or more <code class="docutils literal notranslate"><span class="pre">Signal</span></code>s.</p></li>
 <li><p><strong>Polling</strong>: Use <code class="docutils literal notranslate"><span class="pre">poll_period</span></code> in <code class="docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code> for live updates (e.g., sensor readings), but ensure <code class="docutils literal notranslate"><span class="pre">getter</span></code> is lightweight.</p></li>
+<li><p><strong>Sync or async</strong>: every callable you hand to ophyd-async here — <code class="docutils literal notranslate"><span class="pre">getter</span></code>, <code class="docutils literal notranslate"><span class="pre">setter</span></code>, and the callback passed to <code class="docutils literal notranslate"><span class="pre">soft_command</span></code> — may be a plain function or a coroutine function. Prefer <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> whenever the callable does I/O.</p></li>
 </ol>
 </section>
 </section>

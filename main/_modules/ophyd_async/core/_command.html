@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._command &#8212; ophyd-async 0.21.2.dev3+ga3fddca7b documentation</title>
+    <title>ophyd_async.core._command &#8212; ophyd-async 0.21.2.dev4+gd2383e9a3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=14bdd027"></script>
+    <script src="../../../_static/documentation_options.js?v=06a9167d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
   
   
 </a></div>
@@ -1114,6 +1114,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    caller blocks until the first finishes.  This is intentional — hardware</span>
 <span class="sd">    commands should not run concurrently, and it prevents re-entrant callback</span>
 <span class="sd">    invocations.</span>
+
+<span class="sd">    :param command_cb:</span>
+<span class="sd">        The callable to wrap. May be sync or async; an async callback is awaited</span>
+<span class="sd">        by `execute()`, which returns its result either way.</span>
+<span class="sd">    :param sig: The signature of `command_cb`, with all parameters annotated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">signature</span><span class="p">:</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.21.2.dev3+ga3fddca7b documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.21.2.dev4+gd2383e9a3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=14bdd027"></script>
+    <script src="../../../_static/documentation_options.js?v=06a9167d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
   
   
 </a></div>
@@ -1086,8 +1086,28 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    readback. If None is returned then the readback will be set to the setpoint.</span>
 
 <span class="sd">    :param signal: A signal with a `MockSignalBackend` backend.</span>
-<span class="sd">    :param callback: The callback to call when the backend is put to during the</span>
-<span class="sd">        context.</span>
+<span class="sd">    :param callback:</span>
+<span class="sd">        The callback to call when the backend is put to during the context. It</span>
+<span class="sd">        takes the value being put, and may be either a sync function or an</span>
+<span class="sd">        `async def` coroutine function; an async callback is awaited before the</span>
+<span class="sd">        put completes, so it can `await` other Signals.</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    # Sync: mirror the setpoint into the readback</span>
+<span class="sd">    def mirror(value: float) -&gt; None:</span>
+<span class="sd">        set_mock_value(motor.readback, value)</span>
+
+<span class="sd">    with callback_on_mock_put(motor.setpoint, mirror):</span>
+<span class="sd">        await motor.setpoint.set(10.0)</span>
+
+<span class="sd">    # Async: await something else before the put completes</span>
+<span class="sd">    async def on_put(value: float) -&gt; None:</span>
+<span class="sd">        await other_signal.set(value * 2)</span>
+
+<span class="sd">    with callback_on_mock_put(motor.setpoint, on_put):</span>
+<span class="sd">        await motor.setpoint.set(10.0)</span>
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_put_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
@@ -1168,7 +1188,26 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    something else instead.</span>
 
 <span class="sd">    :param command: A command connected in mock mode.</span>
-<span class="sd">    :param callback: The callback to call when the command is executed.</span>
+<span class="sd">    :param callback:</span>
+<span class="sd">        The callback to call when the command is executed. It takes the same</span>
+<span class="sd">        arguments as the command, and may be either a sync function or an</span>
+<span class="sd">        `async def` coroutine function; an async callback is awaited before</span>
+<span class="sd">        `execute()` returns. Its return value becomes the command&#39;s result.</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    # Sync</span>
+<span class="sd">    with callback_on_mock_execute(det.arm, lambda: 3):</span>
+<span class="sd">        assert await det.arm.execute() == 3</span>
+
+<span class="sd">    # Async</span>
+<span class="sd">    async def slow_arm() -&gt; int:</span>
+<span class="sd">        await asyncio.sleep(0.1)</span>
+<span class="sd">        return 3</span>
+
+<span class="sd">    with callback_on_mock_execute(det.arm, slow_arm):</span>
+<span class="sd">        assert await det.arm.execute() == 3</span>
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_command_backend</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_execute_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>

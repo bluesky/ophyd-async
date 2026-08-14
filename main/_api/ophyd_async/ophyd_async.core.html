@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.21.2.dev3+ga3fddca7b documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.21.2.dev4+gd2383e9a3 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=14bdd027"></script>
+    <script src="../../_static/documentation_options.js?v=06a9167d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev3+ga3fddca7b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev4+gd2383e9a3 documentation - Home"/>
   
   
 </a></div>
@@ -2340,8 +2340,10 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <li><p><strong>units</strong> – The units for numeric datatypes.</p></li>
 <li><p><strong>precision</strong> – The number of digits after the decimal place to display for a float datatype.</p></li>
 <li><p><strong>getter</strong> – Optional callable returning the current device value, called on
-get_value/get_reading and periodically if poll_period is set.</p></li>
-<li><p><strong>setter</strong> – Optional callable performing the set action. May return the settled
+get_value/get_reading and periodically if poll_period is set. May be
+sync or async; an async getter is awaited.</p></li>
+<li><p><strong>setter</strong> – Optional callable performing the set action. May be sync or async; an
+async setter is awaited before the put completes. May return the settled
 value; if it returns None and a getter is configured, the getter is
 called to refresh the cache.</p></li>
 <li><p><strong>poll_period</strong> – How often (seconds) to call the getter while a subscription is active.
@@ -2428,7 +2430,8 @@ Use soft_signal_rw if you want a device that is externally modifiable.</p>
 <li><p><strong>units</strong> – The units of the signal.</p></li>
 <li><p><strong>precision</strong> – The precision of the signal.</p></li>
 <li><p><strong>getter</strong> – Optional callable returning the current device value, called on
-get_value/get_reading and periodically if poll_period is set.</p></li>
+get_value/get_reading and periodically if poll_period is set. May be
+sync or async; an async getter is awaited.</p></li>
 <li><p><strong>poll_period</strong> – How often (seconds) to call the getter while a subscription is active.
 Requires getter to be set.</p></li>
 </ul>
@@ -2453,15 +2456,27 @@ Requires getter to be set.</p></li>
 <li><p><strong>units</strong> – The units of the signal.</p></li>
 <li><p><strong>precision</strong> – The precision of the signal.</p></li>
 <li><p><strong>getter</strong> – Optional callable returning the current device value, called on
-get_value/get_reading and periodically if poll_period is set.</p></li>
-<li><p><strong>setter</strong> – Optional callable performing the set action. May return the settled
+get_value/get_reading and periodically if poll_period is set. May be
+sync or async; an async getter is awaited.</p></li>
+<li><p><strong>setter</strong> – Optional callable performing the set action. May be sync or async; an
+async setter is awaited before the put completes. May return the settled
 value; if it returns None and a getter is configured, the getter is
 called to refresh the cache.</p></li>
 <li><p><strong>poll_period</strong> – How often (seconds) to call the getter while a subscription is active.
 Requires getter to be set.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">read_position</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move_to</span><span class="p">(</span><span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="c1"># getter and setter can independently be sync or async</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">getter</span><span class="o">=</span><span class="n">read_position</span><span class="p">,</span> <span class="n">setter</span><span class="o">=</span><span class="n">move_to</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -2709,11 +2724,30 @@ readback. If None is returned then the readback will be set to the setpoint.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signal</strong> – A signal with a <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code> backend.</p></li>
-<li><p><strong>callback</strong> – The callback to call when the backend is put to during the
-context.</p></li>
+<li><p><strong>callback</strong> – The callback to call when the backend is put to during the context. It
+takes the value being put, and may be either a sync function or an
+<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> coroutine function; an async callback is awaited before the
+put completes, so it can <code class="docutils literal notranslate"><span class="pre">await</span></code> other Signals.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sync: mirror the setpoint into the readback</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mirror</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">set_mock_value</span><span class="p">(</span><span class="n">motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">mirror</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+
+<span class="c1"># Async: await something else before the put completes</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_put</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">other_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">on_put</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2729,10 +2763,28 @@ something else instead.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>command</strong> – A command connected in mock mode.</p></li>
-<li><p><strong>callback</strong> – The callback to call when the command is executed.</p></li>
+<li><p><strong>callback</strong> – The callback to call when the command is executed. It takes the same
+arguments as the command, and may be either a sync function or an
+<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> coroutine function; an async callback is awaited before
+<code class="docutils literal notranslate"><span class="pre">execute()</span></code> returns. Its return value becomes the command’s result.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sync</span>
+<span class="k">with</span> <span class="n">callback_on_mock_execute</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">arm</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="k">await</span> <span class="n">det</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span>
+
+<span class="c1"># Async</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">slow_arm</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">3</span>
+
+<span class="k">with</span> <span class="n">callback_on_mock_execute</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">arm</span><span class="p">,</span> <span class="n">slow_arm</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="k">await</span> <span class="n">det</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4913,6 +4965,15 @@ pass <code class="docutils literal notranslate"><span class="pre">NO_ARG_VOID_SI
 caller blocks until the first finishes.  This is intentional — hardware
 commands should not run concurrently, and it prevents re-entrant callback
 invocations.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command_cb</strong> – The callable to wrap. May be sync or async; an async callback is awaited
+by <code class="docutils literal notranslate"><span class="pre">execute()</span></code>, which returns its result either way.</p></li>
+<li><p><strong>sig</strong> – The signature of <code class="docutils literal notranslate"><span class="pre">command_cb</span></code>, with all parameters annotated.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.SoftCommandBackend.signature">
 <span class="sig-name descname"><span class="pre">signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/inspect.html#inspect.Signature" title="(in Python v3.14)"><span class="pre">Signature</span></a></span><a class="headerlink" href="#ophyd_async.core.SoftCommandBackend.signature" title="Link to this definition">#</a></dt>
