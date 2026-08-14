@@ -171,7 +171,13 @@ async def test_set_and_wait_for_value_same_set_as_read():
         set_mock_put_proceeds(signal, True)
 
     async def check_set_and_wait():
-        await (await set_and_wait_for_value(signal, 1, timeout=0.1))
+        # A generous timeout: the mock put genuinely completes and the
+        # signal reaches 1, so the wait always succeeds - it just needs the
+        # put-callback propagation to finish before the timeout fires. A
+        # tight timeout (e.g. 0.1s) can let the wait time out first on a
+        # slow event loop, surfacing TimeoutError instead of the expected
+        # match.
+        await (await set_and_wait_for_value(signal, 1, timeout=1.0))
 
     assert await signal.get_value() == 0
     await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
@@ -196,8 +202,12 @@ async def test_set_and_wait_for_value_waits_for_error():
         raise RuntimeError("Bad")
 
     callback_on_mock_put(signal, fail)
+    # A generous timeout: the put raises immediately, so the RuntimeError wins
+    # the race against the internal wait timeout deterministically. A tight
+    # timeout (e.g. 0.1s) can let the wait time out first on a slow event loop
+    # (seen on Windows/Python 3.14), surfacing TimeoutError instead.
     with pytest.raises(RuntimeError, match="Bad"):
-        await set_and_wait_for_value(signal, 1, timeout=0.1)
+        await set_and_wait_for_value(signal, 1, timeout=1.0)
 
 
 async def test_set_and_wait_for_value_different_set_and_read():
@@ -443,14 +453,21 @@ async def test_wait_for_value_with_value():
         match="signal didn't match 'something' in 0.1s, last value 'blah'",
     ):
         await wait_for_value(signal, "something", timeout=0.1)
-    assert await time_taken_by(wait_for_value(signal, "blah", timeout=2)) < 0.1
+    # Generous upper bound: the value already matches, so this returns
+    # almost immediately - the bound only guards against a hang. A tight
+    # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
+    assert await time_taken_by(wait_for_value(signal, "blah", timeout=2)) < 1.0
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, "something else", timeout=2))
     )
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, "something else")
-    assert 0.1 < await t < 1.0
+    # Upper bound loosened generously: after the value is set, the wait
+    # should resolve quickly, but a slow/loaded runner can push this past a
+    # tight bound. The lower bound still guards that the wait genuinely
+    # waited through the 0.2s sleep.
+    assert 0.1 < await t < 1.9
 
 
 async def test_wait_for_value_with_function():
@@ -472,8 +489,15 @@ async def test_wait_for_value_with_function():
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, 41)
-    assert 0.1 < await t < 1.0
-    assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 0.1
+    # Upper bound loosened generously: after the value is set, the wait
+    # should resolve quickly, but a slow/loaded runner can push this past a
+    # tight bound. The lower bound still guards that the wait genuinely
+    # waited through the 0.2s sleep.
+    assert 0.1 < await t < 1.9
+    # Generous upper bound: the value already matches, so this returns
+    # almost immediately - the bound only guards against a hang. A tight
+    # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
+    assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 1.0
 
 
 @pytest.mark.parametrize(

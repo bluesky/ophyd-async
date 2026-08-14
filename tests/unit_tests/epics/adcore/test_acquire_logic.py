@@ -65,7 +65,15 @@ async def test_acquire_logic_when_arming_times_out(
         ):
             await adbase_detector.trigger()
 
-    await asyncio.sleep(1.1)  # Allow background tasks to complete
+    # trigger() timed out while the mock put callback (sleep_for_a_bit) was
+    # still running, leaving it as an orphaned task. Cancel it rather than
+    # sleeping out its full delay, so the test doesn't pay ~1s of dead wait -
+    # and so the task isn't garbage collected while still pending, which
+    # filterwarnings=error would otherwise escalate to a test failure.
+    pending = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    for task in pending:
+        task.cancel()
+    await asyncio.gather(*pending, return_exceptions=True)
 
 
 async def test_acquire_logic_wait_for_idle_in_bad_state(

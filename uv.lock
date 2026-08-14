@@ -1622,11 +1622,9 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-faulthandler" },
     { name = "pytest-forked" },
-    { name = "pytest-insubprocess" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
-    { name = "scanspec" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc2" },
     { name = "sphinx-copybutton" },
@@ -1654,7 +1652,7 @@ requires-dist = [
     { name = "pytango", marker = "extra == 'tango'", specifier = ">=10.1.3" },
     { name = "pytest", marker = "extra == 'demo'" },
     { name = "pyyaml" },
-    { name = "scanspec", specifier = ">=0.8" },
+    { name = "scanspec", specifier = ">=1.0.0" },
     { name = "stamina", specifier = ">=23.1.0" },
     { name = "velocity-profile" },
 ]
@@ -1683,11 +1681,9 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-faulthandler" },
     { name = "pytest-forked" },
-    { name = "pytest-insubprocess" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "ruff" },
-    { name = "scanspec", specifier = ">=1.0a1" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc2" },
     { name = "sphinx-copybutton" },
@@ -2393,19 +2389,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pytest-insubprocess"
-version = "1.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-    { name = "xmltodict" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/3b/a2/30a67cfd24ad489b7af22ed4046e83152f67278ca667c56c0495b50e7f78/pytest_insubprocess-1.2.tar.gz", hash = "sha256:07ce10eb45053394b4acfd3210859b583402c148e4dad6e398c3ad1cdca03a57", size = 4497, upload-time = "2025-12-08T00:25:32.894Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/e1/9c9d3afd9999c92b03c22a81eb10526df55cc407d162b073ab65479e6b3c/pytest_insubprocess-1.2-py3-none-any.whl", hash = "sha256:31b461946753df8ab5ae02fa318e36f7c6f045c4bfb7cabe41e40bc5571427e9", size = 6217, upload-time = "2025-12-08T00:25:31.585Z" },
-]
-
-[[package]]
 name = "pytest-rerunfailures"
 version = "16.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2756,16 +2739,16 @@ wheels = [
 
 [[package]]
 name = "scanspec"
-version = "1.0a2"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "numpy" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/31/00559414e85c6f41dfab25a365c6a9375ebe2eefc9a8ab5f8a05b9cbe80e/scanspec-1.0a2.tar.gz", hash = "sha256:9b61e4956aed77fb07d6df5e3fc8599541944d9b73d02dcad794923fb8f45e1c", size = 147986, upload-time = "2025-09-09T13:36:36.702Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/c3/7b3621a0eec53b7e348457de68a33a93314c5626523ab1481395811aa09e/scanspec-1.0.0.tar.gz", hash = "sha256:31d297861978e56bb6cfcaa15527bad5ba3dc158b3fc52142ecb5611a22e1b5a", size = 285029, upload-time = "2026-04-28T12:12:54.378Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/48/f3d9e0a811788691c70cab67dcf98cd34f1ff1759b7a4a4e758085912b81/scanspec-1.0a2-py3-none-any.whl", hash = "sha256:a86feeeed84da853ab23a06d86031dd66c235f62f22615016a84703dd5e6c79b", size = 40264, upload-time = "2025-09-09T13:36:35.423Z" },
+    { url = "https://files.pythonhosted.org/packages/68/b9/f44b139096467996b4d85589d9880fd55f0c80a204d298a1b73d0adc2654/scanspec-1.0.0-py3-none-any.whl", hash = "sha256:4ad6dccd6ac19dbd8af888c80c5db53c70d6b8aee9d26c0ca174cebd3c396730", size = 37825, upload-time = "2026-04-28T12:12:53.084Z" },
 ]
 
 [[package]]
@@ -3429,15 +3412,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a5/8f/aea9c71cc92bf9b6cc0f7f70df8f0b420636b6c96ef4feee1e16f80f75dd/websockets-16.0-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0298d07ee155e2e9fda5be8a9042200dd2e3bb0b8a38482156576f863a9d457c", size = 176968, upload-time = "2026-01-10T09:23:41.031Z" },
     { url = "https://files.pythonhosted.org/packages/9a/3f/f70e03f40ffc9a30d817eef7da1be72ee4956ba8d7255c399a01b135902a/websockets-16.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:a653aea902e0324b52f1613332ddf50b00c06fdaf7e92624fbf8c77c78fa5767", size = 178735, upload-time = "2026-01-10T09:23:42.259Z" },
     { url = "https://files.pythonhosted.org/packages/6f/28/258ebab549c2bf3e64d2b0217b973467394a9cea8c42f70418ca2c5d0d2e/websockets-16.0-py3-none-any.whl", hash = "sha256:1637db62fad1dc833276dded54215f2c7fa46912301a24bd94d45d46a011ceec", size = 171598, upload-time = "2026-01-10T09:23:45.395Z" },
-]
-
-[[package]]
-name = "xmltodict"
-version = "1.0.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/19/70/80f3b7c10d2630aa66414bf23d210386700aa390547278c789afa994fd7e/xmltodict-1.0.4.tar.gz", hash = "sha256:6d94c9f834dd9e44514162799d344d815a3a4faec913717a9ecbfa5be1bb8e61", size = 26124, upload-time = "2026-02-22T02:21:22.074Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/34/98a2f52245f4d47be93b580dae5f9861ef58977d73a79eb47c58f1ad1f3a/xmltodict-1.0.4-py3-none-any.whl", hash = "sha256:a4a00d300b0e1c59fc2bfccb53d7b2e88c32f200df138a0dd2229f842497026a", size = 13580, upload-time = "2026-02-22T02:21:21.039Z" },
 ]
 
 [[package]]

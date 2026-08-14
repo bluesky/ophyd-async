@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeVar
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 
@@ -39,6 +39,68 @@ class PvSuffix:
         return cls(write_suffix + rbv_suffix, write_suffix)
 
 
+class _PvPrefixDeviceConnector(DeviceConnector):
+    """Baseclass for `DeviceConnector`s that address a Device by PV prefix.
+
+    :param prefix:
+        The PV prefix of the Device. Empty when the connector is made for a
+        declarative sub-device, whose parent sets the prefix via `set_prefix`
+        before the child is constructed.
+    """
+
+    def __init__(self, prefix: str = "") -> None:
+        self.set_prefix(prefix)
+
+    def set_prefix(self, prefix: str) -> None:
+        """Set the PV prefix, and anything the subclass derives from it."""
+        self.prefix = prefix
+
+
+EpicsSignalBackendT = TypeVar("EpicsSignalBackendT", bound=EpicsSignalBackend)
+EpicsCommandBackendT = TypeVar("EpicsCommandBackendT", bound=EpicsCommandBackend)
+_PvPrefixDeviceConnectorT = TypeVar(
+    "_PvPrefixDeviceConnectorT", bound=_PvPrefixDeviceConnector
+)
+
+
+def fill_children_with_prefix(
+    prefix: str,
+    filler: DeviceFiller[
+        EpicsSignalBackendT, _PvPrefixDeviceConnectorT, EpicsCommandBackendT
+    ],
+    filled: bool = True,
+):
+    """Create a Device's declarative children, addressing them under `prefix`.
+
+    Each Signal, Command and sub-device annotated with a [](#PvSuffix) is
+    addressed at `prefix` plus that suffix.
+
+    :param prefix: The parent Device's PV prefix, which may name a protocol.
+    :param filler: The parent Device's `DeviceFiller`.
+    :param filled:
+        If True then a [](#PvSuffix) is the only thing that will address these
+        children, so a sub-device must have one. If False then a PVI structure
+        will address them at connection time, and a [](#PvSuffix) is optional.
+    """
+    # Signals and commands connect to a bare PV, but a sub-device's connector
+    # re-derives the protocol from the prefix it is given, so keep it there.
+    _, pv_prefix = split_protocol_from_pv(prefix)
+    for backend, signal_annotations in filler.create_signals_from_annotations(
+        filled=filled
+    ):
+        fill_backend_with_prefix(pv_prefix, backend, signal_annotations)
+    for command_backend, command_annotations in filler.create_commands_from_annotations(
+        filled=filled
+    ):
+        fill_command_with_prefix(pv_prefix, command_backend, command_annotations)
+    for connector, device_annotations in filler.create_devices_from_annotations(
+        filled=filled
+    ):
+        fill_connector_with_prefix(
+            prefix, connector, device_annotations, required=filled
+        )
+
+
 def fill_command_with_prefix(
     prefix: str, backend: EpicsCommandBackend, annotations: list[Any]
 ):
@@ -53,6 +115,42 @@ def fill_command_with_prefix(
         else:
             unhandled.append(annotation)
     annotations.extend(unhandled)
+
+
+def fill_connector_with_prefix(
+    prefix: str,
+    connector: _PvPrefixDeviceConnector,
+    annotations: list[Any],
+    required: bool = True,
+):
+    """Set a declarative sub-device's connector prefix from a [](#PvSuffix).
+
+    The child connector's prefix becomes the parent prefix plus that suffix, so
+    the child's own signals connect under it.
+
+    :param required:
+        If True then a `PvSuffix` is the only thing that will address the child,
+        so raise a `TypeError` if there isn't one. If False then something else
+        (a PVI structure) will address it, and a `PvSuffix` is optional.
+    """
+    unhandled = []
+    suffix: str | None = None
+    while annotations:
+        annotation = annotations.pop(0)
+        if isinstance(annotation, PvSuffix):
+            # A sub-device is addressed by a single prefix; use the read suffix.
+            suffix = annotation.read_suffix
+        else:
+            unhandled.append(annotation)
+    annotations.extend(unhandled)
+    if suffix is not None:
+        connector.set_prefix(prefix + suffix)
+    elif required:
+        raise TypeError(
+            "A declarative EPICS sub-device must be given a PvSuffix to set its "
+            "prefix, but none was found in its annotations"
+        )
+    # Any leftover annotations (e.g. StandardReadableFormat) are handled by the filler
 
 
 def fill_backend_with_prefix(
@@ -74,15 +172,12 @@ def fill_backend_with_prefix(
     # These leftover annotations will now be handled by the iterator
 
 
-class EpicsDeviceConnector(DeviceConnector):
+class EpicsDeviceConnector(_PvPrefixDeviceConnector):
     """Used for connecting signals to static EPICS pvs."""
-
-    def __init__(self, prefix: str) -> None:
-        self.prefix = prefix
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
-            protocol, prefix = split_protocol_from_pv(self.prefix)
+            protocol, _ = split_protocol_from_pv(self.prefix)
 
             def _command_backend_factory(
                 sig: inspect.Signature | None,
@@ -100,11 +195,9 @@ class EpicsDeviceConnector(DeviceConnector):
             self.filler = DeviceFiller(
                 device,
                 signal_backend_factory=get_signal_backend_type(protocol),
-                device_connector_factory=DeviceConnector,
+                # Declarative sub-devices get their own EpicsDeviceConnector so
+                # their signals are created under a PvSuffix-derived prefix.
+                device_connector_factory=EpicsDeviceConnector,
                 command_backend_factory=_command_backend_factory,
             )
-            for backend, annotations in self.filler.create_signals_from_annotations():
-                fill_backend_with_prefix(prefix, backend, annotations)
-            for backend, annotations in self.filler.create_commands_from_annotations():
-                fill_command_with_prefix(prefix, backend, annotations)
-            list(self.filler.create_devices_from_annotations())
+            fill_children_with_prefix(self.prefix, self.filler)

@@ -36,6 +36,7 @@ from ._detector import (
 from ._device import (
     Device,
     DeviceConnector,
+    DeviceMap,
     DeviceMock,
     DeviceProcessor,
     DeviceVector,
@@ -51,7 +52,7 @@ from ._enums import (
     OnOff,
     YesNo,
 )
-from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
+from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
@@ -61,6 +62,7 @@ from ._mock_signal_utils import (
     get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_attr,
     set_mock_precision,
     set_mock_put_proceeds,
     set_mock_units,
@@ -182,6 +184,7 @@ __all__ = [
     "DeviceConnector",
     "DeviceFiller",
     "DeviceAnnotation",
+    "DeviceMap",
     "DeviceVector",
     "DeviceProcessor",
     "init_devices",
@@ -234,6 +237,7 @@ __all__ = [
     "default_mock_class",
     # Mocking utilities
     "get_mock",
+    "set_mock_attr",
     "set_mock_value",
     "set_mock_values",
     "get_mock_put",
@@ -283,9 +287,9 @@ __all__ = [
     "StreamResourceInfo",
     "StreamResourceDataProvider",
     # Flyer
-    "StandardFlyer",
+    "StandardFlyable",
     "FlyMotorInfo",
-    "FlyerController",
+    "FlyableLogic",
     # Settings
     "Settings",
     "SettingsProvider",

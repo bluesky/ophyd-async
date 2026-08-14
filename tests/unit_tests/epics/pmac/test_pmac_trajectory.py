@@ -13,16 +13,16 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 
-# PmacScanInfo/PmacTrajectoryTriggerLogic are already public - use the
+# PmacScanInfo/PmacTrajectoryFlyableLogic are already public - use the
 # public path rather than the private module they happen to be defined in.
-from ophyd_async.epics.pmac import PmacIO, PmacScanInfo, PmacTrajectoryTriggerLogic
+from ophyd_async.epics.pmac import PmacIO, PmacScanInfo, PmacTrajectoryFlyableLogic
 
-# PmacExecuteState (a status enum PmacTrajectoryTriggerLogic compares
+# PmacExecuteState (a status enum PmacTrajectoryFlyableLogic compares
 # against internally) and _PmacMotorInfo (an internal dataclass of
 # computed per-motor accel/resolution numbers, built via its own
 # from_motors() classmethod - not something a caller constructs) are both
 # genuinely internal to trajectory generation, not part of the public
-# get/set/prepare surface PmacTrajectoryTriggerLogic exposes - checked,
+# get/set/prepare surface PmacTrajectoryFlyableLogic exposes - checked,
 # nothing here looks missing from the public interface.
 from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
     PmacExecuteState,  # noqa: PLC2701
@@ -44,8 +44,8 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
     value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    await pmac_trajectory.prepare(value)
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -1.2
 
@@ -70,8 +70,8 @@ async def test_pmac_prepare_with_configured_ramp(
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
     value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=None)
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    await pmac_trajectory.prepare(value)
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
 
@@ -96,8 +96,8 @@ async def test_pmac_prepare_with_configured_ramp_and_turnaround(
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ (2 * ~Line(sim_x_motor, 1, 5, 2)))
     value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=3)
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    await pmac_trajectory.prepare(value)
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
 
@@ -182,7 +182,7 @@ async def test_pmac_move_to_start(
     )
     coord = pmac_io.coord[motor_info.cs_number]
     ramp_up_position = {sim_x_motor: np.float64(x_pos), sim_y_motor: np.float64(y_pos)}
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
 
     # Wrap set_and_wait_for_value to check passed arguments
     with patch(
@@ -225,18 +225,18 @@ async def test_pmac_trajectory_kickoff(
     )
     set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.SUCCESS)
 
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
     value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
-        await pmac_trajectory.prepare(value)
+        await flyer.prepare(value)
         # This will consume another 2 frames
         set_mock_value(
             pmac_io.trajectory.total_points, 2
         )  # Only one value in observe_value(total_points)
-        await pmac_trajectory.kickoff()  # Executes trajectory, appending once
-        await pmac_trajectory.complete()  # Block until trajectory is complete
+        await flyer.kickoff()  # Executes trajectory, appending once
+        await flyer.complete()  # Block until trajectory is complete
 
     sim_y_motor_position_arrays = [
         np.array(call.args[0])
@@ -341,34 +341,36 @@ async def test_pmac_trajectory_kickoff(
 async def test_pmac_trajectory_kickoff_trajectory_raises_exception_if_no_prepare(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
+    # Ordering is enforced by StandardFlyable, so drive through the device.
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    with pytest.raises(RuntimeError, match="Cannot kickoff. Must call prepare first."):
-        await pmac_trajectory.kickoff()
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
+        await flyer.kickoff()
 
 
 async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    with pytest.raises(RuntimeError, match="Cannot complete. Must call kickoff first."):
-        await pmac_trajectory.complete()
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
+        await flyer.complete()
 
 
 async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    mock_pmac_trajectory_io = get_mock(pmac_trajectory.pmac_ref().trajectory)
-    await pmac_trajectory.stage()
+    logic = PmacTrajectoryFlyableLogic(pmac_io)
+    flyer = logic.with_device()
+    mock_pmac_trajectory_io = get_mock(logic.pmac.trajectory)
+    await flyer.stage()
 
     # Check that all axes are then set not be used
     assert all(
         get_mock(axis).put.assert_called_once_with(False) is None
-        for axis in pmac_trajectory.pmac_ref().trajectory.use_axis.values()
+        for axis in logic.pmac.trajectory.use_axis.values()
     )
 
     # Check that an empty trajectory is then executed
     assert mock_pmac_trajectory_io.mock_calls[
-        len(pmac_trajectory.pmac_ref().trajectory.use_axis) :
+        len(logic.pmac.trajectory.use_axis) :
     ] == [
         call.time_array.put(np.array(0)),
         call.user_array.put(np.array(8)),
@@ -380,28 +382,29 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
 
 async def test_pmac_trajectory_unstage(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    pmac_trajectory._stop_if_running = AsyncMock()
-    await pmac_trajectory.unstage()
-    pmac_trajectory._stop_if_running.assert_called_once()
+    logic = PmacTrajectoryFlyableLogic(pmac_io)
+    logic.stop = AsyncMock()
+    flyer = logic.with_device()
+    await flyer.unstage()
+    logic.stop.assert_called_once()
 
 
 async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
     execute_mock = get_mock_execute(pmac_io.trajectory.abort_profile)
 
     # Method not called as no running trajectory
-    await pmac_trajectory._stop_if_running()
+    await pmac_trajectory.stop()
     execute_mock.assert_not_awaited()
 
     # Mocking that trajectory is executing
     set_mock_value(
-        pmac_trajectory.pmac_ref().trajectory.execute_state, PmacExecuteState.EXECUTING
+        pmac_trajectory.pmac.trajectory.execute_state, PmacExecuteState.EXECUTING
     )
 
     # Method called as there is now a running trajectory
-    await pmac_trajectory._stop_if_running()
+    await pmac_trajectory.stop()
     execute_mock.assert_awaited_once_with()
 
 
@@ -412,7 +415,7 @@ async def test_trajectory_raises_if_profile_status_not_in_good_state(
         pmac_io, _, _ = sim_motors
         set_mock_value(pmac_io.trajectory.execute_message, "Failed to execute")
         set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.FAILURE)
-        pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+        pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
         with pytest.raises(
             ValueError,
             match="PMAC profile sim_pmac-trajectory-execute_status "
@@ -429,7 +432,7 @@ async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
     pmac_io, _, _ = sim_motors
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
     with (
         patch(
             "ophyd_async.epics.pmac._pmac_trajectory.observe_value", bad_observe_value

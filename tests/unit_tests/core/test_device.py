@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 import traceback
-from unittest.mock import MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
@@ -10,12 +10,14 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceFiller,
+    DeviceMap,
     DeviceProcessor,
     DeviceVector,
     NotConnectedError,
     Reference,
     SignalRW,
     init_devices,
+    set_mock_attr,
     soft_signal_rw,
     wait_for_connection,
 )
@@ -113,6 +115,29 @@ def test_attr_in_bluesky_protocols(attr_name):
     expected_msg = f"Please use `{attr_name}_` instead"
     with pytest.raises(NameError, match=expected_msg):
         DeviceWithProtocolName("bar")
+
+
+@pytest.mark.parametrize("value", ["YES", "yes", "Yes"])
+def test_reserved_attr_allowed_by_env_var(monkeypatch, value):
+    monkeypatch.setenv("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", value)
+    device = Device()
+    mock = AsyncMock()
+    device.set = mock
+    assert device.set is mock
+
+
+@pytest.mark.parametrize("value", ["NO", "", "true", "1"])
+def test_reserved_attr_still_raises_when_env_var_not_yes(monkeypatch, value):
+    monkeypatch.setenv("OPHYD_ASYNC_ALLOW_RESERVED_ATTRS", value)
+    device = Device()
+    with pytest.raises(NameError, match="Please use `set_` instead"):
+        device.set = AsyncMock()
+
+
+def test_set_mock_attr_overrides_reserved_name_and_returns_mock():
+    device = Device()
+    mock = set_mock_attr(device, "set", AsyncMock())
+    assert device.set is mock
 
 
 async def test_device_connect_missing_connector() -> None:
@@ -333,16 +358,42 @@ async def test_no_reconnect_signals_if_not_forced():
         assert parent.child1.connect.call_count == count
 
 
-def test_setitem_with_non_int_key():
-    device_vector = DeviceVector(children={})
-    with pytest.raises(TypeError, match="Expected int, got"):
-        device_vector["not_an_int"] = MagicMock(spec=Device)  # type: ignore
+@pytest.mark.parametrize(
+    "collection_cls, good_key, bad_key, match",
+    [
+        (DeviceVector, 1, "not_an_int", "Expected int, got"),
+        (DeviceMap, "a_str", 1, "Expected str, got"),
+    ],
+)
+def test_setitem_key_type_validation(collection_cls, good_key, bad_key, match):
+    collection = collection_cls(children={})
+    # A well-typed key works
+    collection[good_key] = MagicMock(spec=Device)
+    # A wrongly-typed key is rejected on entry
+    with pytest.raises(TypeError, match=match):
+        collection[bad_key] = MagicMock(spec=Device)
 
 
-def test_setitem_with_non_device_value():
-    device_vector = DeviceVector(children={})
+@pytest.mark.parametrize(
+    "collection_cls, key",
+    [(DeviceVector, 1), (DeviceMap, "a_str")],
+)
+def test_setitem_with_non_device_value(collection_cls, key):
+    collection = collection_cls(children={})
     with pytest.raises(TypeError, match="Expected Device, got"):
-        device_vector[1] = "not_a_device"
+        collection[key] = "not_a_device"
+
+
+def test_device_map_bans_device_attributes():
+    # A DeviceMap child must be set via `device_map[key] = child` so it gets a
+    # string key; setting a Device as an attribute is rejected (but `parent`
+    # and non-Device attributes are still allowed).
+    device_map = DeviceMap(children={})
+    with pytest.raises(AttributeError, match="can only have string named children"):
+        device_map.child = MagicMock(spec=Device)
+    # Non-Device attributes and `parent` are unaffected
+    device_map.some_value = 42
+    device_map.parent = MagicMock(spec=Device)
 
 
 def test_device_filler_check_filled_with_optional_signals(mock_device_and_filler):
