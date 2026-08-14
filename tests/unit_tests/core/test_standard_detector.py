@@ -865,13 +865,17 @@ async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool
     assert al.shutter_closed is True  # unstage() must close the shutter
 
 
-async def test_multiple_collections_with_single_only_logic_raises():
-    """Test that requesting multiple collections fails with single-only data logic."""
+async def test_multiple_collections_with_single_only_logic_warns(caplog):
+    """Test that requesting multiple collections warns, leads to empty prepare ctx."""
     det = StandardDetector()
     det.add_detector_logics(ReadableOnlyDataLogic())
 
-    with pytest.raises(RuntimeError, match="Multiple collections not supported"):
-        await det.prepare(TriggerInfo(number_of_events=5))
+    await det.prepare(TriggerInfo(number_of_events=5))
+
+    assert "only supports a single collection" in caplog.text
+    assert det._prepare_ctx is not None
+    assert det._prepare_ctx.readable_data_providers == []
+    assert det._prepare_ctx.streamable_data_providers == []
 
 
 async def test_data_logic_with_no_prepare_methods_raises():
