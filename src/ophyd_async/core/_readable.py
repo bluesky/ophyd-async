@@ -100,6 +100,21 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
     _read_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
     _has_hints: tuple[HasHints, ...] = ()
 
+    def has_child_readables(
+        self, ignore_filter: "list[StandardReadable] | None" = None
+    ) -> bool:
+        """Check whether any child devices have been registered for read()/describe().
+
+        :param ignore_filter: List of child devices to ignore when checking for readable
+        :return: True if any child _read_func has been registered, False otherwise
+        """
+        filtered_read_funcs = (
+            func
+            for func in self._read_funcs
+            if ignore_filter is None or func not in [f.read for f in ignore_filter]
+        )
+        return bool(list(filtered_read_funcs))
+
     async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
             [func() for func in self._describe_config_funcs]

@@ -6,6 +6,11 @@ from ophyd_async.core import (
     DetectorTriggerLogic,
     SignalR,
     StandardDetector,
+    StandardReadable,
+    TriggerInfo,
+)
+from ophyd_async.core import (
+    StandardReadableFormat as Format,
 )
 
 from ._acquire_logic import ADContAcqAcquireLogic
@@ -30,6 +35,8 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         if plugins is not None:
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
+                if isinstance(plugin, StandardReadable):
+                    self.add_readables([plugin], Format.CHILD)
         if trigger_logic:
             self.add_detector_logics(trigger_logic)
         if acquire_logic:
@@ -48,10 +55,18 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 writer, data_logic = factory(prefix, driver, plugin_list)
                 setattr(self, factory.writer_name, writer)
                 self.add_detector_logics(data_logic)
-        self.add_config_signals(
-            self.driver.acquire_period, self.driver.acquire_time, *config_sigs
-        )
+        self.add_readables([self.driver], Format.CHILD)
+        if config_sigs:
+            self.add_config_signals(*config_sigs)
         super().__init__(name=name)
+
+    async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
+        # Step scans (trigger+read) need plugins to finish before reading scalars
+        if trigger_info.number_of_events == 1 and self.has_child_readables(
+            ignore_filter=[self.driver]
+        ):
+            await self.driver.wait_for_plugins.set(True)
+        await super()._update_prepare_context(trigger_info)
 
     def get_plugin(
         self, name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
@@ -68,7 +83,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):
-    """Create an ADSimDetector AreaDetector instance.
+    """Create an continuously acquiring AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
@@ -82,21 +97,22 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
         self,
         prefix: str,
         *writer_factories: ADWriterFactory,
-        driver_suffix="cam1:",
-        cb_suffix="CB1:",
+        driver_suffix: str = "cam1:",
+        cb_suffix: str = "CB1:",
+        cb_plugin_name: str = "cb",
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = ADBaseIO(prefix + driver_suffix)
-        cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
+        cb_plugin = NDCircularBuffIO(prefix + cb_suffix, name=cb_plugin_name)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
             trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin),
-            plugins=(plugins or {}) | {"cb": cb_plugin},
+            plugins=(plugins or {}) | {cb_plugin.name: cb_plugin},
             config_sigs=config_sigs,
             name=name,
         )
