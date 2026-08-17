@@ -688,17 +688,26 @@ async def test_signal_retries_when_timeout(
     ioc_devices: MechanismIocAndDevices,
 ):
     # put callback on slowseq in 0.5s, so if waited, this will fail to set
+    attempts, attempt_timeout = 3, 0.1
     sig_rw_times_out = epics_signal_rw(
-        int, ioc_devices.get_pv("pva", "slowseq"), attempts=3, timeout=0.1
+        int,
+        ioc_devices.get_pv("pva", "slowseq"),
+        attempts=attempts,
+        timeout=attempt_timeout,
     )
     await sig_rw_times_out.connect()
 
     start = time.monotonic()
     with pytest.raises(asyncio.TimeoutError):
         await sig_rw_times_out.set(1)
-    stop = time.monotonic()
-    # signal tries to set 3 times, so 3 * timeout
-    assert stop - start == pytest.approx(0.3, abs=0.1)
+    elapsed = time.monotonic() - start
+    # Each attempt waits its full timeout before retrying (retry_context is
+    # configured with no backoff), so elapsed is what distinguishes 3 attempts
+    # from 1: a single attempt could only take ~0.1s. Assert that lower bound
+    # only. Overshoot is scheduling latency on a loaded runner, not a broken
+    # retry, and pinning it as approx(0.3, abs=0.1) is what made this flaky -
+    # 0.416s against the implied 0.4s ceiling. The mark above catches a runaway.
+    assert elapsed >= attempts * attempt_timeout - 0.05
 
 
 async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
