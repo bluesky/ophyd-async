@@ -190,6 +190,9 @@ obj_ignore = [
     "0.001",
     "1.0",
     "bluesky.protocols.T_co",
+    # TypeVars documented on StandardFlyable, added in #1359
+    "PrepareT",
+    "CtxT",
 ]
 nitpick_ignore = []
 for var in obj_ignore:

@@ -77,23 +77,14 @@ Because the logic is also a `MovableLogic`, `complete()` reports progress to wat
 movable (see the next section) just blocks with no progress updates. See
 [](../explanations/when-to-extend-movable.md) for more on `MovableLogic`.
 
-Wire the logic into the Device with a `@cached_property`. `Motor` builds one shared
-instance and returns it from both `movable_logic` and `flyable_logic` so the move and
-fly paths act on the same signals:
+Wire the logic into the Device with a `@cached_property` called `logic`. Each
+mix-in declares that same name with its own required type, so one logic object that
+inherits both `MovableLogic` and `FlyableLogic` satisfies both, and the move and fly
+paths act on the same signals:
 
 ```{literalinclude} ../../src/ophyd_async/epics/motor.py
 :language: python
-:pyobject: Motor._logic
-```
-
-```python
-@cached_property
-def movable_logic(self) -> MotorFlyableMovableLogic:
-    return self._logic
-
-@cached_property
-def flyable_logic(self) -> MotorFlyableMovableLogic:
-    return self._logic
+:pyobject: Motor.logic
 ```
 
 ## An ephemeral flyer created in a plan
