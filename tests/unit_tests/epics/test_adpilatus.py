@@ -1,4 +1,4 @@
-from unittest.mock import call, patch
+from unittest.mock import call
 
 import pytest
 
@@ -56,14 +56,23 @@ async def test_times_out_if_not_armed(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
     set_mock_value(test_adpilatus.driver.armed, False)
-    with patch(
-        "ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT",
-        0.01,
-    ):
-        with pytest.raises(TimeoutError):
-            await test_adpilatus.prepare(
-                TriggerInfo(trigger=DetectorTrigger.EXTERNAL_EDGE)
-            )
+    # The detector builds its own ADAcquireLogic, so shorten its timeout here
+    # rather than waiting out the default.
+    acquire_logic = test_adpilatus._acquire_logic  # noqa: SLF001
+    assert isinstance(acquire_logic, adcore.ADAcquireLogic)
+    acquire_logic.timeout = 0.01
+
+    with pytest.raises(TimeoutError):
+        await test_adpilatus.prepare(TriggerInfo(trigger=DetectorTrigger.EXTERNAL_EDGE))
+
+    # with patch(
+    #     "ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT",
+    #     0.01,
+    # ):
+    #     with pytest.raises(TimeoutError):
+    #         await test_adpilatus.prepare(
+    #             TriggerInfo(trigger=DetectorTrigger.EXTERNAL_EDGE)
+    #         )
 
 
 async def test_prepare_external_edge(
