@@ -4,11 +4,9 @@ import pytest
 from bluesky.protocols import HasHints
 
 from ophyd_async.core import (
-    ConfigSignal,
     Device,
     DeviceMap,
     DeviceVector,
-    HintedSignal,
     MockSignalBackend,
     SignalR,
     StandardReadable,
@@ -18,11 +16,10 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 
 
-@pytest.mark.parametrize("wrapper", [HintedSignal, HintedSignal.uncached, ConfigSignal])
-def test_standard_readable_wrappers_raise_deprecation_warning(wrapper):
+def test_standard_readable_rejects_a_non_format():
     sr = StandardReadable()
-    with pytest.deprecated_call():
-        sr.add_readables([soft_signal_rw(int)], wrapper)
+    with pytest.raises(TypeError, match="is not a StandardReadableFormat"):
+        sr.add_readables([soft_signal_rw(int)], "CONFIG_SIGNAL")  # type: ignore
 
 
 def test_standard_readable_hints():

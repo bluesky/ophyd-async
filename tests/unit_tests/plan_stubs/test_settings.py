@@ -266,7 +266,8 @@ async def test_settings_round_trip_switches_technique(RE, technique_device, tmp_
         )
         yield from apply_settings(scanning)
         assert technique_device.get_readable_format(energy) is Format.HINTED_SIGNAL
-        assert technique_device.get_readable_format(temperature) is None
+        # Merge, so temperature keeps the format the previous profile gave it
+        assert technique_device.get_readable_format(temperature) is Format.CONFIG_SIGNAL
         assert (yield from bps.rd(energy)) == 9.0
 
     RE(my_plan())
@@ -294,11 +295,18 @@ async def test_settings_file_without_formats_leaves_them_alone(
 async def test_formats_only_file_applies_without_touching_values(
     RE, technique_device, tmp_path
 ):
-    """A hand written formats only profile changes no hardware."""
+    """A hand written formats only profile changes no hardware.
+
+    Also covers the explicit null, which is the only way to unregister a child,
+    since applying otherwise merges.
+    """
     provider = YamlSettingsProvider(tmp_path)
     energy = technique_device.energy
     (tmp_path / "hinted.yaml").write_text(
-        "<READABLE_FORMATS>:\n  <ROOT>:\n    energy: HINTED_SIGNAL\n"
+        "<READABLE_FORMATS>:\n"
+        "  <ROOT>:\n"
+        "    energy: HINTED_SIGNAL\n"
+        "    temperature: null\n"
     )
 
     def my_plan():
@@ -306,7 +314,7 @@ async def test_formats_only_file_applies_without_touching_values(
         assert dict(settings) == {}
         yield from apply_settings(settings)
         assert technique_device.get_readable_format(energy) is Format.HINTED_SIGNAL
-        # temperature was not mentioned, so the root's registry was replaced
+        # An explicit null drops it, where omitting it would have left it alone
         assert (
             technique_device.get_readable_format(technique_device.temperature) is None
         )
@@ -365,12 +373,11 @@ def test_settings_partition_carries_formats_to_both_halves(technique_device):
     assert b.readable_formats == settings.readable_formats
 
 
-async def test_store_settings_records_a_readable_that_registers_nothing(RE, tmp_path):
-    """An empty owner entry means "clear this owner", so it must be stored.
+async def test_store_settings_omits_a_readable_that_registers_nothing(RE, tmp_path):
+    """An owner with no registered children is a no-op when applied.
 
-    This is the shape of TangoTestDevice, and it is why applying a profile that
-    registers nothing drops what the previous profile registered rather than
-    silently leaving it in place.
+    This is the shape of TangoTestDevice, and is why its golden file needs no
+    formats key.
     """
     provider = YamlSettingsProvider(tmp_path)
     device = StandardReadable(name="dev")
@@ -380,16 +387,7 @@ async def test_store_settings_records_a_readable_that_registers_nothing(RE, tmp_
     def my_plan():
         yield from store_settings(provider, "empty", device)
         with open(tmp_path / "empty.yaml") as f:
-            assert yaml.safe_load(f) == {
-                "sig": 1.0,
-                "<READABLE_FORMATS>": {"<ROOT>": {}},
-            }
-
-        # Register something, then apply the stored file back
-        device.set_readable_format(device.sig, Format.CONFIG_SIGNAL)
-        settings = yield from retrieve_settings(provider, "empty", device)
-        yield from apply_settings(settings)
-        assert device.get_readable_format(device.sig) is None
+            assert yaml.safe_load(f) == {"sig": 1.0}
 
     RE(my_plan())
 

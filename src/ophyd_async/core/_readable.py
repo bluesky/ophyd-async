@@ -3,7 +3,6 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Iterator, Sequence
 from contextlib import contextmanager
 from enum import Enum
-from typing import Any, cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -33,22 +32,6 @@ def _as_signal_r(device: Device) -> SignalR:
     if not isinstance(device, SignalR):
         raise TypeError(f"{device} is not a SignalR")
     return device
-
-
-def _normalise_format(format: "StandardReadableFormat") -> "StandardReadableFormat":
-    """Resolve a deprecated `ConfigSignal`/`HintedSignal` marker to a real member.
-
-    The registry stores real enum members so that the format can be compared,
-    serialised and reported later. The deprecated markers only announce
-    themselves when compared, so the comparison has to happen here, at
-    registration, rather than each time a verb is called.
-    """
-    if isinstance(format, StandardReadableFormat):
-        return format
-    for member in StandardReadableFormat:
-        if format == member:  # _WarningMatcher.__eq__ raises the DeprecationWarning
-            return member
-    raise TypeError(f"{format} is not a StandardReadableFormat")
 
 
 class StandardReadableFormat(Enum):
@@ -87,34 +70,6 @@ class StandardReadableFormat(Enum):
         if not isinstance(parent, StandardReadable):
             raise TypeError(f"Expected parent to be StandardReadable, got {parent}")
         parent.add_readables([child], self)
-
-
-# Back compat
-class _WarningMatcher:
-    def __init__(self, name: str, target: StandardReadableFormat):
-        self._name = name
-        self._target = target
-
-    def __eq__(self, value: object) -> bool:
-        warnings.warn(
-            DeprecationWarning(
-                f"Use `StandardReadableFormat.{self._target.name}` "
-                f"instead of `{self._name}`"
-            ),
-            stacklevel=2,
-        )
-        return value == self._target
-
-
-def _compat_format(name: str, target: StandardReadableFormat) -> StandardReadableFormat:
-    return cast(StandardReadableFormat, _WarningMatcher(name, target))
-
-
-ConfigSignal = _compat_format("ConfigSignal", StandardReadableFormat.CONFIG_SIGNAL)
-HintedSignal: Any = _compat_format("HintedSignal", StandardReadableFormat.HINTED_SIGNAL)
-HintedSignal.uncached = _compat_format(
-    "HintedSignal.uncached", StandardReadableFormat.HINTED_UNCACHED_SIGNAL
-)
 
 
 class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints):
@@ -162,8 +117,19 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             ):
                 yield device
 
+    def _extra_funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
+        """Contribute to a verb from something other than the registry.
+
+        Subclasses that produce data from somewhere other than a registered
+        child override this rather than the verb methods themselves, so that
+        registered children keep working without being reimplemented.
+        `StandardDetector` uses it for the data its data logics produce.
+        """
+        return iter(())
+
     def _funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
         """Derive the callables contributing to one verb from the registry."""
+        yield from self._extra_funcs_for(verb)
         for device, format in self._readables:
             match format:
                 case StandardReadableFormat.CHILD:
@@ -217,7 +183,15 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             [func() for func in self._funcs_for(_Verb.READ)]
         )
 
+    def _extra_hint_sources(self) -> Iterator[HasHints]:
+        """Contribute hints from something other than the registry.
+
+        The counterpart of [](#StandardReadable._extra_funcs_for) for `hints`.
+        """
+        return iter(())
+
     def _hint_sources(self) -> Iterator[HasHints]:
+        yield from self._extra_hint_sources()
         for device, format in self._readables:
             match format:
                 case StandardReadableFormat.CHILD if isinstance(device, HasHints):
@@ -330,7 +304,8 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         :raises TypeError: If a signal-only format is given a non-`SignalR`
         """
         if format is not None:
-            format = _normalise_format(format)
+            if not isinstance(format, StandardReadableFormat):
+                raise TypeError(f"{format} is not a StandardReadableFormat")
             if format is not StandardReadableFormat.CHILD:
                 _as_signal_r(device)
         kept = tuple((d, f) for d, f in self._readables if d is not device)
@@ -346,10 +321,6 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
     def readable_children(self) -> Iterator[tuple[Device, StandardReadableFormat]]:
         """Iterate over the registered children and their formats, in order."""
         yield from self._readables
-
-    def clear_readables(self) -> None:
-        """Drop every registered child, so this Device contributes nothing."""
-        self._readables = ()
 
     def add_readables(
         self,
@@ -383,6 +354,21 @@ class _UncachedRead:
         return await self.signal.read(cached=False)
 
 
+class _HintedFields(HasHints):
+    """Present a fixed list of field names as `hints`."""
+
+    def __init__(self, fields: Sequence[str]) -> None:
+        self._fields = list(fields)
+
+    @property
+    def name(self) -> str:
+        return ""
+
+    @property
+    def hints(self) -> Hints:
+        return {"fields": self._fields}
+
+
 class _HintsFromName(HasHints):
     def __init__(self, device: Device) -> None:
         self.device = device
@@ -414,14 +400,15 @@ DEVICE_NAMES_KEY = "<DEVICE_NAMES>"
 ROOT_PATH = "<ROOT>"
 
 #: The readable formats of a Device tree in a form that can be stored and
-#: retrieved: `{path of the StandardReadable: {path of the child: format}}`.
+#: retrieved: `{path of the StandardReadable: {path of the child: format}}`,
+#: where a format of `None` means "stop this child contributing".
 #: Paths are dotted attribute paths from the root Device, as produced by
 #: [](#walk_devices), with [](#ROOT_PATH) meaning the root Device itself.
 #:
 #: The outer key is needed because a format is a fact about an (owner, child)
 #: *pair*, not about a single Device: the same child can be registered on more
 #: than one `StandardReadable` with a different format each time.
-ReadableFormats = dict[str, dict[str, StandardReadableFormat]]
+ReadableFormats = dict[str, dict[str, StandardReadableFormat | None]]
 
 
 def _paths_to_devices(device: Device) -> dict[str, Device]:
@@ -431,10 +418,10 @@ def _paths_to_devices(device: Device) -> dict[str, Device]:
 def walk_readable_formats(device: Device) -> ReadableFormats:
     """Retrieve the readable format of every registered child in a Device tree.
 
-    Used as part of saving a Device, so that which signals are hinted, config
-    or omitted can be restored later. Every `StandardReadable` in the tree gets
-    an entry, including those with nothing registered, so that applying the
-    result is a complete description rather than a partial overlay.
+    Used as part of saving a Device, so that which signals are hinted or
+    config can be restored later. Only `StandardReadable`s that actually
+    register something get an entry: applying merges rather than replaces, so
+    an empty entry would do nothing.
 
     :param device: The root Device to walk.
     :return: A [](#ReadableFormats) suitable for storing.
@@ -444,7 +431,7 @@ def walk_readable_formats(device: Device) -> ReadableFormats:
     for path, dev in _paths_to_devices(device).items():
         if not isinstance(dev, StandardReadable):
             continue
-        entries: dict[str, StandardReadableFormat] = {}
+        entries: dict[str, StandardReadableFormat | None] = {}
         for child, format in dev.readable_children():
             child_path = device_to_path.get(child)
             if child_path is None:
@@ -462,17 +449,33 @@ def walk_readable_formats(device: Device) -> ReadableFormats:
                 )
             else:
                 entries[child_path] = format
-        formats[path] = entries
+        if entries:
+            formats[path] = entries
     return formats
 
 
 def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
     """Set the readable format of children in a Device tree.
 
-    This **replaces** the registered children of each `StandardReadable` named
-    in `formats`, rather than adding to them, so that applying a stored set
-    switches a Device between techniques rather than accumulating the union of
-    both. `StandardReadable`s not named in `formats` are left alone.
+    This **merges** into what is already registered rather than replacing it: a
+    child the formats do not mention keeps whatever format it has. That matches
+    how signal values behave, where applying a stored file leaves signals it has
+    never heard of alone -- so a file stored against an older version of a
+    Device does not silently unregister signals added since.
+
+    To stop a child contributing, give it a format of `None` explicitly, which
+    in a stored file is a null:
+
+    ```yaml
+    <READABLE_FORMATS>:
+      <ROOT>:
+        energy: HINTED_SIGNAL
+        temperature: null
+    ```
+
+    Nothing writes those nulls for you, because storing a Device records only
+    what it currently registers and cannot know what some other profile
+    registered. A profile that needs a child dropped has to say so.
 
     :param device: The root Device the paths in `formats` are relative to.
     :param formats: A [](#ReadableFormats), e.g. from [](#walk_readable_formats).
@@ -480,8 +483,9 @@ def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
     :raises TypeError: If a path does not name a `StandardReadable`.
     """
     devices = _paths_to_devices(device)
-    resolved: list[tuple[StandardReadable, list[tuple[Device, StandardReadableFormat]]]]
-    resolved = []
+    resolved: list[
+        tuple[StandardReadable, list[tuple[Device, StandardReadableFormat | None]]]
+    ] = []
     # Resolve everything before changing anything, so a bad path cannot leave
     # the tree half applied
     for owner_path, entries in formats.items():
@@ -490,16 +494,17 @@ def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
             raise KeyError(f"No Device at {owner_path!r} in {device.name or device}")
         if not isinstance(owner, StandardReadable):
             raise TypeError(f"{owner_path!r} is not a StandardReadable, got {owner}")
-        readables = []
+        readables: list[tuple[Device, StandardReadableFormat | None]] = []
         for child_path, format in entries.items():
             child = devices.get(child_path)
             if child is None:
                 raise KeyError(
                     f"No Device at {child_path!r} in {device.name or device}"
                 )
-            readables.append((child, StandardReadableFormat(format)))
+            readables.append(
+                (child, None if format is None else StandardReadableFormat(format))
+            )
         resolved.append((owner, readables))
     for owner, readables in resolved:
-        owner.clear_readables()
         for child, format in readables:
             owner.set_readable_format(child, format)

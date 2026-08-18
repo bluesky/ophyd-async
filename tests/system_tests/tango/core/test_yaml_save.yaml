@@ -7,5 +7,3 @@ float64_image: [[-1.7976931348623157e+308, 1.7976931348623157e+308, 2.2250738585
 int32_spectrum: [-2147483648, 2147483647, 0, 1, 2, 3, 4]
 my_state: INIT
 strenum: BBB
-<READABLE_FORMATS>:
-  <ROOT>: {}

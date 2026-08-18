@@ -1067,7 +1067,8 @@ async def test_detector_readable_format_changes_at_runtime():
     name = det.temperature.name
     det.set_readable_format(det.temperature, Format.CONFIG_SIGNAL)
     assert set(await det.read_configuration()) == {name}
-    assert det.hints == {"fields": []}
+    # Empty hints are {} rather than {"fields": []}, as for any StandardReadable
+    assert det.hints == {}
 
     det.set_readable_format(det.temperature, Format.HINTED_UNCACHED_SIGNAL)
     assert set(await det.read_configuration()) == set()
@@ -1075,7 +1076,7 @@ async def test_detector_readable_format_changes_at_runtime():
 
     det.set_readable_format(det.temperature, None)
     assert set(await det.read_configuration()) == set()
-    assert det.hints == {"fields": []}
+    assert det.hints == {}
 
 
 async def test_detector_add_config_signals_is_deprecated():

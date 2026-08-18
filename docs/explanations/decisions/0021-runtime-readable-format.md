@@ -71,10 +71,11 @@ Registration is "set" rather than "add": registering the same device twice repla
 format rather than contributing it twice. This is a behaviour change, and the previous
 behaviour was not deliberate.
 
-Formats are normalised to real enum members on the way in. The deprecated `ConfigSignal`
-and `HintedSignal` markers announce themselves by comparing equal to their target, which
-relied on the `match` statement running during `add_readables`; normalising on entry keeps
-the warning at registration rather than moving it to the first `read()`.
+The deprecated `ConfigSignal` and `HintedSignal` markers are removed rather than carried
+across. They worked by comparing equal to their target, which relied on the `match`
+statement running during `add_readables`; deriving the callables on demand moves that
+comparison to the first `read()` instead. Rather than keep a shim alive to preserve where
+the warning fires, they go — they have been deprecated since well before this change.
 
 ### Format changes apply between runs, not within one
 
@@ -88,6 +89,17 @@ boundaries, which a Device does not.
 A detector's step-scan signals are registered exactly like any other Device's, and
 `read()`, `describe()` and `hints` merge them on top of whatever the data logics produce.
 `add_config_signals` becomes a deprecated wrapper.
+
+The detector does not *reimplement* any of those verbs to achieve it. `StandardReadable`
+grows two hooks, `_extra_funcs_for(verb)` and `_extra_hint_sources()`, that contribute
+from somewhere other than the registry, and `StandardDetector` overrides those to add what
+its data logics produce. Likewise it registers its stage and unstage work into
+`_stage_funcs`/`_unstage_funcs`, the way `StandardFlyable` already does, rather than
+replacing `stage()`. Overriding the verbs meant re-deriving the registered children's
+contributions by hand in each one, which is exactly what would drift.
+
+One consequence: a detector with no hinted fields now reports `hints` as `{}` rather than
+`{"fields": []}`, because it no longer special cases what `StandardReadable` already does.
 
 Plugins are **not** registered automatically. `AreaDetector` registers only the driver's
 `acquire_time` and `acquire_period`, plus whatever the caller passes as `config_sigs`.
@@ -114,12 +126,9 @@ temperature: 20.0
 whole stored state.
 
 **No version marker is needed.** A file written before formats existed simply lacks the
-reserved key, which under replacement semantics reads correctly as "no owner is listed, so
-clear no owner" — leave formats alone. Present-but-empty for an owner (`<ROOT>: {}`) means
-"clear that owner", which is what a freshly-saved Device with nothing registered produces.
-The two states are distinguishable without a version, and each section being independently
-optional also makes a hand-written formats-only profile work, changing technique without
-writing a value to hardware.
+reserved key, which means "change no formats". Each part being independently optional also
+makes a hand-written formats-only profile work, changing technique without writing a value
+to hardware.
 
 **The reserved keys cannot collide.** `<READABLE_FORMATS>` and `<DEVICE_NAMES>` start with
 `<`, which cannot begin a Python identifier, so no attribute assignment can produce a
@@ -138,10 +147,28 @@ direct child" rule, so `AreaDetector` can keep registering `driver.acquire_time`
 `DeviceVector` elements keep working, with no dependency on #1395 and no second migration
 later.
 
-`apply_readable_formats` **replaces** the registered children of each named
-`StandardReadable` rather than merging into them, so that loading a technique profile drops
-what the previous one registered instead of accumulating the union of both. It resolves
-every path before changing anything, so a bad path cannot leave the tree half applied.
+### Applying merges, and unregistering is explicit
+
+`apply_readable_formats` **merges** into what is already registered rather than replacing
+it: a child the file does not mention keeps whatever format it has.
+
+Replacement was tried first, because it makes technique switching automatic — loading a
+profile drops what the previous one registered. It was rejected because it breaks the case
+that matters more: store a file, add a signal to the Device in a later version, apply the
+old file, and the new signal is silently unregistered. Signal *values* already behave the
+other way round — applying a stored file leaves signals it has never heard of alone — and
+formats living in the same file should not behave differently from the values beside them.
+
+A child is dropped by giving it a format of `None`, a null in the stored file. Nothing
+writes those nulls automatically, because storing a Device records only what it currently
+registers and cannot know what some other profile registered; a profile that needs a child
+dropped has to say so. The cost is that round-tripping A -> B -> A no longer drops
+automatically, which is the price of not silently unregistering signals added since a file
+was written.
+
+It follows that a `StandardReadable` registering nothing gets no entry at all, since an
+empty entry would be a no-op. `apply_readable_formats` resolves every path before changing
+anything, so a bad path cannot leave the tree half applied.
 
 `Settings.partition` copies the formats to **both** halves. A device-specific apply plan
 normally applies only the halves and never the original `Settings` — `apply_panda_settings`
