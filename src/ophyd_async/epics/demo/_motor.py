@@ -55,7 +55,7 @@ class DemoMotor(EpicsDevice, StandardReadable, StandardMovable[float]):
     stop_: A[TriggerableCommand, PvSuffix("Stop.PROC")]
 
     @cached_property
-    def movable_logic(self) -> MovableLogic:
+    def logic(self) -> MovableLogic:
         return DemoMotorMoveLogic(
             readback=self.readback,
             setpoint=self.setpoint,

@@ -5,7 +5,7 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from inspect import isawaitable
 from typing import (
     Any,
@@ -426,6 +426,27 @@ def error_if_none(value: T | None, msg: str) -> T:
 def non_zero(value):
     """Return True if the value cast to an int is not zero."""
     return int(value) != 0
+
+
+def abstract_cached_property(func: Callable[[Any], T]) -> cached_property[T]:
+    """A `cached_property` that `ABCMeta` treats as abstract.
+
+    `functools.cached_property` does not forward `__isabstractmethod__` from the
+    function it wraps, so `@cached_property` stacked on `@abstractmethod`
+    registers nothing: the class stays instantiable and a missing implementation
+    surfaces as an `AttributeError` on `None` from deep inside `__init__`. Setting
+    the flag on the descriptor itself makes `Device`'s metaclass collect it, so
+    the omission is a `TypeError` at instantiation instead.
+
+    The declared return type is deliberately `cached_property[T]` rather than a
+    subclass, so that a subclass overriding it with a plain `@cached_property`
+    still gets checked for covariance by the type checker.
+
+    :param func: The property body, which should raise `NotImplementedError`.
+    """
+    prop = cached_property(func)
+    prop.__isabstractmethod__ = True  # type: ignore[attr-defined]
+    return prop
 
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
