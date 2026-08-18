@@ -963,14 +963,12 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         return cast(SignalDatatypeT, value)
 
     async def get_location(self) -> Location[SignalDatatypeT]:
-        read_proxy = self.proxies[self.read_trl]
-        if read_proxy is None:
-            raise NotConnectedError(f"Not connected to {self.read_trl}")
         write_proxy = self.proxies[self.write_trl]
         if write_proxy is None:
             raise NotConnectedError(f"Not connected to {self.write_trl}")
         value, w_value = await asyncio.gather(
-            read_proxy.get(), write_proxy.get_w_value()
+            self.get_value(),
+            write_proxy.get_w_value(),
         )
         return Location(
             setpoint=cast(SignalDatatypeT, w_value),

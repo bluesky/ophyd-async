@@ -434,20 +434,17 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         return self.converter.value(value)
 
     async def get_location(self) -> Location[SignalDatatypeT]:
-        request = _pva_request_string(self.converter.value_fields)
-        if self.read_pv == self.write_pv:
+        if self.write_pv == self.read_pv:
             # one fetch when read and write PVs are identical
-            raw_value = await context().get(self.read_pv, request=request)
-            setpoint = self.converter.value(raw_value)
-            readback = self.converter.value(raw_value)
+            setpoint = readback = await self.get_value()
         else:
             # otherwise retrieve PVs separately
-            raw_setpoint, raw_readback = await asyncio.gather(
+            request = _pva_request_string(self.converter.value_fields)
+            raw_setpoint, readback = await asyncio.gather(
                 context().get(self.write_pv, request=request),
-                context().get(self.read_pv, request=request),
+                self.get_value(),
             )
             setpoint = self.converter.value(raw_setpoint)
-            readback = self.converter.value(raw_readback)
         return Location(setpoint=setpoint, readback=readback)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
