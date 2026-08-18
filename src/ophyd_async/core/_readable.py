@@ -1,5 +1,6 @@
+import asyncio
 import warnings
-from collections.abc import Awaitable, Callable, Generator, Sequence
+from collections.abc import Awaitable, Callable, Generator, Iterator, Sequence
 from contextlib import contextmanager
 from enum import Enum
 from typing import Any, cast
@@ -11,7 +12,43 @@ from ._device import Device, DeviceMap, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
 from ._standard_base import _StandardBase
+from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
+
+
+class _Verb(Enum):
+    """The four bluesky verbs a registered child can contribute to."""
+
+    DESCRIBE_CONFIG = "DESCRIBE_CONFIG"
+    READ_CONFIG = "READ_CONFIG"
+    DESCRIBE = "DESCRIBE"
+    READ = "READ"
+
+
+_CONFIG_VERBS = frozenset({_Verb.DESCRIBE_CONFIG, _Verb.READ_CONFIG})
+_READ_VERBS = frozenset({_Verb.DESCRIBE, _Verb.READ})
+
+
+def _as_signal_r(device: Device) -> SignalR:
+    if not isinstance(device, SignalR):
+        raise TypeError(f"{device} is not a SignalR")
+    return device
+
+
+def _normalise_format(format: "StandardReadableFormat") -> "StandardReadableFormat":
+    """Resolve a deprecated `ConfigSignal`/`HintedSignal` marker to a real member.
+
+    The registry stores real enum members so that the format can be compared,
+    serialised and reported later. The deprecated markers only announce
+    themselves when compared, so the comparison has to happen here, at
+    registration, rather than each time a verb is called.
+    """
+    if isinstance(format, StandardReadableFormat):
+        return format
+    for member in StandardReadableFormat:
+        if format == member:  # _WarningMatcher.__eq__ raises the DeprecationWarning
+            return member
+    raise TypeError(f"{format} is not a StandardReadableFormat")
 
 
 class StandardReadableFormat(Enum):
@@ -89,35 +126,112 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
     - Provide their value in `read_configuration()` and `describe_configuration()
     - Select a value to appear in `hints`
 
-    The behavior is customized with a [](#StandardReadableFormat)
+    The behavior is customized with a [](#StandardReadableFormat), which can be
+    changed at runtime with [](#StandardReadable.set_readable_format).
     """
 
-    # These must be immutable types to avoid accidental sharing between
-    # different instances of the class
-    _describe_config_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
-    _read_config_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
-    _describe_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
-    _read_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
-    _has_hints: tuple[HasHints, ...] = ()
+    # The registered children, in registration order. Immutable so that it cannot
+    # be accidentally shared between instances of the class, and so that a runtime
+    # format change swaps the whole tuple rather than mutating shared state.
+    _readables: tuple[tuple[Device, StandardReadableFormat], ...] = ()
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # Staging is derived from _readables on each call rather than registered
+        # up-front, so a format changed between runs is picked up on next stage().
+        self._stage_funcs += (self._stage_readables,)
+        self._unstage_funcs += (self._unstage_readables,)
+
+    @AsyncStatus.wrap
+    async def _stage_readables(self) -> None:
+        await asyncio.gather(*(sig.stage().task for sig in self._signals_to_stage()))
+
+    @AsyncStatus.wrap
+    async def _unstage_readables(self) -> None:
+        await asyncio.gather(*(sig.unstage().task for sig in self._signals_to_stage()))
+
+    def _signals_to_stage(self) -> Iterator[AsyncStageable]:
+        for device, format in self._readables:
+            if format is StandardReadableFormat.HINTED_SIGNAL and isinstance(
+                device, AsyncStageable
+            ):
+                # Caching is set up on stage so that read() is fast
+                yield device
+            elif format is StandardReadableFormat.CHILD and isinstance(
+                device, AsyncStageable
+            ):
+                yield device
+
+    def _funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
+        """Derive the callables contributing to one verb from the registry."""
+        for device, format in self._readables:
+            match format:
+                case StandardReadableFormat.CHILD:
+                    if verb in _CONFIG_VERBS and isinstance(device, AsyncConfigurable):
+                        yield (
+                            device.describe_configuration
+                            if verb is _Verb.DESCRIBE_CONFIG
+                            else device.read_configuration
+                        )
+                    elif verb in _READ_VERBS and isinstance(device, AsyncReadable):
+                        yield device.describe if verb is _Verb.DESCRIBE else device.read
+                case StandardReadableFormat.CONFIG_SIGNAL:
+                    signal = _as_signal_r(device)
+                    if verb is _Verb.DESCRIBE_CONFIG:
+                        yield signal.describe
+                    elif verb is _Verb.READ_CONFIG:
+                        yield signal.read
+                case StandardReadableFormat.HINTED_SIGNAL:
+                    signal = _as_signal_r(device)
+                    if verb is _Verb.DESCRIBE:
+                        yield signal.describe
+                    elif verb is _Verb.READ:
+                        yield signal.read
+                case (
+                    StandardReadableFormat.UNCACHED_SIGNAL
+                    | StandardReadableFormat.HINTED_UNCACHED_SIGNAL
+                ):
+                    signal = _as_signal_r(device)
+                    if verb is _Verb.DESCRIBE:
+                        yield signal.describe
+                    elif verb is _Verb.READ:
+                        yield _UncachedRead(signal)
 
     async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
-            [func() for func in self._describe_config_funcs]
+            [func() for func in self._funcs_for(_Verb.DESCRIBE_CONFIG)]
         )
 
     async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts([func() for func in self._read_config_funcs])
+        return await merge_gathered_dicts(
+            [func() for func in self._funcs_for(_Verb.READ_CONFIG)]
+        )
 
     async def describe(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts([func() for func in self._describe_funcs])
+        return await merge_gathered_dicts(
+            [func() for func in self._funcs_for(_Verb.DESCRIBE)]
+        )
 
     async def read(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts([func() for func in self._read_funcs])
+        return await merge_gathered_dicts(
+            [func() for func in self._funcs_for(_Verb.READ)]
+        )
+
+    def _hint_sources(self) -> Iterator[HasHints]:
+        for device, format in self._readables:
+            match format:
+                case StandardReadableFormat.CHILD if isinstance(device, HasHints):
+                    yield device
+                case (
+                    StandardReadableFormat.HINTED_SIGNAL
+                    | StandardReadableFormat.HINTED_UNCACHED_SIGNAL
+                ):
+                    yield _HintsFromName(device)
 
     @property
     def hints(self) -> Hints:
         hints: Hints = {}
-        for new_hint in self._has_hints:
+        for new_hint in self._hint_sources():
             # Merge the existing and new hints, based on the type of the value.
             # This avoids default dict merge behavior that overrides the values;
             # we want to combine them when they are Sequences, and ensure they are
@@ -194,6 +308,41 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
         self.add_readables(new_devices, format)
 
+    def set_readable_format(
+        self, device: Device, format: StandardReadableFormat | None
+    ) -> None:
+        """Set how a child Device contributes to this Device's bluesky verbs.
+
+        This is the runtime equivalent of the `Kind` attribute in ophyd v1: it
+        can be called after construction to move a child between configuration,
+        hinted and uncached reads, or to drop it from the verbs entirely.
+
+        Call it **between runs**. The descriptor for a run is emitted at its
+        start, and [](#StandardReadableFormat.HINTED_SIGNAL) sets up caching in
+        `stage()`, so changing a format part way through a run would make
+        `describe()` and `read()` disagree.
+
+        :param device: The Device to set the format of, normally a child of this one
+        :param format:
+            The format to give it, or `None` to stop it contributing at all.
+            Replaces any format the device already has, rather than adding a
+            second contribution.
+        :raises TypeError: If a signal-only format is given a non-`SignalR`
+        """
+        if format is not None:
+            format = _normalise_format(format)
+            if format is not StandardReadableFormat.CHILD:
+                _as_signal_r(device)
+        kept = tuple((d, f) for d, f in self._readables if d is not device)
+        self._readables = kept if format is None else (*kept, (device, format))
+
+    def get_readable_format(self, device: Device) -> StandardReadableFormat | None:
+        """Return the format of a child Device, or `None` if it does not contribute."""
+        for registered, format in self._readables:
+            if registered is device:
+                return format
+        return None
+
     def add_readables(
         self,
         devices: Sequence[Device],
@@ -214,46 +363,8 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             Determines which of the devices functions are added to which verb as
             per the [](#StandardReadableFormat) documentation
         """
-
-        def assert_device_is_signalr(device: Device) -> SignalR:
-            if not isinstance(device, SignalR):
-                raise TypeError(f"{device} is not a SignalR")
-            return device
-
         for device in devices:
-            match format:
-                case StandardReadableFormat.CHILD:
-                    if isinstance(device, AsyncConfigurable):
-                        self._describe_config_funcs += (device.describe_configuration,)
-                        self._read_config_funcs += (device.read_configuration,)
-                    if isinstance(device, AsyncReadable):
-                        self._describe_funcs += (device.describe,)
-                        self._read_funcs += (device.read,)
-                    if isinstance(device, AsyncStageable):
-                        self._stage_funcs += (device.stage,)
-                        self._unstage_funcs += (device.unstage,)
-                    if isinstance(device, HasHints):
-                        self._has_hints += (device,)
-                case StandardReadableFormat.CONFIG_SIGNAL:
-                    signalr_device = assert_device_is_signalr(device=device)
-                    self._describe_config_funcs += (signalr_device.describe,)
-                    self._read_config_funcs += (signalr_device.read,)
-                case StandardReadableFormat.HINTED_SIGNAL:
-                    signalr_device = assert_device_is_signalr(device=device)
-                    self._describe_funcs += (signalr_device.describe,)
-                    self._read_funcs += (signalr_device.read,)
-                    self._stage_funcs += (signalr_device.stage,)
-                    self._unstage_funcs += (signalr_device.unstage,)
-                    self._has_hints += (_HintsFromName(signalr_device),)
-                case StandardReadableFormat.UNCACHED_SIGNAL:
-                    signalr_device = assert_device_is_signalr(device=device)
-                    self._describe_funcs += (signalr_device.describe,)
-                    self._read_funcs += (_UncachedRead(signalr_device),)
-                case StandardReadableFormat.HINTED_UNCACHED_SIGNAL:
-                    signalr_device = assert_device_is_signalr(device=device)
-                    self._describe_funcs += (signalr_device.describe,)
-                    self._read_funcs += (_UncachedRead(signalr_device),)
-                    self._has_hints += (_HintsFromName(signalr_device),)
+            self.set_readable_format(device, format)
 
 
 class _UncachedRead:
