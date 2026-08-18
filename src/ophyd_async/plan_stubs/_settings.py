@@ -10,11 +10,14 @@ from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
     Device,
+    ReadableFormats,
     Settings,
     SettingsProvider,
     SignalRW,
+    StandardReadableFormat,
     Table,
     walk_config_signals,
+    walk_readable_formats,
     walk_rw_signals,
 )
 
@@ -150,3 +153,50 @@ def apply_settings_if_different(
         lambda sig: _is_different(current_settings[sig], settings[sig])
     )
     yield from apply_plan(settings_to_change)
+
+
+@plan
+def store_readable_formats(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[None]:
+    """Walk a Device for readable formats and store them.
+
+    Stores which children of each `StandardReadable` are hinted, configuration
+    or omitted, so that a Device can be switched between techniques. This is
+    stored separately from [](#store_settings), which stores signal *values*;
+    give them different names.
+
+    :param provider: The provider to store the formats with.
+    :param name: The name to store the formats under.
+    :param device: The Device to walk.
+    """
+    formats = walk_readable_formats(device)
+    serialisable = {
+        path: {child: format.value for child, format in entries.items()}
+        for path, entries in formats.items()
+    }
+    yield from wait_for_awaitable(provider.store(name, serialisable))
+
+
+@plan
+def retrieve_readable_formats(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[ReadableFormats]:
+    """Retrieve named readable formats for a Device from a provider.
+
+    Apply the result with [](#apply_readable_formats), which replaces rather
+    than merges, so that switching technique drops the formats of the previous
+    one. Formats take effect on the next `stage()`, so retrieve and apply them
+    between runs.
+
+    :param provider: The provider to retrieve the formats from.
+    :param name: The name the formats were stored under.
+    :param device: The Device the stored paths are relative to.
+    """
+    stored = yield from wait_for_awaitable(provider.retrieve(name))
+    return {
+        path: {
+            child: StandardReadableFormat(format) for child, format in entries.items()
+        }
+        for path, entries in stored.items()
+    }

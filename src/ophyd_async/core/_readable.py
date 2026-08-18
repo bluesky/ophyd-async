@@ -10,7 +10,7 @@ from event_model import DataKey
 
 from ._device import Device, DeviceMap, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
-from ._signal import SignalR
+from ._signal import SignalR, walk_devices
 from ._standard_base import _StandardBase
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
@@ -343,6 +343,14 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
                 return format
         return None
 
+    def readable_children(self) -> Iterator[tuple[Device, StandardReadableFormat]]:
+        """Iterate over the registered children and their formats, in order."""
+        yield from self._readables
+
+    def clear_readables(self) -> None:
+        """Drop every registered child, so this Device contributes nothing."""
+        self._readables = ()
+
     def add_readables(
         self,
         devices: Sequence[Device],
@@ -387,3 +395,87 @@ class _HintsFromName(HasHints):
     def hints(self) -> Hints:
         fields = [self.name] if self.name else []
         return {"fields": fields}
+
+
+#: The readable formats of a Device tree in a form that can be stored and
+#: retrieved: `{path of the StandardReadable: {path of the child: format}}`.
+#: Paths are dotted attribute paths from the root Device, as produced by
+#: [](#walk_devices), with `""` meaning the root Device itself.
+ReadableFormats = dict[str, dict[str, StandardReadableFormat]]
+
+
+def _paths_to_devices(device: Device) -> dict[str, Device]:
+    return {"": device, **walk_devices(device)}
+
+
+def walk_readable_formats(device: Device) -> ReadableFormats:
+    """Retrieve the readable format of every registered child in a Device tree.
+
+    Used as part of saving a Device, so that which signals are hinted, config
+    or omitted can be restored later. Every `StandardReadable` in the tree gets
+    an entry, including those with nothing registered, so that applying the
+    result is a complete description rather than a partial overlay.
+
+    :param device: The root Device to walk.
+    :return: A [](#ReadableFormats) suitable for storing.
+    """
+    device_to_path = {dev: path for path, dev in _paths_to_devices(device).items()}
+    formats: ReadableFormats = {}
+    for path, dev in _paths_to_devices(device).items():
+        if not isinstance(dev, StandardReadable):
+            continue
+        entries: dict[str, StandardReadableFormat] = {}
+        for child, format in dev.readable_children():
+            child_path = device_to_path.get(child)
+            if child_path is None:
+                # Registered something that is not in this tree, so it has no
+                # stable path to store it against
+                warnings.warn(
+                    f"{dev.name or dev}: cannot store the format of "
+                    f"{child.name or child} as it is not within "
+                    f"{device.name or device}",
+                    stacklevel=2,
+                )
+            else:
+                entries[child_path] = format
+        formats[path] = entries
+    return formats
+
+
+def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
+    """Set the readable format of children in a Device tree.
+
+    This **replaces** the registered children of each `StandardReadable` named
+    in `formats`, rather than adding to them, so that applying a stored set
+    switches a Device between techniques rather than accumulating the union of
+    both. `StandardReadable`s not named in `formats` are left alone.
+
+    :param device: The root Device the paths in `formats` are relative to.
+    :param formats: A [](#ReadableFormats), e.g. from [](#walk_readable_formats).
+    :raises KeyError: If a path does not name a Device in the tree.
+    :raises TypeError: If a path does not name a `StandardReadable`.
+    """
+    devices = _paths_to_devices(device)
+    resolved: list[tuple[StandardReadable, list[tuple[Device, StandardReadableFormat]]]]
+    resolved = []
+    # Resolve everything before changing anything, so a bad path cannot leave
+    # the tree half applied
+    for owner_path, entries in formats.items():
+        owner = devices.get(owner_path)
+        if owner is None:
+            raise KeyError(f"No Device at {owner_path!r} in {device.name or device}")
+        if not isinstance(owner, StandardReadable):
+            raise TypeError(f"{owner_path!r} is not a StandardReadable, got {owner}")
+        readables = []
+        for child_path, format in entries.items():
+            child = devices.get(child_path)
+            if child is None:
+                raise KeyError(
+                    f"No Device at {child_path!r} in {device.name or device}"
+                )
+            readables.append((child, StandardReadableFormat(format)))
+        resolved.append((owner, readables))
+    for owner, readables in resolved:
+        owner.clear_readables()
+        for child, format in readables:
+            owner.set_readable_format(child, format)
