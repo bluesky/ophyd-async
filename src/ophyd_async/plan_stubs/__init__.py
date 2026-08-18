@@ -5,7 +5,9 @@ from ._settings import (
     apply_settings,
     apply_settings_if_different,
     get_current_settings,
+    retrieve_readable_formats,
     retrieve_settings,
+    store_readable_formats,
     store_settings,
 )
 
@@ -14,6 +16,8 @@ __all__ = [
     "apply_settings",
     "apply_settings_if_different",
     "get_current_settings",
+    "retrieve_readable_formats",
     "retrieve_settings",
+    "store_readable_formats",
     "store_settings",
 ]
