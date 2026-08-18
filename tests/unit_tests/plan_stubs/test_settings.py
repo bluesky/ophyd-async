@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from ophyd_async.core import (
+    Device,
     Settings,
     StandardReadable,
     YamlSettingsProvider,
@@ -362,3 +363,57 @@ def test_settings_partition_carries_formats_to_both_halves(technique_device):
     a, b = settings.partition(lambda sig: "energy" in sig.name)
     assert a.readable_formats == settings.readable_formats
     assert b.readable_formats == settings.readable_formats
+
+
+async def test_store_settings_records_a_readable_that_registers_nothing(RE, tmp_path):
+    """An empty owner entry means "clear this owner", so it must be stored.
+
+    This is the shape of TangoTestDevice, and it is why applying a profile that
+    registers nothing drops what the previous profile registered rather than
+    silently leaving it in place.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    device = StandardReadable(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+
+    def my_plan():
+        yield from store_settings(provider, "empty", device)
+        with open(tmp_path / "empty.yaml") as f:
+            assert yaml.safe_load(f) == {
+                "sig": 1.0,
+                "<READABLE_FORMATS>": {"<ROOT_DEVICE>": {}},
+            }
+
+        # Register something, then apply the stored file back
+        device.set_readable_format(device.sig, Format.CONFIG_SIGNAL)
+        settings = yield from retrieve_settings(provider, "empty", device)
+        yield from apply_settings(settings)
+        assert device.get_readable_format(device.sig) is None
+
+    RE(my_plan())
+
+
+async def test_store_settings_omits_the_key_for_a_device_with_no_readables(
+    RE, tmp_path
+):
+    """A Device with no StandardReadable in its tree has nothing to clear.
+
+    This is the shape of EpicsTestCaDevice, and is why the EPICS golden files
+    needed no regeneration.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+
+    class Plain(Device):
+        pass
+
+    device = Plain(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+
+    def my_plan():
+        yield from store_settings(provider, "plain", device)
+        with open(tmp_path / "plain.yaml") as f:
+            assert yaml.safe_load(f) == {"sig": 1.0}
+
+    RE(my_plan())
