@@ -95,22 +95,60 @@ Registering a plugin is a `set_readable_format()` call at the call site, which i
 explicit opt-in the #1395 reviewers asked for, now expressible per plugin and reversible
 at runtime.
 
-### Formats are stored and retrieved separately from settings
+### Formats are stored in the same file as settings, under a reserved key
 
-`walk_readable_formats` and `apply_readable_formats` serialise the registry as
-`{path of StandardReadable: {path of child: format}}`, using the same dotted attribute
-paths as `store_settings`, with `""` for the root Device. Values are plain strings so the
-YAML stays hand-editable.
+Values and formats are applied on the same cadence — a technique change wants both — so
+they belong in one file and one `apply_settings` call. `store_settings` keeps values flat
+and adds one reserved key:
+
+```yaml
+energy: 7.0
+temperature: 20.0
+<READABLE_FORMATS>:
+  <ROOT>:
+    energy: CONFIG_SIGNAL
+    temperature: CONFIG_SIGNAL
+```
+
+`Settings` gains a `readable_formats` attribute, so one `retrieve_settings` returns the
+whole stored state.
+
+**No version marker is needed.** A file written before formats existed simply lacks the
+reserved key, which under replacement semantics reads correctly as "no owner is listed, so
+clear no owner" — leave formats alone. Present-but-empty for an owner (`<ROOT>: {}`) means
+"clear that owner", which is what a freshly-saved Device with nothing registered produces.
+The two states are distinguishable without a version, and each section being independently
+optional also makes a hand-written formats-only profile work, changing technique without
+writing a value to hardware.
+
+**The reserved keys cannot collide.** `<READABLE_FORMATS>` and `<DEVICE_NAMES>` start with
+`<`, which cannot begin a Python identifier, so no attribute assignment can produce a
+colliding path — no store-time guard is required. `<` is also not a YAML indicator, so
+unlike `*FORMATS*` or `%FORMATS%` the key needs no quoting. `<ROOT>` replaces `""` as the
+root owner for the same reason and because an empty-string key makes PyYAML emit its
+hard-to-read explicit `? '' :` form. `<DEVICE_NAMES>` is reserved but unwritten, so storing
+names later needs no migration.
+
+**The formats section is two levels while values are flat.** A value is intrinsic to one
+path; a format is a fact about an (owner, child) *pair*, and the same child can be
+registered on two owners with different formats — which #1395 creates directly, since
+`NDStatsIO` will declare `total` on itself while a detector may also register `stats.total`.
+Recording the owner rather than inferring it also means the layout needs no "must be a
+direct child" rule, so `AreaDetector` can keep registering `driver.acquire_time` and
+`DeviceVector` elements keep working, with no dependency on #1395 and no second migration
+later.
 
 `apply_readable_formats` **replaces** the registered children of each named
-`StandardReadable` rather than merging into them, so that loading a technique profile
-drops what the previous one registered instead of accumulating the union of both. It
-resolves every path before changing anything, so a bad path cannot leave the tree half
-applied.
+`StandardReadable` rather than merging into them, so that loading a technique profile drops
+what the previous one registered instead of accumulating the union of both. It resolves
+every path before changing anything, so a bad path cannot leave the tree half applied.
 
-Formats are stored under a different name from `store_settings`, not folded into it:
-values and formats change on different cadences, and `Settings` is a mapping of
-`SignalRW` to value, whereas a format applies to `SignalR`s and whole Devices too.
+`Settings.partition` copies the formats to **both** halves. A device-specific apply plan
+normally applies only the halves and never the original `Settings` — `apply_panda_settings`
+partitions and calls `apply_settings` twice — so putting formats on one half would let the
+plan silently decide whether they were restored at all. Applying them more than once is
+harmless: it touches no hardware and is idempotent. `apply_settings` applies formats after
+values, so a failed value write leaves the readable registry untouched.
 
 ## Consequences
 

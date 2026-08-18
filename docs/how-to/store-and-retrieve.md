@@ -35,6 +35,8 @@ def load_panda(panda1: HDFPanda):
     yield from apply_panda_settings(settings)
 ```
 
+As well as signal values, [](#store_settings) records how each child contributes to the Device's bluesky verbs, under the reserved [](#READABLE_FORMATS_KEY), and [](#apply_settings) restores that too. This means a stored file can switch a Device between techniques as well as putting its values back — see [](./change-readable-format.md). Files stored before this existed simply have no such key, and load unchanged.
+
 In the situation where the time taken to read a set of SignalRWs of a Device is less than the time taken to set those signals, the [](#apply_settings_if_different) stub should be used instead. This will take the SignalRWs included in the Settings, read them from the connected Device, and set those that differ from the stored value:
 
 ```
