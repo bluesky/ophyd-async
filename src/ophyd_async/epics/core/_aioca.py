@@ -374,17 +374,14 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
     async def get_location(self) -> Location[SignalDatatypeT]:
         if self.write_pv == self.read_pv:
             # one fetch when read and write PVs are identical
-            raw_value = await self._caget(self.read_pv, FORMAT_RAW)
-            setpoint = self.converter.value(raw_value)
-            readback = self.converter.value(raw_value)
+            setpoint = readback = await self.get_value()
         else:
             # otherwise retrieve PVs separately
-            raw_setpoint, raw_readback = await asyncio.gather(
+            raw_setpoint, readback = await asyncio.gather(
                 self._caget(self.write_pv, FORMAT_RAW),
-                self._caget(self.read_pv, FORMAT_RAW),
+               self.get_value(),
             )
             setpoint = self.converter.value(raw_setpoint)
-            readback = self.converter.value(raw_readback)
         return Location(setpoint=setpoint, readback=readback)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
