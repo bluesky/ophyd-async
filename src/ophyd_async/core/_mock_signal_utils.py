@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock
 
 from ._command import Command, CommandConnector, MockCommandBackend, MockExecuteCallback
 from ._device import Device, DeviceMock
-from ._mock_signal_backend import MockPutCallback, MockSignalBackend
+from ._mock_signal_backend import MockCallbackFilter, MockPutCallback, MockSignalBackend
 from ._signal import Signal, SignalConnector, SignalR
 from ._signal_backend import SignalDatatypeT
 
@@ -192,6 +192,42 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
     backend = _get_mock_signal_backend(signal)
     backend.set_mock_put_callback(callback)
     return _unset_side_effect_cm(backend)
+
+
+@contextmanager
+def _unset_callback_filter_cm(backend: MockSignalBackend):
+    yield
+    backend.set_mock_callback_filter(None)
+
+
+def set_callback_filter(signal: Signal[SignalDatatypeT], filter: MockCallbackFilter):
+    """Modify or veto values on their way to subscribers of a mock signal.
+
+    Can either be used in a context, with the filter being unset on exit, or as
+    an ordinary function.
+
+    The filter is called with each value as it is about to be delivered to a
+    subscriber. Return a value to substitute it, or None to drop the update
+    entirely. Dropping every update includes the initial value emitted when a
+    subscription is made, so waits on the signal will time out as if the control
+    system had stopped sending monitor updates.
+
+    Set the filter *before* anything subscribes to the signal. A live
+    `_SignalCache` serves new subscribers from its stored reading without
+    consulting the backend, so a filter set afterwards will not affect the first
+    value they receive (though it will affect subsequent updates).
+
+    The filter applies to the subscription stream only, so `get_value(cached=False)`
+    still returns the real value. Note that a plain `get_value()` will use the
+    cache if one is live, and so may return a filtered value.
+
+    :param signal: A signal with a `MockSignalBackend` backend.
+    :param filter: Called with each value, returning a replacement or None to
+        drop it.
+    """
+    backend = _get_mock_signal_backend(signal)
+    backend.set_mock_callback_filter(filter)
+    return _unset_callback_filter_cm(backend)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):
