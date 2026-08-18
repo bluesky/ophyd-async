@@ -379,7 +379,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             # otherwise retrieve PVs separately
             raw_setpoint, readback = await asyncio.gather(
                 self._caget(self.write_pv, FORMAT_RAW),
-               self.get_value(),
+                self.get_value(),
             )
             setpoint = self.converter.value(raw_setpoint)
         return Location(setpoint=setpoint, readback=readback)
