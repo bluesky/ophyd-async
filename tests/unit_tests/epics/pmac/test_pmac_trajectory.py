@@ -9,6 +9,7 @@ from ophyd_async.core import (
     get_mock,
     get_mock_execute,
     set_and_wait_for_value,
+    set_callback_filter,
     set_mock_value,
 )
 from ophyd_async.epics.motor import Motor
@@ -31,13 +32,6 @@ from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
     _PmacMotorInfo,  # noqa: PLC2701
 )
-
-
-async def bad_observe_value(*args, **kwargs):
-    "Stub to simulate a disconnected ``observe_value()``."
-    if True:
-        raise TimeoutError()
-    yield None  # Make it a generator
 
 
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -411,21 +405,22 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
 async def test_trajectory_raises_if_profile_status_not_in_good_state(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
-    with patch("ophyd_async.epics.pmac._pmac_trajectory.DEFAULT_TIMEOUT", 0.02):
-        pmac_io, _, _ = sim_motors
-        set_mock_value(pmac_io.trajectory.execute_message, "Failed to execute")
-        set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.FAILURE)
-        pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
-        with pytest.raises(
-            ValueError,
-            match="PMAC profile sim_pmac-trajectory-execute_status "
-            "'Failure' is not in good end state of "
-            "'Success'. Message reported from pmac is: "
-            "'Failed to execute'",
-        ):
-            await pmac_trajectory._check_profile_status(
-                pmac_io.trajectory.execute_status, pmac_io.trajectory.execute_message
-            )
+    pmac_io, _, _ = sim_motors
+    set_mock_value(pmac_io.trajectory.execute_message, "Failed to execute")
+    set_mock_value(pmac_io.trajectory.execute_status, PmacStatus.FAILURE)
+    pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
+    with pytest.raises(
+        ValueError,
+        match="PMAC profile sim_pmac-trajectory-execute_status "
+        "'Failure' is not in good end state of "
+        "'Success'. Message reported from pmac is: "
+        "'Failed to execute'",
+    ):
+        await pmac_trajectory._check_profile_status(
+            pmac_io.trajectory.execute_status,
+            pmac_io.trajectory.execute_message,
+            timeout=0.02,
+        )
 
 
 async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
@@ -433,12 +428,13 @@ async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
 ):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
-    with (
-        patch(
-            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", bad_observe_value
-        ),
-    ):
-        with pytest.raises(TimeoutError, match="Could not monitor PMAC status:"):
-            await pmac_trajectory._check_profile_status(
-                pmac_io.trajectory.execute_status, pmac_io.trajectory.execute_message
-            )
+
+    # Drop every monitor update so the status is never observed
+    set_callback_filter(pmac_io.trajectory.execute_status, lambda v: None)
+
+    with pytest.raises(TimeoutError, match="Could not monitor PMAC status:"):
+        await pmac_trajectory._check_profile_status(
+            pmac_io.trajectory.execute_status,
+            pmac_io.trajectory.execute_message,
+            timeout=0.02,
+        )
