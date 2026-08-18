@@ -22,7 +22,7 @@ To address this, `SoftSignalBackend` was extended to support arbitrary callables
 - The internal `self._reading` store remains the **single source of truth**. The `getter` updates this store rather than bypassing it, preserving coherence for subscriptions and cached reads.
 - The `put` method accepts `SignalDatatypeT` (the same type as the signal's stored value) to maintain type safety and consistency.
 - Polling tasks are used for subscriptions, starting in `set_callback` and canceling when subscriptions end.
-- The setpoint half of `get_location()` **does not invoke the `getter`**; it returns the last value written to the `setter` or the initial value of. The readback half does invoke the `getter`, as it must.
+- `get_setpoint()` **does not invoke the `getter`**; it returns the last value written to the `setter` or the initial value of.
 
 ### **Factory Function Updates**
 The convenience functions `soft_signal_rw` and `soft_signal_r_and_setter` were updated to accept `getter`, and `poll_period` arguments. `soft_signal_rw` additionally accepts a `setter` argument. These additional arguments are passed to `SoftSignalBackend`.
