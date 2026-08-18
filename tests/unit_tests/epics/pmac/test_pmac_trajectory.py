@@ -429,7 +429,6 @@ async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
 
-    # Drop every monitor update so the status is never observed
     set_callback_filter(pmac_io.trajectory.execute_status, lambda v: None)
 
     with pytest.raises(TimeoutError, match="Could not monitor PMAC status:"):

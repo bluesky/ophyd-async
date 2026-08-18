@@ -212,14 +212,10 @@ def set_callback_filter(signal: Signal[SignalDatatypeT], filter: MockCallbackFil
     subscription is made, so waits on the signal will time out as if the control
     system had stopped sending monitor updates.
 
-    Set the filter *before* anything subscribes to the signal. A live
+    Set the filter before anything subscribes to the signal. A live
     `_SignalCache` serves new subscribers from its stored reading without
     consulting the backend, so a filter set afterwards will not affect the first
     value they receive (though it will affect subsequent updates).
-
-    The filter applies to the subscription stream only, so `get_value(cached=False)`
-    still returns the real value. Note that a plain `get_value()` will use the
-    cache if one is live, and so may return a filtered value.
 
     :param signal: A signal with a `MockSignalBackend` backend.
     :param filter: Called with each value, returning a replacement or None to

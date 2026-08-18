@@ -78,7 +78,7 @@ subscription is first made, which is what makes waits time out rather than
 return immediately.
 
 The filter simulates a **broken monitor, not a broken signal**. The value is
-still there; only the update stream is affected. Two consequences follow:
+still there; only the update stream is affected. This means:
 
 - Set the filter *before* anything subscribes. A live cache serves new
   subscribers from its stored reading without consulting the backend, so a
@@ -87,8 +87,6 @@ still there; only the update stream is affected. Two consequences follow:
   uses the cache when one is live, so it returns filtered values — and blocks
   indefinitely if the filter has vetoed everything.
 
-Like [](#callback_on_mock_put), it can be used as a context manager to unset the
-filter on exit, or called plainly to leave it set for the whole test.
 
 ### pytest-asyncio setup
 

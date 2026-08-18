@@ -68,7 +68,6 @@ async def test_acquire_logic_wait_for_idle_in_bad_state():
     with pytest.raises(ValueError) as exc_info:
         await det.trigger()
 
-    # Check that the error message contains the expected information
     error_msg = str(exc_info.value)
     assert "DetectorState_RBV not in a good state: Error: expected" in error_msg
     assert "ADState.IDLE" in error_msg
@@ -123,9 +122,6 @@ async def test_start_acquiring_driver_and_ensure_status_disconnected():
         det = adcore.AreaDetector(driver=driver)
         det.add_detector_logics(adcore.ADAcquireLogic(driver, timeout=0.1))
 
-    # Drop every monitor update, simulating a detector that never reports state.
-    # Must be set before anything subscribes, so the filter is in place when
-    # wait_for_good_state makes its subscription.
     set_callback_filter(driver.detector_state, lambda v: None)
 
     with pytest.raises(asyncio.TimeoutError) as exc:
