@@ -397,15 +397,35 @@ class _HintsFromName(HasHints):
         return {"fields": fields}
 
 
+#: Reserved key under which [](#store_settings) writes readable formats. Chosen
+#: so that it cannot be a dotted attribute path: `<` cannot start a Python
+#: identifier, so no attribute assignment can produce a colliding key, and
+#: unlike `*FORMATS*` it needs no quoting in yaml.
+READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
+
+#: Reserved key for storing Device names. Reserved now so that adding it later
+#: needs no migration; nothing writes it yet.
+DEVICE_NAMES_KEY = "<DEVICE_NAMES>"
+
+#: The path standing in for the root Device itself in a [](#ReadableFormats).
+#: Not a valid Python identifier, so no attribute assignment can produce a
+#: colliding path, and unlike `""` it does not make yaml fall back to its
+#: hard-to-read explicit key syntax.
+ROOT_DEVICE_KEY = "<ROOT_DEVICE>"
+
 #: The readable formats of a Device tree in a form that can be stored and
 #: retrieved: `{path of the StandardReadable: {path of the child: format}}`.
 #: Paths are dotted attribute paths from the root Device, as produced by
-#: [](#walk_devices), with `""` meaning the root Device itself.
+#: [](#walk_devices), with [](#ROOT_DEVICE_KEY) meaning the root Device itself.
+#:
+#: The outer key is needed because a format is a fact about an (owner, child)
+#: *pair*, not about a single Device: the same child can be registered on more
+#: than one `StandardReadable` with a different format each time.
 ReadableFormats = dict[str, dict[str, StandardReadableFormat]]
 
 
 def _paths_to_devices(device: Device) -> dict[str, Device]:
-    return {"": device, **walk_devices(device)}
+    return {ROOT_DEVICE_KEY: device, **walk_devices(device)}
 
 
 def walk_readable_formats(device: Device) -> ReadableFormats:
@@ -429,11 +449,15 @@ def walk_readable_formats(device: Device) -> ReadableFormats:
             child_path = device_to_path.get(child)
             if child_path is None:
                 # Registered something that is not in this tree, so it has no
-                # stable path to store it against
+                # stable path to store it against. Its value is not stored
+                # either, as store_settings only walks the tree, so it will not
+                # survive a store/apply round trip at all. See
+                # https://github.com/bluesky/ophyd-async/issues/1402
                 warnings.warn(
-                    f"{dev.name or dev}: cannot store the format of "
-                    f"{child.name or child} as it is not within "
-                    f"{device.name or device}",
+                    f"{dev.name or dev}: {child.name or child} is not within "
+                    f"{device.name or device}, so neither its readable format "
+                    "nor its value will be stored, and applying stored settings "
+                    "will not restore it",
                     stacklevel=2,
                 )
             else:

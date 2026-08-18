@@ -49,42 +49,60 @@ det.set_readable_format(det.stats.total, Format.HINTED_UNCACHED_SIGNAL)
 Data produced by a [](#DetectorDataLogic) is added on top of these, so a detector can
 write a file *and* report a plugin scalar in a step scan.
 
-## Saving and restoring a set of formats
+## Saving and restoring a technique
 
-Formats are part of a Device's state, so they can be stored and reloaded like settings
-are. Use [](#store_readable_formats) and [](#retrieve_readable_formats) with any
-[](#SettingsProvider), then [](#apply_readable_formats):
+Formats are part of a Device's state, and they change on the same cadence as signal
+values, so [](#store_settings) stores both and [](#apply_settings) applies both:
 
 ```python
 def save_technique(det):
     provider = YamlSettingsProvider("/path/to/profiles")
-    yield from store_readable_formats(provider, "fixed_energy", det)
+    yield from store_settings(provider, "fixed_energy", det)
 
 
 def load_technique(det, technique: str):
     provider = YamlSettingsProvider("/path/to/profiles")
-    formats = yield from retrieve_readable_formats(provider, technique, det)
-    apply_readable_formats(det, formats)
+    settings = yield from retrieve_settings(provider, technique, det)
+    yield from apply_settings(settings)
 ```
 
-The stored yaml maps each [](#StandardReadable)'s path to its children's formats, with
-`""` for the root Device, so it stays readable and can be edited by hand:
+Values stay flat in the yaml, and formats go under the reserved
+[](#READABLE_FORMATS_KEY), so the file stays readable and hand-editable:
 
 ```yaml
-'': {energy: CONFIG_SIGNAL, temperature: CONFIG_SIGNAL}
-stats: {stats.total: HINTED_UNCACHED_SIGNAL}
+energy: 7.0
+temperature: 20.0
+<READABLE_FORMATS>:
+  <ROOT_DEVICE>:
+    energy: CONFIG_SIGNAL
+    temperature: CONFIG_SIGNAL
+  stats:
+    stats.total: HINTED_UNCACHED_SIGNAL
 ```
+
+The outer key of each formats entry is the [](#StandardReadable) the child is registered
+on, with [](#ROOT_DEVICE_KEY) for the Device you stored. It is recorded rather than inferred
+because the same child can be registered on more than one Device with different formats.
 
 ```{note}
-[](#apply_readable_formats) **replaces** the children registered on each Device it names,
-rather than merging into them. That is what makes switching technique work: loading a
-profile drops what the previous one registered instead of accumulating both.
+Applying **replaces** the children registered on each Device the file names, rather than
+merging into them. That is what makes switching technique work: loading a profile drops
+what the previous one registered instead of accumulating both.
 ```
 
-Formats are stored under a different name from [](#store_settings), which stores signal
-*values*. The two change on different cadences, so keep them in separate files.
+Because each part is optional, a file with no `<READABLE_FORMATS>` key leaves formats
+alone — so settings files saved before formats were storable keep working untouched. The
+reverse is useful too: a hand-written formats-only profile switches technique without
+writing a single value to hardware.
+
+```yaml
+<READABLE_FORMATS>:
+  <ROOT_DEVICE>:
+    energy: HINTED_SIGNAL
+```
 
 ```{seealso}
 [](../explanations/decisions/0021-runtime-readable-format.md) for why the registry is
-keyed by Device, and [](./store-and-retrieve.md) for storing signal values.
+keyed by Device and how the file is laid out, and [](./store-and-retrieve.md) for the
+wider store/retrieve workflow.
 ```
