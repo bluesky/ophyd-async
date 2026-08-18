@@ -52,7 +52,7 @@ class DemoMotor(TangoDevice, StandardReadable, StandardMovable[float]):
     stop_: TriggerableCommand
 
     @cached_property
-    def movable_logic(self) -> MovableLogic:
+    def standard_logic(self) -> MovableLogic:
         return DemoMotorMoveLogic(
             readback=self.readback,
             setpoint=self.setpoint,
