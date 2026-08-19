@@ -49,6 +49,8 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     set_mock_value(det.driver.array_size_y, 768)
 
     await det.stage()
+    # ensure_ready sets WaitForPlugins so read() sees this frame's scalars
+    assert await det.driver.wait_for_plugins.get_value() is True
     config_description = await det.describe_configuration()
     assert {
         "det-driver-acquire_period": {
@@ -543,6 +545,7 @@ async def test_simdetector_with_stats_signal():
     det.set_readable_format(stat, Format.CHILD)
     set_mock_value(stat.total, 1.8)
     await det.stage()
+    assert await det.driver.wait_for_plugins.get_value() is True
     await det.trigger()
     description = await det.describe()
     assert "det-stats-total" in description
@@ -556,6 +559,24 @@ async def test_simdetector_with_stats_signal():
     assert reading["det-stats-total"]["value"] == 1.8
     assert "det-stats-total" in det.hints["fields"]
     assert "det-stats-mean_value" in det.hints["fields"]
+
+
+@pytest.mark.parametrize("wait_for_plugins", [True, False])
+async def test_acquire_logic_writes_wait_for_plugins_on_stage(wait_for_plugins: bool):
+    # Always written, never left at whatever the IOC booted with, so a scan
+    # cannot depend on who touched the PV last
+    driver = adcore.ADBaseIO("PREFIX:DET:")
+    async with init_devices(mock=True):
+        det = adcore.AreaDetector(
+            driver,
+            acquire_logic=adcore.ADAcquireLogic(
+                driver, wait_for_plugins=wait_for_plugins
+            ),
+            name="det",
+        )
+    set_mock_value(det.driver.wait_for_plugins, not wait_for_plugins)
+    await det.stage()
+    assert await det.driver.wait_for_plugins.get_value() is wait_for_plugins
 
 
 async def test_step_scan_keep_numimages(
