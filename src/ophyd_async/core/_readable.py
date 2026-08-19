@@ -72,6 +72,13 @@ class StandardReadableFormat(Enum):
         parent.add_readables([child], self)
 
 
+#: The formats whose devices take part in `stage()`/`unstage()`, if they are
+#: `Stageable` at all.
+_STAGED_FORMATS = frozenset(
+    {StandardReadableFormat.HINTED_SIGNAL, StandardReadableFormat.CHILD}
+)
+
+
 class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints):
     """Device that provides selected child Device values in `read()`.
 
@@ -106,15 +113,11 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         await asyncio.gather(*(sig.unstage().task for sig in self._signals_to_stage()))
 
     def _signals_to_stage(self) -> Iterator[AsyncStageable]:
+        # HINTED_SIGNAL stages so that caching is set up and read() is fast; a
+        # CHILD stages because it may have staging of its own. The uncached and
+        # config formats deliberately do not.
         for device, format in self._readables:
-            if format is StandardReadableFormat.HINTED_SIGNAL and isinstance(
-                device, AsyncStageable
-            ):
-                # Caching is set up on stage so that read() is fast
-                yield device
-            elif format is StandardReadableFormat.CHILD and isinstance(
-                device, AsyncStageable
-            ):
+            if format in _STAGED_FORMATS and isinstance(device, AsyncStageable):
                 yield device
 
     def _extra_funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
@@ -386,10 +389,6 @@ class _HintsFromName(HasHints):
 #: unlike `*FORMATS*` it needs no quoting in yaml.
 READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
 
-#: Reserved key for storing Device names. Reserved now so that adding it later
-#: needs no migration; nothing writes it yet.
-DEVICE_NAMES_KEY = "<DEVICE_NAMES>"
-
 #: The path standing in for the root Device itself in a [](#ReadableFormats).
 #: Not a valid Python identifier, so no attribute assignment can produce a
 #: colliding path, and unlike `""` it does not make yaml fall back to its
@@ -423,9 +422,10 @@ def walk_readable_formats(device: Device) -> ReadableFormats:
     :param device: The root Device to walk.
     :return: A [](#ReadableFormats) suitable for storing.
     """
-    device_to_path = {dev: path for path, dev in _paths_to_devices(device).items()}
+    paths_to_devices = _paths_to_devices(device)
+    device_to_path = {dev: path for path, dev in paths_to_devices.items()}
     formats: ReadableFormats = {}
-    for path, dev in _paths_to_devices(device).items():
+    for path, dev in paths_to_devices.items():
         if not isinstance(dev, StandardReadable):
             continue
         entries: dict[str, StandardReadableFormat | None] = {}

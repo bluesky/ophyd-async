@@ -9,7 +9,6 @@ import numpy as np
 from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
-    DEVICE_NAMES_KEY,
     READABLE_FORMATS_KEY,
     Device,
     ReadableFormats,
@@ -110,11 +109,16 @@ def retrieve_settings(
     :param device: The Device to retrieve the settings for.
     :param only_config: If True, retrieve only configuration settings.
     """
-    data = yield from wait_for_awaitable(provider.retrieve(name))
+    # Copy, as the provider may hand back a dict it holds on to and the reserved
+    # keys are popped out of it below
+    data = dict((yield from wait_for_awaitable(provider.retrieve(name))))
     # Reserved keys first, so what is left is signal paths and the unknown name
-    # check below still catches genuine typos
+    # check below still catches genuine typos. Any <RESERVED> key is dropped,
+    # not just the one understood here: a path can never look like that, so a
+    # key written by a newer version is ignored rather than reported as a typo.
     stored_formats = data.pop(READABLE_FORMATS_KEY, {})
-    data.pop(DEVICE_NAMES_KEY, None)
+    for key in [k for k in data if k.startswith("<") and k.endswith(">")]:
+        del data[key]
     readable_formats: ReadableFormats = {
         owner: {
             # A null means "stop this child contributing", so it is not coerced
