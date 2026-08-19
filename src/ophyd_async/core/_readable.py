@@ -311,16 +311,13 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         kept = tuple((d, f) for d, f in self._readables if d is not device)
         self._readables = kept if format is None else (*kept, (device, format))
 
-    def get_readable_format(self, device: Device) -> StandardReadableFormat | None:
-        """Return the format of a child Device, or `None` if it does not contribute."""
-        for registered, format in self._readables:
-            if registered is device:
-                return format
-        return None
+    def get_readable_formats(self) -> dict[Device, StandardReadableFormat]:
+        """Return the registered children and their formats, in registration order.
 
-    def readable_children(self) -> Iterator[tuple[Device, StandardReadableFormat]]:
-        """Iterate over the registered children and their formats, in order."""
-        yield from self._readables
+        A Device that does not contribute is absent, so
+        `get_readable_formats().get(child)` gives its format or `None`.
+        """
+        return dict(self._readables)
 
     def add_readables(
         self,
@@ -432,7 +429,7 @@ def walk_readable_formats(device: Device) -> ReadableFormats:
         if not isinstance(dev, StandardReadable):
             continue
         entries: dict[str, StandardReadableFormat | None] = {}
-        for child, format in dev.readable_children():
+        for child, format in dev.get_readable_formats().items():
             child_path = device_to_path.get(child)
             if child_path is None:
                 # Registered something that is not in this tree, so it has no

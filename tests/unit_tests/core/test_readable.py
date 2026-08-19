@@ -314,15 +314,24 @@ async def test_set_readable_format_replaces_rather_than_duplicates():
     sr.set_readable_format(sr.sig, Format.HINTED_SIGNAL)
 
     assert sr.hints == {"fields": [sr.sig.name]}
-    assert sr.get_readable_format(sr.sig) is Format.HINTED_SIGNAL
+    assert sr.get_readable_formats() == {sr.sig: Format.HINTED_SIGNAL}
 
 
-async def test_get_readable_format_returns_none_when_unregistered():
+async def test_get_readable_formats_omits_unregistered_children():
     sr = StandardReadable(name="sr")
     sr.sig, _ = soft_signal_r_and_setter(int, 0, name="sig")
-    assert sr.get_readable_format(sr.sig) is None
+    sr.other, _ = soft_signal_r_and_setter(int, 0, name="other")
+    assert sr.get_readable_formats() == {}
     sr.set_readable_format(sr.sig, Format.CONFIG_SIGNAL)
-    assert sr.get_readable_format(sr.sig) is Format.CONFIG_SIGNAL
+    sr.set_readable_format(sr.other, Format.HINTED_SIGNAL)
+    # Registration order is preserved, and an unregistered child is absent
+    assert sr.get_readable_formats() == {
+        sr.sig: Format.CONFIG_SIGNAL,
+        sr.other: Format.HINTED_SIGNAL,
+    }
+    assert list(sr.get_readable_formats()) == [sr.sig, sr.other]
+    sr.set_readable_format(sr.sig, None)
+    assert sr.get_readable_formats() == {sr.other: Format.HINTED_SIGNAL}
 
 
 async def test_set_readable_format_affects_staging_of_later_runs():

@@ -256,8 +256,13 @@ async def test_settings_round_trip_switches_technique(RE, technique_device, tmp_
         # Going back restores both the value and the formats in one apply
         fixed = yield from retrieve_settings(provider, "fixed_energy", technique_device)
         yield from apply_settings(fixed)
-        assert technique_device.get_readable_format(energy) is Format.CONFIG_SIGNAL
-        assert technique_device.get_readable_format(temperature) is Format.CONFIG_SIGNAL
+        assert (
+            technique_device.get_readable_formats().get(energy) is Format.CONFIG_SIGNAL
+        )
+        assert (
+            technique_device.get_readable_formats().get(temperature)
+            is Format.CONFIG_SIGNAL
+        )
         assert (yield from bps.rd(energy)) == 7.0
 
         # And forward again drops temperature rather than merging the two
@@ -265,9 +270,14 @@ async def test_settings_round_trip_switches_technique(RE, technique_device, tmp_
             provider, "scan_energy", technique_device
         )
         yield from apply_settings(scanning)
-        assert technique_device.get_readable_format(energy) is Format.HINTED_SIGNAL
+        assert (
+            technique_device.get_readable_formats().get(energy) is Format.HINTED_SIGNAL
+        )
         # Merge, so temperature keeps the format the previous profile gave it
-        assert technique_device.get_readable_format(temperature) is Format.CONFIG_SIGNAL
+        assert (
+            technique_device.get_readable_formats().get(temperature)
+            is Format.CONFIG_SIGNAL
+        )
         assert (yield from bps.rd(energy)) == 9.0
 
     RE(my_plan())
@@ -287,7 +297,9 @@ async def test_settings_file_without_formats_leaves_them_alone(
         yield from apply_settings(settings)
         # Values applied, formats untouched
         assert (yield from bps.rd(energy)) == 3.0
-        assert technique_device.get_readable_format(energy) is Format.CONFIG_SIGNAL
+        assert (
+            technique_device.get_readable_formats().get(energy) is Format.CONFIG_SIGNAL
+        )
 
     RE(my_plan())
 
@@ -313,10 +325,13 @@ async def test_formats_only_file_applies_without_touching_values(
         settings = yield from retrieve_settings(provider, "hinted", technique_device)
         assert dict(settings) == {}
         yield from apply_settings(settings)
-        assert technique_device.get_readable_format(energy) is Format.HINTED_SIGNAL
+        assert (
+            technique_device.get_readable_formats().get(energy) is Format.HINTED_SIGNAL
+        )
         # An explicit null drops it, where omitting it would have left it alone
         assert (
-            technique_device.get_readable_format(technique_device.temperature) is None
+            technique_device.get_readable_formats().get(technique_device.temperature)
+            is None
         )
         assert (yield from bps.rd(energy)) == 7.0
 

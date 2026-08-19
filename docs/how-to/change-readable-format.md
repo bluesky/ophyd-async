@@ -25,8 +25,12 @@ mono.set_readable_format(mono.energy, Format.CONFIG_SIGNAL)
 mono.set_readable_format(mono.energy, None)
 ```
 
-[](#StandardReadable.get_readable_format) reports the current format, returning `None` if
-the child does not contribute.
+[](#StandardReadable.get_readable_formats) reports what is currently registered, keyed by
+child Device, so a child that does not contribute is simply absent:
+
+```python
+mono.get_readable_formats().get(mono.energy)
+```
 
 ```{note}
 Change formats **between runs**, not inside one. A run's descriptor is emitted when the
