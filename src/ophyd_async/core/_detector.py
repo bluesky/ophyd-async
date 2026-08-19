@@ -31,6 +31,7 @@ from ._data_providers import ReadableDataProvider, StreamableDataProvider
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
+    _config_signals,
     _HintedFields,
     _Verb,
 )
@@ -472,7 +473,7 @@ class StandardDetector(
         ):
             config_values = SignalDict()
             to_read: list[SignalR] = []
-            for sig in self.get_config_signals():
+            for sig in _config_signals(self):
                 if settings and sig in settings:
                     # Use value from settings if it is in there
                     # cast to a SignalRW because settings can only contain those
