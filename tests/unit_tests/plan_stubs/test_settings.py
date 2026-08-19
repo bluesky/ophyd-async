@@ -14,6 +14,7 @@ from ophyd_async.core import (
     apply_readable_formats,
     get_mock,
     soft_signal_rw,
+    walk_readable_formats,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.plan_stubs import (
@@ -375,6 +376,59 @@ def test_apply_readable_formats_rejects_non_readable(technique_device):
         apply_readable_formats(technique_device, {"energy": {}})
 
 
+def test_settings_or_merges_formats_per_child(technique_device):
+    # Values merge per signal and apply_readable_formats merges per child, so
+    # `other` must only replace the children it mentions -- overriding a whole
+    # owner would drop children it has nothing to say about
+    base = Settings(
+        technique_device,
+        {technique_device.energy: 1.0},
+        {"<ROOT>": {"energy": Format.CONFIG_SIGNAL, "temperature": Format.CHILD}},
+    )
+    override = Settings(
+        technique_device,
+        {technique_device.temperature: 2.0},
+        {"<ROOT>": {"energy": Format.HINTED_SIGNAL}},
+    )
+    merged = base | override
+    assert merged.readable_formats == {
+        "<ROOT>": {
+            "energy": Format.HINTED_SIGNAL,  # overridden
+            "temperature": Format.CHILD,  # untouched, not dropped
+        }
+    }
+    assert dict(merged) == {
+        technique_device.energy: 1.0,
+        technique_device.temperature: 2.0,
+    }
+    # Neither operand is mutated
+    assert base.readable_formats["<ROOT>"]["energy"] is Format.CONFIG_SIGNAL
+    assert override.readable_formats["<ROOT>"] == {"energy": Format.HINTED_SIGNAL}
+
+
+def test_settings_or_keeps_owners_the_other_does_not_mention(technique_device):
+    base = Settings(technique_device, {}, {"a": {"x": Format.CONFIG_SIGNAL}})
+    override = Settings(technique_device, {}, {"b": {"y": Format.HINTED_SIGNAL}})
+    assert (base | override).readable_formats == {
+        "a": {"x": Format.CONFIG_SIGNAL},
+        "b": {"y": Format.HINTED_SIGNAL},
+    }
+
+
+def test_settings_or_rejects_formats_from_a_sub_device(technique_device):
+    # A sub-device's paths are relative to itself, so <ROOT> would silently come
+    # to mean the parent
+    parent = StandardReadable(name="parent")
+    parent.child = technique_device
+    parent.set_name("parent")
+    base = Settings(parent)
+    sub = Settings(technique_device, {}, {"<ROOT>": {"energy": Format.HINTED_SIGNAL}})
+    with pytest.raises(ValueError, match="paths are relative to it"):
+        base | sub
+    # Without formats it is just a value merge, which is fine
+    assert (base | Settings(technique_device)).readable_formats == {}
+
+
 def test_settings_partition_carries_formats_to_both_halves(technique_device):
     # apply_panda_settings applies only the halves, never the original, so
     # formats must survive on whichever half is applied
@@ -403,6 +457,40 @@ async def test_store_settings_omits_a_readable_that_registers_nothing(RE, tmp_pa
         yield from store_settings(provider, "empty", device)
         with open(tmp_path / "empty.yaml") as f:
             assert yaml.safe_load(f) == {"sig": 1.0}
+
+    RE(my_plan())
+
+
+async def test_store_settings_warns_and_skips_a_readable_outside_the_tree(RE, tmp_path):
+    """A child registered from outside the tree has no path to store it against.
+
+    Its value is not stored either, since store_settings only walks the tree, so
+    it cannot survive a round trip at all. See
+    https://github.com/bluesky/ophyd-async/issues/1402.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    device = StandardReadable(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+    outsider = soft_signal_rw(float, 2.0, name="outsider")
+    device.set_readable_format(device.sig, Format.CONFIG_SIGNAL)
+    device.set_readable_format(outsider, Format.CONFIG_SIGNAL)
+
+    match = "dev: outsider is not within dev"
+    with pytest.warns(UserWarning, match=match):
+        assert walk_readable_formats(device) == {
+            "<ROOT>": {"sig": Format.CONFIG_SIGNAL}
+        }
+
+    def my_plan():
+        with pytest.warns(UserWarning, match=match):
+            yield from store_settings(provider, "outsider", device)
+        with open(tmp_path / "outsider.yaml") as f:
+            # Neither the outsider's format nor its value is stored
+            assert yaml.safe_load(f) == {
+                "sig": 1.0,
+                "<READABLE_FORMATS>": {"<ROOT>": {"sig": "CONFIG_SIGNAL"}},
+            }
 
     RE(my_plan())
 
