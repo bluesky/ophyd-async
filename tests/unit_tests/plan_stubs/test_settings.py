@@ -339,6 +339,40 @@ async def test_formats_only_file_applies_without_touching_values(
     RE(my_plan())
 
 
+async def test_retrieve_settings_ignores_unknown_reserved_keys(
+    RE, technique_device, tmp_path
+):
+    """A key from a newer version is skipped, not reported as an unknown signal.
+
+    No signal path can look like <...>, so there is nothing to reserve up front.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    (tmp_path / "newer.yaml").write_text(
+        "energy: 3.0\n<DEVICE_NAMES>:\n  <ROOT_DEVICE>: mono\n<SOMETHING_ELSE>: 1\n"
+    )
+
+    def my_plan():
+        settings = yield from retrieve_settings(provider, "newer", technique_device)
+        assert dict(settings) == {technique_device.energy: 3.0}
+        yield from apply_settings(settings)
+        assert (yield from bps.rd(technique_device.energy)) == 3.0
+
+    RE(my_plan())
+
+
+async def test_retrieve_settings_still_rejects_a_genuine_typo(
+    RE, technique_device, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+    (tmp_path / "typo.yaml").write_text("energyy: 3.0\n")
+
+    def my_plan():
+        with pytest.raises(NameError, match=r"Unknown signal names \['energyy'\]"):
+            yield from retrieve_settings(provider, "typo", technique_device)
+
+    RE(my_plan())
+
+
 async def test_store_settings_walks_nested_devices(RE, tmp_path):
     provider = YamlSettingsProvider(tmp_path)
     inner = StandardReadable(name="inner")

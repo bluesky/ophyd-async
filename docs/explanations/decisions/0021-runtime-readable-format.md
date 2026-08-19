@@ -130,13 +130,17 @@ reserved key, which means "change no formats". Each part being independently opt
 makes a hand-written formats-only profile work, changing technique without writing a value
 to hardware.
 
-**The reserved keys cannot collide.** `<READABLE_FORMATS>` and `<DEVICE_NAMES>` start with
-`<`, which cannot begin a Python identifier, so no attribute assignment can produce a
-colliding path — no store-time guard is required. `<` is also not a YAML indicator, so
-unlike `*FORMATS*` or `%FORMATS%` the key needs no quoting. `<ROOT_DEVICE>` replaces `""` as the
-root owner for the same reason and because an empty-string key makes PyYAML emit its
-hard-to-read explicit `? '' :` form. `<DEVICE_NAMES>` is reserved but unwritten, so storing
-names later needs no migration.
+**The reserved keys cannot collide.** `<READABLE_FORMATS>` starts with `<`, which cannot
+begin a Python identifier, so no attribute assignment can produce a colliding path — no
+store-time guard is required. `<` is also not a YAML indicator, so unlike `*FORMATS*` or
+`%FORMATS%` the key needs no quoting. `<ROOT_DEVICE>` replaces `""` as the root owner for the same
+reason and because an empty-string key makes PyYAML emit its hard-to-read explicit
+`? '' :` form.
+
+Because no path can look like `<...>`, `retrieve_settings` drops *every* such key rather
+than only the one it understands. So a key written by a newer version — device names, say
+— is ignored by an older one instead of being reported as an unknown signal, and adding
+one later needs no migration and no constant reserved up front.
 
 **The formats section is two levels while values are flat.** A value is intrinsic to one
 path; a format is a fact about an (owner, child) *pair*, and the same child can be
