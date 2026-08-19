@@ -369,14 +369,26 @@ def soft_signal_rw(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param setter:
-        Optional callable performing the set action. May return the settled
+        Optional callable performing the set action. May be sync or async; an
+        async setter is awaited before the put completes. May return the settled
         value; if it returns None and a getter is configured, the getter is
         called to refresh the cache.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.
+
+    :example:
+    ```python
+    def read_position() -> float: ...
+
+    async def move_to(position: float) -> float: ...
+
+    # getter and setter can independently be sync or async
+    signal = soft_signal_rw(float, getter=read_position, setter=move_to)
+    ```
     """
     backend = SoftSignalBackend(
         datatype,
@@ -413,7 +425,8 @@ def soft_signal_r_and_setter(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.
