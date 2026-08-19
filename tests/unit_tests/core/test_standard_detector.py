@@ -99,11 +99,12 @@ class DeadtimeTriggerLogic(DetectorTriggerLogic):
     def __init__(self, deadtime_signal: SignalR[float]):
         self.deadtime_signal = deadtime_signal
 
-    def deadtime_sigs(self) -> set[SignalR]:
-        return {self.deadtime_signal}
-
     def get_deadtime(self, config_values: SignalDict) -> float:
-        """Return the deadtime from the signal value."""
+        """Return the deadtime from the signal value.
+
+        The signal reaches us because the detector registers it as
+        CONFIG_SIGNAL, not because this logic nominates it.
+        """
         return config_values[self.deadtime_signal]
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
@@ -205,6 +206,10 @@ async def test_get_trigger_deadtime(
     det = StandardDetector()
     if trigger_logic:
         det.add_detector_logics(trigger_logic)
+    if isinstance(trigger_logic, DeadtimeTriggerLogic):
+        # A logic that needs a signal declares it as configuration; the logic
+        # no longer nominates signals separately
+        det.set_readable_format(trigger_logic.deadtime_signal, Format.CONFIG_SIGNAL)
     triggers, deadtime = await det.get_trigger_deadtime()
     assert triggers == expected_triggers
     assert deadtime == expected_deadtime
@@ -220,6 +225,7 @@ async def test_get_trigger_deadtime_with_settings():
     det.sig = deadtime_signal
     tl = DeadtimeTriggerLogic(deadtime_signal)
     det.add_detector_logics(tl)
+    det.set_readable_format(deadtime_signal, Format.CONFIG_SIGNAL)
 
     # Verify initial deadtime from signal
     triggers, deadtime = await det.get_trigger_deadtime()

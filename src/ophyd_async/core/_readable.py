@@ -370,6 +370,28 @@ class StandardReadable(
             # changing a format does not reorder `hints`
             self._readables[device] = format
 
+    def get_config_signals(self) -> set[SignalR]:
+        """Return every `Signal` contributing to `read_configuration()`.
+
+        Recurses into children registered as
+        [](#StandardReadableFormat.CHILD), so a Device that registers a
+        sub-Device whole picks up whatever that sub-Device declares as
+        configuration.
+
+        Unlike [](#walk_config_signals) this reads the registry rather than
+        calling `read_configuration()`, so it does no I/O and includes
+        read-only `SignalR`s as well as `SignalRW`s.
+        """
+        signals: set[SignalR] = set()
+        for device, format in self._readables.items():
+            if format is StandardReadableFormat.CONFIG_SIGNAL:
+                signals.add(_as_signal_r(device))
+            elif format is StandardReadableFormat.CHILD and isinstance(
+                device, StandardReadable
+            ):
+                signals |= device.get_config_signals()
+        return signals
+
     def reset_readable_formats(self) -> None:
         """Undo every runtime format change, back to how the class declared them.
 

@@ -199,8 +199,10 @@ If we wanted to support external triggering, we would also implement:
 - `prepare_level()` for external level/gate triggering (high level duration determines exposure)
 
 We could also implement:
-- `get_deadtime()` to calculate the minimum time between exposures based on configuration
-- `config_sigs()` to return signals that should appear in read_configuration()
+- `get_deadtime()` to calculate the minimum time between exposures. It is given the value
+  of every signal the detector reports as configuration, so a signal it needs must be
+  declared with [](#StandardReadableFormat.CONFIG_SIGNAL) like on any other
+  [](#StandardReadable) — the trigger logic does not nominate signals itself
 - `default_trigger_info()` to return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (governed by [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE)).
 
 ### `BlobAcquireLogic`
