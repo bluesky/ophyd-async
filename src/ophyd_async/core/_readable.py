@@ -364,6 +364,33 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             self.set_readable_format(device, format)
 
 
+def _config_signals(device: Device) -> set[SignalR]:
+    """Return every `Signal` contributing to a Device's `read_configuration()`.
+
+    Recurses into children registered as [](#StandardReadableFormat.CHILD), so
+    a Device that registers a sub-Device whole picks up whatever that
+    sub-Device declares as configuration. A Device that is not a
+    `StandardReadable` contributes nothing.
+
+    Unlike `walk_config_signals` this reads the registry rather than calling
+    `read_configuration()`, so it does no I/O and includes read-only `SignalR`s
+    as well as `SignalRW`s -- `ADBaseIO.model` is a `SignalR`, and it is
+    exactly the signal an areaDetector trigger logic needs for deadtime.
+
+    Deliberately private and unexported: #1367 restructures detector logic, so
+    what the public shape of this should be is not settled yet.
+    """
+    signals: set[SignalR] = set()
+    if not isinstance(device, StandardReadable):
+        return signals
+    for child, format in device._readables.items():  # noqa: SLF001
+        if format is StandardReadableFormat.CONFIG_SIGNAL:
+            signals.add(_as_signal_r(child))
+        elif format is StandardReadableFormat.CHILD:
+            signals |= _config_signals(child)
+    return signals
+
+
 class _UncachedRead:
     def __init__(self, signal: SignalR) -> None:
         self.signal = signal

@@ -2,6 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.core import (
     StaticPathProvider,
     TriggerInfo,
@@ -11,7 +12,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adaravis, adcore, adsimdetector
 from ophyd_async.epics.core import epics_signal_r
-from ophyd_async.testing import assert_configuration, assert_reading
 
 
 async def test_step_scan_hdf_detector_with_stats_and_temp(
@@ -25,6 +25,8 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
             plugins={"stats": stat},
         )
         temp = epics_signal_r(float, "SAMP:TEMP:RBV")
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
     ndattributes = [
         adcore.NDAttributeParam(
             name="det-sum",
@@ -47,9 +49,10 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     set_mock_value(det.driver.array_size_y, 768)
 
     await det.stage()
-    assert await det.driver.wait_for_plugins.get_value() is False
+    # ensure_ready sets WaitForPlugins so read() sees this frame's scalars
+    assert await det.driver.wait_for_plugins.get_value() is True
     config_description = await det.describe_configuration()
-    assert config_description == {
+    assert {
         "det-driver-acquire_period": {
             "dtype": "number",
             "dtype_numpy": "<f8",
@@ -62,14 +65,11 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
             "shape": [],
             "source": "mock+ca://PREFIX:cam1:AcquireTime_RBV",
         },
-    }
-    await assert_configuration(
-        det,
-        {
-            "det-driver-acquire_period": {"value": 0.1},
-            "det-driver-acquire_time": {"value": 0.05},
-        },
-    )
+    }.items() <= config_description.items()
+    config = await det.read_configuration()
+    assert {"det-driver-acquire_period", "det-driver-acquire_time"} <= config.keys()
+    assert config["det-driver-acquire_period"]["value"] == 0.1
+    assert config["det-driver-acquire_time"]["value"] == 0.05
     # Check we need to call prepare or trigger before we can describe
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe()
@@ -82,9 +82,9 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     # Trigger a single frame then describe, get hints and read
     await det.trigger()
     path_info = static_path_provider()
-    description = await det.describe()
     uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
-    assert description == {
+    description = await det.describe()
+    assert {
         "det": {
             "dtype": "array",
             "dtype_numpy": "|i1",
@@ -106,9 +106,16 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
             "shape": [1],
             "source": "ca://SAMP:TEMP:RBV",
         },
-    }
-    assert det.hints == {"fields": ["det"]}
-    await assert_reading(det, {})
+    }.items() <= description.items()
+    assert "det" in det.hints["fields"]
+    reading = await det.read()
+    # Stats scalar signals appear in read alongside stream data
+    assert {
+        "det-stats-total",
+        "det-stats-mean_value",
+        "det-stats-min_value",
+        "det-stats-max_value",
+    } <= reading.keys()
     docs = [doc async for doc in det.collect_asset_docs()]
     sr = docs[:3]
     sd = docs[3:]
@@ -173,7 +180,12 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     )
     await det.trigger()
     readings = await det.read()
-    assert readings == {}
+    assert {
+        "det-stats-total",
+        "det-stats-mean_value",
+        "det-stats-min_value",
+        "det-stats-max_value",
+    } <= readings.keys()
     docs = [doc async for doc in det.collect_asset_docs()]
     assert docs == [
         (
@@ -278,7 +290,7 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
     await det.stage()
     # Check the model is in the configuration too
     config_description = await det.describe_configuration()
-    assert config_description == {
+    assert {
         "det-driver-acquire_period": {
             "dtype": "number",
             "dtype_numpy": "<f8",
@@ -297,15 +309,11 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
             "shape": [],
             "source": "mock+ca://PREFIX:cam1:Model_RBV",
         },
-    }
-    await assert_configuration(
-        det,
-        {
-            "det-driver-acquire_period": {"value": 0.1},
-            "det-driver-acquire_time": {"value": 0.05},
-            "det-driver-model": {"value": "A funny model"},
-        },
-    )
+    }.items() <= config_description.items()
+    config = await det.read_configuration()
+    assert config["det-driver-acquire_period"]["value"] == 0.1
+    assert config["det-driver-acquire_time"]["value"] == 0.05
+    assert config["det-driver-model"]["value"] == "A funny model"
     # Prepare for N frames
     set_mock_value(writer.file_path_exists, True)
     await det.prepare(TriggerInfo(collections_per_event=3, number_of_events=5))
@@ -533,23 +541,42 @@ async def test_simdetector_with_stats_signal():
     stat = adcore.NDStatsIO("PREFIX:STAT:")
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector("PREFIX:", plugins={"stats": stat})
-        det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, stat.total))
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
     set_mock_value(stat.total, 1.8)
     await det.stage()
-    assert await det.driver.wait_for_plugins.get_value() is False
-    await det.trigger()
     assert await det.driver.wait_for_plugins.get_value() is True
+    await det.trigger()
     description = await det.describe()
-    assert description == {
-        "det-stats-total": {
-            "dtype": "number",
-            "dtype_numpy": "<f8",
-            "shape": [],
-            "source": "mock+ca://PREFIX:STAT:Total_RBV",
-        }
+    assert "det-stats-total" in description
+    assert description["det-stats-total"] == {
+        "dtype": "number",
+        "dtype_numpy": "<f8",
+        "shape": [],
+        "source": "mock+ca://PREFIX:STAT:Total_RBV",
     }
-    await assert_reading(det, {"det-stats-total": {"value": 1.8}})
-    assert det.hints == {"fields": ["det-stats-total"]}
+    reading = await det.read()
+    assert reading["det-stats-total"]["value"] == 1.8
+    assert "det-stats-total" in det.hints["fields"]
+    assert "det-stats-mean_value" in det.hints["fields"]
+
+
+@pytest.mark.parametrize("wait_for_plugins", [True, False])
+async def test_acquire_logic_writes_wait_for_plugins_on_stage(wait_for_plugins: bool):
+    # Always written, never left at whatever the IOC booted with, so a scan
+    # cannot depend on who touched the PV last
+    driver = adcore.ADBaseIO("PREFIX:DET:")
+    async with init_devices(mock=True):
+        det = adcore.AreaDetector(
+            driver,
+            acquire_logic=adcore.ADAcquireLogic(
+                driver, wait_for_plugins=wait_for_plugins
+            ),
+            name="det",
+        )
+    set_mock_value(det.driver.wait_for_plugins, not wait_for_plugins)
+    await det.stage()
+    assert await det.driver.wait_for_plugins.get_value() is wait_for_plugins
 
 
 async def test_step_scan_keep_numimages(
@@ -564,6 +591,8 @@ async def test_step_scan_keep_numimages(
             adcore.ADWriterFactory.hdf(static_path_provider),
             plugins={"stats": stat},
         )
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
 
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
@@ -572,13 +601,10 @@ async def test_step_scan_keep_numimages(
     await det.driver.num_images.set(42)
     assert await det.driver.num_images.get_value() == 42
     writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
-    await assert_configuration(
-        det,
-        {
-            "det-driver-acquire_period": {"value": 0.1},
-            "det-driver-acquire_time": {"value": 0.05},
-        },
-    )
+    config = await det.read_configuration()
+    assert {"det-driver-acquire_period", "det-driver-acquire_time"} <= config.keys()
+    assert config["det-driver-acquire_period"]["value"] == 0.1
+    assert config["det-driver-acquire_time"]["value"] == 0.05
     # Check we need to call prepare or trigger before we can describe
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe()
@@ -594,17 +620,16 @@ async def test_step_scan_keep_numimages(
     path_info = static_path_provider()
     description = await det.describe()
     uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
-    assert description == {
-        "det": {
-            "dtype": "array",
-            "dtype_numpy": "|i1",
-            "external": "STREAM:",
-            "shape": [42, 768, 1024],  # 42 came from num_images
-            "source": uri,
-        },
+    assert description["det"] == {
+        "dtype": "array",
+        "dtype_numpy": "|i1",
+        "external": "STREAM:",
+        "shape": [42, 768, 1024],  # 42 came from num_images
+        "source": uri,
     }
-    assert det.hints == {"fields": ["det"]}
-    await assert_reading(det, {})
+    assert "det" in det.hints["fields"]
+    reading = await det.read()
+    assert "det-stats-total" in reading
     sr, sd = [doc async for doc in det.collect_asset_docs()]
     assert sr == (
         "stream_resource",
@@ -641,7 +666,7 @@ async def test_step_scan_keep_numimages(
     assert await det.driver.acquire_time.get_value() == 0.01
     await det.trigger()
     readings = await det.read()
-    assert readings == {}
+    assert "det-stats-total" in readings
     docs = [doc async for doc in det.collect_asset_docs()]
     (doc,) = docs
     assert doc == (

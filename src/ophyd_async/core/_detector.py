@@ -31,6 +31,7 @@ from ._data_providers import ReadableDataProvider, StreamableDataProvider
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
+    _config_signals,
     _HintedFields,
     _Verb,
 )
@@ -135,19 +136,22 @@ class DetectorTriggerLogic:
     - Multi-exposure collection batching
 
     Subclasses must implement the appropriate `prepare_*` method for any trigger
-    mode the detector supports, `get_deadtime` if it supports external
-    triggering, and `config_sigs` if the deadtime would vary according to
-    detector parameters.
+    mode the detector supports, and `get_deadtime` if it supports external
+    triggering.
     """
-
-    def config_sigs(self) -> set[SignalR]:
-        """Return the signals that should appear in read_configuration."""
-        return set()
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         """Return the deadtime in seconds for the detector.
 
-        :param config_values: the value of each signal in `config_sigs`
+        :param config_values:
+            The value of every `Signal` the detector reports as configuration,
+            i.e. everything registered with
+            [](#StandardReadableFormat.CONFIG_SIGNAL), including those declared
+            on children registered as [](#StandardReadableFormat.CHILD). A
+            logic that needs a signal must make sure it is declared as
+            configuration, rather than nominating it separately: the values
+            that determine deadtime are exactly the ones that ought to be
+            recorded for the scan anyway.
         """
         raise NotImplementedError(self)
 
@@ -425,9 +429,6 @@ class StandardDetector(
                 self._trigger_logic = logic
                 # Store the triggers that are supported
                 self._supported_triggers = _get_supported_triggers(logic)
-                # Add the config signals it needs
-                for sig in logic.config_sigs():
-                    self.set_readable_format(sig, StandardReadableFormat.CONFIG_SIGNAL)
             elif isinstance(logic, DetectorAcquireLogic):
                 if self._acquire_logic is not None:
                     raise RuntimeError("Detector already has acquire logic")
@@ -458,6 +459,12 @@ class StandardDetector(
     ) -> tuple[set[DetectorTrigger], float | None]:
         """Get supported trigger types and deadtime for the detector.
 
+        The trigger logic is given the value of every signal this detector
+        reports as configuration, rather than nominating the ones it wants:
+        the values that determine deadtime are exactly the ones that ought to
+        be recorded for the scan anyway, so a second list to keep in step
+        earned nothing.
+
         :param settings: Optional settings to use when getting configuration values
         :return: Tuple of supported trigger types and deadtime in seconds
         """
@@ -465,14 +472,23 @@ class StandardDetector(
             self._trigger_logic.get_deadtime
         ):
             config_values = SignalDict()
-            for sig in self._trigger_logic.config_sigs():
+            to_read: list[SignalR] = []
+            for sig in _config_signals(self):
                 if settings and sig in settings:
                     # Use value from settings if it is in there
                     # cast to a SignalRW because settings can only contain those
                     config_values[sig] = settings[cast(SignalRW, sig)]
                 else:
-                    # Get the value live
-                    config_values[sig] = await sig.get_value()
+                    to_read.append(sig)
+            # Read live values concurrently: this is now every configuration
+            # signal rather than a handful the logic named, so doing it in
+            # series would be one round trip per signal
+            for sig, value in zip(
+                to_read,
+                await asyncio.gather(*(sig.get_value() for sig in to_read)),
+                strict=True,
+            ):
+                config_values[sig] = value
             deadtime = self._trigger_logic.get_deadtime(config_values)
         else:
             deadtime = None
