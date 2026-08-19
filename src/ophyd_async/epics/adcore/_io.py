@@ -171,17 +171,11 @@ class NDROIIO(StandardReadable, NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
     """
 
-    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
-    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
-    size_x: A[SignalR[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalR[int], PvSuffix.rbv("SizeY")]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX"), Format.CONFIG_SIGNAL]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY"), Format.CONFIG_SIGNAL]
+    size_x: A[SignalR[int], PvSuffix.rbv("SizeX"), Format.CONFIG_SIGNAL]
+    size_y: A[SignalR[int], PvSuffix.rbv("SizeY"), Format.CONFIG_SIGNAL]
     size_z: A[SignalR[int], PvSuffix.rbv("SizeZ")]
-
-    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
-        super().__init__(prefix, with_pvi, name)
-        self.add_readables(
-            [self.min_x, self.min_y, self.size_x, self.size_y], Format.CONFIG_SIGNAL
-        )
 
 
 class NDStatsIO(StandardReadable, NDPluginBaseIO):
@@ -192,64 +186,53 @@ class NDStatsIO(StandardReadable, NDPluginBaseIO):
     """
 
     # Basic statistics
-    compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
-    bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
-    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
-    min_x: A[SignalR[float], PvSuffix("MinX_RBV")]
-    min_y: A[SignalR[float], PvSuffix("MinY_RBV")]
-    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
-    max_x: A[SignalR[float], PvSuffix("MaxX_RBV")]
-    max_y: A[SignalR[float], PvSuffix("MaxY_RBV")]
-    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    compute_statistics: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeStatistics"), Format.CONFIG_SIGNAL
+    ]
+    bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth"), Format.CONFIG_SIGNAL]
+    min_value: A[
+        SignalR[float], PvSuffix("MinValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    min_x: A[SignalR[float], PvSuffix("MinX_RBV"), Format.UNCACHED_SIGNAL]
+    min_y: A[SignalR[float], PvSuffix("MinY_RBV"), Format.UNCACHED_SIGNAL]
+    max_value: A[
+        SignalR[float], PvSuffix("MaxValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    max_x: A[SignalR[float], PvSuffix("MaxX_RBV"), Format.UNCACHED_SIGNAL]
+    max_y: A[SignalR[float], PvSuffix("MaxY_RBV"), Format.UNCACHED_SIGNAL]
+    mean_value: A[
+        SignalR[float], PvSuffix("MeanValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
     sigma: A[SignalR[float], PvSuffix("Sigma_RBV")]
-    total: A[SignalR[float], PvSuffix("Total_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
     net: A[SignalR[float], PvSuffix("Net_RBV")]
     # Centroid statistics
-    compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
-    centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
+    compute_centroid: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeCentroid"), Format.CONFIG_SIGNAL
+    ]
+    centroid_threshold: A[
+        SignalRW[float], PvSuffix.rbv("CentroidThreshold"), Format.CONFIG_SIGNAL
+    ]
     centroid_x: A[SignalR[float], PvSuffix("CentroidX_RBV")]
     centroid_y: A[SignalR[float], PvSuffix("CentroidY_RBV")]
     sigma_x: A[SignalR[float], PvSuffix("SigmaX_RBV")]
     sigma_y: A[SignalR[float], PvSuffix("SigmaY_RBV")]
     sigma_xy: A[SignalR[float], PvSuffix("SigmaXY_RBV")]
     # X and Y Profiles
-    compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
+    compute_profiles: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeProfiles"), Format.CONFIG_SIGNAL
+    ]
     profile_size_x: A[SignalR[int], PvSuffix("ProfileSizeX_RBV")]
     profile_size_y: A[SignalR[int], PvSuffix("ProfileSizeY_RBV")]
-    cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX")]
-    cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY")]
+    cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX"), Format.CONFIG_SIGNAL]
+    cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY"), Format.CONFIG_SIGNAL]
     # Array Histogram
-    compute_histogram: A[SignalRW[bool], PvSuffix.rbv("ComputeHistogram")]
-    hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize")]
-    hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
-    hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
-
-    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
-        super().__init__(prefix, with_pvi, name)
-        self.add_readables(
-            [
-                self.compute_statistics,
-                self.bgd_width,
-                self.compute_centroid,
-                self.centroid_threshold,
-                self.compute_profiles,
-                self.cursor_x,
-                self.cursor_y,
-                self.compute_histogram,
-                self.hist_size,
-                self.hist_min,
-                self.hist_max,
-            ],
-            Format.CONFIG_SIGNAL,
-        )
-        self.add_readables(
-            [self.total, self.mean_value, self.min_value, self.max_value],
-            Format.HINTED_UNCACHED_SIGNAL,
-        )
-        self.add_readables(
-            [self.min_x, self.min_y, self.max_x, self.max_y],
-            Format.UNCACHED_SIGNAL,
-        )
+    compute_histogram: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeHistogram"), Format.CONFIG_SIGNAL
+    ]
+    hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize"), Format.CONFIG_SIGNAL]
+    hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin"), Format.CONFIG_SIGNAL]
+    hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax"), Format.CONFIG_SIGNAL]
 
 
 class NDROIStatNIO(StandardReadable, EpicsDevice):
@@ -260,26 +243,21 @@ class NDROIStatNIO(StandardReadable, EpicsDevice):
     """
 
     name_: A[SignalRW[str], PvSuffix("Name")]
-    use: A[SignalRW[bool], PvSuffix.rbv("Use")]
-    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
-    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
-    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
-    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
-    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
-    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
-    total: A[SignalR[float], PvSuffix("Total_RBV")]
-
-    def __init__(self, prefix: str = "", with_pvi: bool = False, name: str = ""):
-        super().__init__(prefix, with_pvi, name)
-        self.add_readables(
-            [self.use, self.min_x, self.min_y, self.size_x, self.size_y],
-            Format.CONFIG_SIGNAL,
-        )
-        self.add_readables(
-            [self.min_value, self.max_value, self.mean_value, self.total],
-            Format.HINTED_UNCACHED_SIGNAL,
-        )
+    use: A[SignalRW[bool], PvSuffix.rbv("Use"), Format.CONFIG_SIGNAL]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX"), Format.CONFIG_SIGNAL]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY"), Format.CONFIG_SIGNAL]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX"), Format.CONFIG_SIGNAL]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY"), Format.CONFIG_SIGNAL]
+    min_value: A[
+        SignalR[float], PvSuffix("MinValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    max_value: A[
+        SignalR[float], PvSuffix("MaxValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    mean_value: A[
+        SignalR[float], PvSuffix("MeanValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
 
 
 class NDROIStatIO(NDPluginBaseIO):

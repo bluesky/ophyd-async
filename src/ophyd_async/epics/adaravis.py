@@ -59,9 +59,6 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     driver: AravisDriverIO
     override_deadtime: float | None = None
 
-    def deadtime_sigs(self) -> set[SignalR]:
-        return {self.driver.model}
-
     def get_deadtime(self, config_values: SignalDict) -> float:
         return get_camera_deadtime(
             model=config_values[self.driver.model],
