@@ -372,6 +372,12 @@ class StandardDetector(
     [](#StandardReadable.set_readable_format), exactly as on any other
     `StandardReadable`; data produced by a `DetectorDataLogic` is added on top
     of those in `read()` and `describe()`.
+
+    `read()` and `describe()` require `prepare()` to have run, and raise
+    otherwise, so that a descriptor can never be emitted without the detector's
+    data keys. `trigger()` prepares implicitly, so a step scan never has to do
+    it explicitly. `read_configuration()` and `describe_configuration()` have no
+    such requirement.
     """
 
     # Logic for the detector
@@ -746,6 +752,19 @@ class StandardDetector(
 
         StandardReadable gathers these alongside the registered children, so
         the verb methods themselves need no overriding.
+
+        Raising when nothing has been prepared is deliberate, and predates
+        registered children being readable at all: a detector that has not been
+        prepared has no data keys, so a `describe()` that quietly succeeded
+        would emit a descriptor missing the detector's data. In practice
+        `trigger()` prepares implicitly, so `trigger_and_read` never reaches
+        this. `read_configuration()` and `describe_configuration()` are
+        unaffected, as this hook only feeds the data verbs.
+
+        The cost is that the *registered children* are unreachable through
+        `read()`/`describe()` until then too, since this raises before the
+        registry is consulted. That is accepted rather than worked around:
+        reading an unprepared detector is already defined as an error.
         """
         if verb not in (_Verb.DESCRIBE, _Verb.READ):
             return

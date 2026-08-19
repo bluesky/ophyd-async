@@ -57,11 +57,24 @@ a driver, a plugin list and a path provider.
 
 ## Decision
 
-### The registry holds `(device, format)` pairs
+### The registry is a `{device: format}` dict
 
-`StandardReadable._readables` is a tuple of pairs in registration order, and the callables
-for each verb are derived on demand. `add_readables` becomes a thin wrapper over a new
-`set_readable_format(device, format)`, and `format=None` removes the device.
+`StandardReadable._readables` maps each registered child to its format, in registration
+order, and the callables for each verb are derived on demand. `add_readables` becomes a
+thin wrapper over a new `set_readable_format(device, format)`, and `format=None` removes
+the device. `get_readable_formats()` returns a copy.
+
+Keying by `Device` is identity keying, which is what a registry of children needs: `Device`
+does not override `__eq__`, and while `DeviceVector` and `DeviceMap` inherit a value based
+`__eq__` from `Mapping`, they hash by `id()` — injective over live objects, so two distinct
+devices never share a hash and `__eq__` is never reached.
+
+A tuple of `(device, format)` pairs was tried first, for immutability. It made
+`set_readable_format` rebuild and rescan the whole tuple, so registering *n* children was
+O(n²) — 2000 signals cost 77 ms at construction, against 13 ms for the dict. The registry
+is a `@cached_property`, matching `Device._child_devices`, because `AreaDetector` and
+`add_children_as_readables` register children *before* calling `super().__init__()`, so
+anything assigned in `__init__` would discard them.
 
 Deriving on demand also fixes staging: `stage()` walks the current registry rather than a
 tuple captured at registration, so a format changed between runs takes effect on the next
