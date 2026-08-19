@@ -3,6 +3,7 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Iterator, Sequence
 from contextlib import contextmanager
 from enum import Enum
+from functools import cached_property
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -92,10 +93,23 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
     changed at runtime with [](#StandardReadable.set_readable_format).
     """
 
-    # The registered children, in registration order. Immutable so that it cannot
-    # be accidentally shared between instances of the class, and so that a runtime
-    # format change swaps the whole tuple rather than mutating shared state.
-    _readables: tuple[tuple[Device, StandardReadableFormat], ...] = ()
+    @cached_property
+    def _readables(self) -> dict[Device, StandardReadableFormat]:
+        """The registered children and their formats, in registration order.
+
+        A `cached_property` rather than an attribute set in `__init__`, because
+        `add_children_as_readables` and `set_readable_format` are routinely
+        called *before* `super().__init__()` (e.g. `AreaDetector`), so anything
+        `__init__` assigned would discard them. It also keeps each instance's
+        registry its own, where a mutable class attribute would be shared.
+
+        Keying by Device is identity keying, which is what a registry of
+        children needs: `Device` does not override `__eq__`, and while
+        `DeviceVector` and `DeviceMap` inherit a value based `__eq__` from
+        `Mapping`, they hash by `id()`. That is injective over live objects, so
+        two distinct devices never share a hash and `__eq__` is never reached.
+        """
+        return {}
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -116,7 +130,7 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         # HINTED_SIGNAL stages so that caching is set up and read() is fast; a
         # CHILD stages because it may have staging of its own. The uncached and
         # config formats deliberately do not.
-        for device, format in self._readables:
+        for device, format in self._readables.items():
             if format in _STAGED_FORMATS and isinstance(device, AsyncStageable):
                 yield device
 
@@ -133,7 +147,7 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
     def _funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
         """Derive the callables contributing to one verb from the registry."""
         yield from self._extra_funcs_for(verb)
-        for device, format in self._readables:
+        for device, format in self._readables.items():
             match format:
                 case StandardReadableFormat.CHILD:
                     if verb in _CONFIG_VERBS and isinstance(device, AsyncConfigurable):
@@ -195,7 +209,7 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
 
     def _hint_sources(self) -> Iterator[HasHints]:
         yield from self._extra_hint_sources()
-        for device, format in self._readables:
+        for device, format in self._readables.items():
             match format:
                 case StandardReadableFormat.CHILD if isinstance(device, HasHints):
                     yield device
@@ -311,8 +325,12 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
                 raise TypeError(f"{format} is not a StandardReadableFormat")
             if format is not StandardReadableFormat.CHILD:
                 _as_signal_r(device)
-        kept = tuple((d, f) for d, f in self._readables if d is not device)
-        self._readables = kept if format is None else (*kept, (device, format))
+        if format is None:
+            self._readables.pop(device, None)
+        else:
+            # Re-formatting an already registered child keeps its position, so
+            # changing a format does not reorder `hints`
+            self._readables[device] = format
 
     def get_readable_formats(self) -> dict[Device, StandardReadableFormat]:
         """Return the registered children and their formats, in registration order.
