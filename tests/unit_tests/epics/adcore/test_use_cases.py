@@ -2,6 +2,7 @@ from unittest.mock import ANY
 
 import pytest
 
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.core import (
     StaticPathProvider,
     TriggerInfo,
@@ -24,6 +25,8 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
             plugins={"stats": stat},
         )
         temp = epics_signal_r(float, "SAMP:TEMP:RBV")
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
     ndattributes = [
         adcore.NDAttributeParam(
             name="det-sum",
@@ -46,7 +49,6 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     set_mock_value(det.driver.array_size_y, 768)
 
     await det.stage()
-    assert await det.driver.wait_for_plugins.get_value() is False
     config_description = await det.describe_configuration()
     assert {
         "det-driver-acquire_period": {
@@ -537,11 +539,11 @@ async def test_simdetector_with_stats_signal():
     stat = adcore.NDStatsIO("PREFIX:STAT:")
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector("PREFIX:", plugins={"stats": stat})
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
     set_mock_value(stat.total, 1.8)
     await det.stage()
-    assert await det.driver.wait_for_plugins.get_value() is False
     await det.trigger()
-    assert await det.driver.wait_for_plugins.get_value() is True
     description = await det.describe()
     assert "det-stats-total" in description
     assert description["det-stats-total"] == {
@@ -568,6 +570,8 @@ async def test_step_scan_keep_numimages(
             adcore.ADWriterFactory.hdf(static_path_provider),
             plugins={"stats": stat},
         )
+    # Plugins are not registered automatically; opt this one in
+    det.set_readable_format(stat, Format.CHILD)
 
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
