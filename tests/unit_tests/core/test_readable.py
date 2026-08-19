@@ -334,6 +334,38 @@ async def test_get_readable_formats_omits_unregistered_children():
     assert sr.get_readable_formats() == {sr.other: Format.HINTED_SIGNAL}
 
 
+async def test_readables_registered_before_super_init_survive():
+    # AreaDetector registers config signals before calling super().__init__(),
+    # so the registry must not be created there. It must also be per instance.
+    class Dev(StandardReadable):
+        def __init__(self, name=""):
+            self.sig, _ = soft_signal_r_and_setter(int, 0, name="sig")
+            self.set_readable_format(self.sig, Format.HINTED_SIGNAL)
+            super().__init__(name=name)
+
+    a, b = Dev(name="a"), Dev(name="b")
+    assert a.get_readable_formats() == {a.sig: Format.HINTED_SIGNAL}
+    assert b.get_readable_formats() == {b.sig: Format.HINTED_SIGNAL}
+    assert a.get_readable_formats() != b.get_readable_formats()
+
+    b.set_readable_format(b.sig, None)
+    assert a.get_readable_formats() == {a.sig: Format.HINTED_SIGNAL}
+    assert b.get_readable_formats() == {}
+
+
+async def test_set_readable_format_keeps_position_when_reformatting():
+    # Changing a format must not reorder hints
+    sr = StandardReadable(name="sr")
+    sr.one, _ = soft_signal_r_and_setter(int, 0, name="one")
+    sr.two, _ = soft_signal_r_and_setter(int, 0, name="two")
+    sr.set_readable_format(sr.one, Format.HINTED_SIGNAL)
+    sr.set_readable_format(sr.two, Format.HINTED_SIGNAL)
+    assert sr.hints == {"fields": [sr.one.name, sr.two.name]}
+
+    sr.set_readable_format(sr.one, Format.HINTED_UNCACHED_SIGNAL)
+    assert sr.hints == {"fields": [sr.one.name, sr.two.name]}
+
+
 async def test_set_readable_format_affects_staging_of_later_runs():
     sr = StandardReadable(name="sr")
     sr.sig, _ = soft_signal_r_and_setter(int, 0, name="sig")
