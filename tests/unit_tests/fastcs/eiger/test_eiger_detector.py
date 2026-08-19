@@ -50,7 +50,7 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.fp.data_datatype.put("uint16"),
             call.od.fp.frames.put(0),
             call.od.block_size.put(100000),
-            call.pixel_mask.put(str(tmp_path) + "/filename_meta.h5//mask"),
+            call.pixel_mask.put(str(tmp_path / "filename_meta.h5") + "//mask"),
             call.od.fp.start_writing.execute(),
         ],
         reset_after=False,
