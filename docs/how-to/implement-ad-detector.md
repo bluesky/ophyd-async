@@ -26,11 +26,14 @@ Implement methods for each trigger mode your detector supports:
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
 Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 
-If the detector has configuration values that should be captured in the scan then implement:
-- `config_sigs()` - Return the set of signals that should appear in read_configuration()
+Configuration values that should be captured in the scan are declared on the IO class,
+with [](#StandardReadableFormat.CONFIG_SIGNAL), exactly as on any other
+[](#StandardReadable) — the trigger logic does not nominate them.
 
 If you support external triggering you should also implement:
-- `get_deadtime(config_values)` - Calculate the minimum time between exposures based on configuration values
+- `get_deadtime(config_values)` - Calculate the minimum time between exposures. It is
+  given the value of *every* signal the detector reports as configuration, so a signal
+  it needs must be declared with [](#StandardReadableFormat.CONFIG_SIGNAL).
 
 To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
