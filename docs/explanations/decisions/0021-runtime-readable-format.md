@@ -77,6 +77,40 @@ statement running during `add_readables`; deriving the callables on demand moves
 comparison to the first `read()` instead. Rather than keep a shim alive to preserve where
 the warning fires, they go — they have been deprecated since well before this change.
 
+### Runtime changes can be undone, and the baseline is sealed by a metaclass
+
+@oliwenmandiamond raised that a class declaring `sig_a` as hinted, then having that
+changed at runtime, makes the class definition misleading. Two safeguards were proposed:
+making class-declared formats immutable unless opted out, or a separate
+`StandardDynamicReadable`.
+
+Both were rejected, because static-by-default blocks the case this ADR exists for: #1394's
+motivating example is a monochromator whose `energy` is *declared in the class* as
+configuration and which one technique wants hinted. Locking it precisely because it was
+declared would mean a beamline had to get the Device class changed to switch technique, and
+the "allow dynamic" decision would be made by whoever is furthest from the technique.
+@jwlodek made the same call from the other side: ophyd v1 has always been mutable, v1
+codebases at NSLS-II make extensive use of changing `kind` at runtime, and behaviour
+differences between the two libraries are a cost they do not want.
+
+What was adopted instead is @oliwenmandiamond's and @jwlodek's counter-proposal:
+[](#StandardReadable.reset_readable_formats) puts a Device back to what its class declared,
+so a plan that retunes a Device can undo it without recording what it changed.
+
+**The baseline is sealed by a metaclass**, not at the end of `StandardReadable.__init__`.
+Formats can be declared in three places: annotations, applied inside `Device.__init__`;
+registration a subclass does *before* its `super().__init__()`, which is what all 24
+in-tree Devices do; and registration it does *after*, which nothing in tree does but which
+is legal. `type.__call__` runs the whole `__init__` chain before returning, and is the only
+point after all three. Snapshotting at the end of `StandardReadable.__init__` was measured
+to miss the third, and the symptom would be `reset_readable_formats` silently dropping a
+child the class had declared. `Device` already has a metaclass (`_ProtocolMeta`, from the
+`HasName` Protocol), so this adds no new machinery to the hierarchy.
+
+The reset is per-Device rather than per-tree, pairing with `set_readable_format` rather
+than with `apply_readable_formats`, and its baseline is the class declaration rather than
+the last applied settings file — so it discards a stored technique too.
+
 ### Format changes apply between runs, not within one
 
 A run's descriptor is emitted at its start, and `HINTED_SIGNAL` sets up monitoring in
