@@ -334,6 +334,82 @@ async def test_get_readable_formats_omits_unregistered_children():
     assert sr.get_readable_formats() == {sr.other: Format.HINTED_SIGNAL}
 
 
+async def test_reset_readable_formats_undoes_runtime_changes():
+    class Dev(StandardReadable):
+        def __init__(self, name=""):
+            self.energy, _ = soft_signal_r_and_setter(float, 0.0, name="energy")
+            self.temp, _ = soft_signal_r_and_setter(float, 0.0, name="temp")
+            self.set_readable_format(self.energy, Format.CONFIG_SIGNAL)
+            self.set_readable_format(self.temp, Format.CONFIG_SIGNAL)
+            super().__init__(name=name)
+
+    dev = Dev(name="dev")
+    dev.extra, _ = soft_signal_r_and_setter(float, 0.0, name="extra")
+    declared = dev.get_readable_formats()
+
+    # Change one, drop one, add one that was never declared
+    dev.set_readable_format(dev.energy, Format.HINTED_SIGNAL)
+    dev.set_readable_format(dev.temp, None)
+    dev.set_readable_format(dev.extra, Format.HINTED_SIGNAL)
+    assert dev.get_readable_formats() == {
+        dev.energy: Format.HINTED_SIGNAL,
+        dev.extra: Format.HINTED_SIGNAL,
+    }
+
+    dev.reset_readable_formats()
+    assert dev.get_readable_formats() == declared
+    # Repeatable, and the baseline is not consumed
+    dev.set_readable_format(dev.energy, None)
+    dev.reset_readable_formats()
+    assert dev.get_readable_formats() == declared
+
+
+async def test_reset_readable_formats_keeps_registrations_after_super_init():
+    # The reason the baseline is sealed by the metaclass rather than at the end
+    # of StandardReadable.__init__: this registration happens after super() and
+    # is still part of what the class declares
+    class Dev(StandardReadable):
+        def __init__(self, name=""):
+            self.before, _ = soft_signal_r_and_setter(int, 0, name="before")
+            self.set_readable_format(self.before, Format.CONFIG_SIGNAL)
+            super().__init__(name=name)
+            self.after, _ = soft_signal_r_and_setter(int, 0, name="after")
+            self.set_readable_format(self.after, Format.HINTED_SIGNAL)
+
+    dev = Dev(name="dev")
+    expected = {dev.before: Format.CONFIG_SIGNAL, dev.after: Format.HINTED_SIGNAL}
+    assert dev.get_readable_formats() == expected
+
+    dev.set_readable_format(dev.after, None)
+    dev.reset_readable_formats()
+    assert dev.get_readable_formats() == expected
+
+
+async def test_reset_readable_formats_restores_annotated_declarations():
+    sr = StandardReadable(name="sr")
+    sr.sig, _ = soft_signal_r_and_setter(int, 0, name="sig")
+    # Nothing declared, so a runtime registration resets away entirely
+    sr.set_readable_format(sr.sig, Format.HINTED_SIGNAL)
+    sr.reset_readable_formats()
+    assert sr.get_readable_formats() == {}
+
+
+async def test_default_readable_formats_are_not_shared_between_instances():
+    class Dev(StandardReadable):
+        def __init__(self, name=""):
+            self.sig, _ = soft_signal_r_and_setter(int, 0, name="sig")
+            self.set_readable_format(self.sig, Format.CONFIG_SIGNAL)
+            super().__init__(name=name)
+
+    a, b = Dev(name="a"), Dev(name="b")
+    a.set_readable_format(a.sig, None)
+    a.reset_readable_formats()
+    b.reset_readable_formats()
+    assert a.get_readable_formats() == {a.sig: Format.CONFIG_SIGNAL}
+    assert b.get_readable_formats() == {b.sig: Format.CONFIG_SIGNAL}
+    assert StandardReadable._default_readables == {}
+
+
 async def test_readables_registered_before_super_init_survive():
     # AreaDetector registers config signals before calling super().__init__(),
     # so the registry must not be created there. It must also be per instance.

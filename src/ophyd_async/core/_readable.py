@@ -80,7 +80,40 @@ _STAGED_FORMATS = frozenset(
 )
 
 
-class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints):
+class _SealDefaultFormatsMeta(type(_StandardBase)):  # type: ignore[misc]
+    """Record the formats a `StandardReadable` was constructed with.
+
+    `type.__call__` runs `__new__` and then the *whole* `__init__` chain before
+    returning, which is the only point that is after every place a format can
+    be declared:
+
+    - annotations, applied by `create_children_from_annotations` inside
+      `Device.__init__`
+    - registration a subclass does *before* calling `super().__init__()`, which
+      is what all 24 in-tree Devices do
+    - registration a subclass does *after* it, which nothing in tree does but
+      which is perfectly legal
+
+    Snapshotting at the end of `StandardReadable.__init__` would silently miss
+    the third, and the symptom would be
+    [](#StandardReadable.reset_readable_formats) dropping a child the class had
+    declared. Devices are already built on a metaclass (`_ProtocolMeta`, from
+    the `HasName` Protocol), so this adds no new machinery to the hierarchy.
+    """
+
+    def __call__(cls, *args, **kwargs):
+        self = super().__call__(*args, **kwargs)
+        self._default_readables = dict(self._readables)
+        return self
+
+
+class StandardReadable(
+    _StandardBase,
+    AsyncReadable,
+    AsyncConfigurable,
+    HasHints,
+    metaclass=_SealDefaultFormatsMeta,
+):
     """Device that provides selected child Device values in `read()`.
 
     Provides the ability for children to be registered to:
@@ -110,6 +143,11 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
         two distinct devices never share a hash and `__eq__` is never reached.
         """
         return {}
+
+    # The formats declared during construction, sealed by the metaclass once
+    # __init__ has fully returned. Only ever replaced, never mutated in place,
+    # so the shared class level default is safe.
+    _default_readables: dict[Device, StandardReadableFormat] = {}
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -331,6 +369,37 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             # Re-formatting an already registered child keeps its position, so
             # changing a format does not reorder `hints`
             self._readables[device] = format
+
+    def reset_readable_formats(self) -> None:
+        """Undo every runtime format change, back to how the class declared them.
+
+        The baseline is everything registered by the time construction
+        finished: annotations, `add_children_as_readables`, and any
+        [](#StandardReadable.set_readable_format) an `__init__` made. Anything
+        done after that -- switching a child between config and hinted,
+        dropping one with a format of `None`, registering a new one -- is
+        undone.
+
+        Intended for a Device that is retuned per technique, so a scan can put
+        it back without knowing what it changed.
+
+        This resets **this Device only**, not its children; it is the
+        counterpart of `set_readable_format` rather than of
+        [](#apply_readable_formats). To reset a whole tree:
+
+        ```python
+        for dev in walk_devices(detector).values():
+            if isinstance(dev, StandardReadable):
+                dev.reset_readable_formats()
+        ```
+
+        The baseline is the *class declaration*, not the last stored settings
+        file, so this discards a technique loaded by [](#apply_settings) too.
+        """
+        # Mutated rather than replaced, so the cached_property stays the same
+        # object and nothing holding a reference sees a stale registry
+        self._readables.clear()
+        self._readables.update(self._default_readables)
 
     def get_readable_formats(self) -> dict[Device, StandardReadableFormat]:
         """Return the registered children and their formats, in registration order.

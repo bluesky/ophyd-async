@@ -32,6 +32,34 @@ child Device, so a child that does not contribute is simply absent:
 mono.get_readable_formats().get(mono.energy)
 ```
 
+## Putting it back
+
+[](#StandardReadable.reset_readable_formats) undoes every runtime change, back to
+how the class declared things — annotations, `add_children_as_readables`, and
+anything the Device's own `__init__` registered:
+
+```python
+mono.set_readable_format(mono.energy, Format.HINTED_SIGNAL)  # retune for a technique
+...
+mono.reset_readable_formats()  # back to the class defaults
+```
+
+So a plan that retunes a Device can put it back without having to record what it
+changed. It resets that Device only, not its children — to do a whole tree:
+
+```python
+from ophyd_async.core import walk_devices
+
+for dev in walk_devices(detector).values():
+    if isinstance(dev, StandardReadable):
+        dev.reset_readable_formats()
+```
+
+```{note}
+The baseline is the *class declaration*, not the last file you loaded, so this
+also discards a technique applied with [](#apply_settings).
+```
+
 ```{note}
 Change formats **between runs**, not inside one. A run's descriptor is emitted when the
 run starts, and [](#StandardReadableFormat.HINTED_SIGNAL) begins monitoring in `stage()`,
