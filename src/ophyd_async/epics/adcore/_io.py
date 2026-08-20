@@ -179,7 +179,7 @@ class NDProcessIO(NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html
     """
 
-    enable_scale: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableOffsetScale")]
+    enable_offset_scale: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableOffsetScale")]
     scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
