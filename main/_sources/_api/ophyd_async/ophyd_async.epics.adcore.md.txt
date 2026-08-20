@@ -914,7 +914,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} size_x
 :canonical: ophyd_async.epics.adcore._io.NDROIIO.size_x
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ophyd_async.epics.core.PvSuffix.rbv('SizeX')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('SizeX')]
 :value: >
    None
 
@@ -925,7 +925,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} size_y
 :canonical: ophyd_async.epics.adcore._io.NDROIIO.size_y
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ophyd_async.epics.core.PvSuffix.rbv('SizeY')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('SizeY')]
 :value: >
    None
 
@@ -936,11 +936,44 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} size_z
 :canonical: ophyd_async.epics.adcore._io.NDROIIO.size_z
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ophyd_async.epics.core.PvSuffix.rbv('SizeZ')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('SizeZ')]
 :value: >
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDROIIO.size_z
+```
+
+````
+
+````{py:attribute} bin_x
+:canonical: ophyd_async.epics.adcore._io.NDROIIO.bin_x
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('BinX')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDROIIO.bin_x
+```
+
+````
+
+````{py:attribute} bin_y
+:canonical: ophyd_async.epics.adcore._io.NDROIIO.bin_y
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('BinY')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDROIIO.bin_y
+```
+
+````
+
+````{py:attribute} bin_z
+:canonical: ophyd_async.epics.adcore._io.NDROIIO.bin_z
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('BinZ')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDROIIO.bin_z
 ```
 
 ````

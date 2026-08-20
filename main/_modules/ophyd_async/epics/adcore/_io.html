@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.2.dev5+g336836f98 documentation</title>
+    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.2.dev6+gabf0b496a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=b716efb1"></script>
+    <script src="../../../../_static/documentation_options.js?v=d9b7a659"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev5+g336836f98 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev5+g336836f98 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev6+gabf0b496a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev6+gabf0b496a documentation - Home"/>
   
   
 </a></div>
@@ -1086,10 +1086,25 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">size_x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeX&quot;</span><span class="p">)]</span>
-    <span class="n">size_y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeY&quot;</span><span class="p">)]</span>
-    <span class="n">size_z</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeZ&quot;</span><span class="p">)]</span></div>
+    <span class="n">size_x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeX&quot;</span><span class="p">)]</span>
+    <span class="n">size_y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeY&quot;</span><span class="p">)]</span>
+    <span class="n">size_z</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeZ&quot;</span><span class="p">)]</span>
 
+    <span class="n">bin_x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BinX&quot;</span><span class="p">)]</span>
+    <span class="n">bin_y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BinY&quot;</span><span class="p">)]</span>
+    <span class="n">bin_z</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BinZ&quot;</span><span class="p">)]</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NDProcessIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for performing processing on an NDArrray.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDProcess.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">enable_offset_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnableDisable</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableOffsetScale&quot;</span><span class="p">)]</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Scale&quot;</span><span class="p">)]</span>
 
 
 <div class="viewcode-block" id="NDStatsIO">
