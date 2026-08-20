@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; ophyd-async 0.21.2.dev7+g5fc22eda6 documentation</title>
+    <title>A crash course on asyncio &#8212; ophyd-async 0.21.2.dev7+g5fc22eda6 documentation</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/installation';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/asyncio';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -60,8 +60,8 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="A crash course on asyncio" href="asyncio.html" />
-    <link rel="prev" title="Tutorials" href="../tutorials.html" />
+    <link rel="next" title="Using Devices" href="using-devices.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -424,8 +424,8 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asyncio.html">A crash course on asyncio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">A crash course on asyncio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementing-devices.html">Implementing Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
@@ -473,7 +473,7 @@
     
     <li class="breadcrumb-item"><a href="../tutorials.html" class="nav-link">Tutorials</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Installation</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">A crash course on asyncio</span></li>
   </ul>
 </nav>
 </div>
@@ -490,55 +490,166 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<section id="check-your-version-of-python">
-<h2>Check your version of python<a class="headerlink" href="#check-your-version-of-python" title="Link to this heading">#</a></h2>
-<p>You will need python 3.11 or later. You can check your version of python by
-typing into a terminal:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 --version
-</pre></div>
-</div>
-</section>
-<section id="create-a-virtual-environment">
-<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Link to this heading">#</a></h2>
-<p>It is recommended that you install into a “virtual environment” so this
-installation will not interfere with any existing Python software:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m venv /path/to/venv
-$ source /path/to/venv/bin/activate
-</pre></div>
-</div>
-</section>
-<section id="installing-the-library">
-<h2>Installing the library<a class="headerlink" href="#installing-the-library" title="Link to this heading">#</a></h2>
-<p>You can now use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the library and its dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async
-</pre></div>
-</div>
-<p>If you need to talk to a given control system, you will need to install
-the specific extra:</p>
+  <section id="a-crash-course-on-asyncio">
+<span id="asyncio-primer"></span><h1>A crash course on asyncio<a class="headerlink" href="#a-crash-course-on-asyncio" title="Link to this heading">#</a></h1>
+<p>Ophyd-async uses Python’s <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.14">asyncio</a> library to communicate
+with many pieces of hardware without blocking while any one of them responds.
+This page gives you enough asyncio vocabulary to follow the ophyd-async
+tutorials. It assumes that you can already write and call ordinary Python
+functions.</p>
+<p>By the end, you will be able to:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ca</span></code> for EPICS Channel Access</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pva</span></code> for EPICS PVAccess</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tango</span></code> for Tango</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sim</span></code> for simulated device requirements like h5py</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">demo</span></code> for tutorial requirements like ipython and matplotlib</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">testing</span></code> for testing requirements like pytest</p></li>
+<li><p>recognize the async syntax used by ophyd-async;</p></li>
+<li><p>decide whether operations should happen in sequence or concurrently; and</p></li>
+<li><p>enter async code correctly from a script, IPython, a test, or a Bluesky plan.</p></li>
 </ul>
-<p>E.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async[ca,sim,demo]
+<section id="why-ophyd-async-uses-asyncio">
+<h2>Why ophyd-async uses asyncio<a class="headerlink" href="#why-ophyd-async-uses-asyncio" title="Link to this heading">#</a></h2>
+<p>Hardware control contains a lot of waiting: a network request is in flight, a
+motor is moving, or a detector is acquiring. Threads can overlap those waits,
+but coordinating many threads requires locks and other synchronization. Asyncio
+instead makes the places where code may wait explicit. While one operation is
+waiting, an <strong>event loop</strong> can let another operation make progress.</p>
+<p>Ophyd-async normally gets this concurrency from one event-loop thread, so it
+does not need one operating-system thread per device operation. This also makes
+interruption and cleanup more predictable. For a direct comparison with threads,
+see <a class="reference internal" href="../explanations/design-goals.html"><span class="std std-doc">Design goals and differences with ophyd sync</span></a>.</p>
+<p>Asyncio is best suited to this kind of input/output (I/O) concurrency. It does
+not make long CPU-bound calculations run in parallel. A blocking function also
+blocks the event-loop thread, so use async library calls inside async code.</p>
+</section>
+<section id="define-and-await-a-coroutine">
+<h2>Define and await a coroutine<a class="headerlink" href="#define-and-await-a-coroutine" title="Link to this heading">#</a></h2>
+<p>An <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> statement defines a <strong>coroutine function</strong>. Calling it creates a
+coroutine object, which represents work that can be run later. It does not run
+the function immediately.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> ready&quot;</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">read_sensor</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>If you require a feature that is not currently released you can also install
-from github:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install git+https://github.com/bluesky/ophyd-async.git
+<p>The <code class="docutils literal notranslate"><span class="pre">await</span></code> expression waits for an <strong>awaitable</strong> such as a coroutine, an
+<code class="docutils literal notranslate"><span class="pre">asyncio.Task</span></code>, or many ophyd-async status objects. If that operation needs to
+wait, the current coroutine is suspended and the event loop can run other work.
+When the operation finishes, <code class="docutils literal notranslate"><span class="pre">await</span></code> produces its result or raises its exception.</p>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">read_sensor(...)</span></code> without awaiting or scheduling the returned coroutine
+would not run it. Python will normally warn that the coroutine was never awaited.
+Except for environments that support top-level <code class="docutils literal notranslate"><span class="pre">await</span></code>, use <code class="docutils literal notranslate"><span class="pre">await</span></code> inside an
+<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> function.</p>
+</section>
+<section id="call-synchronous-hardware-apis">
+<h2>Call synchronous hardware APIs<a class="headerlink" href="#call-synchronous-hardware-apis" title="Link to this heading">#</a></h2>
+<p>Some third-party hardware libraries provide only blocking, synchronous methods.
+Calling one directly from a coroutine stops every task on the event-loop thread
+until it returns. <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.to_thread</span></code></a> lets the function run in a separate
+thread while the event loop continues:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">blocking_detector</span><span class="o">.</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The library should now be installed and the commandline interface on your path.
-You can check the version that has been installed by typing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m ophyd_async --version
+<p>Pass the function itself to <code class="docutils literal notranslate"><span class="pre">to_thread()</span></code>, followed by any positional or keyword
+arguments, rather than calling the function first:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">blocking_motor</span><span class="o">.</span><span class="n">move</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Prefer an async API when the library provides one. Otherwise, use <code class="docutils literal notranslate"><span class="pre">to_thread()</span></code>
+for blocking I/O after checking that the library supports calls from a worker
+thread. It is not normally a way to parallelize CPU-bound Python code.</p>
+</section>
+<section id="choose-sequence-or-concurrency">
+<h2>Choose sequence or concurrency<a class="headerlink" href="#choose-sequence-or-concurrency" title="Link to this heading">#</a></h2>
+<p>Two <code class="docutils literal notranslate"><span class="pre">await</span></code> expressions in a row are sequential. The second operation starts
+after the first has finished:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">temperature</span> <span class="o">=</span> <span class="k">await</span> <span class="n">temperature_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<span class="n">pressure</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pressure_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>When operations are independent, <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.gather" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.gather</span></code></a> can run them concurrently:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+    <span class="n">temperature_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+    <span class="n">pressure_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>On success, <code class="docutils literal notranslate"><span class="pre">gather()</span></code> returns results in the same order as its arguments, even
+if the operations finish in a different order. An exception is raised to the
+code awaiting <code class="docutils literal notranslate"><span class="pre">gather()</span></code>.</p>
+<p>Use sequential awaits when one operation depends on the previous result. Use
+<code class="docutils literal notranslate"><span class="pre">gather()</span></code> only when the operations are independent and the hardware supports
+them happening at the same time. Concurrency changes ordering; it is not merely
+a performance switch.</p>
+</section>
+<section id="recognize-the-other-async-keywords">
+<h2>Recognize the other async keywords<a class="headerlink" href="#recognize-the-other-async-keywords" title="Link to this heading">#</a></h2>
+<p>Async code has two more forms that allow waiting at points where ordinary Python
+cannot:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> enters and exits an <strong>asynchronous context manager</strong>. Either step
+may await setup or cleanup. For example, <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> lets <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a>
+connect devices when it is called from an async function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
+    <span class="n">detector</span> <span class="o">=</span> <span class="n">MyDetector</span><span class="p">(</span><span class="s2">&quot;DEVICE-PREFIX&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> consumes an <strong>asynchronous iterator</strong>. Each iteration may await the
+next value. Ophyd-async uses this pattern to observe signal updates:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>The ordinary <code class="docutils literal notranslate"><span class="pre">with</span></code> and <code class="docutils literal notranslate"><span class="pre">for</span></code> forms are still appropriate when entering,
+exiting, or advancing cannot require an async wait.</p>
+</section>
+<section id="enter-async-code-in-the-right-place">
+<h2>Enter async code in the right place<a class="headerlink" href="#enter-async-code-in-the-right-place" title="Link to this heading">#</a></h2>
+<p>How you start async work depends on the environment:</p>
+<ul class="simple">
+<li><p><strong>Script:</strong> define one outer <code class="docutils literal notranslate"><span class="pre">main()</span></code> coroutine and call
+<code class="docutils literal notranslate"><span class="pre">asyncio.run(main())</span></code>. This creates an event loop, runs <code class="docutils literal notranslate"><span class="pre">main()</span></code>, and closes the
+loop. Do not call <code class="docutils literal notranslate"><span class="pre">asyncio.run()</span></code> from code that is already inside a running
+event loop.</p></li>
+<li><p><strong>IPython:</strong> use top-level <code class="docutils literal notranslate"><span class="pre">await</span></code>, such as
+<code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">detector.read()</span></code>. When an IPython session also has a Bluesky RunEngine,
+<code class="docutils literal notranslate"><span class="pre">autoawait_in_bluesky_event_loop()</span></code> makes top-level awaits use the RunEngine’s
+event loop. The <a class="reference internal" href="using-devices.html"><span class="std std-doc">Using Devices</span></a> tutorial configures this for you.</p></li>
+<li><p><strong>Pytest:</strong> write an <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span> <span class="pre">test_...</span></code> and await device methods inside it.
+The <a class="reference internal" href="writing-tests-for-devices.html"><span class="std std-doc">Writing Tests for Devices</span></a> tutorial shows the required
+<code class="docutils literal notranslate"><span class="pre">pytest-asyncio</span></code> configuration.</p></li>
+<li><p><strong>Bluesky plan:</strong> plans are generator functions driven by the RunEngine. Use
+<code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> with Bluesky plan stubs rather than directly awaiting device
+methods. The RunEngine coordinates the plan with ophyd-async’s async device
+operations.</p></li>
+</ul>
+</section>
+<section id="avoid-common-mistakes">
+<h2>Avoid common mistakes<a class="headerlink" href="#avoid-common-mistakes" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>If you see <code class="docutils literal notranslate"><span class="pre">coroutine</span> <span class="pre">was</span> <span class="pre">never</span> <span class="pre">awaited</span></code>, find the coroutine call and either
+await it or deliberately schedule and later await it.</p></li>
+<li><p>Do not use <code class="docutils literal notranslate"><span class="pre">time.sleep()</span></code> in async code; it blocks every task on the event-loop
+thread. Use <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">asyncio.sleep()</span></code> when you need an async delay.</p></li>
+<li><p>Do not add <code class="docutils literal notranslate"><span class="pre">asyncio.run()</span></code> around a call in IPython or other code that already
+has a running event loop. Use <code class="docutils literal notranslate"><span class="pre">await</span></code> there.</p></li>
+<li><p>Do not make dependent or mutually exclusive hardware operations concurrent.
+Preserve their required order with separate <code class="docutils literal notranslate"><span class="pre">await</span></code> expressions.</p></li>
+</ul>
+<p>You now have the asyncio concepts needed for <a class="reference internal" href="using-devices.html"><span class="std std-doc">Using Devices</span></a>. For more
+device-specific patterns, see <a class="reference internal" href="../how-to/interact-with-signals.html"><span class="std std-doc">How to interact with signals and commands while implementing bluesky verbs</span></a>. The
+<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.14">Python asyncio documentation</a> covers the full standard
+library.</p>
 </section>
 </section>
 
@@ -553,20 +664,20 @@ You can check the version that has been installed by typing:</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../tutorials.html"
+       href="installation.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Tutorials</p>
+        <p class="prev-next-title">Installation</p>
       </div>
     </a>
     <a class="right-next"
-       href="asyncio.html"
+       href="using-devices.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">A crash course on asyncio</p>
+        <p class="prev-next-title">Using Devices</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -589,9 +700,13 @@ You can check the version that has been installed by typing:</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-your-version-of-python">Check your version of python</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-virtual-environment">Create a virtual environment</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-the-library">Installing the library</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-ophyd-async-uses-asyncio">Why ophyd-async uses asyncio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-and-await-a-coroutine">Define and await a coroutine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-synchronous-hardware-apis">Call synchronous hardware APIs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-sequence-or-concurrency">Choose sequence or concurrency</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recognize-the-other-async-keywords">Recognize the other async keywords</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enter-async-code-in-the-right-place">Enter async code in the right place</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#avoid-common-mistakes">Avoid common mistakes</a></li>
 </ul>
   </nav></div>
 
@@ -599,7 +714,7 @@ You can check the version that has been installed by typing:</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/tutorials/installation.md">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/tutorials/asyncio.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -614,7 +729,7 @@ You can check the version that has been installed by typing:</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/tutorials/installation.md.txt">
+    <a href="../_sources/tutorials/asyncio.md.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

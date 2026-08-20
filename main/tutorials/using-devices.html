@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using Devices &#8212; ophyd-async 0.21.2.dev6+gabf0b496a documentation</title>
+    <title>Using Devices &#8212; ophyd-async 0.21.2.dev7+g5fc22eda6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=d9b7a659"></script>
+    <script src="../_static/documentation_options.js?v=8c85c806"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Implementing Devices" href="implementing-devices.html" />
-    <link rel="prev" title="Installation" href="installation.html" />
+    <link rel="prev" title="A crash course on asyncio" href="asyncio.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev6+gabf0b496a documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev6+gabf0b496a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev7+g5fc22eda6 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev7+g5fc22eda6 documentation - Home"/>
   
   
 </a></div>
@@ -425,6 +425,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asyncio.html">A crash course on asyncio</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Using Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementing-devices.html">Implementing Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
@@ -560,6 +561,7 @@ In [1]:
 </pre></div>
 </div>
 <p>But if we try to call any of the other methods like <code class="docutils literal notranslate"><span class="pre">read()</span></code> we will see that it doesn’t return the value, but a <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#coroutine" title="Python 3.14">coroutine</a>:</p>
+<p>If coroutines and <code class="docutils literal notranslate"><span class="pre">await</span></code> are new to you, first read <a class="reference internal" href="asyncio.html#asyncio-primer"><span class="std std-ref">A crash course on asyncio</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">coroutine</span> <span class="nb">object</span> <span class="n">StandardReadable</span><span class="o">.</span><span class="n">read</span> <span class="n">at</span> <span class="mh">0x7f9c5c105220</span><span class="o">&gt;</span>
 </pre></div>
@@ -595,27 +597,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 8     Time: 2026-08-20 08:21:12</span>
-<span class="go">Persistent Unique Scan ID: &#39;5cc581a5-7875-4c7d-9bdf-4fd64214abb8&#39;</span>
+<span class="go">Transient Scan ID: 8     Time: 2026-08-20 11:41:44</span>
+<span class="go">Persistent Unique Scan ID: &#39;02205359-b497-4834-ae95-b377bd6d186a&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">|         1 | 08:21:12.6 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">|         2 | 08:21:14.4 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
-<span class="go">|         3 | 08:21:15.3 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">|         4 | 08:21:16.2 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
-<span class="go">|         5 | 08:21:17.2 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
-<span class="go">|         6 | 08:21:18.1 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
-<span class="go">|         7 | 08:21:19.0 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">|         8 | 08:21:19.9 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
-<span class="go">|         9 | 08:21:20.8 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">|         1 | 11:41:44.6 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">|         2 | 11:41:46.5 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
+<span class="go">|         3 | 11:41:47.3 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">|         4 | 11:41:48.1 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
+<span class="go">|         5 | 11:41:48.9 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
+<span class="go">|         6 | 11:41:49.6 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
+<span class="go">|         7 | 11:41:50.4 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">|         8 | 11:41:51.2 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
+<span class="go">|         9 | 11:41:52.0 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan [&#39;5cc581a5&#39;] (scan num: 8)</span>
+<span class="go">generator grid_scan [&#39;02205359&#39;] (scan num: 8)</span>
 
 
 
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;5cc581a5-7875-4c7d-9bdf-4fd64214abb8&#39;,), plan_result=&#39;5cc581a5-7875-4c7d-9bdf-4fd64214abb8&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;02205359-b497-4834-ae95-b377bd6d186a&#39;,), plan_result=&#39;02205359-b497-4834-ae95-b377bd6d186a&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/sim_grid_scan.png"><img alt="../_images/sim_grid_scan.png" src="../_images/sim_grid_scan.png" style="width: 4in;" />
@@ -625,27 +627,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 9     Time: 2026-08-20 08:21:22</span>
-<span class="go">Persistent Unique Scan ID: &#39;8ed111fd-b47d-4185-b26f-cb7506573142&#39;</span>
+<span class="go">Transient Scan ID: 9     Time: 2026-08-20 11:41:53</span>
+<span class="go">Persistent Unique Scan ID: &#39;9efe22f3-a05a-4899-baf1-aad8953f23d5&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">|         1 | 08:21:22.1 |      1.000 |      2.000 |</span>
-<span class="go">|         2 | 08:21:22.2 |      1.000 |      2.500 |</span>
-<span class="go">|         3 | 08:21:22.2 |      1.000 |      3.000 |</span>
-<span class="go">|         4 | 08:21:22.3 |      1.500 |      2.000 |</span>
-<span class="go">|         5 | 08:21:22.3 |      1.500 |      2.500 |</span>
-<span class="go">|         6 | 08:21:22.3 |      1.500 |      3.000 |</span>
-<span class="go">|         7 | 08:21:22.4 |      2.000 |      2.000 |</span>
-<span class="go">|         8 | 08:21:22.4 |      2.000 |      2.500 |</span>
-<span class="go">|         9 | 08:21:22.5 |      2.000 |      3.000 |</span>
+<span class="go">|         1 | 11:41:53.1 |      1.000 |      2.000 |</span>
+<span class="go">|         2 | 11:41:53.2 |      1.000 |      2.500 |</span>
+<span class="go">|         3 | 11:41:53.2 |      1.000 |      3.000 |</span>
+<span class="go">|         4 | 11:41:53.2 |      1.500 |      2.000 |</span>
+<span class="go">|         5 | 11:41:53.3 |      1.500 |      2.500 |</span>
+<span class="go">|         6 | 11:41:53.3 |      1.500 |      3.000 |</span>
+<span class="go">|         7 | 11:41:53.4 |      2.000 |      2.000 |</span>
+<span class="go">|         8 | 11:41:53.4 |      2.000 |      2.500 |</span>
+<span class="go">|         9 | 11:41:53.5 |      2.000 |      3.000 |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan [&#39;8ed111fd&#39;] (scan num: 9)</span>
+<span class="go">generator grid_scan [&#39;9efe22f3&#39;] (scan num: 9)</span>
 
 
 
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;8ed111fd-b47d-4185-b26f-cb7506573142&#39;,), plan_result=&#39;8ed111fd-b47d-4185-b26f-cb7506573142&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;9efe22f3-a05a-4899-baf1-aad8953f23d5&#39;,), plan_result=&#39;9efe22f3-a05a-4899-baf1-aad8953f23d5&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -735,12 +737,12 @@ In [1]:
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="installation.html"
+       href="asyncio.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Installation</p>
+        <p class="prev-next-title">A crash course on asyncio</p>
       </div>
     </a>
     <a class="right-next"
