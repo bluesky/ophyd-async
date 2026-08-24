@@ -1114,7 +1114,7 @@ Bases: {py:obj}`typing.Protocol`\[{py:obj}`bluesky.protocols.T_co`\]
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncMovable
 ```
 
-````{py:method} set(value: ~bluesky.protocols.T_co) -> ~ophyd_async.core._status.AsyncStatus
+````{py:method} set(value: ~bluesky.protocols.T_co) -> ~ophyd_async.core._status.AsyncStatusBase
 :canonical: ophyd_async.core._protocol.AsyncMovable.set
 :abstractmethod:
 
@@ -1163,7 +1163,7 @@ Bases: {py:obj}`typing.Protocol`
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable
 ```
 
-````{py:method} stage() -> ~ophyd_async.core._status.AsyncStatus
+````{py:method} stage() -> ~ophyd_async.core._status.AsyncStatusBase
 :canonical: ophyd_async.core._protocol.AsyncStageable.stage
 :abstractmethod:
 
@@ -1172,7 +1172,7 @@ Bases: {py:obj}`typing.Protocol`
 
 ````
 
-````{py:method} unstage() -> ~ophyd_async.core._status.AsyncStatus
+````{py:method} unstage() -> ~ophyd_async.core._status.AsyncStatusBase
 :canonical: ophyd_async.core._protocol.AsyncStageable.unstage
 :abstractmethod:
 
