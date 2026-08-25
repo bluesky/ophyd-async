@@ -9,20 +9,13 @@ import time
 from asyncio import CancelledError
 from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic
 
 from bluesky.protocols import Status
 
 from ._device import Device
 from ._protocol import Watcher
-from ._utils import Callback, P, T, WatcherUpdate
-
-# `wrap` is a classmethod on a generic class, so it needs a TypeVar of its own:
-# reusing the class-scoped `T` would make it solve to Unknown at the point where
-# `wrap` is accessed on the unparameterised class. `R` is a status result type,
-# `W` the type of the values a watchable status reports to its watchers.
-R = TypeVar("R")
-W = TypeVar("W")
+from ._utils import Callback, P, R, T, W, WatcherUpdate
 
 
 class AsyncStatusBase(Status, Awaitable[T]):
@@ -203,6 +196,11 @@ class AsyncStatus(AsyncStatusBase[T]):
                 await asyncio.sleep(1)
         ```
         """
+        # The result type comes from `R`, not the class-scoped `T`: pyright solves
+        # class TypeVars at the point of attribute access, and `wrap` is accessed on
+        # the unparameterised class, so `T` is already Unknown by the time `f` is
+        # seen. Annotating `cls` as `type[AsyncStatus[R]]` would feed that same
+        # Unknown straight back into `R`, hence `Any`.
 
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus[R]:

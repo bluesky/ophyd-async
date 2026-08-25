@@ -161,6 +161,8 @@ obj_ignore = [
     "ophyd_async.core._utils.P.kwargs",
     "ophyd_async.core._utils.T",
     "ophyd_async.core._utils.V",
+    "ophyd_async.core._utils.R",
+    "ophyd_async.core._utils.W",
     "ophyd_async.epics.core._epics_connector._PvPrefixDeviceConnector",
     "ophyd_async.core._utils.T_co",
     "ophyd_async.epics.adcore._core_logic.ADBaseIOT",
