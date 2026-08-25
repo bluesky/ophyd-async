@@ -24,10 +24,6 @@ from pydantic import BaseModel, ConfigDict
 T = TypeVar("T")
 T_co = TypeVar("T_co", covariant=True)
 V = TypeVar("V")
-# The result type of a status, and the type of the values a watchable status
-# reports to its watchers
-R = TypeVar("R")
-W = TypeVar("W")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0

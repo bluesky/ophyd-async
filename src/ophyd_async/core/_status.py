@@ -15,7 +15,7 @@ from bluesky.protocols import Status
 
 from ._device import Device
 from ._protocol import Watcher
-from ._utils import Callback, P, R, T, W, WatcherUpdate
+from ._utils import Callback, P, T, V, WatcherUpdate
 
 
 class AsyncStatusBase(Status, Awaitable[T]):
@@ -182,8 +182,8 @@ class AsyncStatus(AsyncStatusBase[T]):
 
     @classmethod
     def wrap(
-        cls: type[AsyncStatus[Any]], f: Callable[P, Coroutine[Any, Any, R]]
-    ) -> Callable[P, AsyncStatus[R]]:
+        cls: type[AsyncStatus[Any]], f: Callable[P, Coroutine[Any, Any, V]]
+    ) -> Callable[P, AsyncStatus[V]]:
         """Wrap an async function in an AsyncStatus and return it.
 
         Used to make an async function conform to a bluesky protocol.
@@ -196,14 +196,14 @@ class AsyncStatus(AsyncStatusBase[T]):
                 await asyncio.sleep(1)
         ```
         """
-        # The result type comes from `R`, not the class-scoped `T`: pyright solves
+        # The result type comes from `V`, not the class-scoped `T`: pyright solves
         # class TypeVars at the point of attribute access, and `wrap` is accessed on
         # the unparameterised class, so `T` is already Unknown by the time `f` is
-        # seen. Annotating `cls` as `type[AsyncStatus[R]]` would feed that same
-        # Unknown straight back into `R`, hence `Any`.
+        # seen. Annotating `cls` as `type[AsyncStatus[V]]` would feed that same
+        # Unknown straight back into `V`, hence `Any`.
 
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus[R]:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus[V]:
             if args and isinstance(args[0], Device):
                 name = args[0].name
             else:
@@ -262,8 +262,8 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
     @classmethod
     def wrap(
         cls: type[WatchableAsyncStatus[Any]],
-        f: Callable[P, AsyncIterator[WatcherUpdate[W]]],
-    ) -> Callable[P, WatchableAsyncStatus[W]]:
+        f: Callable[P, AsyncIterator[WatcherUpdate[V]]],
+    ) -> Callable[P, WatchableAsyncStatus[V]]:
         """Wrap an AsyncIterator in a WatchableAsyncStatus.
 
         For example:
@@ -277,9 +277,11 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
                     await asyncio.sleep(0.1)
         ```
         """
+        # `V` is the watch type here, and stands in for the class-scoped `T` for the
+        # same reason as in AsyncStatus.wrap above.
 
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WatchableAsyncStatus[W]:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WatchableAsyncStatus[V]:
             if args and isinstance(args[0], Device):
                 name = args[0].name
             else:
