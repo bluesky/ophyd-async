@@ -195,6 +195,8 @@ obj_ignore = [
     "CtxT",
     # event_model publishes no intersphinx entry for this TypedDict
     "event_model.documents.PartialEventPage",
+    # TypeVar for the plugin an ADWriterFactory builds a data logic around
+    "ophyd_async.epics.adcore._data_logic.NDWriterPluginT",
 ]
 nitpick_ignore = []
 for var in obj_ignore:
