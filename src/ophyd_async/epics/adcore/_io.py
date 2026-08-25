@@ -12,7 +12,7 @@ from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix, epics_signal_rw_rbv
-from src.ophyd_async.core._utils import SubsetEnum
+from ophyd_async.core import IntersectEnum, SubsetEnum
 
 # Common classes for drivers and plugins
 

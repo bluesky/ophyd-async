@@ -12,6 +12,7 @@ from ophyd_async.core import (
     SignalDatatypeT,
     SignalR,
     SignalRW,
+    IntersectEnum,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
@@ -20,7 +21,6 @@ from ophyd_async.core import (
     observe_value,
     wait_for_value,
 )
-from src.ophyd_async.core._utils import IntersectEnum
 
 T = TypeVar("T")
 
