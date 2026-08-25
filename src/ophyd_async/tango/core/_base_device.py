@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
+from tango import DevFailed as TangoDevFailed
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -11,7 +12,9 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    DeviceVector,
     LazyMock,
+    NotConnectedError,
     Signal,
 )
 
@@ -30,6 +33,11 @@ class TangoDevice(Device):
     :param trl: Tango resource locator, typically of the device server.
         An asynchronous DeviceProxy object will be created using the
         trl and awaited when the device is connected.
+    :param connector: A pre-built `DeviceConnector`, used when this device is
+        created as a declarative sub-device of another `TangoDevice` (the parent
+        connector builds it). Mutually exclusive with `trl`: pass one or the
+        other, not both. When given, `support_events`/`auto_fill_signals` are
+        ignored (they are configured on the supplied connector instead).
     """
 
     _trl: str = ""
@@ -40,13 +48,17 @@ class TangoDevice(Device):
         support_events: bool = False,
         name: str = "",
         auto_fill_signals: bool = True,
+        connector: DeviceConnector | None = None,
     ) -> None:
+        if connector is not None and trl:
+            raise ValueError("TangoDevice takes either `trl` or `connector`, not both")
         self._trl = trl
-        connector = TangoDeviceConnector(
-            trl=trl,
-            support_events=support_events,
-            auto_fill_signals=auto_fill_signals,
-        )
+        if connector is None:
+            connector = TangoDeviceConnector(
+                trl=trl,
+                support_events=support_events,
+                auto_fill_signals=auto_fill_signals,
+            )
         super().__init__(name=name, connector=connector)
 
     def get_trl(self) -> str:
@@ -121,8 +133,9 @@ class TangoDeviceConnector(DeviceConnector):
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        # Make 2 entries for each DeviceVector
-        self.filler.create_device_vector_entries_to_mock(2)
+        if isinstance(device, DeviceVector):
+            # Make 2 entries for this DeviceVector
+            self.filler.create_device_dict_entries_to_mock([1, 2])
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
@@ -130,7 +143,10 @@ class TangoDeviceConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-        proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        try:
+            proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        except TangoDevFailed as ex:
+            raise NotConnectedError(f"tango://{self.trl}") from ex
         self.proxy = proxy
         children = sorted(
             set().union(proxy.get_attribute_list()).union(proxy.get_command_list())

@@ -7,6 +7,7 @@ Tutorials for installation and typical usage. New users start here.
 :glob:
 
 tutorials/installation
+tutorials/asyncio
 tutorials/using-devices
 tutorials/implementing-devices
 tutorials/writing-tests-for-devices
