@@ -31,11 +31,6 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
         if trigger_logic:
-            # If the trigger logic has a process_plugin attribute, automatically 
-            # set it to the first NDProcessIO plugin found in the plugins dictionary (if any).
-            # This allows the trigger logic to use the process plugin for preparing exposures per collection.
-            if hasattr(trigger_logic, "process_plugin"):
-                setattr(trigger_logic, "process_plugin", next(self.get_plugins_by_type(NDProcessIO), None))
             self.add_detector_logics(trigger_logic)
         if acquire_logic:
             self.add_detector_logics(acquire_logic)
@@ -139,12 +134,13 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
     ) -> None:
         driver = ADBaseIO(prefix + driver_suffix)
         cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
+        process_plugin = next(self.get_plugins_by_type(NDProcessIO), None)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
-            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin),
+            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, process_plugin),
             plugins=(plugins or {}) | {"cb": cb_plugin},
             config_sigs=config_sigs,
             name=name,

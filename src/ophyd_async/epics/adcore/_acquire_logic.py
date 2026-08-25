@@ -51,13 +51,16 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None
 
-    async def start_acquiring(self):
+    async def ensure_ready(self):
         self.acquire_status = await set_and_wait_for_value(
             self.cb_plugin.capture,
             True,
             wait_for_set_completion=False,
             timeout=DEFAULT_TIMEOUT,
         )
+
+    async def start_acquiring(self):
+        await self.cb_plugin.trigger_.set(True, wait_for_set_completion=False)
 
     async def wait_for_idle(self):
         if self.acquire_status:

@@ -22,6 +22,7 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
     prepare_exposures,
     trigger_info_from_num_images,
 )
@@ -57,6 +58,7 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
     driver: AravisDriverIO
+    process_plugin: NDProcessIO | None = None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
