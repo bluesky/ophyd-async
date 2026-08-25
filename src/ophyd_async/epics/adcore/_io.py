@@ -163,9 +163,24 @@ class NDROIIO(NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
     """
 
-    size_x: A[SignalR[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalR[int], PvSuffix.rbv("SizeY")]
-    size_z: A[SignalR[int], PvSuffix.rbv("SizeZ")]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    size_z: A[SignalRW[int], PvSuffix.rbv("SizeZ")]
+
+    bin_x: A[SignalRW[int], PvSuffix.rbv("BinX")]
+    bin_y: A[SignalRW[int], PvSuffix.rbv("BinY")]
+    bin_z: A[SignalRW[int], PvSuffix.rbv("BinZ")]
+
+
+class NDProcessIO(NDPluginBaseIO):
+    """Plugin for performing processing on an NDArrray.
+
+    This mirrors the interface provided by ADCore/db/NDProcess.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html
+    """
+
+    enable_offset_scale: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableOffsetScale")]
+    scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
 class NDStatsIO(NDPluginBaseIO):

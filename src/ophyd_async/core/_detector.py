@@ -26,6 +26,8 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
+from ophyd_async.core._log import logger
+
 from ._data_providers import ReadableDataProvider, StreamableDataProvider
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
@@ -488,14 +490,16 @@ class StandardDetector(
                         dl.prepare_unbounded(self.name + dl.datakey_suffix)
                     )
                 elif _data_logic_supported(dl.prepare_single):
-                    if trigger_info.number_of_collections > 1:
-                        raise RuntimeError(
-                            f"Multiple collections not supported by"
-                            f" {self.name + dl.datakey_suffix}"
+                    if trigger_info.number_of_collections == 1:
+                        readable_coros.append(
+                            dl.prepare_single(self.name + dl.datakey_suffix)
                         )
-                    readable_coros.append(
-                        dl.prepare_single(self.name + dl.datakey_suffix)
-                    )
+                    else:
+                        logger.warning(
+                            f"DataLogic {dl} only supports a single collection, but "
+                            "the detector was prepared for "
+                            f"{trigger_info.number_of_collections} collections."
+                        )
                 else:
                     msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"
                     raise RuntimeError(msg)
@@ -503,6 +507,7 @@ class StandardDetector(
                 asyncio.gather(*streamable_coros),
                 asyncio.gather(*readable_coros),
             )
+
         # Stash the prepare context so we can use it in trigger/kickoff
         self._prepare_ctx = _PrepareCtx(
             trigger_info=trigger_info,
