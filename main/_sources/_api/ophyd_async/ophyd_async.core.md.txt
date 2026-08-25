@@ -1193,15 +1193,15 @@ Bases: {py:obj}`typing.Protocol`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async
 
 ````
 
-`````{py:class} AsyncStatus(awaitable: ~collections.abc.Coroutine | ~asyncio.Task, name: str | None = None)
+`````{py:class} AsyncStatus(awaitable: ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.core._utils.T] | ~asyncio.Task[~ophyd_async.core._utils.T], name: str | None = None)
 :canonical: ophyd_async.core._status.AsyncStatus
 
-Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`
+Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._status.AsyncStatus
 ```
 
-````{py:method} wrap(f: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.Coroutine]) -> ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._status.AsyncStatus]
+````{py:method} wrap(f: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.core._utils.V]]) -> ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._status.AsyncStatus[~ophyd_async.core._utils.V]]
 :canonical: ophyd_async.core._status.AsyncStatus.wrap
 :classmethod:
 
@@ -1215,12 +1215,12 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`
 `````{py:class} WatchableAsyncStatus(iterator: ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate[~ophyd_async.core._utils.T]], name: str | None = None)
 :canonical: ophyd_async.core._status.WatchableAsyncStatus
 
-Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
+Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`\[{py:obj}`None`\], {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus
 ```
 
-````{py:method} watch(watcher: ~ophyd_async.core._protocol.Watcher)
+````{py:method} watch(watcher: ~ophyd_async.core._protocol.Watcher[~ophyd_async.core._utils.T])
 :canonical: ophyd_async.core._status.WatchableAsyncStatus.watch
 
 ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus.watch
@@ -1228,7 +1228,7 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`, {py:obj}`typing.Gener
 
 ````
 
-````{py:method} wrap(f: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate[~ophyd_async.core._utils.T]]]) -> ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._status.WatchableAsyncStatus[~ophyd_async.core._utils.T]]
+````{py:method} wrap(f: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate[~ophyd_async.core._utils.V]]]) -> ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._status.WatchableAsyncStatus[~ophyd_async.core._utils.V]]
 :canonical: ophyd_async.core._status.WatchableAsyncStatus.wrap
 :classmethod:
 
