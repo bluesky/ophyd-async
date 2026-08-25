@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import inspect
 import time
@@ -368,14 +369,26 @@ def soft_signal_rw(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param setter:
-        Optional callable performing the set action. May return the settled
+        Optional callable performing the set action. May be sync or async; an
+        async setter is awaited before the put completes. May return the settled
         value; if it returns None and a getter is configured, the getter is
         called to refresh the cache.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.
+
+    :example:
+    ```python
+    def read_position() -> float: ...
+
+    async def move_to(position: float) -> float: ...
+
+    # getter and setter can independently be sync or async
+    signal = soft_signal_rw(float, getter=read_position, setter=move_to)
+    ```
     """
     backend = SoftSignalBackend(
         datatype,
@@ -412,7 +425,8 @@ def soft_signal_r_and_setter(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.
@@ -633,21 +647,6 @@ async def wait_for_value(
     await _ValueChecker(match).wait_for_value(signal, timeout)
 
 
-async def _cancel_and_wait(task: asyncio.Task) -> None:
-    """Cancel a task and wait for it to finish, discarding its outcome.
-
-    For use on an error path, where the exception about to be reraised is the
-    one that matters: whatever these tasks raise on the way down (including the
-    timeout that got us here) is noise. `await task` would reraise it, so use
-    `asyncio.wait`, which doesn't, then retrieve the outcome so asyncio doesn't
-    log it as never retrieved.
-    """
-    task.cancel()
-    await asyncio.wait([task])
-    if not task.cancelled():
-        task.exception()
-
-
 async def set_and_wait_for_other_value(
     set_signal: SignalW[SignalDatatypeT],
     set_value: SignalDatatypeT,
@@ -688,9 +687,7 @@ async def set_and_wait_for_other_value(
         checker.wait_for_value(match_signal, timeout=timeout)
     )
 
-    # Put this in a try/except to ensure wait_task and the set are cancelled
-    # when we exit
-    status: AsyncStatus | None = None
+    # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
         # NOTE: this timeout races wait_task's own internal timeout (same
         # duration, started moments earlier) - whichever elapses first wins.
@@ -713,20 +710,15 @@ async def set_and_wait_for_other_value(
             await wait_task
         else:
             # Wait for both to complete, so if the set raises an exception it
-            # is surfaced early. gather() only propagates the first exception,
-            # it does not cancel the other awaitable, so the cancelling is done
-            # in the except block below.
+            # is surfaced early. Wait for the status task so if either errors
+            # the other is cancelled
             await asyncio.gather(wait_task, status.task)
         return status
     except Exception:
-        # Make sure neither the wait nor the set is left dangling if there was
-        # an error. The set outliving the match wait is the common case on a
-        # loaded machine: wait_task hits its timeout while the set is still in
-        # flight, gather() reraises that timeout, and without this the set task
-        # runs on unowned after we have returned.
-        await _cancel_and_wait(wait_task)
-        if status is not None:
-            await _cancel_and_wait(status.task)
+        # Make sure the wait is not left dangling if there was an error
+        wait_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await wait_task
         raise
 
 
