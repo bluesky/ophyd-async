@@ -484,7 +484,7 @@ class NDFileHDF5IO(NDPluginFileIO):
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
     # Compression options
-    szip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZIPNumPixels")]
+    szip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]
     z_level: A[SignalRW[int], PvSuffix.rbv("ZLevel")]
     blosc_shuffle: A[SignalRW[ADBloscShuffle], PvSuffix.rbv("BloscShuffle")]
     blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]
