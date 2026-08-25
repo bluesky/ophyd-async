@@ -20,6 +20,7 @@ from ophyd_async.core import (
     observe_value,
     wait_for_value,
 )
+from src.ophyd_async.core._utils import IntersectEnum
 
 T = TypeVar("T")
 
@@ -69,8 +70,11 @@ def get_supported_values(
     elif issubclass(enum_cls, SupersetEnum):
         if not set(pv_choices).issubset(choices):
             raise TypeError(error_msg + "to be a superset of them.")
+    elif issubclass(enum_cls, IntersectEnum):
+        if not set(choices).intersection(pv_choices):
+            raise TypeError(error_msg + "to have an intersection with them.")
     else:
-        raise TypeError(f"{datatype} is not a StrictEnum, SubsetEnum, or SupersetEnum")
+        raise TypeError(f"{datatype} is not a StrictEnum, SubsetEnum, SupersetEnum, or IntersectEnum")
     # Create a map from the string value to the enum instance
     # For StrictEnum and SupersetEnum, all values here will be enum values
     # For SubsetEnum, only the values in choices will be enum values, the rest will be

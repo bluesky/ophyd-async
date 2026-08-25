@@ -12,6 +12,7 @@ from ophyd_async.core import (
     StandardReadableFormat as Format,
 )
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix, epics_signal_rw_rbv
+from src.ophyd_async.core._utils import SubsetEnum
 
 # Common classes for drivers and plugins
 
@@ -81,7 +82,7 @@ class NDArrayBaseIO(EpicsDevice):
 # Classes for drivers
 
 
-class ADImageMode(SupersetEnum):
+class ADImageMode(SubsetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
@@ -295,7 +296,7 @@ class NDProcessFilterType(StrictEnum):
     AVERAGE = "Average"
     SUM = "Sum"
     DIFFERENCE = "Difference"
-    RECURSIVE_AVG_DIFFERENCE = "RecursiveAveDifference"
+    RECURSIVE_AVG_DIFFERENCE = "RecursiveAveDiff"
     COPY_TO_FILTER = "CopyToFilter"
 
 
