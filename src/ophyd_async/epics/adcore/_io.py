@@ -82,7 +82,7 @@ class NDArrayBaseIO(EpicsDevice):
 # Classes for drivers
 
 
-class ADImageMode(SubsetEnum):
+class ADImageMode(IntersectEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
