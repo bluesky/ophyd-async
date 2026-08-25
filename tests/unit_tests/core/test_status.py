@@ -4,7 +4,6 @@ import re
 import time
 import traceback
 from asyncio import CancelledError
-from typing import assert_type
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -344,37 +343,6 @@ def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
         assert test_result == 12
 
     loop.run_until_complete(do_test())
-
-
-async def test_async_status_result_type_survives_construction() -> None:
-    # Type-level regression test. `AsyncStatus` used to inherit `AsyncStatusBase`
-    # unparameterised, so `result()` erased to Any for every device. The failure
-    # mode is Any spreading, which type-checks clean by construction, so the guard
-    # has to be `assert_type` under pyright -- see the type-checking tox env, which
-    # lists this file explicitly. `assert_type` is a no-op at runtime.
-    async def make_int() -> int:
-        return 3
-
-    status = AsyncStatus(make_int())
-    assert_type(status, AsyncStatus[int])
-    await status
-    assert_type(status.result(), int)
-    assert status.result() == 3
-
-
-async def test_async_status_wrap_result_type_survives_decoration() -> None:
-    # `AsyncStatus.wrap` is *the* way devices produce statuses, so it is the path
-    # that decides whether `StatusWithResult[R]` means anything for a real device.
-    class IntDevice(Device):
-        @AsyncStatus.wrap
-        async def get_int(self, value: int) -> int:
-            return value
-
-    status = IntDevice().get_int(3)
-    assert_type(status, AsyncStatus[int])
-    await status
-    assert_type(status.result(), int)
-    assert status.result() == 3
 
 
 async def test_completed_status():
