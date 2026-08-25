@@ -157,6 +157,9 @@ commands = [
     [
         "pyright",
         "src",
+        # Checked for its `assert_type` guards on status result types; `tests` as a
+        # whole is not clean enough to check, so this is listed file by file
+        "tests/unit_tests/core/test_status.py",
         "--pythonpath",
         "{env:VIRTUAL_ENV}/bin/python",
         { replace = "posargs", default = [

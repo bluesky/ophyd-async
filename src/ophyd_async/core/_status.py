@@ -9,13 +9,18 @@ import time
 from asyncio import CancelledError
 from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
-from typing import Generic
+from typing import Any, Generic, TypeVar
 
 from bluesky.protocols import Status
 
 from ._device import Device
 from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
+
+# `wrap` is a classmethod on a generic class, so it needs a TypeVar of its own:
+# reusing the class-scoped `T` would make it solve to Unknown at the point where
+# `wrap` is accessed on the unparameterised class.
+R = TypeVar("R")
 
 
 class AsyncStatusBase(Status, Awaitable[T]):
@@ -27,7 +32,11 @@ class AsyncStatusBase(Status, Awaitable[T]):
     generate warnings in test cleanup.
     """
 
-    def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
+    def __init__(
+        self,
+        awaitable: Coroutine[Any, Any, T] | asyncio.Task[T],
+        name: str | None = None,
+    ):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
@@ -138,7 +147,7 @@ class AsyncStatusBase(Status, Awaitable[T]):
     __str__ = __repr__
 
 
-class AsyncStatus(AsyncStatusBase):
+class AsyncStatus(AsyncStatusBase[T]):
     """Convert an asyncio awaitable to bluesky Status interface.
 
     :param awaitable: The coroutine or task to await.
@@ -177,7 +186,9 @@ class AsyncStatus(AsyncStatusBase):
     """
 
     @classmethod
-    def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, AsyncStatus]:
+    def wrap(
+        cls: type[AsyncStatus[Any]], f: Callable[P, Coroutine[Any, Any, R]]
+    ) -> Callable[P, AsyncStatus[R]]:
         """Wrap an async function in an AsyncStatus and return it.
 
         Used to make an async function conform to a bluesky protocol.
@@ -192,7 +203,7 @@ class AsyncStatus(AsyncStatusBase):
         """
 
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus[R]:
             if args and isinstance(args[0], Device):
                 name = args[0].name
             else:
