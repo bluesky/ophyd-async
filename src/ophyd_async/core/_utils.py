@@ -73,7 +73,7 @@ class SubsetEnum(StrEnum, metaclass=AnyStringUppercaseNameEnumMeta):
 class SupersetEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
     """Some members should exist in the Backend, and there should be no extras."""
 
-class IntersectEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
+class IntersectEnum(StrEnum, metaclass=AnyStringUppercaseNameEnumMeta):
     """Some members should exist in the Backend, but there may be extras."""
 
 EnumTypes = IntersectEnum | StrictEnum | SubsetEnum | SupersetEnum
