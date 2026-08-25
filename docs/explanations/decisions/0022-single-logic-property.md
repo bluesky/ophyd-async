@@ -70,6 +70,9 @@ this change fixes.
   this cost, as `MotorFlyableMovableLogic` was already that shape.
 - Forgetting the logic now fails with `TypeError: Can't instantiate abstract class ...
   with abstract method logic` rather than an `AttributeError` on `None`.
-- `movable_logic` and `flyable_logic` remain as deprecated properties.
+- `movable_logic` and `flyable_logic` are removed rather than deprecated. A shim would
+  only have helped code that *reads* the attribute: a subclass that still *defines*
+  `movable_logic` would override the shim and leave `logic` unimplemented, so the
+  Device would fail at instantiation anyway.
 - The same mechanism is available to `StandardDetector` if it later inherits
   [](#StandardFlyable); its logic would need to satisfy `FlyableLogic` too.

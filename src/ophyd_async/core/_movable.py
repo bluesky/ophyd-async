@@ -1,6 +1,5 @@
 import asyncio
 import time
-import warnings
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
@@ -158,15 +157,6 @@ class StandardMovable(
         against both.
         """
         raise NotImplementedError
-
-    # Back compat - delete before 1.0
-    @property
-    def movable_logic(self) -> MovableLogic[SignalDatatypeT]:
-        warnings.warn(
-            DeprecationWarning("Use `logic` instead of `movable_logic`"),
-            stacklevel=2,
-        )
-        return self.logic
 
     async def check_value(self, value: SignalDatatypeT) -> None:
         """Check the move is valid before doing it."""

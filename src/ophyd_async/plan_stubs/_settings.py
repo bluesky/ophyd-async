@@ -84,7 +84,10 @@ def store_settings(
         # Omitted entirely when there is nothing to say, so that a settings only
         # file stays exactly as it was before formats were storable
         data[READABLE_FORMATS_KEY] = {
-            owner: {child: format.value for child, format in entries.items()}
+            owner: {
+                child: None if format is None else format.value
+                for child, format in entries.items()
+            }
             for owner, entries in formats.items()
         }
     yield from wait_for_awaitable(provider.store(name, data))
@@ -114,7 +117,9 @@ def retrieve_settings(
     data.pop(DEVICE_NAMES_KEY, None)
     readable_formats: ReadableFormats = {
         owner: {
-            child: StandardReadableFormat(format) for child, format in entries.items()
+            # A null means "stop this child contributing", so it is not coerced
+            child: None if format is None else StandardReadableFormat(format)
+            for child, format in entries.items()
         }
         for owner, entries in stored_formats.items()
     }

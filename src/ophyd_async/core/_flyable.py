@@ -1,5 +1,4 @@
 import asyncio
-import warnings
 from abc import abstractmethod
 from collections.abc import AsyncIterator
 from enum import Enum
@@ -86,11 +85,7 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
 
     def with_device(self, name: str = "") -> "StandardFlyable[PrepareT, CtxT]":
         """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
-        flyer = _EphemeralFlyable[PrepareT, CtxT](name=name)
-        # cached_property writes straight to the instance __dict__, so this
-        # satisfies the abstract declaration without a subclass per logic type.
-        flyer.logic = self
-        return flyer
+        return _EphemeralFlyable(self, name=name)
 
 
 class FlyMotorInfo(ConfinedModel):
@@ -184,15 +179,6 @@ class StandardFlyable(
         """
         raise NotImplementedError
 
-    # Back compat - delete before 1.0
-    @property
-    def flyable_logic(self) -> FlyableLogic[PrepareT, CtxT]:
-        warnings.warn(
-            DeprecationWarning("Use `logic` instead of `flyable_logic`"),
-            stacklevel=2,
-        )
-        return self.logic
-
     def _reset_fly_state(self) -> None:
         self._fly_ctx = cast(CtxT, None)
         self._fly_stage = _FlyStage.IDLE
@@ -261,15 +247,17 @@ class StandardFlyable(
 
 
 class _EphemeralFlyable(StandardFlyable[PrepareT, CtxT]):
-    """A concrete `StandardFlyable` whose logic is set on the instance.
+    """A concrete `StandardFlyable` built around a logic object.
 
     `StandardFlyable.logic` is abstract, so the class itself cannot be
-    instantiated; `FlyableLogic.with_device` needs something concrete to attach
-    a logic object to.
+    instantiated; `FlyableLogic.with_device` needs something concrete to wrap a
+    logic object in.
     """
+
+    def __init__(self, logic: FlyableLogic[PrepareT, CtxT], name: str = "") -> None:
+        self._logic = logic
+        super().__init__(name=name)
 
     @cached_property
     def logic(self) -> FlyableLogic[PrepareT, CtxT]:
-        raise NotImplementedError(
-            f"{self.name}: no logic set; create this via FlyableLogic.with_device()"
-        )
+        return self._logic
