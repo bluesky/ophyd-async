@@ -32,6 +32,17 @@
         "github-actions"
       ],
       "enabled": false
+    },
+    {
+      "description": "Disable Dockerfile base images that are managed by python-copier-template",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDepNames": [
+        "ubuntu",
+        "ghcr.io/diamondlightsource/ubuntu-devcontainer"
+      ],
+      "enabled": false
     }
   ]
 }
