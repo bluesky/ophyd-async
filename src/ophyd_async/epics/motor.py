@@ -101,7 +101,7 @@ class MotorFlyableMovableLogic(
     all per-scan state in a `MotorFlyCtx` rather than on the logic).
     """
 
-    motor_stop: SignalW[int]
+    motor_stop: SignalW[int] | None
     low_limit_travel: SignalRW[float]
     high_limit_travel: SignalRW[float]
     dial_low_limit_travel: SignalRW[float]
@@ -120,6 +120,8 @@ class MotorFlyableMovableLogic(
         twice -- once by the RunEngine (it stops everything it set) and once by
         `unstage`.
         """
+        if self.motor_stop is None:
+            return
         if not await self.motor_done_move.get_value():
             await self.motor_stop.set(1)
 
