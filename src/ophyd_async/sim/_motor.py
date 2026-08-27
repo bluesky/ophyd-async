@@ -8,6 +8,7 @@ import numpy as np
 
 from ophyd_async.core import (
     AsyncStatus,
+    DeviceMock,
     FlyMotorInfo,
     MovableLogic,
     SignalRW,
@@ -15,6 +16,7 @@ from ophyd_async.core import (
     StandardReadable,
     TimeoutCalculator,
     WatchableAsyncStatus,
+    default_mock_class,
     error_if_none,
     soft_signal_r_and_setter,
     soft_signal_rw,
@@ -33,11 +35,13 @@ class SimMotorMoveLogic(MovableLogic[float]):
         await self.setpoint.set(await self.readback.get_value())
 
     async def _internal_sim_move(self, new_position: float) -> None:
-        velocity = await self.velocity.get_value()
-        old_position = await self.readback.get_value()
+        velocity, old_position = await asyncio.gather(
+            self.velocity.get_value(), self.readback.get_value()
+        )
         if old_position == new_position:
             return
 
+        await self.setpoint.set(new_position)
         if velocity == 0:
             self.readback_set(new_position)
             return
@@ -103,6 +107,8 @@ class SimMotorMoveLogic(MovableLogic[float]):
         await self._internal_sim_move(new_position)
 
 
+# Remove InstantMovableMock as SimMotor owns this logic, depends if instant=True/False
+@default_mock_class(DeviceMock)
 class SimMotor(StandardReadable, StandardMovable[float]):
     """For usage when simulating a motor."""
 
