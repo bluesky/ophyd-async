@@ -4,6 +4,7 @@ from unittest.mock import call, patch
 
 import pytest
 from bluesky.plans import spiral_square
+from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import FlyMotorInfo
@@ -114,3 +115,51 @@ async def test_fly(m1: SimMotor):
 
 async def test_sim_motor_can_be_set_to_its_current_position(m1: SimMotor):
     await m1.set(0)
+
+
+async def test_sim_motor_initial_readback_matches_initial_value():
+    initial_value = 600
+    motor = SimMotor(initial_value=initial_value, instant=False)
+    readback, setpoint = await asyncio.gather(
+        motor.user_readback.get_value(), motor.user_setpoint.get_value()
+    )
+    assert readback == setpoint == initial_value
+
+
+@pytest.mark.parametrize(
+    ("target", "direction"),
+    [
+        (600.5, 1),  # low -> high
+        (599.5, -1),  # high -> low
+    ],
+)
+async def test_sim_motor_move(target: float, direction: int):
+    initial_value = 600.0
+
+    motor = SimMotor(initial_value=initial_value, instant=False, name="motor")
+    await motor.connect()
+
+    readbacks: list[float] = []
+
+    def on_readback(value: dict[str, Reading[float]]) -> None:
+        readbacks.append(value[motor.user_readback.name]["value"])
+
+    motor.user_readback.subscribe(on_readback)
+
+    await motor.set(target)
+    assert len(readbacks) > 2
+    assert readbacks[-1] == pytest.approx(target)
+
+    # There must be intermediate positions.
+    assert any((value - initial_value) * direction > 0 for value in readbacks)
+
+    # Motion must be monotonic.
+    assert all(
+        (current - previous) * direction >= 0
+        for previous, current in zip(readbacks, readbacks[1:], strict=False)
+    )
+    # No overshoot.
+    lower = min(initial_value, target)
+    upper = max(initial_value, target)
+
+    assert all(lower <= value <= upper for value in readbacks)

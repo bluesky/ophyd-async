@@ -27,17 +27,14 @@ class SimMotorMoveLogic(MovableLogic[float]):
     readback_set: Callable[[float], None]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
-    _move_task: asyncio.Task | None = None
 
     async def stop(self) -> None:
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
-        if self._move_task is not None:
-            self._move_task.cancel()
 
     async def _internal_sim_move(self, new_position: float) -> None:
         velocity = await self.velocity.get_value()
-        old_position = await self.setpoint.get_value()
+        old_position = await self.readback.get_value()
         if old_position == new_position:
             return
 
@@ -127,7 +124,7 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
-                float, 0, units=units
+                float, initial_value, units=units
             )
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
