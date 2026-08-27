@@ -38,7 +38,6 @@ class SimMotorMoveLogic(MovableLogic[float]):
         if old_position == new_position:
             return
 
-        await self.setpoint.set(new_position)
         if velocity == 0:
             self.readback_set(new_position)
             return
