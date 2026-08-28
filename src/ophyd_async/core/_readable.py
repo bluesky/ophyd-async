@@ -476,10 +476,11 @@ class _HintsFromName(HasHints):
 #: unlike `*FORMATS*` it needs no quoting in yaml.
 READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
 
-#: The path standing in for the root Device itself in a [](#ReadableFormats).
-#: Not a valid Python identifier, so no attribute assignment can produce a
-#: colliding path, and unlike `""` it does not make yaml fall back to its
-#: hard-to-read explicit key syntax.
+#: The key standing in for the root Device itself in a [](#ReadableFormats),
+#: where every other key is a dotted attribute path. Not a valid Python
+#: identifier, so no attribute assignment can produce a colliding path, and
+#: unlike `""` it does not make yaml fall back to its hard-to-read explicit
+#: key syntax.
 ROOT_DEVICE_KEY = "<ROOT_DEVICE>"
 
 #: The readable formats of a Device tree in a form that can be stored and

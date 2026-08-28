@@ -61,7 +61,7 @@ temperature: 20.0
     stats.total: HINTED_UNCACHED_SIGNAL
 ```
 
-The outer key of each formats entry is the [](#StandardReadable) the child is registered on, with [](#ROOT_DEVICE_KEY) standing for the Device you stored. It is recorded rather than worked out from the child's path, because the same child can be registered on more than one Device with a different format each time.
+The outer key of each formats entry is the [](#StandardReadable) the child is registered on, with `<ROOT_DEVICE>` ([](#ROOT_DEVICE_KEY)) standing for the Device you stored. It is recorded rather than worked out from the child's path, because the same child can be registered on more than one Device with a different format each time.
 
 ```{note}
 Applying **merges** into what is already registered: a child the file does not mention keeps whatever format it has. This matches how values behave — applying a stored file leaves signals it has never heard of alone — so a file stored against an older version of a Device does not silently unregister signals that have been added since.
