@@ -6,6 +6,7 @@ from ophyd_async.core import (
     StaticPathProvider,
     TriggerInfo,
     callback_on_mock_put,
+    callback_on_mock_put_after,
     init_devices,
     set_mock_value,
     soft_signal_rw,
@@ -672,7 +673,7 @@ async def test_callback_on_mock_put_called_after_value_is_set():
     async def callback(value):
         value_at_callback.append(await signal.get_value())
 
-    callback_on_mock_put(signal, callback)
+    callback_on_mock_put_after(signal, callback)
 
     await signal.set(1.0)
 

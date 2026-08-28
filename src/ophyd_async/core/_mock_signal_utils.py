@@ -151,6 +151,12 @@ def set_mock_values(
 
 
 @contextmanager
+def _unset_side_effect_cm_after(backend: MockSignalBackend):
+    yield
+    backend.set_mock_put_after_callback(None)
+
+
+@contextmanager
 def _unset_side_effect_cm(backend: MockSignalBackend):
     yield
     backend.set_mock_put_callback(None)
@@ -192,6 +198,16 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
     backend = _get_mock_signal_backend(signal)
     backend.set_mock_put_callback(callback)
     return _unset_side_effect_cm(backend)
+
+
+def callback_on_mock_put_after(
+    signal: Signal[SignalDatatypeT],
+    callback: MockPutCallback,
+):
+    """Set a callback that is called after the mock signal value is put."""
+    backend = _get_mock_signal_backend(signal)
+    backend.set_mock_put_after_callback(callback)
+    return _unset_side_effect_cm_after(backend)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):

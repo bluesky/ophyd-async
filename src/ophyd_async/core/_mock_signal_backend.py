@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 from collections.abc import Awaitable, Callable
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -49,10 +48,29 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         # use existing Mock if provided
         self.mock = mock
         self._mock_put_callback: MockPutCallback | None = None
+        self._mock_put_after_callback: MockPutCallback | None = None
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
         self._mock_put_callback = callback
+        if "put_mock" in self.__dict__:
+            # put_mock cached property exists, so set the side effect on it
+            self.put_mock.side_effect = callback
+
+    def set_mock_put_after_callback(self, callback: MockPutCallback | None):
+        self._mock_put_after_callback = callback
+
+    @cached_property
+    def put_after_mock(self) -> AsyncMock:
+        put_after_mock = AsyncMock(
+            name="put_after",
+            spec=Callable,
+            side_effect=self._mock_put_after_callback
+            if self._mock_put_after_callback
+            else lambda v: None,
+        )
+        self.mock().attach_mock(put_after_mock, "put_after")
+        return put_after_mock
 
     @cached_property
     def put_mock(self) -> AsyncMock:
@@ -91,17 +109,26 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         put_proceeds.set()
         return put_proceeds
 
+    # async def put(self, value: SignalDatatypeT | None):
+    #     new_value = await self.put_mock(value)
+    #     if new_value is None:
+    #         new_value = value
+
+    #     await self.soft_backend.put(new_value)
+
+    #     if self._mock_put_after_callback is not None:
+    #         result = self._mock_put_after_callback(new_value)
+    #         if inspect.isawaitable(result):
+    #             await result
+
+    #     await self.put_proceeds.wait()
+
     async def put(self, value: SignalDatatypeT | None):
         new_value = await self.put_mock(value)
         if new_value is None:
             new_value = value
         await self.soft_backend.put(new_value)
         await self.put_proceeds.wait()
-
-        if self._mock_put_callback is not None:
-            callback_result = self._mock_put_callback(new_value)
-            if inspect.isawaitable(callback_result):
-                await callback_result
 
     async def get_reading(self) -> Reading:
         return await self.soft_backend.get_reading()
