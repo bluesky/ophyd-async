@@ -30,7 +30,6 @@ from ._data_providers import (
     PageableDataProvider,
     StreamableDataProvider,
 )
-from ._log import logger
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
@@ -313,16 +312,22 @@ async def _get_collections_written(
         return 0
 
 
+#: A provider of either kind, as returned by
+#: [](#DetectorDataLogic.make_data_provider).
+_DataProvider = StreamableDataProvider | PageableDataProvider
+
+
 class DetectorDataLogic:
     """Abstract base class for detector data logic and handling.
 
-    Implementations must override exactly one of two tiers, according to how
-    many collections the data source can produce:
+    An implementation describes the data it would produce in
+    `make_data_provider`, and does the writes that make it happen in `start`.
+    The detector asks every data logic it has what it would make, decides which
+    providers it will use, and starts only those.
 
-    - `prepare_bounded` for sources that must be told how many collections to
-      expect because they hold a finite buffer (step scans and flyscans)
-    - `prepare_unbounded` for sources that work for any number of collections
-      (step scans and flyscans)
+    Whether the data is streamed or paged is the type of the provider that
+    `make_data_provider` returns, not a declaration on the logic, so one logic
+    may produce either depending on the scan.
 
     A source that produces a single value per event, like a plugin scalar, needs
     no data logic at all: register its signal with
@@ -333,26 +338,36 @@ class DetectorDataLogic:
     #: different for each DetectorDataLogic added to a detector
     datakey_suffix: str = ""
 
-    async def prepare_bounded(
+    async def make_data_provider(
         self, datakey_name: str, num_collections: int, period: float
-    ) -> PageableDataProvider:
-        """Provider works for a known, finite number of collections.
+    ) -> StreamableDataProvider | PageableDataProvider | None:
+        """Describe the data this logic would produce for this scan.
 
-        :param num_collections: total collections the buffer must be sized for
-        :param period: how long each collection takes, livetime + deadtime
-        """
-        raise NotImplementedError(self)
+        This must not start anything acquiring: the detector may discard the
+        provider without calling `start`, and only starts the ones it will use.
+        Return a [](#StreamableDataProvider) for a source that can produce any
+        number of collections, or a [](#PageableDataProvider) for one holding a
+        finite buffer sized to `num_collections`.
 
-    async def prepare_unbounded(
-        self, datakey_name: str, period: float
-    ) -> StreamableDataProvider:
-        """Provider can work for an unbounded number of collections.
+        Return `None` to sit this scan out, for instance a finite buffer asked
+        for an unbounded number of collections, or a plugin that is switched
+        off. This is not an error and is not warned about.
 
+        :param datakey_name: the detector name plus this logic's datakey_suffix
+        :param num_collections: total collections for the scan, 0 meaning
+            unbounded
         :param period: how long each collection takes, livetime + deadtime, so
-            the provider can size its chunks or set a flush rate. 0 means "use
+            the provider can size its chunks or its buffer. 0 means "use
             whatever is currently set on the hardware".
         """
         raise NotImplementedError(self)
+
+    async def start(self) -> None:
+        """Make the provider just returned by `make_data_provider` take data.
+
+        Called only for the providers the detector will actually use, so this is
+        where writes that arm hardware or open files belong.
+        """
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         """Return the hinted streams."""
@@ -363,50 +378,20 @@ class DetectorDataLogic:
         return None
 
 
-_data_logic_supported = functools.partial(_logic_supported, DetectorDataLogic)
-
-
-class _DataLogicTier(Enum):
-    """Which prepare tier a data logic implements.
-
-    Discovered by method-override detection (see `_data_logic_tier`); a data
-    logic must override exactly one of the two `prepare_*` methods.
-    """
-
-    UNBOUNDED = "unbounded"
-    BOUNDED = "bounded"
-
-
-def _data_logic_tier(dl: DetectorDataLogic) -> _DataLogicTier:
-    """Return which prepare tier a data logic has overridden.
-
-    Tiers are discovered by method-override detection, the same mechanism used
-    for trigger logic. A data logic must override exactly one.
-    """
-    if _data_logic_supported(dl.prepare_unbounded):
-        return _DataLogicTier.UNBOUNDED
-    if _data_logic_supported(dl.prepare_bounded):
-        return _DataLogicTier.BOUNDED
-    raise RuntimeError(f"DataLogic hasn't overridden any prepare_* methods {dl}")
-
-
-def _tier_can_serve(tier: _DataLogicTier, num_collections: int) -> bool:
-    """Whether a tier can serve the requested number of collections.
-
-    - unbounded serves any number, including 0 (infinite)
-    - bounded serves any finite number, so not 0
-    """
-    if tier is _DataLogicTier.UNBOUNDED:
-        return True
-    return num_collections != 0
-
-
 @dataclass
 class _PrepareCtx:
     trigger_info: TriggerInfo
-    streamable_data_providers: Sequence[StreamableDataProvider]
-    pageable_data_providers: Sequence[PageableDataProvider]
+    #: The data logics producing data for this scan, with what they made
+    serving: Sequence[tuple[DetectorDataLogic, _DataProvider]]
     collections_written: int
+
+    @property
+    def streamable_data_providers(self) -> list[StreamableDataProvider]:
+        return [dp for _, dp in self.serving if isinstance(dp, StreamableDataProvider)]
+
+    @property
+    def pageable_data_providers(self) -> list[PageableDataProvider]:
+        return [dp for _, dp in self.serving if isinstance(dp, PageableDataProvider)]
 
 
 @dataclass
@@ -523,38 +508,30 @@ class StandardDetector(
                 self._data_logics = (*self._data_logics, logic)
             else:
                 raise TypeError(f"Unknown logic type: {type(logic)}")
-        # A detector may not mix bounded and unbounded data logics: it would expose
-        # both collect_pages and collect_asset_docs and produce data from both in a
-        # fly scan, which the bluesky bundler treats as mutually exclusive. A file
-        # writer that also wants stats should carry them in the file (as NDAttributes)
-        # rather than as a separate bounded logic.
-        bounded = [
-            dl for dl in self._data_logics if _data_logic_supported(dl.prepare_bounded)
-        ]
-        unbounded = [
-            dl
-            for dl in self._data_logics
-            if _data_logic_supported(dl.prepare_unbounded)
-        ]
-        if bounded and unbounded:
 
-            def _describe(logics: Sequence[DetectorDataLogic]) -> str:
-                return ", ".join(type(dl).__name__ for dl in logics)
+    def _publish_collect_methods(
+        self, *, stream_assets: bool, event_pages: bool
+    ) -> None:
+        """Bind the collect verb that matches the providers we are using.
 
-            raise TypeError(
-                f"Detector {self.name} has both bounded data logics "
-                f"({_describe(bounded)}) and unbounded data logics "
-                f"({_describe(unbounded)}); these cannot be combined on one detector"
-            )
-        # Bind whichever collect verb applies as a real instance attribute, so the
-        # bundler's isinstance checks (WritesStreamAssets vs EventPageCollectable)
-        # see exactly one of them. They resolve with inspect.getattr_static on
-        # Python 3.12+, which does not call __getattr__, so a dynamic hook would be
-        # invisible. Both names are reserved by Device, hence object.__setattr__.
-        if unbounded:
-            object.__setattr__(self, "collect_asset_docs", self._collect_asset_docs)
-        if bounded:
-            object.__setattr__(self, "collect_pages", self._collect_pages)
+        Whichever applies is bound as a real instance attribute, so the bluesky
+        bundler's isinstance checks (`WritesStreamAssets` vs
+        `EventPageCollectable`) see exactly one of them: they resolve with
+        `inspect.getattr_static` on Python 3.12+, which does not call
+        `__getattr__`, so a dynamic hook would be invisible. Both names are
+        reserved by `Device`, hence `object.__setattr__`.
+
+        Recomputed on every prepare, so the verb that no longer applies is
+        removed rather than left behind from a previous scan.
+        """
+        for name, method, wanted in (
+            ("collect_asset_docs", self._collect_asset_docs, stream_assets),
+            ("collect_pages", self._collect_pages, event_pages),
+        ):
+            if wanted:
+                object.__setattr__(self, name, method)
+            elif name in self.__dict__:
+                object.__delattr__(self, name)
 
     # Back compat - delete before 1.0
     def add_config_signals(self, *signals: SignalR) -> None:
@@ -647,77 +624,99 @@ class StandardDetector(
     async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
         num_collections = trigger_info.number_of_collections
         period = trigger_info.livetime + trigger_info.deadtime
-        # Classify each data logic by the tier it implements, and drop any whose
-        # tier cannot serve the requested number of collections. This is the rule
-        # from #1364: rather than raising, a data logic that cannot serve this scan
-        # is left out with a warning, so a detector carrying a bounded logic can
-        # still fly for an unbounded number of events with only that logic dropped.
-        serving: list[tuple[DetectorDataLogic, _DataLogicTier]] = []
-        for dl in self._data_logics:
-            tier = _data_logic_tier(dl)
-            if _tier_can_serve(tier, num_collections):
-                serving.append((dl, tier))
-            else:
-                logger.warning(
-                    "%s data logic %s cannot serve %d collections, "
-                    "dropping it from this prepare",
-                    tier.value,
-                    self.name + dl.datakey_suffix,
-                    num_collections,
-                )
-        # Unbounded providers are reused while collections_per_event and the period
-        # are unchanged, to avoid reopening a file on every step-scan point. Both are
-        # baked into the StreamResource at construction, so a change to either
-        # invalidates the reuse. Bounded providers are never reused: re-calling
-        # prepare_bounded is what re-arms their finite buffer.
-        previous = self._prepare_ctx.trigger_info if self._prepare_ctx else None
-        reusable = (
-            previous is not None
-            and previous.collections_per_event == trigger_info.collections_per_event
-            and previous.livetime + previous.deadtime == period
+        previous = self._prepare_ctx
+        # Providers are reused while the scan they were made for is unchanged, so
+        # that a step scan does not reopen its file on every point. Both parts of
+        # the reuse key are baked into a streaming provider when it is made: the
+        # shape from collections_per_event and the chunking from the period. A
+        # finite buffer is re-made either way, since re-making is what re-arms it.
+        reusable = previous is not None and (
+            previous.trigger_info.collections_per_event
+            == trigger_info.collections_per_event
+            and previous.trigger_info.livetime + previous.trigger_info.deadtime
+            == period
         )
-        if reusable and self._prepare_ctx is not None:
-            streamable_data_providers = self._prepare_ctx.streamable_data_providers
+        if reusable and previous is not None:
+            serving = await self._rearm_bounded(previous, num_collections, period)
         else:
-            # Stop the non-bounded logics we are replacing before making new ones
-            if self._prepare_ctx is not None:
-                await asyncio.gather(
-                    *(
-                        dl.stop()
-                        for dl, tier in serving
-                        if tier is not _DataLogicTier.BOUNDED
-                    )
-                )
-            streamable_data_providers = await asyncio.gather(
-                *(
-                    dl.prepare_unbounded(self.name + dl.datakey_suffix, period)
-                    for dl, tier in serving
-                    if tier is _DataLogicTier.UNBOUNDED
-                )
-            )
-        # Bounded providers are always (re)built, re-arming their buffers.
-        if self._prepare_ctx is not None:
-            await asyncio.gather(
-                *(dl.stop() for dl, tier in serving if tier is _DataLogicTier.BOUNDED)
-            )
-        pageable_data_providers = await asyncio.gather(
-            *(
-                dl.prepare_bounded(
-                    self.name + dl.datakey_suffix, num_collections, period
-                )
-                for dl, tier in serving
-                if tier is _DataLogicTier.BOUNDED
-            )
+            serving = await self._make_serving_providers(num_collections, period)
+        # Which collect verb the detector exposes follows what it will actually
+        # produce, so it is recomputed here rather than fixed at construction
+        self._publish_collect_methods(
+            stream_assets=any(
+                isinstance(dp, StreamableDataProvider) for _, dp in serving
+            ),
+            event_pages=any(isinstance(dp, PageableDataProvider) for _, dp in serving),
         )
-        # Stash the prepare context so we can use it in trigger/kickoff
         self._prepare_ctx = _PrepareCtx(
             trigger_info=trigger_info,
-            streamable_data_providers=streamable_data_providers,
-            pageable_data_providers=pageable_data_providers,
+            serving=serving,
             collections_written=await _get_collections_written(
-                [*streamable_data_providers, *pageable_data_providers]
+                [dp for _, dp in serving]
             ),
         )
+
+    async def _make_serving_providers(
+        self, num_collections: int, period: float
+    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
+        """Ask every data logic what it would make, and start the ones we use."""
+        # Stop what is running before anything new is made, since a logic that
+        # cannot describe its data without opening its file does so here
+        if self._prepare_ctx is not None:
+            await asyncio.gather(*(dl.stop() for dl, _ in self._prepare_ctx.serving))
+        made = await asyncio.gather(
+            *(
+                dl.make_data_provider(
+                    self.name + dl.datakey_suffix, num_collections, period
+                )
+                for dl in self._data_logics
+            )
+        )
+        # A logic returns None to sit this scan out, e.g. a finite buffer asked
+        # for an unbounded number of collections
+        serving = [
+            (dl, dp)
+            for dl, dp in zip(self._data_logics, made, strict=True)
+            if dp is not None
+        ]
+        streamable = [dp for _, dp in serving if isinstance(dp, StreamableDataProvider)]
+        pageable = [dp for _, dp in serving if isinstance(dp, PageableDataProvider)]
+        # A detector may not produce both kinds at once: it would expose both
+        # collect_asset_docs and collect_pages and produce data from both in a fly
+        # scan, which the bluesky bundler treats as mutually exclusive. A file
+        # writer that also wants stats should carry them in the file (as
+        # NDAttributes) rather than as a separate bounded logic.
+        if streamable and pageable:
+
+            def _describe(providers: Sequence[_DataProvider]) -> str:
+                return ", ".join(type(dp).__name__ for dp in providers)
+
+            raise TypeError(
+                f"Detector {self.name} would produce both event pages "
+                f"({_describe(pageable)}) and stream assets ({_describe(streamable)}); "
+                "these cannot be combined on one detector"
+            )
+        await asyncio.gather(*(dl.start() for dl, _ in serving))
+        return serving
+
+    async def _rearm_bounded(
+        self, previous: _PrepareCtx, num_collections: int, period: float
+    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
+        """Re-make and re-start the finite buffers, keeping everything else."""
+        serving: list[tuple[DetectorDataLogic, _DataProvider]] = []
+        for dl, dp in previous.serving:
+            if isinstance(dp, PageableDataProvider):
+                await dl.stop()
+                rearmed = await dl.make_data_provider(
+                    self.name + dl.datakey_suffix, num_collections, period
+                )
+                if rearmed is None:
+                    continue
+                await dl.start()
+                serving.append((dl, rearmed))
+            else:
+                serving.append((dl, dp))
+        return serving
 
     async def _wait_for_index(
         self,

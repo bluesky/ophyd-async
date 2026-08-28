@@ -4,6 +4,7 @@ import pytest
 from ophyd_async.core import (
     DetectorAcquireLogic,
     DetectorTriggerLogic,
+    EnableDisable,
     StandardDetector,
     TriggerInfo,
     init_devices,
@@ -24,11 +25,16 @@ async def stats() -> adcore.NDStatsIO:
     return plugin
 
 
-async def test_prepare_bounded_sizes_and_arms_the_buffer(stats: adcore.NDStatsIO):
+async def test_start_sizes_and_arms_the_buffer(stats: adcore.NDStatsIO):
     logic = StatsTimeSeriesDataLogic(stats)
-    provider = await logic.prepare_bounded("det-stats", num_collections=5, period=0.1)
-
+    provider = await logic.make_data_provider(
+        "det-stats", num_collections=5, period=0.1
+    )
     assert isinstance(provider, StatsTimeSeriesProvider)
+    # Describing the buffer does not arm it
+    assert await stats.ts_num_points.get_value() == 0
+
+    await logic.start()
     assert await stats.ts_num_points.get_value() == 5
     assert await stats.ts_acquire_mode.get_value() == NDStatsTSAcquireMode.FIXED_LENGTH
     # ts_acquire=1 arms and clears the buffer
@@ -38,6 +44,42 @@ async def test_prepare_bounded_sizes_and_arms_the_buffer(stats: adcore.NDStatsIO
     assert list(datakeys) == ["det-stats"]
     assert datakeys["det-stats"]["shape"] == [5]
     assert logic.get_hinted_fields("det-stats") == ["det-stats"]
+
+
+async def test_unbounded_scan_makes_no_provider(stats: adcore.NDStatsIO):
+    """A finite buffer cannot serve an unbounded scan, so it sits it out."""
+    logic = StatsTimeSeriesDataLogic(stats)
+    assert await logic.make_data_provider("det", num_collections=0, period=0.1) is None
+
+
+@pytest.mark.parametrize(
+    "enable_callbacks,plugin_enabled,makes_provider",
+    [
+        # The default switches the plugin on, whatever it was set to
+        (True, EnableDisable.DISABLE, True),
+        # Following the plugin, a disabled one produces nothing...
+        (False, EnableDisable.DISABLE, False),
+        # ...and an enabled one still works
+        (False, EnableDisable.ENABLE, True),
+    ],
+)
+async def test_follows_the_plugin_when_not_enabling_it(
+    stats: adcore.NDStatsIO,
+    enable_callbacks: bool,
+    plugin_enabled: EnableDisable,
+    makes_provider: bool,
+):
+    set_mock_value(stats.enable_callbacks, plugin_enabled)
+    logic = StatsTimeSeriesDataLogic(stats, enable_callbacks=enable_callbacks)
+
+    provider = await logic.make_data_provider("det", num_collections=5, period=0.1)
+    assert (provider is not None) is makes_provider
+
+    if makes_provider:
+        await logic.start()
+        # Only the default reaches out and switches the plugin on
+        expected = EnableDisable.ENABLE if enable_callbacks else plugin_enabled
+        assert await stats.enable_callbacks.get_value() is expected
 
 
 async def test_stop_stops_the_time_series(stats: adcore.NDStatsIO):
@@ -127,12 +169,11 @@ def stats_detector(stats: adcore.NDStatsIO) -> StandardDetector:
 async def test_step_scan_collect_pages_end_to_end(stats_detector: StandardDetector):
     """A writer-less detector with a stats time series emits event pages."""
     det = stats_detector
+    await det.stage()
+    await det.prepare(TriggerInfo(collections_per_event=4))
     # A bounded logic exposes collect_pages, not collect_asset_docs
     assert hasattr(det, "collect_pages")
     assert not hasattr(det, "collect_asset_docs")
-
-    await det.stage()
-    await det.prepare(TriggerInfo(collections_per_event=4))
     await det.trigger()
     pages = [page async for page in det.collect_pages()]
     (page,) = pages

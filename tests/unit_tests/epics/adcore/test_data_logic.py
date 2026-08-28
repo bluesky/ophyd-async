@@ -14,6 +14,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics.adcore import ADHDFDataLogic, NDArrayDescription
 from ophyd_async.testing import assert_has_calls
 
 
@@ -31,6 +32,76 @@ async def hdf_det(
     set_mock_value(detector.driver.array_size_y, 768)
     set_mock_value(detector.driver.data_type, adcore.ADBaseDataType.UINT16)
     return detector
+
+
+async def test_make_data_provider_does_not_write(
+    hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
+    static_path_provider: StaticPathProvider,
+):
+    """Describing the data must not open the file, since it may be discarded."""
+    writer = hdf_det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(writer.file_path_exists, True)
+    logic = ADHDFDataLogic(
+        array_description=NDArrayDescription(
+            shape_signals=[hdf_det.driver.array_size_y, hdf_det.driver.array_size_x],
+            data_type_signal=hdf_det.driver.data_type,
+            color_mode_signal=hdf_det.driver.color_mode,
+        ),
+        path_provider=static_path_provider,
+        driver=hdf_det.driver,
+        writer=writer,
+    )
+
+    provider = await logic.make_data_provider("det", num_collections=5, period=0.1)
+    assert provider is not None
+    assert await writer.capture.get_value() is False
+    assert await writer.file_name.get_value() == ""
+
+    await logic.start()
+    assert await writer.capture.get_value() is True
+    assert await writer.file_name.get_value() != ""
+
+
+@pytest.mark.parametrize(
+    "enable_callbacks,plugin_enabled,makes_provider",
+    [
+        # The default switches the plugin on, whatever it was set to
+        (True, EnableDisable.DISABLE, True),
+        # Following the plugin, a disabled one writes nothing...
+        (False, EnableDisable.DISABLE, False),
+        # ...and an enabled one still writes
+        (False, EnableDisable.ENABLE, True),
+    ],
+)
+async def test_hdf_follows_the_plugin_when_not_enabling_it(
+    hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
+    static_path_provider: StaticPathProvider,
+    enable_callbacks: bool,
+    plugin_enabled: EnableDisable,
+    makes_provider: bool,
+):
+    writer = hdf_det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(writer.enable_callbacks, plugin_enabled)
+    logic = ADHDFDataLogic(
+        array_description=NDArrayDescription(
+            shape_signals=[hdf_det.driver.array_size_y, hdf_det.driver.array_size_x],
+            data_type_signal=hdf_det.driver.data_type,
+            color_mode_signal=hdf_det.driver.color_mode,
+        ),
+        path_provider=static_path_provider,
+        driver=hdf_det.driver,
+        writer=writer,
+        enable_callbacks=enable_callbacks,
+    )
+
+    provider = await logic.make_data_provider("det", num_collections=5, period=0.1)
+    assert (provider is not None) is makes_provider
+
+    if makes_provider:
+        await logic.start()
+        expected = EnableDisable.ENABLE if enable_callbacks else plugin_enabled
+        assert await writer.enable_callbacks.get_value() is expected
 
 
 async def test_hdf_writer_file_not_found(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):

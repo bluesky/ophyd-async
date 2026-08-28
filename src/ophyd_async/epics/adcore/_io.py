@@ -167,6 +167,17 @@ class NDPluginBaseIO(NDArrayBaseIO):
     queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
 
 
+async def plugin_is_enabled(plugin: NDPluginBaseIO) -> bool:
+    """Whether a plugin is switched on, so is receiving NDArrays.
+
+    The nearest thing to "is this plugin in the chain": a plugin with callbacks
+    disabled certainly is not, though an enabled one may still have its
+    `nd_array_port` pointed somewhere else. Parsing the whole plugin graph was
+    rejected in ADR 0021 as too large.
+    """
+    return await plugin.enable_callbacks.get_value() is EnableDisable.ENABLE
+
+
 class NDROIIO(StandardReadable, NDPluginBaseIO):
     """Plugin for taking a region of an NDArray.
 

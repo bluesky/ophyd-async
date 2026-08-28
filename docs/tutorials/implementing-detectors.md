@@ -228,27 +228,33 @@ Then we have `BlobDataLogic`, a [](#DetectorDataLogic) subclass:
 ```
 
 Its job is to manage the file writing and data streaming:
-- `prepare_unbounded()` tells the detector to open a file, and returns a [](#StreamableDataProvider) that describes the datasets that will be written and tracks write progress
+- `make_data_provider()` works out where the file will go and returns a [](#StreamableDataProvider) describing the datasets that will be written, without opening anything
+- `start()` opens the file, so nothing is written until the detector has decided it wants this data
 - `get_hinted_fields()` returns the data keys that are interesting to plot
 - `stop()` tells the detector to close the file
 
-The [](#StreamableDataProvider) returned from `prepare_unbounded()` contains:
+The [](#StreamableDataProvider) returned from `make_data_provider()` contains:
 - `collections_written_signal` - a signal that tracks how many frames have been written
 - `make_datakeys()` - creates DataKey descriptions for each dataset
 - `make_stream_docs()` - emits StreamResource and StreamDatum documents as frames are written
 
-#### Choosing a data logic tier
+#### Which kind of data a logic produces
 
-A [](#DetectorDataLogic) implements exactly one of two `prepare_*` methods, and the detector picks a logic by which one it implements — there is no precedence to configure. Which tier fits depends on how the underlying source produces its data:
+A [](#DetectorDataLogic) is not declared as one kind or another: the detector asks each of its logics what it would make for this scan, and the type of provider that comes back says which kind it is.
 
-- `prepare_unbounded(datakey_name, period)` — for a source that works for any number of collections, like a file writer. It returns a [](#StreamableDataProvider) and the detector exposes `collect_asset_docs`. `BlobDataLogic` uses this tier.
-- `prepare_bounded(datakey_name, num_collections, period)` — for a source that holds a *finite buffer* which must be sized before acquisition, like an areaDetector stats time series or a scaler whose array length is the frame count. It returns a [](#PageableDataProvider) that emits event pages, and the detector exposes `collect_pages` instead. See [](#StatsTimeSeriesDataLogic).
+- a [](#StreamableDataProvider) is for a source that works for any number of collections, like a file writer. The detector exposes `collect_asset_docs`, and `BlobDataLogic` is an example.
+- a [](#PageableDataProvider) is for a source holding a *finite buffer* that must be sized before acquisition, like an areaDetector stats time series or a scaler whose array length is the frame count. It emits event pages, so the detector exposes `collect_pages` instead. See [](#StatsTimeSeriesDataLogic).
+- `None` means "not this scan", for instance a finite buffer asked for an unbounded number of collections, or a plugin that is switched off. This is not an error: a detector may carry more data logics than any one scan uses.
 
 A source that produces one value per event, like a plugin scalar, needs no data logic at all: a detector is a [](#StandardReadable), so register the signal with [](#StandardReadable.set_readable_format).
 
-The `period` given to both tiers is the frame period (livetime + deadtime), resolved by `prepare()` from the trigger logic even when the [](#TriggerInfo) leaves `livetime` at 0, so a logic can use it to size chunks or a flush rate.
+`make_data_provider` is given the total `num_collections` for the scan, 0 meaning unbounded, and the frame `period` (livetime + deadtime), resolved by `prepare()` from the trigger logic even when the [](#TriggerInfo) leaves `livetime` at 0. It must not start anything: only the providers the detector settles on get their `start()` called.
 
-A detector may carry several data logics, but not both a bounded and an unbounded one — those produce mutually exclusive document kinds. A logic whose tier cannot serve the requested number of collections (a bounded logic in an infinite fly scan, say) is dropped with a warning rather than failing the scan.
+A detector may carry several data logics, but must not end up producing both kinds at once — those are mutually exclusive document kinds, and `prepare()` raises if it would.
+
+```{note}
+Which logic serves is decided in `prepare()`, so it can change between runs — a detector whose file writer is switched off can fall back to its stats time series. Change it **between runs**, not inside one: a run's descriptor is emitted at its start, so switching part way through would leave the descriptor and the documents disagreeing.
+```
 
 ## Conclusion
 

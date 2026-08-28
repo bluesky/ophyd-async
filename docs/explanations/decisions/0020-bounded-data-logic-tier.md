@@ -13,7 +13,8 @@ single-event tier, one tier is left that a subclass opts into by overriding the
 corresponding method:
 
 - `prepare_unbounded(datakey_name) -> StreamableDataProvider` — any number of collections,
-  feeding `collect_asset_docs()` and `describe_collect()`
+  feeding `collect_asset_docs()` and `describe_collect()`, doing the writes to start the writer
+  as it goes
 
 Four open issues turn out to bottom out in the same two gaps.
 
@@ -88,17 +89,25 @@ per collection for a fly scan: the time series can, but nothing models it.
 
 ## Decision
 
-### A second tier: `prepare_bounded`
+### One method that describes, and one that starts
 
 ```python
 class DetectorDataLogic:
-    async def prepare_bounded(
+    async def make_data_provider(
         self, datakey_name: str, num_collections: int, period: float
-    ) -> PageableDataProvider: ...
-    async def prepare_unbounded(
-        self, datakey_name: str, period: float
-    ) -> StreamableDataProvider: ...
+    ) -> StreamableDataProvider | PageableDataProvider | None: ...
+    async def start(self) -> None: ...
 ```
+
+`make_data_provider` says what this logic *would* produce for this scan without starting
+anything; `start` does the writes that make it happen, and is called only for the providers the
+detector will use. The detector therefore asks every data logic what it would make, decides which
+ones it wants, and starts only those.
+
+The alternative — one `prepare_*` per tier, doing both jobs — was tried first. It forces the
+detector to arm hardware in order to find out what it would get, so a provider it then decides
+not to use has to be stopped again. That is wasteful with a `TSAcquire` erase and impossible to
+justify once the choice depends on what the providers actually produce.
 
 Both tiers are told the frame period, so either can size a chunk or a buffer against it.
 
@@ -106,9 +115,18 @@ Both tiers are told the frame period, so either can size a chunk or a buffer aga
 never a per-kickoff figure. A finite buffer is fed by data callbacks and does not care how many
 kickoffs span it, so per-kickoff sizing would mean resizing the buffer mid-scan.
 
+### The tier is the type of the provider returned
+
+There is no declaration of which tier a logic implements and no override detection: a logic that
+returns a [](#StreamableDataProvider) is unbounded for this scan and one that returns a
+[](#PageableDataProvider) is bounded, so a logic may even return either depending on what it is
+asked for. Returning `None` means "not this scan", which is how a finite buffer declines an
+unbounded one. It is not an error and is not warned about, since the whole point is that a
+detector may carry more logics than any one scan uses.
+
 ### `PageableDataProvider`, with readings derived from pages
 
-`prepare_bounded` returns a single provider type that emits pages. Readings are derived from
+The bounded tier returns a single provider type that emits pages. Readings are derived from
 pages rather than being a separate code path: a step-scan prepare has `number_of_events == 1`, so
 its page contains exactly one event, which extracts to a single reading. `collections_per_event`
 appears in the datakey shape exactly as it does for `StreamableDataProvider`.
@@ -127,17 +145,16 @@ see a period of 0, and the awkward case is handled once in core rather than by e
 
 ### Tier selection is by capability, with no precedence rule
 
-Each data logic implements exactly one tier, so core does not choose between tiers — it only
-asks whether the tier a logic implements can serve the requested number of collections
-`n = TriggerInfo.number_of_collections`:
+Core does not choose between tiers — it only asks each logic what it would make for the
+requested number of collections `n = TriggerInfo.number_of_collections`:
 
 | tier | serves |
 |---|---|
-| `prepare_unbounded` | always |
-| `prepare_bounded` | `n != 0` (finite) |
+| streaming | always |
+| finite buffer | `n != 0` (finite) |
 
-A logic whose tier cannot serve `n` is dropped from the prepare context with a warning, rather
-than raising, as agreed in #1364. That is what lets a detector carrying a bounded logic still be
+A logic that cannot serve `n` returns `None` and is left out of the prepare context, rather than
+raising, as agreed in #1364. That is what lets a detector carrying a bounded logic still be
 prepared for an infinite fly scan, with only that logic dropped.
 
 ### Bounded providers are never reused
@@ -166,7 +183,7 @@ Reuse consequently becomes a per-logic decision rather than an all-or-nothing br
 
 It is tempting to derive this instead of stating it, since `_update_prepare_context` refreshes
 `collections_written` after re-preparing, and an areaDetector stats time series is erased by the
-`TSAcquire` write inside `prepare_bounded` — so the refreshed read already returns zero. That
+`TSAcquire` write in its `start` — so the refreshed read already returns zero. That
 derivation only holds when the data logic performs the erase itself. Where the erase belongs to
 the acquire control, as with the CTR-08's `EraseStart`, it happens *after* `_update_prepare_context`
 has taken its reading, so the baseline would be the stale pre-erase value; the detector would then
@@ -182,8 +199,8 @@ only one kind and the rule reduces to a single choice per call site.
 
 Where one control both starts acquisition and clears the data buffer, it belongs to the
 `DetectorAcquireLogic`, alongside the stop control and the idle status. Nothing needs to declare
-the erase to the framework: `prepare_bounded` is always called before `start_acquiring()`, so the
-buffer is sized before the control fires, and the baseline rule above means the detector does not
+the erase to the framework: a data logic's `start` is always called before `start_acquiring()`,
+so the buffer is sized before the control fires, and the baseline rule above means the detector does not
 care who erased it.
 
 The trigger/acquire/data split therefore holds for these devices, and the three logics share one
@@ -192,7 +209,7 @@ not of hardware, so it survives the concerns landing on a single PV.
 
 ### Logic objects fill exactly one role
 
-`add_detector_logics()` raises if an object satisfies more than one of the three logic protocols,
+`add_detector_logics()` raises if an object satisfies more than one of the three logic roles,
 directing the author to pass separate objects. This is a hazard worth catching rather than a
 hypothetical: a device whose concerns all live on one control is a natural candidate for a single
 combined logic object, and the registration is a chain of `isinstance` tests, so such an object
@@ -202,15 +219,22 @@ without a word.
 ### `collect_asset_docs` and `collect_pages` are exposed dynamically
 
 `StandardDetector` no longer inherits `WritesStreamAssets`. Instead it binds
-`collect_asset_docs` as an instance attribute only when a data logic implementing
-`prepare_unbounded` is present, and `collect_pages` only when one implementing
-`prepare_bounded` is present. Because bluesky's protocols are `runtime_checkable`, an absent
+`collect_asset_docs` as an instance attribute only when it has a streaming provider, and
+`collect_pages` only when it has a paging one. Because bluesky's protocols are `runtime_checkable`, an absent
 attribute is enough to make the isinstance check fail, and the bundler then does the right
 thing. It has to be a real attribute rather than a `__getattr__` hook, because Python 3.12+
 resolves those checks with `inspect.getattr_static`, which never calls `__getattr__`.
 
-This keys off the data logics, which are fixed when the detector is constructed, rather than off
-the prepare context, which does not exist until `prepare()` runs.
+Which verb applies is only knowable once the logics have said what they would make, so it is
+decided in `prepare()` and recomputed on each one — binding the verb that applies and removing
+the one that does not. A detector therefore satisfies neither protocol until it has been
+prepared, which is fine: everything in the RunEngine that dispatches on them runs after prepare.
+
+Because the decision is per-prepare rather than per-construction, which logic serves can change
+between runs — a detector whose file writer is switched off can fall back to its stats time
+series. That is a **between-runs** change, like a readable format: a run's descriptor is emitted
+at its start, so switching part way through would leave `describe_collect()` and the documents
+disagreeing. Documented rather than enforced, since a Device cannot see run boundaries.
 
 This keeps a single detector class able to be either kind depending on its `__init__` arguments —
 one `AravisDetector`, configured for files or for pages — which was the original requirement, and
@@ -218,9 +242,10 @@ it needs no change to bluesky.
 
 ### Mixing bounded and unbounded logics raises
 
-`add_detector_logics()` raises if a detector is given both a bounded and an unbounded data logic,
-since that is the one combination where both `collect_asset_docs` and `collect_pages` would be
-exposed and both would produce data in a fly scan.
+`prepare()` raises if the providers it has been given include both kinds, since that is the one
+combination where both `collect_asset_docs` and `collect_pages` would be exposed and both would
+produce data in a fly scan. It raises after asking each logic what it would make and before
+starting any of them, so nothing has been armed when it does.
 
 ### Stats with a file writer go via NDAttributes
 
@@ -247,9 +272,13 @@ wanted becomes a constructor argument.
 
 ## Consequences
 
-`DetectorDataLogic` implementations that override `prepare_unbounded` must take the new `period`
-argument. This is a breaking change for out-of-tree data logics; the library is in alpha and no
-compatibility shim is provided. In-tree, `ADHDFDataLogic` and `PandaHDFDataLogic` can then
+`DetectorDataLogic` implementations must be rewritten onto `make_data_provider` and `start`, and
+take the new `period` argument. This is a breaking change for out-of-tree data logics; the library
+is in alpha and no compatibility shim is provided. Splitting them is usually mechanical — describe
+in one, write in the other — but a logic that cannot describe its data without starting (in tree,
+`OdinDataLogic`, whose frame shape is only readable once the file processor is writing) has to do
+its writes in `make_data_provider` and leave `start` empty. That is safe only while such a logic is
+never the one a detector drops. In-tree, `ADHDFDataLogic` and `PandaHDFDataLogic` can then
 compute chunk size and flush period from the rate, replacing the TODOs and hardcoded values that
 stand in for it today.
 
@@ -257,12 +286,17 @@ stand in for it today.
 `livetime` and `deadtime` alongside the frame count. Those that do not will still work, but their
 detectors will fall back to today's behaviour of reading the chunk size back from hardware.
 
-Detectors that cannot write files become expressible: a data logic implementing `prepare_bounded`
-gives them `collect_pages()` and the whole of `StandardDetector` besides. This closes #1248 and
-#888.
+Detectors that cannot write files become expressible: a data logic returning a
+`PageableDataProvider` gives them `collect_pages()` and the whole of `StandardDetector` besides.
+This closes #1248 and #888.
 
-Fly scanning an areaDetector that carries an HDF writer plus a single-tier data logic starts
-working, with the single-tier logic dropped and a warning, closing #1364.
+Fly scanning an areaDetector that carries an HDF writer plus a finite-buffer data logic starts
+working, with the finite buffer sitting the scan out, closing #1364.
+
+A data logic may decline a scan for reasons of its own, not just because of the collection count:
+`ADHDFDataLogic` and `StatsTimeSeriesDataLogic` take an `enable_callbacks` flag, defaulting to
+today's behaviour of switching the plugin on, which when set `False` makes them follow whatever
+the plugin is set to and produce nothing when it is off.
 
 Mixing bounded and unbounded data logics on one detector is not supported. If a use case appears
 that genuinely needs a file *and* pages in one fly scan, it needs the bluesky bundler to allow
