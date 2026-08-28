@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 from collections.abc import Awaitable, Callable
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -20,6 +21,9 @@ if TYPE_CHECKING:
 MockPutCallback = (
     Callable[[SignalDatatypeT], SignalDatatypeT | None]
     | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
+)
+MockPutCallbackAfter = (
+    Callable[[SignalDatatypeT], None] | Callable[[SignalDatatypeT], Awaitable[None]]
 )
 
 
@@ -57,7 +61,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
 
-    def set_mock_put_after_callback(self, callback: MockPutCallback | None):
+    def set_mock_put_callback_after(self, callback: MockPutCallbackAfter | None):
         self._mock_put_after_callback = callback
 
     @cached_property
@@ -78,7 +82,9 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         put_mock = AsyncMock(
             name="put",
             spec=Callable,
-            side_effect=lambda v: None,
+            side_effect=self._mock_put_callback
+            if self._mock_put_callback
+            else lambda v: None,
         )
         self.mock().attach_mock(put_mock, "put")
         return put_mock
@@ -109,25 +115,18 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         put_proceeds.set()
         return put_proceeds
 
-    # async def put(self, value: SignalDatatypeT | None):
-    #     new_value = await self.put_mock(value)
-    #     if new_value is None:
-    #         new_value = value
-
-    #     await self.soft_backend.put(new_value)
-
-    #     if self._mock_put_after_callback is not None:
-    #         result = self._mock_put_after_callback(new_value)
-    #         if inspect.isawaitable(result):
-    #             await result
-
-    #     await self.put_proceeds.wait()
-
     async def put(self, value: SignalDatatypeT | None):
         new_value = await self.put_mock(value)
         if new_value is None:
             new_value = value
+
         await self.soft_backend.put(new_value)
+
+        if self._mock_put_after_callback is not None:
+            result = self._mock_put_after_callback(new_value)
+            if inspect.isawaitable(result):
+                await result
+
         await self.put_proceeds.wait()
 
     async def get_reading(self) -> Reading:
