@@ -61,20 +61,8 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
 
-    def set_mock_put_callback_after(self, callback: MockPutCallbackAfter | None):
+    def set_mock_put_after_callback(self, callback: MockPutCallbackAfter | None):
         self._mock_put_after_callback = callback
-
-    @cached_property
-    def put_after_mock(self) -> AsyncMock:
-        put_after_mock = AsyncMock(
-            name="put_after",
-            spec=Callable,
-            side_effect=self._mock_put_after_callback
-            if self._mock_put_after_callback
-            else lambda v: None,
-        )
-        self.mock().attach_mock(put_after_mock, "put_after")
-        return put_after_mock
 
     @cached_property
     def put_mock(self) -> AsyncMock:
