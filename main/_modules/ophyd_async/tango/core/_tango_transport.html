@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.21.2.dev9+gca28e3088 documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.21.2.dev10+g293834aa3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=bd6de161"></script>
+    <script src="../../../../_static/documentation_options.js?v=fb3b8455"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev9+gca28e3088 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev9+gca28e3088 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev10+g293834aa3 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev10+g293834aa3 documentation - Home"/>
   
   
 </a></div>
@@ -1199,6 +1199,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subscribe_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1211,6 +1212,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.connect">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eid</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># I have to typehint proxy as tango.DeviceProxy because</span>
             <span class="c1"># tango.asyncio.DeviceProxy cannot be used as a typehint.</span>
@@ -1219,10 +1221,20 @@ window.runMermaid = runMermaid;</script>
             <span class="n">eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span>
             <span class="p">)</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">pass</span></div>
+            <span class="c1"># The attribute does not support change events</span>
+            <span class="k">return</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Undo the probe subscription synchronously rather than with an</span>
+            <span class="c1"># `await`: this also has to run when connect is being cancelled</span>
+            <span class="c1"># (a connection timeout), and an awaited unsubscribe would itself</span>
+            <span class="c1"># be cancelled immediately, leaving a live subscription behind.</span>
+            <span class="c1"># Tango pushes events at it from its own thread, so once the</span>
+            <span class="c1"># event loop it was made on closes those events are dispatched</span>
+            <span class="c1"># into a closed loop.</span>
+            <span class="k">if</span> <span class="n">eid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="AttributeProxy.get">
@@ -1291,16 +1303,31 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not unsubscribe from event: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_subscribe_to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>
+                <span class="n">eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
                     <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span><span class="p">,</span>
                     <span class="n">green_mode</span><span class="o">=</span><span class="n">GreenMode</span><span class="o">.</span><span class="n">Asyncio</span><span class="p">,</span>
                 <span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># unsubscribe_callback() ran while we were still</span>
+                    <span class="c1"># subscribing, so it found no event id to remove. Undo</span>
+                    <span class="c1"># the subscription here instead, otherwise nothing ever</span>
+                    <span class="c1"># will and tango keeps pushing events at it from its own</span>
+                    <span class="c1"># thread after the event loop it was made on has closed.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="n">eid</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscribe to event failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1314,7 +1341,9 @@ window.runMermaid = runMermaid;</script>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="n">callback</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span><span class="p">:</span>
-            <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_subscribe_to_event</span><span class="p">())</span>
+            <span class="c1"># Held so the event loop&#39;s weak reference to the task isn&#39;t the</span>
+            <span class="c1"># only one and it can&#39;t be garbage collected mid-flight</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_subscribe_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_subscribe_to_event</span><span class="p">())</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allow_polling</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;start polling if no events supported&quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1340,23 +1369,23 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.unsubscribe_callback">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.unsubscribe_callback">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Clear the callback up front: subscribe_callback() subscribes in a</span>
+        <span class="c1"># background task, so if that task hasn&#39;t landed yet there is no event</span>
+        <span class="c1"># id here for us to remove. It checks self._callback when it lands and</span>
+        <span class="c1"># undoes its own subscription instead.</span>
+        <span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">,</span> <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not unsubscribe from event: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># Call the callback with the last reading</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">)</span>
+                    <span class="n">callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                    <span class="k">pass</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="kc">None</span></div>
+                    <span class="k">pass</span></div>
 
 
     <span class="nd">@ensure_proper_executor</span>
