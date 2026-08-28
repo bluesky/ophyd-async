@@ -239,15 +239,16 @@ The [](#StreamableDataProvider) returned from `prepare_unbounded()` contains:
 
 #### Choosing a data logic tier
 
-A [](#DetectorDataLogic) implements exactly one of three `prepare_*` methods, and the detector picks a logic by which one it implements — there is no precedence to configure. Which tier fits depends on how the underlying source produces its data:
+A [](#DetectorDataLogic) implements exactly one of two `prepare_*` methods, and the detector picks a logic by which one it implements — there is no precedence to configure. Which tier fits depends on how the underlying source produces its data:
 
 - `prepare_unbounded(datakey_name, period)` — for a source that works for any number of collections, like a file writer. It returns a [](#StreamableDataProvider) and the detector exposes `collect_asset_docs`. `BlobDataLogic` uses this tier.
 - `prepare_bounded(datakey_name, num_collections, period)` — for a source that holds a *finite buffer* which must be sized before acquisition, like an areaDetector stats time series or a scaler whose array length is the frame count. It returns a [](#PageableDataProvider) that emits event pages, and the detector exposes `collect_pages` instead. See [](#StatsTimeSeriesDataLogic).
-- `prepare_single(datakey_name)` — for a source that can only ever produce one collection, like reading a scalar PV. It returns a [](#ReadableDataProvider). `PluginSignalDataLogic` uses this tier.
 
-The `period` passed to the unbounded and bounded tiers is the frame period (livetime + deadtime), resolved by `prepare()` from the trigger logic even when the [](#TriggerInfo) leaves `livetime` at 0. A logic can use it to size chunks or a flush rate; a single collection has no rate, so `prepare_single` is not given it.
+A source that produces one value per event, like a plugin scalar, needs no data logic at all: a detector is a [](#StandardReadable), so register the signal with [](#StandardReadable.set_readable_format).
 
-A detector may carry several data logics, but not both a bounded and an unbounded one — those produce mutually exclusive document kinds. A logic whose tier cannot serve the requested number of collections (a `prepare_single` logic in a multi-collection scan, say) is dropped with a warning rather than failing the scan.
+The `period` given to both tiers is the frame period (livetime + deadtime), resolved by `prepare()` from the trigger logic even when the [](#TriggerInfo) leaves `livetime` at 0, so a logic can use it to size chunks or a flush rate.
+
+A detector may carry several data logics, but not both a bounded and an unbounded one — those produce mutually exclusive document kinds. A logic whose tier cannot serve the requested number of collections (a bounded logic in an infinite fly scan, say) is dropped with a warning rather than failing the scan.
 
 ## Conclusion
 

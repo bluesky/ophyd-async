@@ -546,13 +546,11 @@ class StandardDetector(
                 f"({_describe(bounded)}) and unbounded data logics "
                 f"({_describe(unbounded)}); these cannot be combined on one detector"
             )
-        # Expose collect_asset_docs / collect_pages as real instance attributes so
-        # the bluesky bundler's runtime-checkable isinstance checks (WritesStreamAssets
-        # vs EventPageCollectable) match exactly the one that applies. Python 3.12+
-        # resolves those checks with inspect.getattr_static, which does not invoke
-        # __getattr__, so a dynamic hook is invisible to them while a real instance
-        # attribute is not. Both names are bluesky protocol names reserved by Device,
-        # so bypass its reserved-name guard with object.__setattr__.
+        # Bind whichever collect verb applies as a real instance attribute, so the
+        # bundler's isinstance checks (WritesStreamAssets vs EventPageCollectable)
+        # see exactly one of them. They resolve with inspect.getattr_static on
+        # Python 3.12+, which does not call __getattr__, so a dynamic hook would be
+        # invisible. Both names are reserved by Device, hence object.__setattr__.
         if unbounded:
             object.__setattr__(self, "collect_asset_docs", self._collect_asset_docs)
         if bounded:
@@ -667,14 +665,11 @@ class StandardDetector(
                     self.name + dl.datakey_suffix,
                     num_collections,
                 )
-        # Unbounded providers depend on collections_per_event (it sets the
-        # StreamResource shape) and on the period (it sets the chunk shape), so may be
-        # reused across prepares when both are unchanged (this avoids reopening files on
-        # every step-scan point). A period change invalidates reuse because the chunk
-        # shape is baked into the StreamResource at construction and, for areaDetector,
-        # num_frames_chunks can only be set before capture starts. Bounded providers are
-        # never reused: they hold a finite buffer that must be re-armed for each event,
-        # and re-calling prepare_bounded on every trigger() is what re-arms it.
+        # Unbounded providers are reused while collections_per_event and the period
+        # are unchanged, to avoid reopening a file on every step-scan point. Both are
+        # baked into the StreamResource at construction, so a change to either
+        # invalidates the reuse. Bounded providers are never reused: re-calling
+        # prepare_bounded is what re-arms their finite buffer.
         previous = self._prepare_ctx.trigger_info if self._prepare_ctx else None
         reusable = (
             previous is not None
@@ -951,18 +946,10 @@ class StandardDetector(
         StandardReadable gathers these alongside the registered children, so
         the verb methods themselves need no overriding.
 
-        Raising when nothing has been prepared is deliberate, and predates
-        registered children being readable at all: a detector that has not been
-        prepared has no data keys, so a `describe()` that quietly succeeded
-        would emit a descriptor missing the detector's data. In practice
-        `trigger()` prepares implicitly, so `trigger_and_read` never reaches
-        this. `read_configuration()` and `describe_configuration()` are
-        unaffected, as this hook only feeds the data verbs.
-
-        The cost is that the *registered children* are unreachable through
-        `read()`/`describe()` until then too, since this raises before the
-        registry is consulted. That is accepted rather than worked around:
-        reading an unprepared detector is already defined as an error.
+        Raises if nothing has been prepared, since an unprepared detector has no
+        data keys and would otherwise emit a descriptor missing its data.
+        `trigger()` prepares implicitly, so a step scan never sees this.
+        `read_configuration()` and `describe_configuration()` are unaffected.
         """
         if verb not in (_Verb.DESCRIBE, _Verb.READ):
             return
@@ -970,8 +957,7 @@ class StandardDetector(
         cpe = ctx.trigger_info.collections_per_event
         # Bounded providers hold a single-event page for this step-scan point,
         # which _pageable_readings extracts back to a reading. That extraction
-        # lives here rather than on the provider so a provider cannot override
-        # it -- see the review note on #1367.
+        # lives here rather than on the provider so a provider cannot override it.
         for pdp in ctx.pageable_data_providers:
             if verb is _Verb.DESCRIBE:
                 yield functools.partial(pdp.make_datakeys, cpe)

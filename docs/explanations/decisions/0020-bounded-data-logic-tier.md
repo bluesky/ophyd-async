@@ -8,11 +8,10 @@ Accepted
 
 ## Context
 
-ADR 0012 split data production out into `DetectorDataLogic`, with two tiers that a subclass
-opts into by overriding the corresponding method:
+ADR 0012 split data production out into `DetectorDataLogic`. After ADR 0021 removed the
+single-event tier, one tier is left that a subclass opts into by overriding the
+corresponding method:
 
-- `prepare_single(datakey_name) -> ReadableDataProvider` — a single event only, feeding
-  `read()` and `describe()`
 - `prepare_unbounded(datakey_name) -> StreamableDataProvider` — any number of collections,
   feeding `collect_asset_docs()` and `describe_collect()`
 
@@ -83,20 +82,16 @@ So one new tier serves both, and #1309's period rides along with it.
 ### The areaDetector stats duality
 
 An `NDPluginStats` exposes each statistic twice: as a scalar (`Total_RBV`) and as a time series
-array (`TS:TSTotal`). Only the scalar is modelled today, by `PluginSignalDataLogic`. The scalar
-can only ever serve a single collection; the time series can serve any number. Issue #1364 arises
-directly from this: an AD detector with an HDF writer *and* a stats scalar cannot fly, because
-the scalar is single-only.
+array (`TS:TSTotal`). Only the scalar is modelled today, as a registered signal. A registered
+signal is read once per event, so a detector with no file writer has no way to produce a value
+per collection for a fly scan: the time series can, but nothing models it.
 
 ## Decision
 
-### A third tier: `prepare_bounded`
+### A second tier: `prepare_bounded`
 
 ```python
 class DetectorDataLogic:
-    async def prepare_single(
-        self, datakey_name: str
-    ) -> ReadableDataProvider: ...
     async def prepare_bounded(
         self, datakey_name: str, num_collections: int, period: float
     ) -> PageableDataProvider: ...
@@ -105,8 +100,7 @@ class DetectorDataLogic:
     ) -> StreamableDataProvider: ...
 ```
 
-`prepare_bounded` and `prepare_unbounded` are told the frame period; `prepare_single` is not,
-since a single collection has no rate to size against.
+Both tiers are told the frame period, so either can size a chunk or a buffer against it.
 
 `num_collections` is always the **total** for the scan (`TriggerInfo.number_of_collections`),
 never a per-kickoff figure. A finite buffer is fed by data callbacks and does not care how many
@@ -141,12 +135,10 @@ asks whether the tier a logic implements can serve the requested number of colle
 |---|---|
 | `prepare_unbounded` | always |
 | `prepare_bounded` | `n != 0` (finite) |
-| `prepare_single` | `n == 1` |
 
 A logic whose tier cannot serve `n` is dropped from the prepare context with a warning, rather
-than raising. This generalises the rule agreed in #1364 to all three tiers: it is what lets an
-AD detector carry an HDF writer plus a `PluginSignalDataLogic` on some unrelated PV (a
-temperature, a ring current) and still fly, with only the scalar dropped.
+than raising, as agreed in #1364. That is what lets a detector carrying a bounded logic still be
+prepared for an infinite fly scan, with only that logic dropped.
 
 ### Bounded providers are never reused
 
@@ -209,11 +201,13 @@ without a word.
 
 ### `collect_asset_docs` and `collect_pages` are exposed dynamically
 
-`StandardDetector` no longer inherits `WritesStreamAssets`. Instead `__getattr__` exposes
-`collect_asset_docs` only when a data logic implementing `prepare_unbounded` is present, and
-`collect_pages` only when one implementing `prepare_bounded` is present. Because bluesky's
-protocols are `runtime_checkable`, an absent attribute is enough to make the isinstance check
-fail, and the bundler then does the right thing.
+`StandardDetector` no longer inherits `WritesStreamAssets`. Instead it binds
+`collect_asset_docs` as an instance attribute only when a data logic implementing
+`prepare_unbounded` is present, and `collect_pages` only when one implementing
+`prepare_bounded` is present. Because bluesky's protocols are `runtime_checkable`, an absent
+attribute is enough to make the isinstance check fail, and the bundler then does the right
+thing. It has to be a real attribute rather than a `__getattr__` hook, because Python 3.12+
+resolves those checks with `inspect.getattr_static`, which never calls `__getattr__`.
 
 This keys off the data logics, which are fixed when the detector is constructed, rather than off
 the prepare context, which does not exist until `prepare()` runs.
@@ -226,7 +220,7 @@ it needs no change to bluesky.
 
 `add_detector_logics()` raises if a detector is given both a bounded and an unbounded data logic,
 since that is the one combination where both `collect_asset_docs` and `collect_pages` would be
-exposed and both would produce data in a fly scan. Single-tier logics may coexist with either.
+exposed and both would produce data in a fly scan.
 
 ### Stats with a file writer go via NDAttributes
 
@@ -235,9 +229,9 @@ not need to: `ADHDFDataLogic` already pulls NDAttribute datasets into the file, 
 areaDetector's own mechanism for exactly this. The time series tier is for detectors with no
 writer at all.
 
-`PluginSignalDataLogic` (the scalar) therefore remains the right choice for a detector that
-writes files and wants a stats value in a step scan, and a stats time series data logic is the
-right choice for one that writes no files.
+Registering the scalar with `set_readable_format` therefore remains the right choice for a
+detector that writes files and wants a stats value in a step scan, and a stats time series data
+logic is the right choice for one that writes no files.
 
 ### One stats data logic for many arrays
 
