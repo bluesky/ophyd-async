@@ -56,9 +56,9 @@ from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    callback_after_on_mock_put,
     callback_on_mock_execute,
     callback_on_mock_put,
-    callback_on_mock_put_after,
     get_mock,
     get_mock_execute,
     get_mock_put,
@@ -244,7 +244,7 @@ __all__ = [
     "get_mock_put",
     "get_mock_execute",
     "callback_on_mock_put",
-    "callback_on_mock_put_after",
+    "callback_after_on_mock_put",
     "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",

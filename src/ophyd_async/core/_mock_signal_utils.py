@@ -200,7 +200,7 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
     return _unset_side_effect_cm(backend)
 
 
-def callback_on_mock_put_after(
+def callback_after_on_mock_put(
     signal: Signal[SignalDatatypeT],
     callback: MockPutCallback,
 ):

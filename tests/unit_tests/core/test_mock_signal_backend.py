@@ -10,8 +10,8 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SoftSignalBackend,
+    callback_after_on_mock_put,
     callback_on_mock_put,
-    callback_on_mock_put_after,
     get_mock_put,
     init_devices,
     mock_puts_blocked,
@@ -457,7 +457,7 @@ async def test_callback_on_mock_put__after_is_called_after_value_is_set():
     async def callback(value):
         value_at_callback.append(await signal.get_value())
 
-    callback_on_mock_put_after(signal, callback)
+    callback_after_on_mock_put(signal, callback)
 
     await signal.set(1.0)
 
