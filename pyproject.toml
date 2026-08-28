@@ -39,7 +39,6 @@ demo = ["ipython", "matplotlib", "pyqt6", "pytest"]
 
 [dependency-groups]
 dev = [
-<<<<<<< before updating
     "ophyd_async[sim]",
     "ophyd_async[ca]",
     "ophyd_async[pva]",
@@ -47,8 +46,6 @@ dev = [
     "ophyd_async[demo]",
     "inflection",
     "import-linter",
-=======
->>>>>>> after updating
     "myst-parser",
     "numpydoc",
     "ophyd>=1.10.7",
