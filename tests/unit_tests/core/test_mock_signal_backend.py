@@ -460,5 +460,4 @@ async def test_callback_after_on_mock_put_is_called_after_value_is_set():
     callback_after_on_mock_put(signal, callback)
 
     await signal.set(1.0)
-
     assert value_at_callback == [1.0]
