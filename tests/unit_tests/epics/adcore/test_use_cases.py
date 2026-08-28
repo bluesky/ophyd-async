@@ -8,6 +8,7 @@ from ophyd_async.core import (
     callback_on_mock_put,
     init_devices,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.epics import adaravis, adcore, adsimdetector
 from ophyd_async.epics.core import epics_signal_r
@@ -660,3 +661,19 @@ async def test_step_scan_keep_numimages(
         TimeoutError, match="Timeout Error while waiting 0.1s to update"
     ):
         await det.trigger()
+
+
+async def test_callback_on_mock_put_called_after_value_is_set():
+    signal = soft_signal_rw(float, initial_value=0.0)
+    await signal.connect(mock=True)
+
+    value_at_callback = []
+
+    async def callback(value):
+        value_at_callback.append(await signal.get_value())
+
+    callback_on_mock_put(signal, callback)
+
+    await signal.set(1.0)
+
+    assert value_at_callback == [1.0]
