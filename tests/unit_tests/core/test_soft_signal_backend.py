@@ -85,7 +85,7 @@ scalar_int_dtype = (
         (Array1D[np.float32], np.array([]), np.array([1.0]), waveform_d, "<f4"),
         (Array1D[np.float64], np.array([]), np.array([0.2]), waveform_d, "<f8"),
         (
-            np.ndarray[Any, np.dtype[np.uint16]],
+            npt.NDArray[np.uint16],
             np.zeros([2, 2], dtype=np.float64),
             uint_array_2d(),
             waveform_d,
