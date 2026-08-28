@@ -5,6 +5,7 @@ from collections.abc import Callable, Sequence
 from typing import Any, TypeVar
 
 import numpy as np
+import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
@@ -92,7 +93,7 @@ scalar_int_dtype = (
             "<u2",
         ),
         (
-            np.ndarray[Any, np.dtype[np.float64]],
+            npt.NDArray[np.float64],
             np.zeros([2, 2], dtype=np.float64),
             float_array_2d(),
             waveform_d,
