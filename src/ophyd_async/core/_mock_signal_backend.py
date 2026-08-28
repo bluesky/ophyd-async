@@ -52,7 +52,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         # use existing Mock if provided
         self.mock = mock
         self._mock_put_callback: MockPutCallback | None = None
-        self._mock_put_after_callback: MockPutCallback | None = None
+        self._mock_put_callback_after: MockPutCallbackAfter | None = None
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
@@ -61,8 +61,8 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
 
-    def set_mock_put_after_callback(self, callback: MockPutCallbackAfter | None):
-        self._mock_put_after_callback = callback
+    def set_mock_put_callback_after(self, callback: MockPutCallbackAfter | None):
+        self._mock_put_callback_after = callback
 
     @cached_property
     def put_mock(self) -> AsyncMock:
@@ -107,11 +107,10 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         new_value = await self.put_mock(value)
         if new_value is None:
             new_value = value
-
         await self.soft_backend.put(new_value)
 
-        if self._mock_put_after_callback is not None:
-            result = self._mock_put_after_callback(new_value)
+        if self._mock_put_callback_after is not None:
+            result = self._mock_put_callback_after(new_value)
             if inspect.isawaitable(result):
                 await result
 

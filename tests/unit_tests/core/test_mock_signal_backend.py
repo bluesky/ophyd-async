@@ -448,7 +448,7 @@ async def test_when_async_callback_returns_none_then_readback_is_the_setpoint():
     assert (await mock_signal.get_value()) == 5
 
 
-async def test_callback_on_mock_put__after_is_called_after_value_is_set():
+async def test_callback_after_on_mock_put_is_called_after_value_is_set():
     signal = soft_signal_rw(float, initial_value=0.0)
     await signal.connect(mock=True)
 
