@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.sim._motor &#8212; ophyd-async 0.21.2.dev11+g009e3c427 documentation</title>
+    <title>ophyd_async.sim._motor &#8212; ophyd-async 0.21.2.dev12+g10ad79754 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=ff7471ee"></script>
+    <script src="../../../_static/documentation_options.js?v=46e96faf"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev11+g009e3c427 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev11+g009e3c427 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.2.dev12+g10ad79754 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.2.dev12+g10ad79754 documentation - Home"/>
   
   
 </a></div>
@@ -908,6 +908,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">DeviceMock</span><span class="p">,</span>
     <span class="n">FlyMotorInfo</span><span class="p">,</span>
     <span class="n">MovableLogic</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
@@ -915,6 +916,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">StandardReadable</span><span class="p">,</span>
     <span class="n">TimeoutCalculator</span><span class="p">,</span>
     <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
+    <span class="n">default_mock_class</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
     <span class="n">soft_signal_r_and_setter</span><span class="p">,</span>
     <span class="n">soft_signal_rw</span><span class="p">,</span>
@@ -927,17 +929,15 @@ window.runMermaid = runMermaid;</script>
     <span class="n">readback_set</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">acceleration_time</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">_move_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the motion.&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_move_task</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_move_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_internal_sim_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="n">old_position</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">velocity</span><span class="p">,</span> <span class="n">old_position</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">old_position</span> <span class="o">==</span> <span class="n">new_position</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -1007,8 +1007,10 @@ window.runMermaid = runMermaid;</script>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sim_move</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
 
 
+<span class="c1"># Remove InstantMovableMock as SimMotor owns this logic, depends if instant=True/False</span>
 <div class="viewcode-block" id="SimMotor">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor">[docs]</a>
+<span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimMotor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For usage when simulating a motor.&quot;&quot;&quot;</span>
 
@@ -1029,7 +1031,7 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Define some signals</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_readback_set</span> <span class="o">=</span> <span class="n">soft_signal_r_and_setter</span><span class="p">(</span>
-                <span class="nb">float</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span>
+                <span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span>
             <span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">instant</span> <span class="k">else</span> <span class="mf">1.0</span><span class="p">)</span>
