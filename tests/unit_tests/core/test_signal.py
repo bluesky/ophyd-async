@@ -300,6 +300,21 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
+async def wait_for_sets_left_running(
+    before: set[asyncio.Task], timeout: float = 2.0
+) -> None:
+    # When the match wait fails, set_and_wait_for_other_value deliberately
+    # leaves the set running - the put is the operation the control system is
+    # performing, and stopping it is the caller's job (`unstage()` for a
+    # detector), not this function's. It doesn't return the status on that
+    # path, so a test can't await the set; wait for the loop to finish it
+    # instead, rather than leaving it for fail_test_on_unclosed_tasks to trip
+    # over whenever a loaded runner is slow enough (the 3.14 CI failures).
+    async with asyncio.timeout(timeout):
+        while any(not task.done() for task in asyncio.all_tasks() - before):
+            await asyncio.sleep(0.01)
+
+
 @pytest.mark.timeout(3)
 async def test_status_of_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
@@ -313,6 +328,7 @@ async def test_status_of_set_and_wait_for_value():
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
     callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    before = asyncio.all_tasks()
 
     status = await set_and_wait_for_value(set_signal, 2)
     assert status.done
@@ -338,6 +354,42 @@ async def test_status_of_set_and_wait_for_value():
         status = await set_and_wait_for_other_value(
             set_signal, 30, match_signal, -1, timeout=0.5
         )
+
+    # The timeouts above each leave their set running; a starved loop is what
+    # made one of them outlive the test on the 3.14 runners.
+    await wait_for_sets_left_running(before)
+
+
+@pytest.mark.timeout(3)
+async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match():
+    # A match timeout does not cancel the set. The put is the operation the
+    # control system is performing - for a detector the put to `acquire` *is*
+    # the acquisition - so stopping it means telling the hardware, which is
+    # `unstage()` -> `ensure_stopped()` -> `stop_busy_record()`. Cancelling the
+    # task here would abandon the put with the detector still acquiring.
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+    put_finished = asyncio.Event()
+
+    async def set_slower_than_the_match_timeout(value: Any, **kwargs):
+        await asyncio.sleep(0.3)
+        put_finished.set()
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+    callback_on_mock_put(set_signal, set_slower_than_the_match_timeout)  # type: ignore
+    before = asyncio.all_tasks()
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 30, match_signal, -1, timeout=0.1
+        )
+
+    # The set is still in flight, and completes on its own afterwards rather
+    # than being abandoned part way through.
+    assert not put_finished.is_set()
+    await wait_for_sets_left_running(before)
+    assert put_finished.is_set()
 
 
 @pytest.mark.timeout(3)

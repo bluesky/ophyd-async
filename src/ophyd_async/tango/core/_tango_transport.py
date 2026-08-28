@@ -291,6 +291,7 @@ class AttributeProxy(TangoProxy):
     def __init__(self, device_proxy: DeviceProxy, name: str):
         self._callback: Callback | None = None
         self._eid: int | None = None
+        self._subscribe_task: asyncio.Task | None = None
         self._poll_task: asyncio.Task | None = None
         self._abs_change: float | None = None
         self._rel_change: float | None = None
@@ -301,6 +302,7 @@ class AttributeProxy(TangoProxy):
         super().__init__(device_proxy, name)
 
     async def connect(self) -> None:
+        eid = None
         try:
             # I have to typehint proxy as tango.DeviceProxy because
             # tango.asyncio.DeviceProxy cannot be used as a typehint.
@@ -309,10 +311,20 @@ class AttributeProxy(TangoProxy):
             eid = await self._proxy.subscribe_event(  # type: ignore
                 self._name, EventType.CHANGE_EVENT, self._event_processor
             )
-            await self._proxy.unsubscribe_event(eid)  # type: ignore
-            self.support_events = True
         except Exception:
-            pass
+            # The attribute does not support change events
+            return
+        finally:
+            # Undo the probe subscription synchronously rather than with an
+            # `await`: this also has to run when connect is being cancelled
+            # (a connection timeout), and an awaited unsubscribe would itself
+            # be cancelled immediately, leaving a live subscription behind.
+            # Tango pushes events at it from its own thread, so once the
+            # event loop it was made on closes those events are dispatched
+            # into a closed loop.
+            if eid is not None:
+                self._unsubscribe_event(eid)
+        self.support_events = True
 
     @ensure_proper_executor
     async def get(self) -> object:  # type: ignore
@@ -362,16 +374,31 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
+    def _unsubscribe_event(self, eid: int) -> None:
+        try:
+            self._proxy.unsubscribe_event(eid, green_mode=False)  # type: ignore
+        except Exception as exc:
+            logger.warning(f"Could not unsubscribe from event: {exc}")
+
     @ensure_proper_executor
     async def _subscribe_to_event(self):
         try:
             if not self._eid:
-                self._eid = await self._proxy.subscribe_event(
+                eid = await self._proxy.subscribe_event(
                     self._name,
                     EventType.CHANGE_EVENT,
                     self._event_processor,
                     green_mode=GreenMode.Asyncio,
                 )  # type: ignore
+                if self._callback is None:
+                    # unsubscribe_callback() ran while we were still
+                    # subscribing, so it found no event id to remove. Undo
+                    # the subscription here instead, otherwise nothing ever
+                    # will and tango keeps pushing events at it from its own
+                    # thread after the event loop it was made on has closed.
+                    self._unsubscribe_event(eid)
+                else:
+                    self._eid = eid
         except Exception as exc:
             logger.debug(f"Subscribe to event failed: {exc}")
 
@@ -383,7 +410,9 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            asyncio.create_task(self._subscribe_to_event())
+            # Held so the event loop's weak reference to the task isn't the
+            # only one and it can't be garbage collected mid-flight
+            self._subscribe_task = asyncio.create_task(self._subscribe_to_event())
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
@@ -406,23 +435,23 @@ class AttributeProxy(TangoProxy):
             )
 
     def unsubscribe_callback(self):
+        # Clear the callback up front: subscribe_callback() subscribes in a
+        # background task, so if that task hasn't landed yet there is no event
+        # id here for us to remove. It checks self._callback when it lands and
+        # undoes its own subscription instead.
+        callback, self._callback = self._callback, None
         if self._eid:
-            try:
-                self._proxy.unsubscribe_event(self._eid, green_mode=False)  # type: ignore
-            except Exception as exc:
-                logger.warning(f"Could not unsubscribe from event: {exc}")
-            finally:
-                self._eid = None
+            self._unsubscribe_event(self._eid)
+            self._eid = None
         if self._poll_task:
             self._poll_task.cancel()
             self._poll_task = None
-            if self._callback is not None:
+            if callback is not None:
                 # Call the callback with the last reading
                 try:
-                    self._callback(self._last_reading)
+                    callback(self._last_reading)
                 except TypeError:
                     pass
-        self._callback = None
 
     @ensure_proper_executor
     async def _event_processor(self, event):
