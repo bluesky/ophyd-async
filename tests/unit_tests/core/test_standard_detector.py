@@ -12,9 +12,7 @@ from ophyd_async.core import (
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
-    ReadableDataProvider,
     Settings,
-    SignalDataProvider,
     SignalDict,
     SignalR,
     StandardDetector,
@@ -131,26 +129,14 @@ class MockAcquireLogic(DetectorAcquireLogic):
         self.disarm_count += 1
 
 
-class ReadableOnlyDataLogic(DetectorDataLogic):
-    """Produces only readable (non-streaming) data."""
-
-    def __init__(self):
-        self.signal = soft_signal_rw(int, initial_value=42, name="foo-value")
-
-    async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
-        return SignalDataProvider(self.signal)
-
-    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        return ["foo-value"]
-
-
 class StreamableOnlyDataLogic(DetectorDataLogic):
     """Produces only streamable (file-based) data."""
 
-    def __init__(self, tmp_path):
+    def __init__(self, tmp_path, datakey_suffix: str = ""):
         self.collections_written = soft_signal_rw(int)
         self.stop_count = 0
         self.tmp_path = tmp_path
+        self.datakey_suffix = datakey_suffix
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         resource = StreamResourceInfo(
@@ -412,10 +398,10 @@ async def test_arm_logic_called_on_stage():
     assert al.armed is False
 
 
-async def test_describe_before_prepare_raises():
+async def test_describe_before_prepare_raises(tmp_path):
     """Test that describe() fails before prepare()."""
     det = StandardDetector()
-    det.add_detector_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
 
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe()
@@ -594,23 +580,21 @@ async def test_stage_resets_state():
     assert await det.events_to_kickoff.get_value() == 0
 
 
-async def test_hints_from_single_data_logic():
+async def test_hints_from_single_data_logic(tmp_path):
     """Test that hints come from data logic."""
-    det = StandardDetector()
-    det.add_detector_logics(ReadableOnlyDataLogic())
+    det = StandardDetector(name="bar")
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
 
     await det.prepare(TriggerInfo())
 
-    assert det.hints == {
-        "fields": ["foo-value"]
-    }  # ReadableOnlyDataLogic uses foo-value
+    assert det.hints == {"fields": ["bar"]}
 
 
 async def test_hints_from_multiple_data_logics(tmp_path):
     """Test that hints are aggregated from multiple data logics."""
     det = StandardDetector(name="bar")
-    dl1 = ReadableOnlyDataLogic()
-    dl2 = StreamableOnlyDataLogic(tmp_path)
+    dl1 = StreamableOnlyDataLogic(tmp_path)
+    dl2 = StreamableOnlyDataLogic(tmp_path, datakey_suffix="-extra")
     det.add_detector_logics(dl1, dl2)
 
     await det.prepare(TriggerInfo())
@@ -618,7 +602,7 @@ async def test_hints_from_multiple_data_logics(tmp_path):
     # Should include hints from both logics
     hints = det.hints
     assert "fields" in hints
-    assert hints["fields"] == ["foo-value", "bar"]
+    assert hints["fields"] == ["bar", "bar-extra"]
 
 
 @pytest.mark.parametrize(
@@ -664,13 +648,13 @@ async def test_config_signals_in_describe_configuration(
 async def test_kickoff_without_streamable_data_raises():
     """Test that kickoff() without streamable data fails."""
     det = StandardDetector(name="foo")
-    det.add_detector_logics(JustInternalTriggerLogic(), ReadableOnlyDataLogic())
+    det.add_detector_logics(JustInternalTriggerLogic())
 
-    # Single event prepare for readable-only logic
+    # A detector with no data logic can still be triggered for a step scan
     await det.prepare(TriggerInfo())
     await det.trigger()  # This works
 
-    # Readable-only logic doesn't support kickoff
+    # ...but there is nothing to collect, so it cannot be flown
     await det.prepare(TriggerInfo(number_of_events=5))
     with pytest.raises(
         ValueError, match="Detector foo is not streamable, so cannot kickoff"
@@ -757,13 +741,13 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
 
 
 async def test_read_returns_correct_values():
-    """Test that read() returns values from readable providers."""
+    """Test that read() returns the values of registered signals."""
     det = StandardDetector(name="det")
-    dl = ReadableOnlyDataLogic()
-    det.add_detector_logics(dl)
+    det.counts, _ = soft_signal_r_and_setter(int, 42, name="det-counts")
+    det.set_readable_format(det.counts, Format.HINTED_SIGNAL)
 
     await det.trigger()
-    await assert_reading(det, {"foo-value": {"value": 42}})
+    await assert_reading(det, {"det-counts": {"value": 42}})
 
 
 async def test_detector_with_no_logics():
@@ -872,19 +856,6 @@ async def test_ensure_ready_vs_ensure_stopped_hooks(initial_shutter_closed: bool
     assert al.shutter_closed is True  # unstage() must close the shutter
 
 
-async def test_multiple_collections_with_single_only_logic_warns(caplog):
-    """Test that requesting multiple collections warns, leads to empty prepare ctx."""
-    det = StandardDetector()
-    det.add_detector_logics(ReadableOnlyDataLogic())
-
-    await det.prepare(TriggerInfo(number_of_events=5))
-
-    assert "only supports a single collection" in caplog.text
-    assert det._prepare_ctx is not None
-    assert det._prepare_ctx.readable_data_providers == []
-    assert det._prepare_ctx.streamable_data_providers == []
-
-
 async def test_data_logic_with_no_prepare_methods_raises():
     """Test error when DataLogic doesn't override any prepare methods."""
 
@@ -949,16 +920,18 @@ async def test_different_collections_written_raises(tmp_path):
         await det.kickoff()
 
 
-async def test_multiple_data_logics(tmp_path):
-    """Test detector with multiple data logics."""
+async def test_data_logic_and_registered_signal(tmp_path):
+    """A registered signal and a data logic both describe(), only one collects."""
     det = StandardDetector(name="det")
-    dl1 = ReadableOnlyDataLogic()
-    dl2 = StreamableOnlyDataLogic(tmp_path)
-    det.add_detector_logics(JustInternalTriggerLogic(), dl1, dl2)
+    det.counts, _ = soft_signal_r_and_setter(int, 42, name="det-counts")
+    det.set_readable_format(det.counts, Format.HINTED_SIGNAL)
+    det.add_detector_logics(
+        JustInternalTriggerLogic(), StreamableOnlyDataLogic(tmp_path)
+    )
 
     await det.prepare(TriggerInfo())
 
-    # Should have data from both logics
+    # Should have data from the data logic and the registered signal
     description = await det.describe()
     assert description == {
         "det": {
@@ -968,11 +941,11 @@ async def test_multiple_data_logics(tmp_path):
             "shape": [1, 10, 15],
             "source": f"file://localhost/{tmp_path.as_posix().lstrip('/')}/test.h5",
         },
-        "foo-value": {
+        "det-counts": {
             "dtype": "integer",
             "dtype_numpy": "<i8",
             "shape": [],
-            "source": "soft://foo-value",
+            "source": "soft://det-counts",
         },
     }
     # But collect only has streamable
@@ -1038,7 +1011,6 @@ async def test_child_readable_config_signals_in_describe_configuration():
 
     det = StandardDetector(name="det")
     det.add_readables([child], Format.CHILD)
-    det.add_detector_logics(ReadableOnlyDataLogic())
     await det.prepare(TriggerInfo())
 
     config = await det.describe_configuration()
@@ -1048,7 +1020,7 @@ async def test_child_readable_config_signals_in_describe_configuration():
     assert reading["child-exposure"]["value"] == 1.5
 
 
-async def test_child_readable_read_signals_in_read():
+async def test_child_readable_read_signals_in_read(tmp_path):
     """Child StandardReadable HINTED_SIGNALs appear in read/describe."""
     child = StandardReadable(name="child")
     read_sig = soft_signal_rw(int, initial_value=99, name="child-counts")
@@ -1056,21 +1028,20 @@ async def test_child_readable_read_signals_in_read():
 
     det = StandardDetector(name="det")
     det.add_readables([child], Format.CHILD)
-    det.add_detector_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
     await det.prepare(TriggerInfo())
 
+    # The data logic describes its stream, the child describes its signal
     desc = await det.describe()
     assert "child-counts" in desc
-    assert "foo-value" in desc
+    assert "det" in desc
 
     reading = await det.read()
     assert "child-counts" in reading
     assert reading["child-counts"]["value"] == 99
-    # Data provider signal is also present
-    assert "foo-value" in reading
 
 
-async def test_child_readable_hints_merged():
+async def test_child_readable_hints_merged(tmp_path):
     """Child StandardReadable hints are merged with data logic hints."""
     child = StandardReadable(name="child")
     hinted_sig = soft_signal_rw(float, name="child-intensity")
@@ -1078,11 +1049,11 @@ async def test_child_readable_hints_merged():
 
     det = StandardDetector(name="det")
     det.add_readables([child], Format.CHILD)
-    det.add_detector_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
 
     assert "fields" in det.hints
     assert "child-intensity" in det.hints["fields"]
-    assert "foo-value" in det.hints["fields"]
+    assert "det" in det.hints["fields"]
 
 
 async def test_trigger_logic_not_implemented_errors():
@@ -1108,9 +1079,6 @@ async def test_trigger_logic_not_implemented_errors():
 async def test_data_logic_not_implemented_errors():
     """Test NotImplementedError for unimplemented DetectorDataLogic methods."""
     logic = DetectorDataLogic()
-
-    with pytest.raises(NotImplementedError):
-        await logic.prepare_single("test")
 
     with pytest.raises(NotImplementedError):
         await logic.prepare_unbounded("test")

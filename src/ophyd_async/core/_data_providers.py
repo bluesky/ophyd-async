@@ -1,37 +1,12 @@
 from abc import abstractmethod
 from collections.abc import AsyncIterator, Sequence
-from dataclasses import dataclass
 from typing import Any
 
-from bluesky.protocols import Reading, StreamAsset
+from bluesky.protocols import StreamAsset
 from event_model import ComposeStreamResource, DataKey, StreamRange
 
 from ._signal import SignalR, SignalW
 from ._utils import ConfinedModel
-
-
-class ReadableDataProvider:
-    @abstractmethod
-    async def make_datakeys(self) -> dict[str, DataKey]:
-        """Return a DataKey for each Readable that produces a Reading.
-
-        Called before the first exposure is taken.
-        """
-
-    @abstractmethod
-    async def make_readings(self) -> dict[str, Reading]:
-        """Read the Signals and return their values."""
-
-
-@dataclass
-class SignalDataProvider(ReadableDataProvider):
-    signal: SignalR
-
-    async def make_datakeys(self) -> dict[str, DataKey]:
-        return await self.signal.describe()
-
-    async def make_readings(self) -> dict[str, Reading]:
-        return await self.signal.read(cached=False)
 
 
 class StreamableDataProvider:

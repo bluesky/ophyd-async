@@ -131,6 +131,43 @@ A run's descriptor is emitted at its start, and `HINTED_SIGNAL` sets up monitori
 disagree. This is documented rather than enforced: the check would have to know about run
 boundaries, which a Device does not.
 
+### `StandardDetector` inherits `StandardReadable`
+
+A detector's step-scan signals are registered exactly like any other Device's, and
+`read()`, `describe()` and `hints` merge them on top of whatever the data logics produce.
+`add_config_signals` becomes a deprecated wrapper.
+
+The detector does not *reimplement* any of those verbs to achieve it. `StandardReadable`
+grows two hooks, `_extra_funcs_for(verb)` and `_extra_hint_sources()`, that contribute
+from somewhere other than the registry, and `StandardDetector` overrides those to add what
+its data logics produce. Likewise it registers its stage and unstage work into
+`_stage_funcs`/`_unstage_funcs`, the way `StandardFlyable` already does, rather than
+replacing `stage()`. Overriding the verbs meant re-deriving the registered children's
+contributions by hand in each one, which is exactly what would drift.
+
+One consequence: a detector with no hinted fields now reports `hints` as `{}` rather than
+`{"fields": []}`, because it no longer special cases what `StandardReadable` already does.
+
+Plugins are **not** registered automatically. `AreaDetector` registers only the driver's
+`acquire_time` and `acquire_period`, plus whatever the caller passes as `config_sigs`.
+Registering a plugin is a `set_readable_format()` call at the call site, which is the
+explicit opt-in the #1395 reviewers asked for, now expressible per plugin and reversible
+at runtime.
+
+### The `prepare_single` data logic tier goes
+
+ADR 0012 gave `DetectorDataLogic` a `prepare_single` tier, returning a
+`ReadableDataProvider`, so that a source producing one value per event could reach
+`read()` and `describe()`. Registering a signal now does that, for any Device and without
+a data logic, so the tier has nothing left of its own: its only in-tree implementation was
+`PluginSignalDataLogic`, wrapping a driver and one `SignalR`, and that is a
+`set_readable_format(det.stats.total, Format.HINTED_UNCACHED_SIGNAL)` call.
+
+`prepare_single`, `ReadableDataProvider` and `SignalDataProvider` are therefore deleted
+rather than kept alongside. Keeping them would leave two ways to get a scalar into an
+event, one of which drops itself with a warning as soon as the scan asks for more than one
+collection, while the other simply works.
+
 ### Formats are stored in the same file as settings, under a reserved key
 
 Values and formats are applied on the same cadence — a technique change wants both — so

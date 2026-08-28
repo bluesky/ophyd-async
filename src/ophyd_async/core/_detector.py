@@ -25,9 +25,7 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
-from ophyd_async.core._log import logger
-
-from ._data_providers import ReadableDataProvider, StreamableDataProvider
+from ._data_providers import StreamableDataProvider
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
@@ -313,18 +311,15 @@ async def _get_collections_written(
 class DetectorDataLogic:
     """Abstract base class for detector data logic and handling.
 
-    Implementations must implement either prepare_unbounded for data sources
-    that work with step scans as well as flyscans, or prepare_single for those
-    that only work with step scans.
+    Implementations must override `prepare_unbounded`. A source that produces a
+    single value per event, like a plugin scalar, does not need a data logic at
+    all: register its signal with
+    [](#StandardReadable.set_readable_format) instead.
     """
 
     #: Add this suffix to the detector name to specify the datakey. These need to be
     #: different for each DetectorDataLogic added to a detector
     datakey_suffix: str = ""
-
-    async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
-        """Provider can only work for a single event."""
-        raise NotImplementedError(self)
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         """Provider can work for an unbounded number of collections."""
@@ -345,7 +340,6 @@ _data_logic_supported = functools.partial(_logic_supported, DetectorDataLogic)
 @dataclass
 class _PrepareCtx:
     trigger_info: TriggerInfo
-    readable_data_providers: Sequence[ReadableDataProvider]
     streamable_data_providers: Sequence[StreamableDataProvider]
     collections_written: int
 
@@ -516,7 +510,6 @@ class StandardDetector(
             == trigger_info.collections_per_event
         ):
             # Reuse the existing data providers
-            readable_data_providers = self._prepare_ctx.readable_data_providers
             streamable_data_providers = self._prepare_ctx.streamable_data_providers
         else:
             # Stop the existing providers if there is a context and make new ones
@@ -525,36 +518,19 @@ class StandardDetector(
                     await data_logic.stop()
             # Setup the data logic for the right number of collections
             streamable_coros: list[Awaitable[StreamableDataProvider]] = []
-            readable_coros: list[Awaitable[ReadableDataProvider]] = []
             for dl in self._data_logics:
-                if _data_logic_supported(dl.prepare_unbounded):
-                    streamable_coros.append(
-                        dl.prepare_unbounded(self.name + dl.datakey_suffix)
-                    )
-                elif _data_logic_supported(dl.prepare_single):
-                    if trigger_info.number_of_collections == 1:
-                        readable_coros.append(
-                            dl.prepare_single(self.name + dl.datakey_suffix)
-                        )
-                    else:
-                        logger.warning(
-                            f"DataLogic {dl} only supports a single collection, but "
-                            "the detector was prepared for "
-                            f"{trigger_info.number_of_collections} collections."
-                        )
-                else:
+                if not _data_logic_supported(dl.prepare_unbounded):
                     msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"
                     raise RuntimeError(msg)
-            streamable_data_providers, readable_data_providers = await asyncio.gather(
-                asyncio.gather(*streamable_coros),
-                asyncio.gather(*readable_coros),
-            )
+                streamable_coros.append(
+                    dl.prepare_unbounded(self.name + dl.datakey_suffix)
+                )
+            streamable_data_providers = await asyncio.gather(*streamable_coros)
 
         # Stash the prepare context so we can use it in trigger/kickoff
         self._prepare_ctx = _PrepareCtx(
             trigger_info=trigger_info,
             streamable_data_providers=streamable_data_providers,
-            readable_data_providers=readable_data_providers,
             collections_written=await _get_collections_written(
                 streamable_data_providers
             ),
@@ -785,8 +761,6 @@ class StandardDetector(
         if verb not in (_Verb.DESCRIBE, _Verb.READ):
             return
         ctx = error_if_none(self._prepare_ctx, "Prepare not run")
-        for dp in ctx.readable_data_providers:
-            yield dp.make_datakeys if verb is _Verb.DESCRIBE else dp.make_readings
         if verb is _Verb.DESCRIBE:
             # Streamable providers describe their shape for a step scan, but
             # produce their data through collect_asset_docs rather than read()

@@ -115,12 +115,15 @@ For example, for ADAravis:
 The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_detector_logics()` to add additional data sources:
 
 ### Reading stats plugins alongside file writing
-```python
-from ophyd_async.epics.adcore import PluginSignalDataLogic
+A plugin scalar needs no data logic: a detector is a [](#StandardReadable), so register
+the signal and it appears in `read()` alongside whatever the file writer produces.
 
-det = adaravis.AravisDetector(prefix, path_provider)
-# Add stats total as a readable signal in events
-det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
+```python
+from ophyd_async.core import StandardReadableFormat as Format
+
+det = adaravis.AravisDetector(prefix, path_provider, plugins={"stats": stats})
+# Add stats total as a hinted signal in events
+det.set_readable_format(det.stats.total, Format.HINTED_UNCACHED_SIGNAL)
 ```
 
 ### Multiple HDF writers for different ROIs

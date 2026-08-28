@@ -67,6 +67,20 @@ so a format changed part way through a run would leave `describe()` and `read()`
 disagreeing.
 ```
 
+## Opting a detector plugin in
+
+A [](#StandardDetector) is a [](#StandardReadable), so the same call works on one. This
+matters most for areaDetector, where a detector often carries many more plugins than are
+wired into its chain — so plugins are never registered automatically, and you opt in to
+the ones that are actually producing meaningful values:
+
+```python
+det.set_readable_format(det.stats.total, Format.HINTED_UNCACHED_SIGNAL)
+```
+
+Data produced by a [](#DetectorDataLogic) is added on top of these, so a detector can
+write a file *and* report a plugin scalar in a step scan.
+
 ```{seealso}
 [](./store-and-retrieve.md) for saving a set of formats alongside signal values and
 loading them back, and
