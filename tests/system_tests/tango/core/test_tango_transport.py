@@ -1126,9 +1126,16 @@ async def test_attribute_unsubscribe_callback(everything_device_trl):
 
     attr_proxy.subscribe_callback(callback)
     assert attr_proxy.has_subscription()
+    # No await in between, so this lands before the background subscribe task
+    # subscribe_callback() started has had a chance to run
     attr_proxy.unsubscribe_callback()
     assert not attr_proxy.has_subscription()
     await asyncio.sleep(0.1)
+    # ...and once it has run, it must have undone its own subscription rather
+    # than storing one that nothing will ever unsubscribe. A leaked
+    # subscription outlives this test's event loop, and tango then dispatches
+    # events into a closed loop from its own event thread.
+    assert attr_proxy._eid is None
 
 
 @pytest.mark.asyncio
