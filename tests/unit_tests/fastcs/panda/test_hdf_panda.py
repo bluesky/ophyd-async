@@ -276,7 +276,7 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
     # Check that another kickoff without prepare is not allowed
     with pytest.raises(
         RuntimeError,
-        match="Kickoff requested 15:30, but detector was only prepared up to 15",
+        match="prepare.* must be called before kickoff",
     ):
         await hdf_panda.kickoff()
     # But preparing again is ok

@@ -14,9 +14,7 @@ from typing import cast
 
 from bluesky.protocols import (
     Collectable,
-    Flyable,
     HasHints,
-    Preparable,
     Reading,
     Stageable,
     StreamAsset,
@@ -30,6 +28,7 @@ from ._data_providers import (
     PageableDataProvider,
     StreamableDataProvider,
 )
+from ._flyable import StandardFlyable, WatchableFlyableLogic
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
@@ -38,18 +37,13 @@ from ._readable import (
     _Verb,
 )
 from ._settings import Settings
-from ._signal import (
-    SignalDict,
-    SignalR,
-    SignalRW,
-    observe_signals_value,
-    soft_signal_rw,
-)
-from ._status import AsyncStatus, WatchableAsyncStatus
+from ._signal import SignalDict, SignalR, SignalRW, observe_signals_value
+from ._status import WatchableAsyncStatus
 from ._utils import (
     DEFAULT_TIMEOUT,
     ConfinedModel,
     WatcherUpdate,
+    abstract_cached_property,
     error_if_none,
     merge_gathered_dicts,
 )
@@ -379,101 +373,73 @@ class DetectorDataLogic:
 
 
 @dataclass
-class _PrepareCtx:
-    trigger_info: TriggerInfo
-    #: The data logics producing data for this scan, with what they made
+class _DetectorData:
+    """The data providers a detector has prepared, and what they were made for.
+
+    Outlives a single prepare -> kickoff -> complete cycle: a step scan reuses an
+    open file across its points, and the RunEngine collects from a flyer after
+    `complete()` has returned. Cleared by `stage()`/`unstage()`.
+    """
+
     serving: Sequence[tuple[DetectorDataLogic, _DataProvider]]
-    collections_written: int
+    #: What the providers were made for, and so when they can be reused
+    collections_per_event: int
+    period: float
 
     @property
-    def streamable_data_providers(self) -> list[StreamableDataProvider]:
+    def streamable(self) -> list[StreamableDataProvider]:
         return [dp for _, dp in self.serving if isinstance(dp, StreamableDataProvider)]
 
     @property
-    def pageable_data_providers(self) -> list[PageableDataProvider]:
+    def pageable(self) -> list[PageableDataProvider]:
         return [dp for _, dp in self.serving if isinstance(dp, PageableDataProvider)]
+
+    @property
+    def collectable(self) -> list[_DataProvider]:
+        """Every provider, whether it collects as stream datums or as pages."""
+        return [dp for _, dp in self.serving]
 
 
 @dataclass
-class _KickoffCtx:
+class _FlyCtx:
+    """What prepare() set up, threaded through kickoff() to complete()."""
+
     trigger_info: TriggerInfo
-    data_providers: Sequence[StreamableDataProvider | PageableDataProvider]
-    collections_written: int
-    collections_requested: int
-    is_last_kickoff: bool
+    #: What the providers had written when kickoff() ran, None until then
+    kickoff_collections_written: int | None = None
 
 
-class StandardDetector(
-    StandardReadable,
-    Stageable,
-    Triggerable,
-    Preparable,
-    Flyable,
-    Collectable,
-    HasHints,
-):
-    """Detector base class for step and fly scanning detectors.
+class DetectorLogic(WatchableFlyableLogic[TriggerInfo, _FlyCtx]):
+    """Drive a detector through its trigger, acquire and data logics.
 
-    Aggregates trigger, arm, reading or stream logic together.
-
-    Signals read during a step scan are registered with
-    [](#StandardReadable.set_readable_format), exactly as on any other
-    `StandardReadable`; data produced by a `DetectorDataLogic` is added on top
-    of those in `read()` and `describe()`.
-
-    `read()` and `describe()` require `prepare()` to have run, and raise
-    otherwise, so that a descriptor can never be emitted without the detector's
-    data keys. `trigger()` prepares implicitly, so a step scan never has to do
-    it explicitly. `read_configuration()` and `describe_configuration()` have no
-    such requirement.
-
-    `WritesStreamAssets` (and its `collect_asset_docs`) and
-    `EventPageCollectable` (and its `collect_pages`) are *not* inherited: a
-    detector writes stream assets or emits event pages depending on which data
-    logics it carries, never both, and the bluesky bundler treats the two as
-    mutually exclusive. The relevant method is bound as an instance attribute in
-    `add_detector_logics` only when a data logic supporting it is present, so the
-    bundler's structural isinstance check sees exactly the one that applies.
+    :param logics:
+        At most one [](#DetectorTriggerLogic), at most one
+        [](#DetectorAcquireLogic), and any number of [](#DetectorDataLogic), in
+        any order. Each object must fill exactly one of those roles.
+    :param publish_collect_methods:
+        Called from `on_prepare` with which collect verbs the data logics turn
+        out to need, so that a [](#StandardDetector) can expose the matching
+        bluesky protocol. A detector passes its own
+        `_publish_collect_methods`; [](#StandardDetector.with_logics) does that
+        for an ad-hoc one.
     """
 
-    # Logic for the detector
-    _trigger_logic: DetectorTriggerLogic | None = None
-    _acquire_logic: DetectorAcquireLogic | None = None
-    _data_logics: Sequence[DetectorDataLogic] = ()
-    # Context produced by prepare, used by trigger and kickoff
-    _prepare_ctx: _PrepareCtx | None = None
-    # Context produced by kickoff, used by complete
-    _kickoff_ctx: _KickoffCtx | None = None
-    # The triggers that are supported by the trigger logic
-    _supported_triggers: set[DetectorTrigger] = {DetectorTrigger.INTERNAL}
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        # Contribute to _StandardBase's fan out rather than replacing stage(),
-        # so the readable children registered on this detector still get staged
-        self._stage_funcs += (self._stage_detector,)
-        self._unstage_funcs += (self._unstage_detector,)
-
-    # Report the number of events for the next kickoff
-    @cached_property
-    def events_to_kickoff(self) -> SignalRW[int]:
-        # TODO: only allow this to be revised down when trigger_info.number_of_events >1
-        # and we have a reusable data provider
-        # requries https://github.com/bluesky/ophyd-async/issues/1119
-        signal = soft_signal_rw(int)
-        # Name and parent this manually as `Device` doesn't know how to deal with cached
-        # properties
-        signal.parent = self
-        signal.set_name(f"{self.name}-events_to_kickoff")
-        return signal
-
-    def add_detector_logics(
-        self, *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic
+    def __init__(
+        self,
+        *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
+        publish_collect_methods: Callable[..., None],
     ) -> None:
-        """Add acquire, trigger or data logic to the detector.
-
-        :param logic: The logic to add
-        """
+        self.logics = logics
+        self.publish_collect_methods = publish_collect_methods
+        self.trigger_logic: DetectorTriggerLogic | None = None
+        self.acquire_logic: DetectorAcquireLogic | None = None
+        self.data_logics: tuple[DetectorDataLogic, ...] = ()
+        #: The trigger types the trigger logic implements
+        self.supported_triggers: set[DetectorTrigger] = {DetectorTrigger.INTERNAL}
+        #: Prefix for the datakeys the data logics produce, set from `Device.name`
+        self.datakey_prefix = ""
+        #: The data providers currently prepared, or None if there are none
+        self.data: _DetectorData | None = None
         for logic in logics:
             # Each object must fill exactly one role. A single object that is both,
             # say, an AcquireLogic and a DataLogic would otherwise register as only
@@ -495,43 +461,472 @@ class StandardDetector(
                     "for each logic role"
                 )
             if isinstance(logic, DetectorTriggerLogic):
-                if self._trigger_logic is not None:
+                if self.trigger_logic is not None:
                     raise RuntimeError("Detector already has trigger logic")
-                self._trigger_logic = logic
-                # Store the triggers that are supported
-                self._supported_triggers = _get_supported_triggers(logic)
+                self.trigger_logic = logic
+                self.supported_triggers = _get_supported_triggers(logic)
             elif isinstance(logic, DetectorAcquireLogic):
-                if self._acquire_logic is not None:
+                if self.acquire_logic is not None:
                     raise RuntimeError("Detector already has acquire logic")
-                self._acquire_logic = logic
+                self.acquire_logic = logic
             elif isinstance(logic, DetectorDataLogic):
-                self._data_logics = (*self._data_logics, logic)
+                self.data_logics = (*self.data_logics, logic)
             else:
                 raise TypeError(f"Unknown logic type: {type(logic)}")
+        #: Whether the trigger logic can calculate a deadtime
+        self.supports_deadtime = self.trigger_logic is not None and (
+            _trigger_logic_supported(self.trigger_logic.get_deadtime)
+        )
+
+    @property
+    def prepared_data(self) -> _DetectorData:
+        """The prepared data providers, raising if prepare() has not run."""
+        return error_if_none(
+            self.data, f"{self.datakey_prefix}: prepare() must be called first"
+        )
+
+    def get_deadtime(self, config_values: SignalDict) -> float:
+        """Return the deadtime the trigger logic calculates from `config_values`."""
+        trigger_logic = error_if_none(self.trigger_logic, "No trigger logic")
+        return trigger_logic.get_deadtime(config_values)
+
+    def get_hinted_fields(self) -> Iterator[Sequence[str]]:
+        """Yield the hinted fields of each data logic that is producing data.
+
+        Before anything is prepared every data logic is asked, since `hints` is
+        read outside a scan too; once prepared, only the ones actually serving
+        it, so a logic that sat the scan out does not hint at data nobody will
+        produce.
+        """
+        logics = (
+            [dl for dl, _ in self.data.serving] if self.data else list(self.data_logics)
+        )
+        for dl in logics:
+            if fields := dl.get_hinted_fields(self._datakey_name(dl)):
+                yield fields
+
+    async def on_stage(self) -> None:
+        """Stop data production and make sure the detector is idle."""
+        self.data = None
+        coros: list[Awaitable] = [dl.stop() for dl in self.data_logics]
+        if self.acquire_logic:
+            coros.append(self.acquire_logic.ensure_ready())
+        await asyncio.gather(*coros)
+
+    async def on_unstage(self) -> None:
+        """Stop data production and the detector at the end of a scan."""
+        self.data = None
+        coros: list[Awaitable] = [dl.stop() for dl in self.data_logics]
+        if self.acquire_logic:
+            coros.append(self.acquire_logic.ensure_stopped())
+        await asyncio.gather(*coros)
+
+    async def on_prepare(self, value: TriggerInfo) -> _FlyCtx:
+        """Set the trigger logic up and make the data providers for this scan.
+
+        :param value: TriggerInfo describing how to trigger the detector
+        """
+        await self._prepare_trigger_logic(value)
+        # This must come after preparing the trigger logic, as the period is read
+        # back from it and may determine the datatype of the streams
+        value = await self._resolve_period(value)
+        await self._prepare_data(value)
+        # External triggering can start acquiring now
+        if self.acquire_logic and value.trigger is not DetectorTrigger.INTERNAL:
+            await self.acquire_logic.start_acquiring()
+        return _FlyCtx(trigger_info=value)
+
+    async def on_kickoff(self, ctx: _FlyCtx) -> _FlyCtx:
+        """Start the fly scan, noting where the providers had got to."""
+        collectable = self.prepared_data.collectable
+        if not collectable:
+            raise ValueError(
+                f"Detector {self.datakey_prefix} has no collectable data, "
+                "so cannot kickoff"
+            )
+        ctx.kickoff_collections_written = await _get_collections_written(collectable)
+        # External triggering has already started; internal starts now
+        if self.acquire_logic and ctx.trigger_info.trigger is DetectorTrigger.INTERNAL:
+            await self.acquire_logic.start_acquiring()
+        return ctx
+
+    def on_complete_updates(self, ctx: _FlyCtx) -> AsyncIterator[WatcherUpdate]:
+        """Wait for the scan to finish, reporting collections written as progress."""
+        return self._wait_for_collections(
+            trigger_info=ctx.trigger_info,
+            initial_collections_written=error_if_none(
+                ctx.kickoff_collections_written, "Kickoff not run"
+            ),
+            collections_requested=ctx.trigger_info.number_of_collections,
+            watcher_divisor=ctx.trigger_info.collections_per_event,
+        )
+
+    async def on_trigger(self, ctx: _FlyCtx) -> AsyncIterator[WatcherUpdate]:
+        """Take one event's worth of exposures and wait for them to be written."""
+        if ctx.trigger_info.number_of_events != 1:
+            raise ValueError(
+                "trigger() is not supported for multiple events, the detector was "
+                f"prepared with number_of_events={ctx.trigger_info.number_of_events}."
+            )
+        # A finite buffer holds one event at a time, so it is re-armed for each
+        # point of a step scan; a streaming provider carries on from where it was
+        data = await self._prepare_data(ctx.trigger_info)
+        # Take the baseline before acquisition starts, or frames written between
+        # the two would be counted towards this event. A re-armed buffer starts
+        # from zero, where a streaming provider continues from wherever it has got
+        # to -- which is not where prepare left it, since a step scan triggers many
+        # times against one prepare. A detector never mixes the two.
+        initial = (
+            0 if data.pageable else await _get_collections_written(data.collectable)
+        )
+        if self.acquire_logic:
+            await self.acquire_logic.start_acquiring()
+        async for update in self._wait_for_collections(
+            trigger_info=ctx.trigger_info,
+            initial_collections_written=initial,
+            collections_requested=ctx.trigger_info.collections_per_event,
+        ):
+            yield update
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        """The TriggerInfo to prepare with when a plan calls trigger() directly."""
+        # Opt-in: set OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES to have trigger() read
+        # back current hardware state (e.g. num_images) via default_trigger_info()
+        # instead of always falling back to TriggerInfo(). See ADR 0013.
+        # TODO: flip default to YES and remove this guard in a future PR once
+        # downstream code has had time to implement default_trigger_info().
+        preserve_state = (
+            os.environ.get("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "NO").upper() == "YES"
+        )
+        if preserve_state and self.trigger_logic is not None:
+            if not _trigger_logic_supported(self.trigger_logic.default_trigger_info):
+                raise RuntimeError(
+                    "OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES is set but "
+                    f"'{self.datakey_prefix}' has no default_trigger_info() - "
+                    "implement default_trigger_info() on your DetectorTriggerLogic "
+                    "subclass or unset the environment variable."
+                )
+            return await self.trigger_logic.default_trigger_info()
+        return TriggerInfo()
+
+    def _datakey_name(self, dl: DetectorDataLogic) -> str:
+        return self.datakey_prefix + dl.datakey_suffix
+
+    async def _prepare_trigger_logic(self, value: TriggerInfo) -> None:
+        if self.trigger_logic and _trigger_logic_supported(
+            self.trigger_logic.prepare_exposures_per_collection
+        ):
+            # If we can do multiple exposures per collection then set it up
+            # even if there was only 1 requested to clear previous settings
+            await self.trigger_logic.prepare_exposures_per_collection(
+                value.exposures_per_collection
+            )
+        elif value.exposures_per_collection != 1:
+            raise ValueError(
+                "Multiple exposures per collection not supported by "
+                f"'{self.datakey_prefix}'"
+            )
+        if value.trigger not in self.supported_triggers:
+            format_triggers = ", ".join(sorted(t.name for t in self.supported_triggers))
+            raise ValueError(
+                f"Trigger type {value.trigger} not supported by "
+                f"'{self.datakey_prefix}', supported types are: [{format_triggers}]"
+            )
+        if self.trigger_logic:
+            match value.trigger:
+                case DetectorTrigger.INTERNAL:
+                    await self.trigger_logic.prepare_internal(
+                        num=value.number_of_exposures,
+                        livetime=value.livetime,
+                        deadtime=value.deadtime,
+                    )
+                case DetectorTrigger.EXTERNAL_EDGE:
+                    await self.trigger_logic.prepare_edge(
+                        num=value.number_of_exposures,
+                        livetime=value.livetime,
+                    )
+                case DetectorTrigger.EXTERNAL_LEVEL:
+                    await self.trigger_logic.prepare_level(
+                        num=value.number_of_exposures,
+                    )
+        elif value.livetime != 0.0 or value.deadtime != 0.0:
+            raise ValueError(
+                f"Detector {self.datakey_prefix} has no trigger logic, so cannot set "
+                "livetime or deadtime"
+            )
+
+    async def _resolve_period(self, value: TriggerInfo) -> TriggerInfo:
+        # A livetime of 0 means "use whatever the detector currently has set". A
+        # data logic that sizes chunks or a buffer by the exposure period needs a
+        # real value, so read the current livetime and deadtime back from the
+        # trigger logic and fill them in. This runs after the trigger logic has been
+        # prepared, so the hardware already holds the values we read.
+        if (
+            value.livetime == 0.0
+            and self.trigger_logic is not None
+            and _trigger_logic_supported(self.trigger_logic.default_trigger_info)
+        ):
+            current = await self.trigger_logic.default_trigger_info()
+            if current.livetime or current.deadtime:
+                value = value.model_copy(
+                    update={
+                        "livetime": current.livetime,
+                        "deadtime": current.deadtime,
+                    }
+                )
+        return value
+
+    async def _prepare_data(self, trigger_info: TriggerInfo) -> _DetectorData:
+        """Make sure the data providers are ready for this scan."""
+        period = trigger_info.livetime + trigger_info.deadtime
+        # Providers are reused while the scan they were made for is unchanged, so
+        # that a step scan does not reopen its file on every point. Both parts of
+        # the key are baked into a streaming provider when it is made: the shape
+        # from collections_per_event and the chunking from the period. A finite
+        # buffer is re-made either way, since re-making is what re-arms it.
+        previous = self.data
+        if (
+            previous is not None
+            and previous.collections_per_event == trigger_info.collections_per_event
+            and previous.period == period
+        ):
+            serving = await self._rearm_bounded(previous, trigger_info)
+        else:
+            serving = await self._make_serving(trigger_info)
+        self.data = _DetectorData(
+            serving=serving,
+            collections_per_event=trigger_info.collections_per_event,
+            period=period,
+        )
+        # Which collect verb the detector exposes follows what it will actually
+        # produce, so it is recomputed here rather than fixed at construction
+        self.publish_collect_methods(
+            stream_assets=bool(self.data.streamable),
+            event_pages=bool(self.data.pageable),
+        )
+        return self.data
+
+    async def _make_serving(
+        self, trigger_info: TriggerInfo
+    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
+        """Ask every data logic what it would make, and start the ones we use."""
+        # Stop what is running before anything new is made, since a logic that
+        # cannot describe its data without opening its file does so here
+        if self.data is not None:
+            await asyncio.gather(*(dl.stop() for dl, _ in self.data.serving))
+        cpe = trigger_info.collections_per_event
+        period = trigger_info.livetime + trigger_info.deadtime
+        made = await asyncio.gather(
+            *(
+                dl.make_data_provider(
+                    self._datakey_name(dl), trigger_info.number_of_collections, period
+                )
+                for dl in self.data_logics
+            )
+        )
+        # A logic returns None to sit this scan out, e.g. a finite buffer asked
+        # for an unbounded number of collections, or a plugin that is switched off
+        serving = [
+            (dl, dp)
+            for dl, dp in zip(self.data_logics, made, strict=True)
+            if dp is not None
+        ]
+        serving = await self._drop_shadowed(serving, cpe)
+        await asyncio.gather(*(dl.start() for dl, _ in serving))
+        return serving
+
+    async def _drop_shadowed(
+        self,
+        serving: Sequence[tuple[DetectorDataLogic, _DataProvider]],
+        collections_per_event: int,
+    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
+        """Drop finite buffers whose datakeys the stream assets already carry.
+
+        A detector cannot produce both stream assets and event pages: the bundler
+        treats them as mutually exclusive. Carrying both logics is still useful,
+        because the same quantity can be written durably into the file *and* read
+        from a plugin's buffer -- an areaDetector stats total, say, which the HDF
+        writer pulls in as an NDAttribute. Where every key a finite buffer would
+        produce is also written to the file, the file wins and the buffer sits the
+        scan out. Anything else is a conflict, so it raises.
+        """
+        pageable = [
+            (dl, dp) for dl, dp in serving if isinstance(dp, PageableDataProvider)
+        ]
+        streamable = [dp for _, dp in serving if isinstance(dp, StreamableDataProvider)]
+        if not (pageable and streamable):
+            return serving
+        stream_keys: set[str] = set()
+        for dp in streamable:
+            stream_keys |= set(await dp.make_datakeys(collections_per_event))
+        shadowed = []
+        for dl, dp in pageable:
+            unshadowed = (
+                set(await dp.make_datakeys(collections_per_event)) - stream_keys
+            )
+            if unshadowed:
+                raise TypeError(
+                    f"Detector {self.datakey_prefix} would produce "
+                    f"{sorted(unshadowed)} as event pages and the rest of its data "
+                    "as stream assets; these cannot be combined on one detector"
+                )
+            shadowed.append(dl)
+        # Nothing has been started yet, so a shadowed logic needs no stopping
+        return [(dl, dp) for dl, dp in serving if dl not in shadowed]
+
+    async def _rearm_bounded(
+        self, previous: _DetectorData, trigger_info: TriggerInfo
+    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
+        """Re-make and re-start the finite buffers, keeping everything else."""
+        period = trigger_info.livetime + trigger_info.deadtime
+        serving: list[tuple[DetectorDataLogic, _DataProvider]] = []
+        for dl, dp in previous.serving:
+            if isinstance(dp, PageableDataProvider):
+                await dl.stop()
+                rearmed = await dl.make_data_provider(
+                    self._datakey_name(dl), trigger_info.number_of_collections, period
+                )
+                if rearmed is None:
+                    continue
+                await dl.start()
+                serving.append((dl, rearmed))
+            else:
+                serving.append((dl, dp))
+        return serving
+
+    async def _wait_for_collections(
+        self,
+        trigger_info: TriggerInfo,
+        initial_collections_written: int,
+        collections_requested: int,
+        watcher_divisor: int = 1,
+    ) -> AsyncIterator[WatcherUpdate]:
+        data_providers = self.prepared_data.collectable
+        start_time = time.monotonic()
+        current_collections_written = {
+            dp.collections_written_signal: initial_collections_written
+            for dp in data_providers
+        }
+        target_collections_written = initial_collections_written + collections_requested
+        if data_providers:
+            async for sig, value in observe_signals_value(
+                *current_collections_written.keys(),
+                timeout=trigger_info.exposure_timeout,
+            ):
+                current_collections_written[sig] = value
+                collections_written = min(current_collections_written.values())
+                yield WatcherUpdate(
+                    name=self.datakey_prefix,
+                    current=collections_written // watcher_divisor,
+                    initial=initial_collections_written // watcher_divisor,
+                    target=target_collections_written // watcher_divisor,
+                    unit="",
+                    precision=0,
+                    time_elapsed=time.monotonic() - start_time,
+                )
+                if collections_written >= target_collections_written:
+                    break
+        if self.acquire_logic:
+            await self.acquire_logic.wait_for_idle()
+
+
+class StandardDetector(
+    StandardReadable,
+    StandardFlyable[TriggerInfo, _FlyCtx],
+    Stageable,
+    Triggerable,
+    Collectable,
+    HasHints,
+):
+    """Detector base class for step and fly scanning detectors.
+
+    Aggregates trigger, acquire and data logic together in a
+    [](#DetectorLogic), which a subclass builds in its `__init__` and returns
+    from `logic`:
+
+    ```python
+    class MyDetector(StandardDetector):
+        def __init__(self, prefix: str, name: str = "") -> None:
+            self.driver = MyDriverIO(prefix)
+            self._logic = DetectorLogic(
+                MyTriggerLogic(self.driver),
+                MyAcquireLogic(self.driver),
+                publish_collect_methods=self._publish_collect_methods,
+            )
+            super().__init__(name=name)
+
+        @cached_property
+        def logic(self) -> DetectorLogic:
+            return self._logic
+    ```
+
+    For an ad-hoc detector, [](#StandardDetector.with_logics) does the same
+    thing without a subclass.
+
+    Signals read during a step scan are registered with
+    [](#StandardReadable.set_readable_format), exactly as on any other
+    `StandardReadable`; data produced by a `DetectorDataLogic` is added on top
+    of those in `read()` and `describe()`.
+
+    `read()` and `describe()` require `prepare()` to have run, and raise
+    otherwise, so that a descriptor can never be emitted without the detector's
+    data keys. `trigger()` prepares implicitly, so a step scan never has to do
+    it explicitly. `read_configuration()` and `describe_configuration()` have no
+    such requirement.
+
+    `WritesStreamAssets` (and its `collect_asset_docs`) and
+    `EventPageCollectable` (and its `collect_pages`) are *not* inherited: which
+    of them applies depends on what the data logics produce for a given scan, so
+    whichever it is gets bound as an instance attribute by `prepare()`.
+    """
+
+    @abstract_cached_property
+    def logic(self) -> DetectorLogic:
+        """The logic that drives this detector, built in the subclass `__init__`."""
+        raise NotImplementedError
+
+    @classmethod
+    def with_logics(
+        cls,
+        *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
+        name: str = "",
+    ) -> "StandardDetector":
+        """Make a detector from some logics, without writing a subclass.
+
+        The logic object a `StandardDetector` needs is built with a callback into
+        the Device, so it cannot be constructed before the Device it belongs to.
+        This does both, for an ad-hoc detector in a plan or a test.
+        """
+        return _LogicsDetector(*logics, name=name)
+
+    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
+        super().set_name(name, child_name_separator=child_name_separator)
+        # The data logics name their datakeys after the Device
+        self.logic.datakey_prefix = name
 
     def _publish_collect_methods(
         self, *, stream_assets: bool, event_pages: bool
     ) -> None:
-        """Bind the collect verb that matches the providers we are using.
+        """Bind the collect verb that matches what the data logics will produce.
 
         Whichever applies is bound as a real instance attribute, so the bluesky
         bundler's isinstance checks (`WritesStreamAssets` vs
-        `EventPageCollectable`) see exactly one of them: they resolve with
+        `EventPageCollectable`) see exactly one of them. They resolve with
         `inspect.getattr_static` on Python 3.12+, which does not call
         `__getattr__`, so a dynamic hook would be invisible. Both names are
         reserved by `Device`, hence `object.__setattr__`.
 
-        Recomputed on every prepare, so the verb that no longer applies is
-        removed rather than left behind from a previous scan.
+        `DetectorLogic` calls this from every prepare, so the verb that no longer
+        applies is removed rather than left behind from a previous scan.
         """
-        for name, method, wanted in (
+        for verb, method, wanted in (
             ("collect_asset_docs", self._collect_asset_docs, stream_assets),
             ("collect_pages", self._collect_pages, event_pages),
         ):
             if wanted:
-                object.__setattr__(self, name, method)
-            elif name in self.__dict__:
-                object.__delattr__(self, name)
+                object.__setattr__(self, verb, method)
+            elif verb in self.__dict__:
+                object.__delattr__(self, verb)
 
     # Back compat - delete before 1.0
     def add_config_signals(self, *signals: SignalR) -> None:
@@ -557,15 +952,13 @@ class StandardDetector(
         The trigger logic is given the value of every signal this detector
         reports as configuration, rather than nominating the ones it wants:
         the values that determine deadtime are exactly the ones that ought to
-        be recorded for the scan anyway, so a second list to keep in step
-        earned nothing.
+        be recorded for the scan anyway.
 
         :param settings: Optional settings to use when getting configuration values
         :return: Tuple of supported trigger types and deadtime in seconds
         """
-        if self._trigger_logic and _trigger_logic_supported(
-            self._trigger_logic.get_deadtime
-        ):
+        deadtime = None
+        if self.logic.supports_deadtime:
             config_values = SignalDict()
             to_read: list[SignalR] = []
             for sig in _config_signals(self):
@@ -575,368 +968,31 @@ class StandardDetector(
                     config_values[sig] = settings[cast(SignalRW, sig)]
                 else:
                     to_read.append(sig)
-            # Read live values concurrently: this is now every configuration
-            # signal rather than a handful the logic named, so doing it in
-            # series would be one round trip per signal
+            # Read live values concurrently: this is every configuration signal
+            # rather than a handful the logic named, so doing it in series would
+            # be one round trip per signal
             for sig, value in zip(
                 to_read,
                 await asyncio.gather(*(sig.get_value() for sig in to_read)),
                 strict=True,
             ):
                 config_values[sig] = value
-            deadtime = self._trigger_logic.get_deadtime(config_values)
-        else:
-            deadtime = None
-        return self._supported_triggers, deadtime
-
-    @AsyncStatus.wrap
-    async def _stage_detector(self) -> None:
-        """Make sure the detector is idle and ready to be used."""
-        coros: list[Awaitable] = [data_logic.stop() for data_logic in self._data_logics]
-        if self._acquire_logic:
-            coros.append(self._acquire_logic.ensure_ready())
-        await asyncio.gather(*coros)
-        self._prepare_ctx = None
-        self._kickoff_ctx = None
-        await self.events_to_kickoff.set(0)
-
-    async def _resolve_period(self, value: TriggerInfo) -> TriggerInfo:
-        # A livetime of 0 means "use whatever the detector currently has set". A
-        # data logic that sizes chunks or a buffer by the exposure period needs a
-        # real value, so read the current livetime and deadtime back from the
-        # trigger logic and fill them in. This runs after the trigger logic has been
-        # prepared, so the hardware already holds the values we read.
-        if (
-            value.livetime == 0.0
-            and self._trigger_logic is not None
-            and _trigger_logic_supported(self._trigger_logic.default_trigger_info)
-        ):
-            current = await self._trigger_logic.default_trigger_info()
-            if current.livetime or current.deadtime:
-                value = value.model_copy(
-                    update={
-                        "livetime": current.livetime,
-                        "deadtime": current.deadtime,
-                    }
-                )
-        return value
-
-    async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
-        num_collections = trigger_info.number_of_collections
-        period = trigger_info.livetime + trigger_info.deadtime
-        previous = self._prepare_ctx
-        # Providers are reused while the scan they were made for is unchanged, so
-        # that a step scan does not reopen its file on every point. Both parts of
-        # the reuse key are baked into a streaming provider when it is made: the
-        # shape from collections_per_event and the chunking from the period. A
-        # finite buffer is re-made either way, since re-making is what re-arms it.
-        reusable = previous is not None and (
-            previous.trigger_info.collections_per_event
-            == trigger_info.collections_per_event
-            and previous.trigger_info.livetime + previous.trigger_info.deadtime
-            == period
-        )
-        if reusable and previous is not None:
-            serving = await self._rearm_bounded(previous, num_collections, period)
-        else:
-            serving = await self._make_serving_providers(num_collections, period)
-        # Which collect verb the detector exposes follows what it will actually
-        # produce, so it is recomputed here rather than fixed at construction
-        self._publish_collect_methods(
-            stream_assets=any(
-                isinstance(dp, StreamableDataProvider) for _, dp in serving
-            ),
-            event_pages=any(isinstance(dp, PageableDataProvider) for _, dp in serving),
-        )
-        self._prepare_ctx = _PrepareCtx(
-            trigger_info=trigger_info,
-            serving=serving,
-            collections_written=await _get_collections_written(
-                [dp for _, dp in serving]
-            ),
-        )
-
-    async def _make_serving_providers(
-        self, num_collections: int, period: float
-    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
-        """Ask every data logic what it would make, and start the ones we use."""
-        # Stop what is running before anything new is made, since a logic that
-        # cannot describe its data without opening its file does so here
-        if self._prepare_ctx is not None:
-            await asyncio.gather(*(dl.stop() for dl, _ in self._prepare_ctx.serving))
-        made = await asyncio.gather(
-            *(
-                dl.make_data_provider(
-                    self.name + dl.datakey_suffix, num_collections, period
-                )
-                for dl in self._data_logics
-            )
-        )
-        # A logic returns None to sit this scan out, e.g. a finite buffer asked
-        # for an unbounded number of collections
-        serving = [
-            (dl, dp)
-            for dl, dp in zip(self._data_logics, made, strict=True)
-            if dp is not None
-        ]
-        streamable = [dp for _, dp in serving if isinstance(dp, StreamableDataProvider)]
-        pageable = [dp for _, dp in serving if isinstance(dp, PageableDataProvider)]
-        # A detector may not produce both kinds at once: it would expose both
-        # collect_asset_docs and collect_pages and produce data from both in a fly
-        # scan, which the bluesky bundler treats as mutually exclusive. A file
-        # writer that also wants stats should carry them in the file (as
-        # NDAttributes) rather than as a separate bounded logic.
-        if streamable and pageable:
-
-            def _describe(providers: Sequence[_DataProvider]) -> str:
-                return ", ".join(type(dp).__name__ for dp in providers)
-
-            raise TypeError(
-                f"Detector {self.name} would produce both event pages "
-                f"({_describe(pageable)}) and stream assets ({_describe(streamable)}); "
-                "these cannot be combined on one detector"
-            )
-        await asyncio.gather(*(dl.start() for dl, _ in serving))
-        return serving
-
-    async def _rearm_bounded(
-        self, previous: _PrepareCtx, num_collections: int, period: float
-    ) -> Sequence[tuple[DetectorDataLogic, _DataProvider]]:
-        """Re-make and re-start the finite buffers, keeping everything else."""
-        serving: list[tuple[DetectorDataLogic, _DataProvider]] = []
-        for dl, dp in previous.serving:
-            if isinstance(dp, PageableDataProvider):
-                await dl.stop()
-                rearmed = await dl.make_data_provider(
-                    self.name + dl.datakey_suffix, num_collections, period
-                )
-                if rearmed is None:
-                    continue
-                await dl.start()
-                serving.append((dl, rearmed))
-            else:
-                serving.append((dl, dp))
-        return serving
-
-    async def _wait_for_index(
-        self,
-        data_providers: Sequence[StreamableDataProvider | PageableDataProvider],
-        trigger_info: TriggerInfo,
-        initial_collections_written: int,
-        collections_requested: int,
-        wait_for_idle: bool,
-        watcher_divisor: int = 1,
-    ) -> AsyncIterator[WatcherUpdate]:
-        start_time = time.monotonic()
-        current_collections_written = {
-            dp.collections_written_signal: initial_collections_written
-            for dp in data_providers
-        }
-        target_collections_written = initial_collections_written + collections_requested
-        if data_providers:
-            async for sig, value in observe_signals_value(
-                *current_collections_written.keys(),
-                timeout=trigger_info.exposure_timeout,
-            ):
-                current_collections_written[sig] = value
-                collections_written = min(current_collections_written.values())
-                yield WatcherUpdate(
-                    name=self.name,
-                    current=collections_written // watcher_divisor,
-                    initial=initial_collections_written // watcher_divisor,
-                    target=target_collections_written // watcher_divisor,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - start_time,
-                )
-                if collections_written >= target_collections_written:
-                    break
-        if self._acquire_logic and wait_for_idle:
-            await self._acquire_logic.wait_for_idle()
-
-    @AsyncStatus.wrap
-    async def prepare(self, value: TriggerInfo) -> None:
-        """Prepare the detector for a number of triggers.
-
-        :param value: TriggerInfo describing how to trigger the detector
-        """
-        if self._trigger_logic and _trigger_logic_supported(
-            self._trigger_logic.prepare_exposures_per_collection
-        ):
-            # If we can do multiple exposures per collection then set it up
-            # even if there was only 1 requested to clear previous settings
-            await self._trigger_logic.prepare_exposures_per_collection(
-                value.exposures_per_collection
-            )
-        elif value.exposures_per_collection != 1:
-            raise ValueError(
-                f"Multiple exposures per collection not supported by {self}"
-            )
-        # Setup the trigger logic for the right number of exposures
-        if value.trigger not in self._supported_triggers:
-            format_triggers = ", ".join(
-                sorted(t.name for t in self._supported_triggers)
-            )
-            raise ValueError(
-                f"Trigger type {value.trigger} not supported by '{self.name}', "
-                f"supported types are: [{format_triggers}]"
-            )
-        if self._trigger_logic:
-            match value.trigger:
-                case DetectorTrigger.INTERNAL:
-                    await self._trigger_logic.prepare_internal(
-                        num=value.number_of_exposures,
-                        livetime=value.livetime,
-                        deadtime=value.deadtime,
-                    )
-                case DetectorTrigger.EXTERNAL_EDGE:
-                    await self._trigger_logic.prepare_edge(
-                        num=value.number_of_exposures,
-                        livetime=value.livetime,
-                    )
-                case DetectorTrigger.EXTERNAL_LEVEL:
-                    await self._trigger_logic.prepare_level(
-                        num=value.number_of_exposures,
-                    )
-        elif value.livetime != 0.0 or value.deadtime != 0.0:
-            raise ValueError(
-                f"Detector {self.name} has no trigger logic, so cannot set livetime or "
-                "deadtime"
-            )
-        # NOTE: this section must come after preparing the trigger logic as we may
-        # use parameters from it to determine datatype for the streams
-        value = await self._resolve_period(value)
-        await self._update_prepare_context(value)
-        # Tell people how many collections we will acquire for
-        await self.events_to_kickoff.set(value.number_of_events)
-        # External triggering can start acquiring now
-        if self._acquire_logic and value.trigger != DetectorTrigger.INTERNAL:
-            await self._acquire_logic.start_acquiring()
+            deadtime = self.logic.get_deadtime(config_values)
+        return self.logic.supported_triggers, deadtime
 
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
         """Trigger a single exposure.
 
-        If [`prepare()`](#StandardDetector.prepare) has not been called since
-        the last `stage()`, an implicit prepare is
-        performed. When [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`
+        If [`prepare()`](#StandardFlyable.prepare) has not been called since the
+        last `stage()`, an implicit prepare is performed. When
+        [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`
         [](#DetectorTriggerLogic.default_trigger_info) is called to read current
-        hardware state; otherwise a bare [`TriggerInfo()`](#TriggerInfo) is
-        used.
+        hardware state; otherwise a bare [`TriggerInfo()`](#TriggerInfo) is used.
         """
-        if self._prepare_ctx is None:
-            # Opt-in: set OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES to have
-            # trigger() read back current hardware state (e.g. num_images) via
-            # default_trigger_info() instead of always falling back to TriggerInfo().
-            # See ADR 0013 for rationale.
-            # TODO: flip default to YES and remove this guard in a future PR once
-            # downstream code has had time to implement default_trigger_info().
-            preserve_state = (
-                os.environ.get("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "NO").upper()
-                == "YES"
-            )
-            if preserve_state and self._trigger_logic is not None:
-                if not _trigger_logic_supported(
-                    self._trigger_logic.default_trigger_info
-                ):
-                    raise RuntimeError(
-                        f"OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES is set but "
-                        f"'{self.name}' has no default_trigger_info() - implement "
-                        "default_trigger_info() on your DetectorTriggerLogic subclass "
-                        "or unset the environment variable."
-                    )
-                trigger_info = await self._trigger_logic.default_trigger_info()
-            else:
-                trigger_info = TriggerInfo()
-            await self.prepare(trigger_info)
-        else:
-            # Check the one that was provided is suitable for triggering
-            trigger_info = self._prepare_ctx.trigger_info
-            if trigger_info.number_of_events != 1:
-                msg = (
-                    "trigger() is not supported for multiple events, the detector was "
-                    f"prepared with number_of_events={trigger_info.number_of_events}."
-                )
-                raise ValueError(msg)
-            # Ensure the data provider is still usable
-            await self._update_prepare_context(trigger_info)
-        ctx = error_if_none(self._prepare_ctx, "Prepare should have been run")
-        # Start the detector acquiring and wait for it to finish.
-        if self._acquire_logic:
-            await self._acquire_logic.start_acquiring()
-        # A bounded provider has just been re-armed by the re-prepare above, so its
-        # buffer starts from zero; a streamable provider continues from wherever the
-        # prepared context left it. A detector never mixes the two.
-        collectable = [
-            *ctx.streamable_data_providers,
-            *ctx.pageable_data_providers,
-        ]
-        initial = 0 if ctx.pageable_data_providers else ctx.collections_written
-        async for update in self._wait_for_index(
-            data_providers=collectable,
-            trigger_info=ctx.trigger_info,
-            initial_collections_written=initial,
-            collections_requested=ctx.trigger_info.collections_per_event,
-            watcher_divisor=1,
-            wait_for_idle=True,
-        ):
-            yield update
-
-    @AsyncStatus.wrap
-    async def kickoff(self):
-        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
-        # A fly scan collects from streamable providers (as stream datums) or from
-        # bounded providers (as event pages); either kind can be kicked off, but a
-        # detector with neither has nothing to collect.
-        collectable = [
-            *ctx.streamable_data_providers,
-            *ctx.pageable_data_providers,
-        ]
-        if not collectable:
-            raise ValueError(
-                f"Detector {self.name} has no collectable data, so cannot kickoff"
-            )
-        # Unlike trigger(), kickoff() does not re-arm a bounded buffer, so its
-        # progress is read live: a fly scan arms once and accumulates across kickoffs.
-        collections_written, events_to_kickoff = await asyncio.gather(
-            _get_collections_written(collectable),
-            self.events_to_kickoff.get_value(),
-        )
-        collections_requested = (
-            events_to_kickoff * ctx.trigger_info.collections_per_event
-        )
-        last_requested_collection = collections_written + collections_requested
-        last_expected_collection = (
-            ctx.collections_written + ctx.trigger_info.number_of_collections
-        )
-        if last_requested_collection > last_expected_collection:
-            msg = (
-                f"Kickoff requested {collections_written}:{last_requested_collection}, "
-                f"but detector was only prepared up to {last_expected_collection}"
-            )
-            raise RuntimeError(msg)
-        self._kickoff_ctx = _KickoffCtx(
-            trigger_info=ctx.trigger_info,
-            data_providers=collectable,
-            collections_written=collections_written,
-            collections_requested=collections_requested,
-            is_last_kickoff=last_requested_collection == last_expected_collection,
-        )
-        # External triggering has already started; internal starts now
-        if self._acquire_logic and ctx.trigger_info.trigger == DetectorTrigger.INTERNAL:
-            await self._acquire_logic.start_acquiring()
-
-    @WatchableAsyncStatus.wrap
-    async def complete(self):
-        ctx = error_if_none(self._kickoff_ctx, "Kickoff not called")
-        async for update in self._wait_for_index(
-            data_providers=ctx.data_providers,
-            trigger_info=ctx.trigger_info,
-            initial_collections_written=ctx.collections_written,
-            collections_requested=ctx.collections_requested,
-            wait_for_idle=ctx.is_last_kickoff,
-            watcher_divisor=ctx.trigger_info.collections_per_event,
-        ):
+        if self.logic.data is None:
+            await self.prepare(await self.logic.default_trigger_info())
+        async for update in self.logic.on_trigger(self._prepared_fly_ctx):
             yield update
 
     def _extra_funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
@@ -952,12 +1008,12 @@ class StandardDetector(
         """
         if verb not in (_Verb.DESCRIBE, _Verb.READ):
             return
-        ctx = error_if_none(self._prepare_ctx, "Prepare not run")
-        cpe = ctx.trigger_info.collections_per_event
+        data = self.logic.prepared_data
+        cpe = data.collections_per_event
         # Bounded providers hold a single-event page for this step-scan point,
         # which _pageable_readings extracts back to a reading. That extraction
         # lives here rather than on the provider so a provider cannot override it.
-        for pdp in ctx.pageable_data_providers:
+        for pdp in data.pageable:
             if verb is _Verb.DESCRIBE:
                 yield functools.partial(pdp.make_datakeys, cpe)
             else:
@@ -965,23 +1021,21 @@ class StandardDetector(
         if verb is _Verb.DESCRIBE:
             # Streamable providers describe their shape for a step scan, but
             # produce their data through collect_asset_docs rather than read()
-            for sdp in ctx.streamable_data_providers:
+            for sdp in data.streamable:
                 yield functools.partial(sdp.make_datakeys, cpe)
 
     async def describe_collect(self) -> dict[str, DataKey]:
-        ctx = error_if_none(self._prepare_ctx, "Prepare not run")
+        data = self.logic.prepared_data
         # Streamable providers collect stream datums, bounded providers collect pages
-        cpe = ctx.trigger_info.collections_per_event
-        coros = [dp.make_datakeys(cpe) for dp in ctx.streamable_data_providers] + [
-            dp.make_datakeys(cpe) for dp in ctx.pageable_data_providers
+        coros = [
+            dp.make_datakeys(data.collections_per_event) for dp in data.collectable
         ]
         return await merge_gathered_dicts(coros)
 
     def _extra_hint_sources(self) -> Iterator[HasHints]:
         """Contribute the data logics' hinted fields alongside the children's."""
-        for dl in self._data_logics:
-            if fields := dl.get_hinted_fields(self.name + dl.datakey_suffix):
-                yield _HintedFields(fields)
+        for fields in self.logic.get_hinted_fields():
+            yield _HintedFields(fields)
 
     async def _pageable_readings(
         self, provider: PageableDataProvider, collections_per_event: int
@@ -1013,29 +1067,25 @@ class StandardDetector(
     async def _collect_asset_docs(
         self, index: int | None = None
     ) -> AsyncIterator[StreamAsset]:
-        # Collect stream datum documents for all indices written. Exposed as
-        # collect_asset_docs via __getattr__ only when an unbounded data logic is
-        # present, so the bluesky bundler dispatches it in place of collect_pages.
-        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
+        # Bound as collect_asset_docs when there is a streaming provider
+        data = self.logic.prepared_data
         if index is None:
             # The index is optional, and provided for fly scans, if there is
             # more than one detector to make sure they collect in step
             index = await self.get_index()
-        for data_provider in ctx.streamable_data_providers:
+        for data_provider in data.streamable:
             async for doc in data_provider.make_stream_docs(
-                collections_written=index * ctx.trigger_info.collections_per_event,
-                collections_per_event=ctx.trigger_info.collections_per_event,
+                collections_written=index * data.collections_per_event,
+                collections_per_event=data.collections_per_event,
             ):
                 yield doc
 
     async def _collect_pages(self) -> AsyncIterator[PartialEventPage]:
-        # Collect event pages for all indices written. Exposed as collect_pages via
-        # __getattr__ only when a bounded data logic is present, so the bluesky
-        # bundler dispatches it in place of collect_asset_docs.
-        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
-        cpe = ctx.trigger_info.collections_per_event
+        # Bound as collect_pages when there is a paging provider
+        data = self.logic.prepared_data
+        cpe = data.collections_per_event
         index = await self.get_index()
-        for data_provider in ctx.pageable_data_providers:
+        for data_provider in data.pageable:
             async for page in data_provider.make_pages(
                 collections_written=index * cpe,
                 collections_per_event=cpe,
@@ -1043,20 +1093,26 @@ class StandardDetector(
                 yield page
 
     async def get_index(self) -> int:
-        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
-        collectable = [
-            *ctx.streamable_data_providers,
-            *ctx.pageable_data_providers,
-        ]
+        data = self.logic.prepared_data
         min_collections_written = await _get_collections_written(
-            collectable, reducer=min
+            data.collectable, reducer=min
         )
-        return min_collections_written // ctx.trigger_info.collections_per_event
+        return min_collections_written // data.collections_per_event
 
-    @AsyncStatus.wrap
-    async def _unstage_detector(self) -> None:
-        """Stop the detector and file writing."""
-        coros: list[Awaitable] = [data_logic.stop() for data_logic in self._data_logics]
-        if self._acquire_logic:
-            coros.append(self._acquire_logic.ensure_stopped())
-        await asyncio.gather(*coros)
+
+class _LogicsDetector(StandardDetector):
+    """A concrete `StandardDetector` built from logics, see `with_logics`."""
+
+    def __init__(
+        self,
+        *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
+        name: str = "",
+    ) -> None:
+        self._logic = DetectorLogic(
+            *logics, publish_collect_methods=self._publish_collect_methods
+        )
+        super().__init__(name=name)
+
+    @cached_property
+    def logic(self) -> DetectorLogic:
+        return self._logic

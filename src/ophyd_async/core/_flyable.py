@@ -88,6 +88,30 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
         return _EphemeralFlyable(self, name=name)
 
 
+class WatchableFlyableLogic(FlyableLogic[PrepareT, CtxT]):
+    """A `FlyableLogic` that reports its own progress while completing.
+
+    `StandardFlyable.complete()` reports progress for a `MovableLogic` by
+    observing its readback against its setpoint. A logic whose progress is
+    neither -- a detector's is "collections written out of collections
+    requested" -- yields its own updates instead.
+
+    Implement `on_complete_updates` rather than `on_complete`; the inherited
+    `on_complete` drains the updates for callers that only want to block.
+    """
+
+    @abstractmethod
+    def on_complete_updates(self, ctx: CtxT) -> AsyncIterator[WatcherUpdate]:
+        """Block until the fly scan is done, yielding progress as it goes.
+
+        :param ctx: the context returned by `on_kickoff`.
+        """
+
+    async def on_complete(self, ctx: CtxT) -> None:
+        async for _ in self.on_complete_updates(ctx):
+            pass
+
+
 class FlyMotorInfo(ConfinedModel):
     """Minimal set of information required to fly a motor."""
 
@@ -179,6 +203,19 @@ class StandardFlyable(
         """
         raise NotImplementedError
 
+    @property
+    def _prepared_fly_ctx(self) -> CtxT:
+        """The prepare context, for callers outside prepare -> kickoff -> complete.
+
+        `_fly_ctx` is a `None` *typed as* `CtxT` until prepared, so a verb that
+        read it directly -- a detector's `describe_collect()` or `get_index()`
+        -- would fail with an `AttributeError` on `None` rather than saying what
+        was wrong.
+        """
+        if self._fly_stage is _FlyStage.IDLE:
+            raise RuntimeError(f"{self.name}: prepare() must be called first")
+        return self._fly_ctx
+
     def _reset_fly_state(self) -> None:
         self._fly_ctx = cast(CtxT, None)
         self._fly_stage = _FlyStage.IDLE
@@ -215,8 +252,9 @@ class StandardFlyable(
 
         If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report
         progress to watchers by observing its readback while the fly scan runs,
-        reusing the same watcher-update stream as `StandardMovable.set`. Flyers
-        whose logic is not movable simply block with no progress updates.
+        reusing the same watcher-update stream as `StandardMovable.set`. A
+        `WatchableFlyableLogic` reports its own progress instead. Any other
+        flyer simply blocks with no progress updates.
         """
         if self._fly_stage is not _FlyStage.KICKED_OFF:
             raise RuntimeError(
@@ -241,6 +279,11 @@ class StandardFlyable(
                         unit=units,
                         precision=precision,
                     )
+        elif isinstance(logic, WatchableFlyableLogic):
+            # Progress that is neither a readback nor a setpoint: the logic
+            # knows how to report it, so let it
+            async for update in logic.on_complete_updates(self._fly_ctx):
+                yield update
         else:
             await self.logic.on_complete(self._fly_ctx)
         self._fly_stage = _FlyStage.IDLE

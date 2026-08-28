@@ -27,6 +27,7 @@ from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
     DetectorAcquireLogic,
     DetectorDataLogic,
+    DetectorLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
     StandardDetector,
@@ -51,7 +52,12 @@ from ._enums import (
     OnOff,
     YesNo,
 )
-from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
+from ._flyable import (
+    FlyableLogic,
+    FlyMotorInfo,
+    StandardFlyable,
+    WatchableFlyableLogic,
+)
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
@@ -276,6 +282,7 @@ __all__ = [
     "DetectorTriggerLogic",
     "DetectorAcquireLogic",
     "DetectorDataLogic",
+    "DetectorLogic",
     "StandardDetector",
     # Path
     "PathInfo",
@@ -297,6 +304,7 @@ __all__ = [
     "StandardFlyable",
     "FlyMotorInfo",
     "FlyableLogic",
+    "WatchableFlyableLogic",
     # Settings
     "Settings",
     "SettingsProvider",

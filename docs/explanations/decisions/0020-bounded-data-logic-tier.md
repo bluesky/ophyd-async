@@ -209,7 +209,7 @@ not of hardware, so it survives the concerns landing on a single PV.
 
 ### Logic objects fill exactly one role
 
-`add_detector_logics()` raises if an object satisfies more than one of the three logic roles,
+Building a `DetectorLogic` raises if an object satisfies more than one of the three logic roles,
 directing the author to pass separate objects. This is a hazard worth catching rather than a
 hypothetical: a device whose concerns all live on one control is a natural candidate for a single
 combined logic object, and the registration is a chain of `isinstance` tests, so such an object

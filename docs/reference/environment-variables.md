@@ -12,7 +12,7 @@ effect on ophyd-async itself.
 
 Controls the implicit prepare performed by
 [`StandardDetector.trigger()`](#ophyd_async.core.StandardDetector.trigger) when
-[`prepare()`](#ophyd_async.core.StandardDetector.prepare) has not been called since
+[`prepare()`](#ophyd_async.core.StandardFlyable.prepare) has not been called since
 the last `stage()`.
 
 | Value | Behaviour |

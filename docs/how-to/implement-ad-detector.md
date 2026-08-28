@@ -91,7 +91,7 @@ For example, for ADAravis:
 
 The `AreaDetector` baseclass will:
 - Store the driver as `self.driver`
-- Call `add_detector_logics()` to register your trigger and arm logic
+- Build a [](#DetectorLogic) from your trigger and arm logic and return it from `logic`
 - Create and register a data logic for file writing for each factory in `writer_factories`
 - Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
 - Store any plugins as attributes on the detector
@@ -113,7 +113,7 @@ For example, for ADAravis:
 
 ## Add multiple data streams (optional)
 
-The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_detector_logics()` to add additional data sources:
+The composition-based architecture makes it possible to give a detector several data outputs:
 
 ### Reading stats plugins alongside file writing
 A plugin scalar needs no data logic: a detector is a [](#StandardReadable), so register

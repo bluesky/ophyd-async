@@ -71,7 +71,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     assert config["det-driver-acquire_period"]["value"] == 0.1
     assert config["det-driver-acquire_time"]["value"] == 0.05
     # Check we need to call prepare or trigger before we can describe
-    with pytest.raises(RuntimeError, match="Prepare not run"):
+    with pytest.raises(RuntimeError, match="prepare.. must be called first"):
         await det.describe()
     # Need to tell it the path is valid
     set_mock_value(writer.file_path_exists, True)
@@ -385,7 +385,7 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
     # Check that another kickoff without prepare is not allowed
     with pytest.raises(
         RuntimeError,
-        match="Kickoff requested 15:30, but detector was only prepared up to 15",
+        match="prepare.* must be called before kickoff",
     ):
         await det.kickoff()
     # But preparing again is ok
@@ -606,7 +606,7 @@ async def test_step_scan_keep_numimages(
     assert config["det-driver-acquire_period"]["value"] == 0.1
     assert config["det-driver-acquire_time"]["value"] == 0.05
     # Check we need to call prepare or trigger before we can describe
-    with pytest.raises(RuntimeError, match="Prepare not run"):
+    with pytest.raises(RuntimeError, match="prepare.. must be called first"):
         await det.describe()
     # Need to tell it the path is valid
     set_mock_value(writer.file_path_exists, True)
