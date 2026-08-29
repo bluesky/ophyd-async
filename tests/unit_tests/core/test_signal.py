@@ -1110,19 +1110,24 @@ class SomeClass:
 
 
 @pytest.mark.parametrize(
-    "datatype,err",
+    "datatype,err,epics_err",
     [
-        (SomeClass, "Can't make converter for %s"),
-        (object, "Can't make converter for %s"),
-        (dict, "Can't make converter for %s"),
-        (npt.NDArray[np.str_], "Expected Array1D[dtype], got %s"),
+        (SomeClass, "Can't make converter for %s", None),
+        (object, "Can't make converter for %s", None),
+        (dict, "Can't make converter for %s", None),
+        (
+            npt.NDArray[np.str_],
+            "Expected Array1D[dtype], got %s",
+            "Expected Array1D[dtype] or np.ndarray, got npt.NDArray[np.str]",
+        ),
     ],
 )
-async def test_signal_unknown_datatype(datatype, err):
+async def test_signal_unknown_datatype(datatype, err, epics_err):
     err_str = re.escape(err % datatype)
-    with pytest.raises(TypeError, match=err_str):
+    epics_err_str = re.escape(epics_err) if epics_err is not None else err_str
+    with pytest.raises(TypeError, match=epics_err_str):
         await epics_signal_rw(datatype, "pva://mock_signal").connect(mock=True)
-    with pytest.raises(TypeError, match=err_str):
+    with pytest.raises(TypeError, match=epics_err_str):
         await epics_signal_rw(datatype, "ca://mock_signal").connect(mock=True)
     with pytest.raises(TypeError, match=err_str):
         soft_signal_rw(datatype)
