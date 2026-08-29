@@ -154,6 +154,51 @@ async def test_soft_signal_backend_get_put_monitor(
         await q.assert_updates(put_value)
 
 
+@pytest.mark.parametrize(
+    "datatype, ndim",
+    [
+        (np.ndarray, None),
+        (npt.NDArray[np.float64], None),
+        (Array1D[np.float64], 1),
+        (np.ndarray[tuple[int, int], np.dtype[np.float64]], 2),
+    ],
+)
+async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | None):
+    backend = SoftSignalBackend(datatype)
+    await backend.connect(timeout=1)
+    assert backend.converter.ndim == ndim
+
+
+@pytest.mark.parametrize(
+    "datatype, put_value, expected",
+    [
+        (np.ndarray, [[1.0, 2.0]], (1, 2)),
+        (npt.NDArray[np.float64], [1.0, 2.0], (2,)),
+        (npt.NDArray[np.float64], [[1.0, 2.0]], (1, 2)),
+        (Array1D[np.float64], [1.0, 2.0], (2,)),
+        (Array1D[np.float64], 1.0, "Expected 1D array, got 0D array"),
+        (Array1D[np.float64], [[1.0, 2.0]], "Expected 1D array, got 2D array"),
+        (np.ndarray[tuple[int, int], np.dtype[np.float64]], [[1.0, 2.0]], (1, 2)),
+        (
+            np.ndarray[tuple[int, int], np.dtype[np.float64]],
+            [1.0, 2.0],
+            "Expected 2D array, got 1D array",
+        ),
+    ],
+)
+async def test_soft_signal_backend_checks_shape(
+    datatype: type[T], put_value: Any, expected: tuple[int, ...] | str
+):
+    backend = SoftSignalBackend(datatype)
+    await backend.connect(timeout=1)
+    if isinstance(expected, str):
+        with pytest.raises(ValueError, match=expected):
+            await backend.put(put_value)
+    else:
+        await backend.put(put_value)
+        assert (await backend.get_value()).shape == expected
+
+
 async def test_soft_signal_backend_enum_value_equivalence():
     soft_backend = SoftSignalBackend(MyEnum)
     await soft_backend.connect(timeout=1)
