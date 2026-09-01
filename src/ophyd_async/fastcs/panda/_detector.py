@@ -29,7 +29,6 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
             PandaTriggerLogic(self.pcap),
             PandaAcquireLogic(self.pcap),
             PandaHDFDataLogic(path_provider, self.data),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name=name, connector=connector)
 

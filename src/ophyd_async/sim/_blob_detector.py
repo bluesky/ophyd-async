@@ -34,7 +34,6 @@ class SimBlobDetector(StandardDetector):
             BlobDataLogic(
                 path_provider=path_provider, pattern_generator=self.pattern_generator
             ),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name=name)
 

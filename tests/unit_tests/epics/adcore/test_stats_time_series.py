@@ -3,6 +3,7 @@ import pytest
 
 from ophyd_async.core import (
     DetectorAcquireLogic,
+    DetectorLogic,
     DetectorTriggerLogic,
     EnableDisable,
     StandardDetector,
@@ -157,12 +158,11 @@ def stats_detector(stats: adcore.NDStatsIO) -> StandardDetector:
     """A writer-less detector whose only data logic is a stats time series."""
     values = np.array([5.0, 6.0, 7.0, 8.0])
     times = np.array([200.0, 201.0, 202.0, 203.0])
-    det = StandardDetector.with_logics(
+    det = DetectorLogic(
         _JustInternal(),
         _FillStatsAcquireLogic(stats, values, times),
         StatsTimeSeriesDataLogic(stats),
-        name="det",
-    )
+    ).with_device("det")
     return det
 
 

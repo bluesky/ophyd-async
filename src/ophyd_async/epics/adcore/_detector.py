@@ -63,9 +63,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         self.set_readable_format(self.driver, Format.CHILD)
         for signal in config_sigs:
             self.set_readable_format(signal, Format.CONFIG_SIGNAL)
-        self._logic = DetectorLogic(
-            *logics, publish_collect_methods=self._publish_collect_methods
-        )
+        self._logic = DetectorLogic(*logics)
         super().__init__(name=name)
 
     @cached_property

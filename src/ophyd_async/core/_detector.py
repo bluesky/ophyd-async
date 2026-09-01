@@ -38,7 +38,7 @@ from ._readable import (
 )
 from ._settings import Settings
 from ._signal import SignalDict, SignalR, SignalRW, observe_signals_value
-from ._status import WatchableAsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     DEFAULT_TIMEOUT,
     ConfinedModel,
@@ -188,14 +188,11 @@ class DetectorTriggerLogic:
         raise NotImplementedError(self)
 
 
-def _logic_supported(base_class, method) -> bool:
+def _trigger_logic_supported(method) -> bool:
     # If the function that is bound in a subclass is the same as the function
-    # attached to the superclass, then the subclass has not overridden it, so
-    # this method is not supported by the subclass.
-    return method.__func__ is not getattr(base_class, method.__name__)
-
-
-_trigger_logic_supported = functools.partial(_logic_supported, DetectorTriggerLogic)
+    # attached to DetectorTriggerLogic, then the subclass has not overridden it,
+    # so this method is not supported by the subclass.
+    return method.__func__ is not getattr(DetectorTriggerLogic, method.__name__)
 
 
 def _get_supported_triggers(
@@ -416,21 +413,13 @@ class DetectorLogic(FlyableLogic[TriggerInfo, _FlyCtx]):
         At most one [](#DetectorTriggerLogic), at most one
         [](#DetectorAcquireLogic), and any number of [](#DetectorDataLogic), in
         any order. Each object must fill exactly one of those roles.
-    :param publish_collect_methods:
-        Called from `on_prepare` with which collect verbs the data logics turn
-        out to need, so that a [](#StandardDetector) can expose the matching
-        bluesky protocol. A detector passes its own
-        `_publish_collect_methods`; [](#StandardDetector.with_logics) does that
-        for an ad-hoc one.
     """
 
     def __init__(
         self,
         *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
-        publish_collect_methods: Callable[..., None],
     ) -> None:
         self.logics = logics
-        self.publish_collect_methods = publish_collect_methods
         self.trigger_logic: DetectorTriggerLogic | None = None
         self.acquire_logic: DetectorAcquireLogic | None = None
         self.data_logics: tuple[DetectorDataLogic, ...] = ()
@@ -484,6 +473,10 @@ class DetectorLogic(FlyableLogic[TriggerInfo, _FlyCtx]):
         return error_if_none(
             self.data, f"{self.datakey_prefix}: prepare() must be called first"
         )
+
+    def with_device(self, name: str = "") -> "StandardDetector":
+        """Wrap this logic in an ephemeral `StandardDetector` for use in a plan."""
+        return _LogicDetector(self, name=name)
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         """Return the deadtime the trigger logic calculates from `config_values`."""
@@ -698,12 +691,6 @@ class DetectorLogic(FlyableLogic[TriggerInfo, _FlyCtx]):
             collections_per_event=trigger_info.collections_per_event,
             period=period,
         )
-        # Which collect verb the detector exposes follows what it will actually
-        # produce, so it is recomputed here rather than fixed at construction
-        self.publish_collect_methods(
-            stream_assets=bool(self.data.streamable),
-            event_pages=bool(self.data.pageable),
-        )
         return self.data
 
     async def _make_serving(
@@ -851,7 +838,6 @@ class StandardDetector(
             self._logic = DetectorLogic(
                 MyTriggerLogic(self.driver),
                 MyAcquireLogic(self.driver),
-                publish_collect_methods=self._publish_collect_methods,
             )
             super().__init__(name=name)
 
@@ -860,8 +846,8 @@ class StandardDetector(
             return self._logic
     ```
 
-    For an ad-hoc detector, [](#StandardDetector.with_logics) does the same
-    thing without a subclass.
+    For an ad-hoc detector, [](#DetectorLogic.with_device) does the same thing
+    without a subclass.
 
     Signals read during a step scan are registered with
     [](#StandardReadable.set_readable_format), exactly as on any other
@@ -885,28 +871,12 @@ class StandardDetector(
         """The logic that drives this detector, built in the subclass `__init__`."""
         raise NotImplementedError
 
-    @classmethod
-    def with_logics(
-        cls,
-        *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
-        name: str = "",
-    ) -> "StandardDetector":
-        """Make a detector from some logics, without writing a subclass.
-
-        The logic object a `StandardDetector` needs is built with a callback into
-        the Device, so it cannot be constructed before the Device it belongs to.
-        This does both, for an ad-hoc detector in a plan or a test.
-        """
-        return _LogicsDetector(*logics, name=name)
-
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)
         # The data logics name their datakeys after the Device
         self.logic.datakey_prefix = name
 
-    def _publish_collect_methods(
-        self, *, stream_assets: bool, event_pages: bool
-    ) -> None:
+    def _publish_collect_methods(self) -> None:
         """Bind the collect verb that matches what the data logics will produce.
 
         Whichever applies is bound as a real instance attribute, so the bluesky
@@ -916,12 +886,18 @@ class StandardDetector(
         `__getattr__`, so a dynamic hook would be invisible. Both names are
         reserved by `Device`, hence `object.__setattr__`.
 
-        `DetectorLogic` calls this from every prepare, so the verb that no longer
+        Called from every prepare and trigger, so the verb that no longer
         applies is removed rather than left behind from a previous scan.
+
+        TODO: the bundler treats the two protocols as mutually exclusive from
+        the static type, so a detector cannot declare both and pick per scan.
+        Once bluesky decides from what a device actually produced, both verbs
+        become plain methods and this goes; see ADR 0023.
         """
+        data = self.logic.data
         for verb, method, wanted in (
-            ("collect_asset_docs", self._collect_asset_docs, stream_assets),
-            ("collect_pages", self._collect_pages, event_pages),
+            ("collect_asset_docs", self._collect_asset_docs, data and data.streamable),
+            ("collect_pages", self._collect_pages, data and data.pageable),
         ):
             if wanted:
                 object.__setattr__(self, verb, method)
@@ -980,11 +956,17 @@ class StandardDetector(
             deadtime = self.logic.get_deadtime(config_values)
         return self.logic.supported_triggers, deadtime
 
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
+        """Set the detector up for a scan, as described by the TriggerInfo."""
+        await super().prepare(value)
+        self._publish_collect_methods()
+
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
         """Trigger a single exposure.
 
-        If [`prepare()`](#StandardFlyable.prepare) has not been called since the
+        If [`prepare()`](#StandardDetector.prepare) has not been called since the
         last `stage()`, an implicit prepare is performed. When
         [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`
         [](#DetectorTriggerLogic.default_trigger_info) is called to read current
@@ -994,6 +976,9 @@ class StandardDetector(
             await self.prepare(await self.logic.default_trigger_info())
         async for update in self.logic.on_trigger(self._prepared_fly_ctx):
             yield update
+        # A step scan re-arms its finite buffers on every trigger, and a logic
+        # may sit the rest of the scan out, so the verbs are recomputed
+        self._publish_collect_methods()
 
     def _extra_funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
         """Contribute what the data logics produce to read() and describe().
@@ -1100,17 +1085,16 @@ class StandardDetector(
         return min_collections_written // data.collections_per_event
 
 
-class _LogicsDetector(StandardDetector):
-    """A concrete `StandardDetector` built from logics, see `with_logics`."""
+class _LogicDetector(StandardDetector):
+    """A concrete `StandardDetector` built around a logic object.
 
-    def __init__(
-        self,
-        *logics: DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic,
-        name: str = "",
-    ) -> None:
-        self._logic = DetectorLogic(
-            *logics, publish_collect_methods=self._publish_collect_methods
-        )
+    `StandardDetector.logic` is abstract, so the class itself cannot be
+    instantiated; `DetectorLogic.with_device` needs something concrete to wrap a
+    logic object in.
+    """
+
+    def __init__(self, logic: DetectorLogic, name: str = "") -> None:
+        self._logic = logic
         super().__init__(name=name)
 
     @cached_property

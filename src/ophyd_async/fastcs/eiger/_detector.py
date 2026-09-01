@@ -41,7 +41,6 @@ class EigerDetector(StandardDetector):
                 odin=self.od,
                 detector_bit_depth=self.detector.bit_depth_image,
             ),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name=name, connector=connector)
 

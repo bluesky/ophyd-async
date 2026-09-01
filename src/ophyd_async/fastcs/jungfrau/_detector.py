@@ -44,7 +44,6 @@ class JungfrauDetector(StandardDetector):
                 odin=self.odin,
                 detector_bit_depth=self.detector.bit_depth,
             ),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name=name)
 

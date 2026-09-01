@@ -31,7 +31,6 @@ class OdinDet(StandardDetector):
         self.bit_depth = soft_signal_rw(int, BIT_DEPTH)
         self._logic = DetectorLogic(
             OdinDataLogic(path_provider, self.odin, self.bit_depth),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name, connector)
 
