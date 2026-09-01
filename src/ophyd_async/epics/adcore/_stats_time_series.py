@@ -52,7 +52,6 @@ class StatsTimeSeriesProvider(PageableDataProvider):
                 shape=[collections_per_event],
                 dtype="array",
                 dtype_numpy="<f8",
-                external="",
             )
             for datakey, signal in self.arrays.items()
         }
@@ -170,7 +169,7 @@ class StatsTimeSeriesDataLogic(DetectorDataLogic):
         # Writing 1 to ts_acquire clears the arrays and resets ts_current_point to
         # 0, so the buffer is armed and empty before the detector's frames arrive.
         # This is the data logic performing the erase itself, which is why
-        # trigger()'s zero baseline is correct (see ADR 0020).
+        # trigger()'s zero baseline is correct (see ADR 0022).
         await self.stats.ts_acquire.set(True)
 
     async def stop(self) -> None:

@@ -1,5 +1,10 @@
+from collections import defaultdict
+
+import bluesky.plan_stubs as bps
+import bluesky.preprocessors as bpp
 import numpy as np
 import pytest
+from bluesky import RunEngine
 
 from ophyd_async.core import (
     DetectorAcquireLogic,
@@ -158,27 +163,59 @@ def stats_detector(stats: adcore.NDStatsIO) -> StandardDetector:
     """A writer-less detector whose only data logic is a stats time series."""
     values = np.array([5.0, 6.0, 7.0, 8.0])
     times = np.array([200.0, 201.0, 202.0, 203.0])
-    det = DetectorLogic(
+    return DetectorLogic(
         _JustInternal(),
         _FillStatsAcquireLogic(stats, values, times),
         StatsTimeSeriesDataLogic(stats),
     ).with_device("det")
-    return det
 
 
-async def test_step_scan_collect_pages_end_to_end(stats_detector: StandardDetector):
-    """A writer-less detector with a stats time series emits event pages."""
+def test_step_scan_through_run_engine(RE: RunEngine, stats_detector: StandardDetector):
+    """A writer-less detector describes and reads as internal data.
+
+    Driven through the RunEngine so the descriptor its datakeys make is the one
+    a real scan would emit, and so has to pass event-model validation.
+    """
     det = stats_detector
-    await det.stage()
-    await det.prepare(TriggerInfo(collections_per_event=4))
-    # A bounded logic exposes collect_pages, not collect_asset_docs
-    assert hasattr(det, "collect_pages")
-    assert not hasattr(det, "collect_asset_docs")
-    await det.trigger()
-    pages = [page async for page in det.collect_pages()]
-    (page,) = pages
-    assert page["data"]["det"] == [[5.0, 6.0, 7.0, 8.0]]
-    await det.unstage()
+    docs: dict[str, list] = defaultdict(list)
+
+    @bpp.stage_decorator([det])
+    @bpp.run_decorator()
+    def plan():
+        # prepare() comes after stage(), which resets the detector
+        yield from bps.prepare(det, TriggerInfo(collections_per_event=4), wait=True)
+        yield from bps.trigger_and_read([det])
+
+    RE(plan(), lambda name, doc: docs[name].append(doc))
+
+    (descriptor,) = docs["descriptor"]
+    assert descriptor["data_keys"]["det"]["shape"] == [4]
+    assert "external" not in descriptor["data_keys"]["det"]
+    (event,) = docs["event"]
+    assert event["data"]["det"] == [5.0, 6.0, 7.0, 8.0]
+    assert event["timestamps"]["det"] == 203.0
+
+
+def test_fly_scan_emits_event_pages(RE: RunEngine, stats_detector: StandardDetector):
+    """A writer-less detector collects its buffer as event pages."""
+    det = stats_detector
+    docs: dict[str, list] = defaultdict(list)
+
+    @bpp.stage_decorator([det])
+    @bpp.run_decorator()
+    def plan():
+        yield from bps.prepare(det, TriggerInfo(number_of_events=4), wait=True)
+        yield from bps.declare_stream(det, name="primary")
+        yield from bps.kickoff(det, wait=True)
+        yield from bps.collect_while_completing(
+            flyers=[det], dets=[det], flush_period=0.05
+        )
+
+    RE(plan(), lambda name, doc: docs[name].append(doc))
+
+    (page,) = docs["event_page"]
+    assert page["data"]["det"] == [[5.0], [6.0], [7.0], [8.0]]
+    assert docs["stop"][0]["num_events"] == {"primary": 4}
 
 
 async def test_step_scan_read_derives_single_reading(stats_detector: StandardDetector):

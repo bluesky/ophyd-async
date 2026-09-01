@@ -182,7 +182,6 @@ class MockPageableProvider(PageableDataProvider):
                 shape=[collections_per_event],
                 dtype="array",
                 dtype_numpy="<i8",
-                external="",
             )
         }
 
