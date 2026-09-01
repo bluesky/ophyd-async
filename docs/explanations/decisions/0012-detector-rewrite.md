@@ -5,7 +5,7 @@ Date: 2026-01-20
 
 Accepted
 
-Partly superseded by [](./0021-runtime-readable-format.md), which made `StandardDetector` a
+Partly superseded by [](./0020-runtime-readable-format.md), which made `StandardDetector` a
 `StandardReadable` and removed the `prepare_single` tier along with `ReadableDataProvider`.
 
 ## Context

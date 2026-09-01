@@ -657,7 +657,7 @@ async def test_step_scan_keep_numimages(
     )
 
     # Check we can prepare and change the exposure. Changing the exposure changes
-    # the frame period, which (per ADR 0020) determines the HDF chunk shape, so a
+    # the frame period, which (per ADR 0022) determines the HDF chunk shape, so a
     # new StreamResource is opened rather than the old file being reused. Here the
     # chunk shape is unchanged because this writer leaves flush_period unset and so
     # reads the chunk size back from the IOC, but the period change still starts a

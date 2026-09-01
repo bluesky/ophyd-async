@@ -1,4 +1,4 @@
-# 21. Make readable format a runtime setting keyed by Device
+# 20. Make readable format a runtime setting keyed by Device
 
 Date: 2026-08-18
 
@@ -156,7 +156,7 @@ at runtime.
 
 ### The `prepare_single` data logic tier goes
 
-ADR 0012 gave `DetectorDataLogic` a `prepare_single` tier, returning a
+[](./0012-detector-rewrite.md) gave `DetectorDataLogic` a `prepare_single` tier, returning a
 `ReadableDataProvider`, so that a source producing one value per event could reach
 `read()` and `describe()`. Registering a signal now does that, for any Device and without
 a data logic, so the tier has nothing left of its own: its only in-tree implementation was

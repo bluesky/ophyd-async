@@ -84,6 +84,6 @@ write a file *and* report a plugin scalar in a step scan.
 ```{seealso}
 [](./store-and-retrieve.md) for saving a set of formats alongside signal values and
 loading them back, and
-[](../explanations/decisions/0021-runtime-readable-format.md) for why the registry is
+[](../explanations/decisions/0020-runtime-readable-format.md) for why the registry is
 keyed by Device.
 ```

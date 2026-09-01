@@ -1,4 +1,4 @@
-# 22. One `logic` property per Device
+# 21. One `logic` property per Device
 
 Date: 2026-08-18
 
@@ -19,7 +19,7 @@ The obstacle is that Python has no intersection type: there is no way to write "
 must be both a `MovableLogic[float]` and a `FlyableLogic[FlyMotorInfo, MotorFlyCtx]`" as a
 single annotation.
 
-ADR 0017 also chose `@cached_property` stacked on `@abstractmethod` over an
+[](./0017-standard-movable.md) also chose `@cached_property` stacked on `@abstractmethod` over an
 `add_movable_logic()` method, on the grounds that the property is "checkable by static
 analysis". That turned out not to hold. `functools.cached_property` does not forward
 `__isabstractmethod__` from the function it wraps, so `StandardMovable.__abstractmethods__`

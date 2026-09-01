@@ -15,8 +15,9 @@ one lifecycle drift apart: the detector guarded its stages by checking whether a
 object was `None`, so calling a verb too early failed with `AttributeError: 'NoneType'
 object has no attribute ...` rather than saying what was wrong.
 
-`StandardFlyable` requires a single [](#FlyableLogic) in a `logic` property (ADR 0022), and
-a detector had three logic objects registered on the Device by `add_detector_logics()`.
+`StandardFlyable` requires a single [](#FlyableLogic) in a `logic` property
+([](./0021-single-logic-property.md)), and a detector had three logic objects registered on
+the Device by `add_detector_logics()`.
 
 ## Decision
 
@@ -25,7 +26,7 @@ a detector had three logic objects registered on the Device by `add_detector_log
 [](#DetectorLogic) holds the trigger, acquire and data logics, and is what `logic` returns.
 The orchestration moves with them: preparing the trigger logic, making the data providers,
 arming, and waiting for collections are all its methods now. It holds **no** back-reference
-to its Device, so ADR 0017 continues to hold unqualified.
+to its Device, so [](./0017-standard-movable.md) continues to hold unqualified.
 
 A detector builds it in `__init__` and returns it from `logic`:
 
@@ -36,7 +37,6 @@ class MyDetector(StandardDetector):
         self._logic = DetectorLogic(
             MyTriggerLogic(self.driver),
             MyAcquireLogic(self.driver),
-            publish_collect_methods=self._publish_collect_methods,
         )
         super().__init__(name=name)
 
@@ -55,34 +55,47 @@ which `abstract_cached_property` makes a requirement checked when the Device is
 instantiated. Assigning `self.logic` from `__init__` cannot serve instead: `ABCMeta` checks
 `__abstractmethods__` in `__call__`, before `__init__` runs, so the class must override the
 property to be concrete. For an ad-hoc detector in a plan or a test,
-[](#StandardDetector.with_logics) builds both the logic and a Device around it.
+`DetectorLogic.with_device()` builds a Device around a logic, exactly as
+`FlyableLogic.with_device()` does for any other flyer.
 
-### Two things the logic cannot get from its own fields
+### One thing the logic cannot get from its own fields
 
-**The datakey namespace.** Data logics name their datakeys after the Device, whose name does
-not exist until `init_devices` calls `set_name` on context exit. `StandardDetector.set_name`
-pushes it into `DetectorLogic.datakey_prefix` — one string, set at the moment it exists,
-rather than a reference to the whole Device.
+Data logics name their datakeys after the Device, whose name does not exist until
+`init_devices` calls `set_name` on context exit. `StandardDetector.set_name` pushes it into
+`DetectorLogic.datakey_prefix` — one string, set at the moment it exists, rather than a
+reference to the whole Device.
 
-**Which collect verb to expose.** A detector exposes `collect_asset_docs` or `collect_pages`
-depending on what its data logics produce, never both (ADR 0020). The Device passes
-`_publish_collect_methods` into the constructor and the logic calls it from `on_prepare`, so
-the binding happens on the Device without the logic holding one. It is a required argument
-because the decision belongs to prepare, not to construction: which providers there are is
-only known once the logics have been asked.
+### Which collect verb to expose is the Device's business
+
+A detector produces stream assets or event pages depending on what its data logics make for
+a given scan, never both (see [](./0022-bounded-data-logic-tier.md)). The bluesky bundler
+decides which to ask for from the *static* type — `collect_pages()` is called only on a
+device that is not a `WritesStreamAssets` — so a detector that declared both would have its
+pages silently dropped, and one that declared neither could not fly at all.
+
+So `StandardDetector.prepare()` and `trigger()` bind whichever verb applies as a real
+instance attribute, and remove the other. It is the Device that does this, from what
+`DetectorLogic.data` holds after preparing; the logic reports what it made and is not told
+where that goes, so it holds no back-reference.
+
+Choosing from the static type is a bundler limitation rather than a fact about detectors: a
+device knows what it produced, and the bundler could decide from *that*, erroring only if
+one device reported both ways in the same run. That change is a few lines in
+`RunBundler.collect`, and with it both verbs become plain methods and the binding here goes
+away. Until it is released, binding per prepare is what works against a released bluesky.
 
 ### Mixing bounded and unbounded is an error unless the bounded keys are shadowed
 
-ADR 0020 made carrying both kinds of data logic an error, because the bundler treats stream
-assets and event pages as mutually exclusive. Carrying both is still useful, though: the
-same quantity can be written durably into a file *and* read from a plugin's buffer — an
-areaDetector stats total, which the HDF writer pulls in as an NDAttribute.
+[](./0022-bounded-data-logic-tier.md) made carrying both kinds of data logic an error, because
+the bundler treats stream assets and event pages as mutually exclusive. Carrying both is still
+useful, though: the same quantity can be written durably into a file *and* read from a plugin's
+buffer — an areaDetector stats total, which the HDF writer pulls in as an NDAttribute.
 
 So the rule relaxes. Where **every** datakey a finite buffer would produce is also produced
 by the stream assets, the durable copy wins and the buffer sits the scan out, unarmed.
 Anything a buffer would produce that the file does not cover is still an error, naming the
 uncovered keys. Nothing has been started when that is decided, because
-`make_data_provider` describes without acquiring (ADR 0020).
+`make_data_provider` describes without acquiring (same ADR).
 
 ### A logic may report its own progress
 
@@ -91,10 +104,11 @@ observing its readback against its setpoint. A detector's progress is "collectio
 out of collections requested", which is neither, so a detector inheriting the base
 `complete()` would have silently lost its progress reporting.
 
-[](#WatchableFlyableLogic) adds `on_complete_updates(ctx)`, an async iterator of
-`WatcherUpdate`; `complete()` yields from it when the logic implements it. The inherited
-`on_complete` drains it, so callers that only want to block are unaffected. This is
-symmetrical with the existing `MovableLogic` branch rather than a new mechanism.
+So `FlyableLogic.on_complete` returns either an `Awaitable[None]` or an
+`AsyncIterator[WatcherUpdate]`, and `complete()` looks at what it got back: an iterator is
+yielded straight on to watchers, anything else is awaited. A logic that only blocks stays an
+ordinary `async def`. A separate `WatchableFlyableLogic` base was tried first and dropped:
+it made a second class to inherit for what is a property of one method's return.
 
 ### One kickoff per prepare
 

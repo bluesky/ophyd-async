@@ -6,7 +6,7 @@ Date: 2026-03-10
 
 Accepted
 
-Partly superseded by [](./0022-single-logic-property.md), which replaced `movable_logic`
+Partly superseded by [](./0021-single-logic-property.md), which replaced `movable_logic`
 with a single `logic` property.
 
 ## Context
