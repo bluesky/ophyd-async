@@ -173,7 +173,7 @@ async def plugin_is_enabled(plugin: NDPluginBaseIO) -> bool:
     The nearest thing to "is this plugin in the chain": a plugin with callbacks
     disabled certainly is not, though an enabled one may still have its
     `nd_array_port` pointed somewhere else. Parsing the whole plugin graph was
-    rejected in ADR 0021 as too large.
+    rejected in ADR 0020 as too large.
     """
     return await plugin.enable_callbacks.get_value() is EnableDisable.ENABLE
 
@@ -215,7 +215,7 @@ class NDStatsTSAcquireMode(StrictEnum):
     """
 
     FIXED_LENGTH = "Fixed length"
-    CIRCULAR_BUFFER = "Circular buffer"
+    CIRCULAR_BUFFER = "Circ. buffer"
 
 
 class NDStatsIO(StandardReadable, NDPluginBaseIO):
@@ -247,20 +247,21 @@ class NDStatsIO(StandardReadable, NDPluginBaseIO):
     total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
     net: A[SignalR[float], PvSuffix("Net_RBV")]
     # Time series. NDStats delegates its time series to an embedded
-    # NDPluginTimeSeries instance under an inner "TS:" prefix, so each statistic
-    # is also exposed as a fixed-length array. ts_num_points sizes the buffer,
-    # ts_acquire erases and starts it (writing 1 clears the arrays and resets
-    # ts_current_point to 0), ts_current_point reports progress, ts_total holds
-    # the Total series and ts_timestamp holds the per-point acquisition times.
-    # These are not registered as readables: the scalars above serve read(), and
-    # the arrays are consumed by StatsTimeSeriesDataLogic as event pages.
+    # NDPluginTimeSeries instance, so the controls live under an inner "TS:"
+    # prefix while the per-statistic arrays are named by NDStats itself at the
+    # plugin's own prefix. ts_num_points sizes the buffer, ts_acquire erases and
+    # starts it (writing 1 clears the arrays and resets ts_current_point to 0),
+    # ts_current_point reports progress, ts_total holds the Total series and
+    # ts_timestamp holds the per-point acquisition times. These are not
+    # registered as readables: the scalars above serve read(), and the arrays
+    # are consumed by StatsTimeSeriesDataLogic as event pages.
     ts_acquire: A[SignalRW[bool], PvSuffix("TS:TSAcquire")]
-    ts_num_points: A[SignalRW[int], PvSuffix.rbv("TS:TSNumPoints")]
+    ts_num_points: A[SignalRW[int], PvSuffix("TS:TSNumPoints")]
     ts_current_point: A[SignalR[int], PvSuffix("TS:TSCurrentPoint")]
     ts_acquiring: A[SignalR[bool], PvSuffix("TS:TSAcquiring")]
     ts_acquire_mode: A[SignalRW[NDStatsTSAcquireMode], PvSuffix.rbv("TS:TSAcquireMode")]
-    ts_total: A[SignalR[Array1D[np.float64]], PvSuffix("TS:TSTotal")]
-    ts_timestamp: A[SignalR[Array1D[np.float64]], PvSuffix("TS:TSTimestamp")]
+    ts_total: A[SignalR[Array1D[np.float64]], PvSuffix("TSTotal")]
+    ts_timestamp: A[SignalR[Array1D[np.float64]], PvSuffix("TSTimestamp")]
     # Centroid statistics
     compute_centroid: A[
         SignalRW[bool], PvSuffix.rbv("ComputeCentroid"), Format.CONFIG_SIGNAL

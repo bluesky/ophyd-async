@@ -34,6 +34,7 @@ from unittest.mock import ANY, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
+import bluesky.preprocessors as bpp
 import pytest
 from aioca import purge_channel_caches
 from bluesky.run_engine import RunEngine
@@ -384,13 +385,16 @@ def test_stats_time_series_step_scan(
     """
     collections = 5
 
+    @bpp.stage_decorator([adsimstat])
+    @bpp.run_decorator()
     def prepare_then_count() -> MsgGenerator[None]:
+        # prepare() must come after stage(), which resets the detector
         yield from bps.prepare(
             adsimstat,
             TriggerInfo(collections_per_event=collections, livetime=0.1),
             wait=True,
         )
-        yield from bp.count([adsimstat])
+        yield from bps.trigger_and_read([adsimstat])
 
     named_docs: list[tuple[str, DocumentType]] = []
     RE(prepare_then_count(), lambda name, doc: named_docs.append((name, doc)))
