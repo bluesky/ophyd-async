@@ -1,6 +1,6 @@
 import asyncio
 from abc import abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable
 from enum import Enum
 from functools import cached_property
 from typing import Generic, TypeVar, cast
@@ -61,8 +61,11 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
         """
 
     @abstractmethod
-    async def on_complete(self, ctx: CtxT) -> None:
+    def on_complete(self, ctx: CtxT) -> Awaitable[None] | AsyncIterator[WatcherUpdate]:
         """Block until the fly scan is done.
+
+        Write it as an `async def` to just block, or as an async generator
+        yielding [](#WatcherUpdate) to report progress to watchers as it goes.
 
         :param ctx: the context returned by `on_kickoff`.
         """
@@ -86,30 +89,6 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
     def with_device(self, name: str = "") -> "StandardFlyable[PrepareT, CtxT]":
         """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
         return _EphemeralFlyable(self, name=name)
-
-
-class WatchableFlyableLogic(FlyableLogic[PrepareT, CtxT]):
-    """A `FlyableLogic` that reports its own progress while completing.
-
-    `StandardFlyable.complete()` reports progress for a `MovableLogic` by
-    observing its readback against its setpoint. A logic whose progress is
-    neither -- a detector's is "collections written out of collections
-    requested" -- yields its own updates instead.
-
-    Implement `on_complete_updates` rather than `on_complete`; the inherited
-    `on_complete` drains the updates for callers that only want to block.
-    """
-
-    @abstractmethod
-    def on_complete_updates(self, ctx: CtxT) -> AsyncIterator[WatcherUpdate]:
-        """Block until the fly scan is done, yielding progress as it goes.
-
-        :param ctx: the context returned by `on_kickoff`.
-        """
-
-    async def on_complete(self, ctx: CtxT) -> None:
-        async for _ in self.on_complete_updates(ctx):
-            pass
 
 
 class FlyMotorInfo(ConfinedModel):
@@ -151,6 +130,11 @@ class FlyMotorInfo(ConfinedModel):
             * (self.end_position - self.start_position)
             / (2 * self.time_for_move)
         )
+
+
+async def _awaited(awaitable: Awaitable[None]) -> None:
+    # AsyncStatus takes a coroutine, while on_complete may return any awaitable
+    await awaitable
 
 
 class _FlyStage(Enum):
@@ -250,26 +234,34 @@ class StandardFlyable(
     async def complete(self) -> AsyncIterator[WatcherUpdate]:
         """Block until the fly scan is done.
 
-        If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report
-        progress to watchers by observing its readback while the fly scan runs,
-        reusing the same watcher-update stream as `StandardMovable.set`. A
-        `WatchableFlyableLogic` reports its own progress instead. Any other
-        flyer simply blocks with no progress updates.
+        A logic whose `on_complete` yields [](#WatcherUpdate) reports its own
+        progress, and those updates are passed straight on to watchers. One that
+        just blocks reports progress only if it is also a `MovableLogic` (e.g. a
+        flying `Motor`), by observing its readback while the fly scan runs,
+        reusing the same watcher-update stream as `StandardMovable.set`. Any
+        other flyer simply blocks with no progress updates.
         """
         if self._fly_stage is not _FlyStage.KICKED_OFF:
             raise RuntimeError(
                 f"{self.name}: kickoff() must be called before complete()"
             )
         logic = self.logic
-        if isinstance(logic, MovableLogic):
+        completing = logic.on_complete(self._fly_ctx)
+        if isinstance(completing, AsyncIterator):
+            # Progress that is neither a readback nor a setpoint -- a detector's
+            # is "collections written out of collections requested" -- so the
+            # logic reports it itself
+            async for update in completing:
+                yield update
+        elif isinstance(logic, MovableLogic):
             initial, target, (units, precision) = await asyncio.gather(
                 logic.readback.get_value(),
                 logic.setpoint.get_value(),
                 logic.get_units_precision(),
             )
-            async with AsyncStatus(logic.on_complete(self._fly_ctx)) as completing:
+            async with AsyncStatus(_awaited(completing)) as completed:
                 async for current_position in observe_value(
-                    logic.readback, done_status=completing
+                    logic.readback, done_status=completed
                 ):
                     yield WatcherUpdate(
                         current=current_position,
@@ -279,13 +271,8 @@ class StandardFlyable(
                         unit=units,
                         precision=precision,
                     )
-        elif isinstance(logic, WatchableFlyableLogic):
-            # Progress that is neither a readback nor a setpoint: the logic
-            # knows how to report it, so let it
-            async for update in logic.on_complete_updates(self._fly_ctx):
-                yield update
         else:
-            await self.logic.on_complete(self._fly_ctx)
+            await completing
         self._fly_stage = _FlyStage.IDLE
 
 

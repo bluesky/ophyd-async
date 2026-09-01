@@ -24,7 +24,7 @@ info passed to `prepare()`, and `CtxT`, the context threaded between the phases 
 |--------|-------------------|--------------|
 | `on_prepare(value)` | *abstract* | move to the start, arm the hardware, and return a context |
 | `on_kickoff(ctx)` | *abstract* | start the scan and return the context for `on_complete` |
-| `on_complete(ctx)` | *abstract* | block until the scan finishes |
+| `on_complete(ctx)` | *abstract* | block until the scan finishes, optionally yielding progress |
 | `stop()` | no-op | disarm the hardware and wait for it to stop |
 | `on_stage()` | calls `stop()` | set the hardware up on `stage()` if it differs from stop |
 | `on_unstage()` | calls `stop()` | clean the hardware up on `unstage()` if it differs from stop |
@@ -74,8 +74,11 @@ status on the context so `on_complete` can await it:
 Because the logic is also a `MovableLogic`, `complete()` reports progress to watchers
 (e.g. progress bars) automatically by observing the readback — reusing the same
 [](#WatcherUpdate) machinery as [](#StandardMovable.set). A flyer whose logic is *not*
-movable (see the next section) just blocks with no progress updates. See
-[](../explanations/when-to-extend-movable.md) for more on `MovableLogic`.
+movable (see the next section) just blocks with no progress updates, unless it reports
+its own: write `on_complete` as an async generator yielding [](#WatcherUpdate) and those
+updates go straight to the watchers, as a detector's "collections written out of
+collections requested" does. See [](../explanations/when-to-extend-movable.md) for more on
+`MovableLogic`.
 
 Wire the logic into the Device with a `@cached_property` called `logic`. Each
 mix-in declares that same name with its own required type, so one logic object that

@@ -56,7 +56,6 @@ from ._flyable import (
     FlyableLogic,
     FlyMotorInfo,
     StandardFlyable,
-    WatchableFlyableLogic,
 )
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
@@ -304,7 +303,6 @@ __all__ = [
     "StandardFlyable",
     "FlyMotorInfo",
     "FlyableLogic",
-    "WatchableFlyableLogic",
     # Settings
     "Settings",
     "SettingsProvider",

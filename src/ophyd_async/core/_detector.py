@@ -28,7 +28,7 @@ from ._data_providers import (
     PageableDataProvider,
     StreamableDataProvider,
 )
-from ._flyable import StandardFlyable, WatchableFlyableLogic
+from ._flyable import FlyableLogic, StandardFlyable
 from ._readable import (
     StandardReadable,
     StandardReadableFormat,
@@ -409,7 +409,7 @@ class _FlyCtx:
     kickoff_collections_written: int | None = None
 
 
-class DetectorLogic(WatchableFlyableLogic[TriggerInfo, _FlyCtx]):
+class DetectorLogic(FlyableLogic[TriggerInfo, _FlyCtx]):
     """Drive a detector through its trigger, acquire and data logics.
 
     :param logics:
@@ -550,7 +550,7 @@ class DetectorLogic(WatchableFlyableLogic[TriggerInfo, _FlyCtx]):
             await self.acquire_logic.start_acquiring()
         return ctx
 
-    def on_complete_updates(self, ctx: _FlyCtx) -> AsyncIterator[WatcherUpdate]:
+    def on_complete(self, ctx: _FlyCtx) -> AsyncIterator[WatcherUpdate]:
         """Wait for the scan to finish, reporting collections written as progress."""
         return self._wait_for_collections(
             trigger_info=ctx.trigger_info,
