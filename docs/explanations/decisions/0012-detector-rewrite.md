@@ -5,6 +5,9 @@ Date: 2026-01-20
 
 Accepted
 
+Partly superseded by [](./0020-runtime-readable-format.md), which made `StandardDetector` a
+`StandardReadable` and removed the `prepare_single` tier along with `ReadableDataProvider`.
+
 ## Context
 
 The original `StandardDetector` implementation had several architectural issues:

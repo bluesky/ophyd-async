@@ -6,6 +6,9 @@ Date: 2026-03-10
 
 Accepted
 
+Partly superseded by [](./0021-single-logic-property.md), which replaced `movable_logic`
+with a single `logic` property.
+
 ## Context
 
 Several device types share a common movement pattern: write a setpoint, then observe a

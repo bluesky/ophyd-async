@@ -1,16 +1,21 @@
 from typing import Annotated as A
 from typing import TypeVar
 
+import numpy as np
+
 from ophyd_async.core import (
+    Array1D,
     DeviceVector,
     EnableDisable,
     SignalR,
     SignalRW,
+    StandardReadable,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     non_zero,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
 
 # Common classes for drivers and plugins
@@ -107,7 +112,7 @@ class ADState(StrictEnum):
 ADBaseIOT = TypeVar("ADBaseIOT", bound="ADBaseIO")
 
 
-class ADBaseIO(NDArrayBaseIO):
+class ADBaseIO(StandardReadable, NDArrayBaseIO):
     """Base class from which areaDetector drivers are derived.
 
     This mirrors the interface provided by ADCore/db/ADBase.template.
@@ -118,10 +123,14 @@ class ADBaseIO(NDArrayBaseIO):
     compatibility with changes made in https://github.com/areaDetector/ADCore/blob/master/RELEASE.md#asynndarraydriver-addriver
     """
 
-    acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
-    acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
-    num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
-    image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
+    acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime"), Format.CONFIG_SIGNAL]
+    acquire_period: A[
+        SignalRW[float], PvSuffix.rbv("AcquirePeriod"), Format.CONFIG_SIGNAL
+    ]
+    num_images: A[SignalRW[int], PvSuffix.rbv("NumImages"), Format.CONFIG_SIGNAL]
+    image_mode: A[
+        SignalRW[ADImageMode], PvSuffix.rbv("ImageMode"), Format.CONFIG_SIGNAL
+    ]
     detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
 
     # The following signals have been moved from NDArrayBaseIO for backwards
@@ -131,11 +140,13 @@ class ADBaseIO(NDArrayBaseIO):
     # There is no _RBV for this one
     wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
 
-    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV")]
-    model: A[SignalR[str], PvSuffix("Model_RBV")]
-    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV")]
-    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV")]
-    firmware_version: A[SignalR[str], PvSuffix("FirmwareVersion_RBV")]
+    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV"), Format.CONFIG_SIGNAL]
+    model: A[SignalR[str], PvSuffix("Model_RBV"), Format.CONFIG_SIGNAL]
+    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV"), Format.CONFIG_SIGNAL]
+    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV"), Format.CONFIG_SIGNAL]
+    firmware_version: A[
+        SignalR[str], PvSuffix("FirmwareVersion_RBV"), Format.CONFIG_SIGNAL
+    ]
 
 
 # Classes for plugins
@@ -156,15 +167,28 @@ class NDPluginBaseIO(NDArrayBaseIO):
     queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
 
 
-class NDROIIO(NDPluginBaseIO):
+async def plugin_is_enabled(plugin: NDPluginBaseIO) -> bool:
+    """Whether a plugin is switched on, so is receiving NDArrays.
+
+    The nearest thing to "is this plugin in the chain": a plugin with callbacks
+    disabled certainly is not, though an enabled one may still have its
+    `nd_array_port` pointed somewhere else. Parsing the whole plugin graph was
+    rejected in ADR 0020 as too large.
+    """
+    return await plugin.enable_callbacks.get_value() is EnableDisable.ENABLE
+
+
+class NDROIIO(StandardReadable, NDPluginBaseIO):
     """Plugin for taking a region of an NDArray.
 
     This mirrors the interface provided by ADCore/db/NDROI.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
     """
 
-    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX"), Format.CONFIG_SIGNAL]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY"), Format.CONFIG_SIGNAL]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX"), Format.CONFIG_SIGNAL]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY"), Format.CONFIG_SIGNAL]
     size_z: A[SignalRW[int], PvSuffix.rbv("SizeZ")]
 
     bin_x: A[SignalRW[int], PvSuffix.rbv("BinX")]
@@ -183,7 +207,18 @@ class NDProcessIO(NDPluginBaseIO):
     scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
-class NDStatsIO(NDPluginBaseIO):
+class NDStatsTSAcquireMode(StrictEnum):
+    """Whether an NDPluginStats time series stops when full or wraps around.
+
+    Mirrors the ``TSAcquireMode`` record in
+    ADCore/db/NDPluginTimeSeries.template.
+    """
+
+    FIXED_LENGTH = "Fixed length"
+    CIRCULAR_BUFFER = "Circ. buffer"
+
+
+class NDStatsIO(StandardReadable, NDPluginBaseIO):
     """Plugin for computing statistics from an image or ROI within an image.
 
     This mirrors the interface provided by ADCore/db/NDStats.template.
@@ -191,58 +226,94 @@ class NDStatsIO(NDPluginBaseIO):
     """
 
     # Basic statistics
-    compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
-    bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
-    total: A[SignalR[float], PvSuffix("Total_RBV")]
+    compute_statistics: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeStatistics"), Format.CONFIG_SIGNAL
+    ]
+    bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth"), Format.CONFIG_SIGNAL]
+    min_value: A[
+        SignalR[float], PvSuffix("MinValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    min_x: A[SignalR[float], PvSuffix("MinX_RBV"), Format.UNCACHED_SIGNAL]
+    min_y: A[SignalR[float], PvSuffix("MinY_RBV"), Format.UNCACHED_SIGNAL]
+    max_value: A[
+        SignalR[float], PvSuffix("MaxValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    max_x: A[SignalR[float], PvSuffix("MaxX_RBV"), Format.UNCACHED_SIGNAL]
+    max_y: A[SignalR[float], PvSuffix("MaxY_RBV"), Format.UNCACHED_SIGNAL]
+    mean_value: A[
+        SignalR[float], PvSuffix("MeanValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    sigma: A[SignalR[float], PvSuffix("Sigma_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
+    net: A[SignalR[float], PvSuffix("Net_RBV")]
+    # Time series. NDStats delegates its time series to an embedded
+    # NDPluginTimeSeries instance, so the controls live under an inner "TS:"
+    # prefix while the per-statistic arrays are named by NDStats itself at the
+    # plugin's own prefix. ts_num_points sizes the buffer, ts_acquire erases and
+    # starts it (writing 1 clears the arrays and resets ts_current_point to 0),
+    # ts_current_point reports progress, ts_total holds the Total series and
+    # ts_timestamp holds the per-point acquisition times. These are not
+    # registered as readables: the scalars above serve read(), and the arrays
+    # are consumed by StatsTimeSeriesDataLogic as event pages.
+    ts_acquire: A[SignalRW[bool], PvSuffix("TS:TSAcquire")]
+    ts_num_points: A[SignalRW[int], PvSuffix("TS:TSNumPoints")]
+    ts_current_point: A[SignalR[int], PvSuffix("TS:TSCurrentPoint")]
+    ts_acquiring: A[SignalR[bool], PvSuffix("TS:TSAcquiring")]
+    ts_acquire_mode: A[SignalRW[NDStatsTSAcquireMode], PvSuffix.rbv("TS:TSAcquireMode")]
+    ts_total: A[SignalR[Array1D[np.float64]], PvSuffix("TSTotal")]
+    ts_timestamp: A[SignalR[Array1D[np.float64]], PvSuffix("TSTimestamp")]
     # Centroid statistics
-    compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
-    centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
+    compute_centroid: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeCentroid"), Format.CONFIG_SIGNAL
+    ]
+    centroid_threshold: A[
+        SignalRW[float], PvSuffix.rbv("CentroidThreshold"), Format.CONFIG_SIGNAL
+    ]
+    centroid_x: A[SignalR[float], PvSuffix("CentroidX_RBV")]
+    centroid_y: A[SignalR[float], PvSuffix("CentroidY_RBV")]
+    sigma_x: A[SignalR[float], PvSuffix("SigmaX_RBV")]
+    sigma_y: A[SignalR[float], PvSuffix("SigmaY_RBV")]
+    sigma_xy: A[SignalR[float], PvSuffix("SigmaXY_RBV")]
     # X and Y Profiles
-    compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
+    compute_profiles: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeProfiles"), Format.CONFIG_SIGNAL
+    ]
     profile_size_x: A[SignalR[int], PvSuffix("ProfileSizeX_RBV")]
     profile_size_y: A[SignalR[int], PvSuffix("ProfileSizeY_RBV")]
-    cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX")]
-    cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY")]
+    cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX"), Format.CONFIG_SIGNAL]
+    cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY"), Format.CONFIG_SIGNAL]
     # Array Histogram
-    compute_histogram: A[SignalRW[bool], PvSuffix.rbv("ComputeHistogram")]
-    hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize")]
-    hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
-    hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
+    compute_histogram: A[
+        SignalRW[bool], PvSuffix.rbv("ComputeHistogram"), Format.CONFIG_SIGNAL
+    ]
+    hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize"), Format.CONFIG_SIGNAL]
+    hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin"), Format.CONFIG_SIGNAL]
+    hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax"), Format.CONFIG_SIGNAL]
 
 
-class NDROIStatNIO(EpicsDevice):
+class NDROIStatNIO(StandardReadable, EpicsDevice):
     """Defines the parameters for a single ROI used for statistics calculation.
-
-    Each instance represents a single ROI, with attributes for its position
-    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
 
     This mirrors the interface provided by ADCore/db/NDROIStatN.template.
     See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
-
-    Attributes:
-        name: The name of the ROI.
-        use: Flag indicating whether the ROI is used.
-        min_x: The start X-coordinate of the ROI.
-        min_y: The start Y-coordinate of the ROI.
-        size_x: The width of the ROI.
-        size_y: The height of the ROI.
-        min_value: Minimum count value in the ROI.
-        max_value: Maximum count value in the ROI.
-        mean_value: Mean counts value in the ROI.
-        total: Total counts in the ROI.
     """
 
     name_: A[SignalRW[str], PvSuffix("Name")]
-    use: A[SignalRW[bool], PvSuffix.rbv("Use")]
-    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
-    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
-    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
-    # stats
-    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
-    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
-    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
-    total: A[SignalR[float], PvSuffix("Total_RBV")]
+    use: A[SignalRW[bool], PvSuffix.rbv("Use"), Format.CONFIG_SIGNAL]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX"), Format.CONFIG_SIGNAL]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY"), Format.CONFIG_SIGNAL]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX"), Format.CONFIG_SIGNAL]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY"), Format.CONFIG_SIGNAL]
+    min_value: A[
+        SignalR[float], PvSuffix("MinValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    max_value: A[
+        SignalR[float], PvSuffix("MaxValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    mean_value: A[
+        SignalR[float], PvSuffix("MeanValue_RBV"), Format.HINTED_UNCACHED_SIGNAL
+    ]
+    total: A[SignalR[float], PvSuffix("Total_RBV"), Format.HINTED_UNCACHED_SIGNAL]
 
 
 class NDROIStatIO(NDPluginBaseIO):

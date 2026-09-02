@@ -179,7 +179,7 @@ It derives from [](#StandardDetector) which is a utility baseclass that implemen
 - [](#DetectorAcquireLogic) to start and stop acquisition and wait for it to complete
 - [](#DetectorDataLogic) to tell the detector to open a file, describe the datasets it will write, and emit StreamAsset documents as frames are written
 
-In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and pass them to [](#StandardDetector.add_detector_logics).
+In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and wire them into a [](#DetectorLogic), which it returns from `logic`.
 
 Now let's look at the underlying classes that define the detector behavior:
 
@@ -199,8 +199,10 @@ If we wanted to support external triggering, we would also implement:
 - `prepare_level()` for external level/gate triggering (high level duration determines exposure)
 
 We could also implement:
-- `get_deadtime()` to calculate the minimum time between exposures based on configuration
-- `config_sigs()` to return signals that should appear in read_configuration()
+- `get_deadtime()` to calculate the minimum time between exposures. It is given the value
+  of every signal the detector reports as configuration, so a signal it needs must be
+  declared with [](#StandardReadableFormat.CONFIG_SIGNAL) like on any other
+  [](#StandardReadable) — the trigger logic does not nominate signals itself
 - `default_trigger_info()` to return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (governed by [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE)).
 
 ### `BlobAcquireLogic`
@@ -226,14 +228,33 @@ Then we have `BlobDataLogic`, a [](#DetectorDataLogic) subclass:
 ```
 
 Its job is to manage the file writing and data streaming:
-- `prepare_unbounded()` tells the detector to open a file, and returns a [](#StreamableDataProvider) that describes the datasets that will be written and tracks write progress
+- `make_data_provider()` works out where the file will go and returns a [](#StreamableDataProvider) describing the datasets that will be written, without opening anything
+- `start()` opens the file, so nothing is written until the detector has decided it wants this data
 - `get_hinted_fields()` returns the data keys that are interesting to plot
 - `stop()` tells the detector to close the file
 
-The [](#StreamableDataProvider) returned from `prepare_unbounded()` contains:
+The [](#StreamableDataProvider) returned from `make_data_provider()` contains:
 - `collections_written_signal` - a signal that tracks how many frames have been written
 - `make_datakeys()` - creates DataKey descriptions for each dataset
 - `make_stream_docs()` - emits StreamResource and StreamDatum documents as frames are written
+
+#### Which kind of data a logic produces
+
+A [](#DetectorDataLogic) is not declared as one kind or another: the detector asks each of its logics what it would make for this scan, and the type of provider that comes back says which kind it is.
+
+- a [](#StreamableDataProvider) is for a source that works for any number of collections, like a file writer. The detector exposes `collect_asset_docs`, and `BlobDataLogic` is an example.
+- a [](#PageableDataProvider) is for a source holding a *finite buffer* that must be sized before acquisition, like an areaDetector stats time series or a scaler whose array length is the frame count. It emits event pages, so the detector exposes `collect_pages` instead. See [](#StatsTimeSeriesDataLogic).
+- `None` means "not this scan", for instance a finite buffer asked for an unbounded number of collections, or a plugin that is switched off. This is not an error: a detector may carry more data logics than any one scan uses.
+
+A source that produces one value per event, like a plugin scalar, needs no data logic at all: a detector is a [](#StandardReadable), so register the signal with [](#StandardReadable.set_readable_format).
+
+`make_data_provider` is given the total `num_collections` for the scan, 0 meaning unbounded, and the frame `period` (livetime + deadtime), resolved by `prepare()` from the trigger logic even when the [](#TriggerInfo) leaves `livetime` at 0. It must not start anything: only the providers the detector settles on get their `start()` called.
+
+A detector may carry several data logics, but must not end up producing both kinds at once — those are mutually exclusive document kinds, and `prepare()` raises if it would.
+
+```{note}
+Which logic serves is decided in `prepare()`, so it can change between runs — a detector whose file writer is switched off can fall back to its stats time series. Change it **between runs**, not inside one: a run's descriptor is emitted at its start, so switching part way through would leave the descriptor and the documents disagreeing.
+```
 
 ## Conclusion
 

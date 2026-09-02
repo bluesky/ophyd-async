@@ -17,8 +17,9 @@ from ophyd_async.testing import assert_has_calls
 async def adbase_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     async with init_devices(mock=True):
-        det = adcore.AreaDetector(driver=driver)
-        det.add_detector_logics(adcore.ADAcquireLogic(driver))
+        det = adcore.AreaDetector(
+            driver=driver, acquire_logic=adcore.ADAcquireLogic(driver)
+        )
     return det
 
 

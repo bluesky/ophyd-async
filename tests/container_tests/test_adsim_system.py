@@ -34,6 +34,7 @@ from unittest.mock import ANY, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
+import bluesky.preprocessors as bpp
 import pytest
 from aioca import purge_channel_caches
 from bluesky.run_engine import RunEngine
@@ -109,6 +110,24 @@ def adsim(RE: RunEngine, shared_tmp_path: Path) -> AreaDetector:
         )
 
     return adsim
+
+
+@pytest.fixture
+def adsimstat(RE: RunEngine) -> AreaDetector:
+    """A writer-less SimDetector whose only data logic is the STAT time series.
+
+    It writes no file: the NDPluginStats time series is a fixed-length buffer read
+    back as event pages, so this exercises the bounded data-logic tier against a
+    real IOC (the `ADWriterFactory.stats` factory and NDStatsIO's `TS:*` signals).
+    """
+    with init_devices():
+        adsimstat = SimDetector(
+            "BL01T-DI-CAM-01:",
+            adcore.ADWriterFactory.stats(writer_suffix="STAT:"),
+            driver_suffix="DET:",
+        )
+
+    return adsimstat
 
 
 @pytest.fixture(autouse=True)
@@ -196,10 +215,24 @@ def test_software_triggering(
                     "data": {
                         "adsim-driver-acquire_period": 0.005,
                         "adsim-driver-acquire_time": 0.1,
+                        "adsim-driver-num_images": 1,
+                        "adsim-driver-image_mode": "Multiple",
+                        "adsim-driver-manufacturer": "Simulated detector",
+                        "adsim-driver-model": "Basic simulator",
+                        "adsim-driver-serial_number": "No serial number",
+                        "adsim-driver-sdk_version": ANY,
+                        "adsim-driver-firmware_version": "No firmware",
                     },
                     "timestamps": {
                         "adsim-driver-acquire_period": ANY,
                         "adsim-driver-acquire_time": ANY,
+                        "adsim-driver-num_images": ANY,
+                        "adsim-driver-image_mode": ANY,
+                        "adsim-driver-manufacturer": ANY,
+                        "adsim-driver-model": ANY,
+                        "adsim-driver-serial_number": ANY,
+                        "adsim-driver-sdk_version": ANY,
+                        "adsim-driver-firmware_version": ANY,
                     },
                     "data_keys": {
                         "adsim-driver-acquire_period": {
@@ -217,6 +250,50 @@ def test_software_triggering(
                             "source": "ca://BL01T-DI-CAM-01:DET:AcquireTime_RBV",
                             "units": "",
                             "precision": 3,
+                        },
+                        "adsim-driver-num_images": {
+                            "dtype": "integer",
+                            "shape": [],
+                            "dtype_numpy": "<i8",
+                            "source": "ca://BL01T-DI-CAM-01:DET:NumImages_RBV",
+                            "units": "",
+                        },
+                        "adsim-driver-image_mode": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:ImageMode_RBV",
+                            "choices": ["Single", "Multiple", "Continuous"],
+                        },
+                        "adsim-driver-manufacturer": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:Manufacturer_RBV",
+                        },
+                        "adsim-driver-model": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:Model_RBV",
+                        },
+                        "adsim-driver-serial_number": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:SerialNumber_RBV",
+                        },
+                        "adsim-driver-sdk_version": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:SDKVersion_RBV",
+                        },
+                        "adsim-driver-firmware_version": {
+                            "dtype": "string",
+                            "shape": [],
+                            "dtype_numpy": "|S40",
+                            "source": "ca://BL01T-DI-CAM-01:DET:FirmwareVersion_RBV",
                         },
                     },
                 }
@@ -292,6 +369,53 @@ def test_software_triggering(
             num_events={"primary": 2},
         ),
     ]
+
+
+@pytest.mark.timeout(TIMEOUT + 15.0)
+def test_stats_time_series_step_scan(
+    RE: RunEngine, adsimstat: SimDetector, bl01t_di_cam_01: None
+) -> None:
+    """A writer-less stats detector arms the TS buffer, acquires, and reads the
+    per-frame Total series back as a single event holding the whole array.
+
+    This drives the real STAT plugin's ``TS:*`` records end to end: prepare sizes
+    and arms ``TS:TSNumPoints``/``TS:TSAcquire``, the sim driver takes the frames,
+    and read() slices ``TS:TSTotal`` (timestamped by ``TS:TSTimestamp``) into a
+    single 5-element reading.
+    """
+    collections = 5
+
+    @bpp.stage_decorator([adsimstat])
+    @bpp.run_decorator()
+    def prepare_then_count() -> MsgGenerator[None]:
+        # prepare() must come after stage(), which resets the detector
+        yield from bps.prepare(
+            adsimstat,
+            TriggerInfo(collections_per_event=collections, livetime=0.1),
+            wait=True,
+        )
+        yield from bps.trigger_and_read([adsimstat])
+
+    named_docs: list[tuple[str, DocumentType]] = []
+    RE(prepare_then_count(), lambda name, doc: named_docs.append((name, doc)))
+
+    # A bounded logic exposes collect_pages, never collect_asset_docs.
+    assert hasattr(adsimstat, "collect_pages")
+    assert not hasattr(adsimstat, "collect_asset_docs")
+
+    descriptor = next(doc for name, doc in named_docs if name == "descriptor")
+    data_key = descriptor["data_keys"]["adsimstat"]
+    assert data_key["shape"] == [collections]
+    assert data_key["dtype"] == "array"
+    assert data_key["dtype_numpy"] == "<f8"
+
+    event = next(doc for name, doc in named_docs if name == "event")
+    # read() derives one reading whose value is the whole TS:TSTotal buffer.
+    values = event["data"]["adsimstat"]
+    assert len(values) == collections
+    assert all(isinstance(v, float) for v in values)
+    # The reading is timestamped from TS:TSTimestamp, so it is populated.
+    assert event["timestamps"]["adsimstat"] >= 0
 
 
 def run_plan_and_get_documents(

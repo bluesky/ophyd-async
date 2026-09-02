@@ -1,6 +1,6 @@
 import asyncio
 from abc import abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable
 from enum import Enum
 from functools import cached_property
 from typing import Generic, TypeVar, cast
@@ -17,6 +17,7 @@ from ._utils import (
     CalculatableTimeout,
     ConfinedModel,
     WatcherUpdate,
+    abstract_cached_property,
 )
 
 #: The per-scan info passed to `FlyableLogic.on_prepare` (often a
@@ -60,8 +61,11 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
         """
 
     @abstractmethod
-    async def on_complete(self, ctx: CtxT) -> None:
+    def on_complete(self, ctx: CtxT) -> Awaitable[None] | AsyncIterator[WatcherUpdate]:
         """Block until the fly scan is done.
+
+        Write it as an `async def` to just block, or as an async generator
+        yielding [](#WatcherUpdate) to report progress to watchers as it goes.
 
         :param ctx: the context returned by `on_kickoff`.
         """
@@ -82,11 +86,9 @@ class FlyableLogic(Generic[PrepareT, CtxT]):
         """Clean the flyer up on `unstage()`. Defaults to `stop`."""
         await self.stop()
 
-    def with_device(self, name: str = "") -> "StandardFlyable":
+    def with_device(self, name: str = "") -> "StandardFlyable[PrepareT, CtxT]":
         """Wrap this logic in an ephemeral `StandardFlyable` for use in a plan."""
-        flyer = StandardFlyable(name=name)
-        flyer.flyable_logic = self
-        return flyer
+        return _EphemeralFlyable(self, name=name)
 
 
 class FlyMotorInfo(ConfinedModel):
@@ -130,6 +132,11 @@ class FlyMotorInfo(ConfinedModel):
         )
 
 
+async def _awaited(awaitable: Awaitable[None]) -> None:
+    # AsyncStatus takes a coroutine, while on_complete may return any awaitable
+    await awaitable
+
+
 class _FlyStage(Enum):
     """Lifecycle stage of a `StandardFlyable`, used to enforce call ordering."""
 
@@ -146,7 +153,7 @@ class StandardFlyable(
 ):
     """Device that provides standard logic for flying.
 
-    This class must be inherited and have a `flyable_logic` @cached_property.
+    This class must be inherited and have a `logic` @cached_property.
     For an ephemeral flyer in a plan, call `FlyableLogic.with_device` instead of
     inheriting. It owns the context threaded between the logic's stages and
     enforces prepare -> kickoff -> complete ordering. `stage()`/`unstage()` run
@@ -165,18 +172,33 @@ class StandardFlyable(
         self._fly_ctx: CtxT = cast(CtxT, None)
         self._fly_stage = _FlyStage.IDLE
 
-    @cached_property
-    def flyable_logic(self) -> FlyableLogic[PrepareT, CtxT]:
+    @abstract_cached_property
+    def logic(self) -> FlyableLogic[PrepareT, CtxT]:
         """The logic object that describes how this device flies.
 
         A static flyer (e.g. `Motor`) provides this as a `@cached_property` that
         builds a `FlyableLogic` from its signals. An ephemeral flyer created by
         `FlyableLogic.with_device` has it set directly on the instance.
+
+        A Device that is flyable *and* movable implements this once with a logic
+        object inheriting both `FlyableLogic` and `MovableLogic`; each mix-in
+        declares `logic` with its own required type, so the type
+        checker verifies the one implementation against both.
         """
-        raise NotImplementedError(
-            f"{type(self).__name__} has no flyable_logic; override it as a "
-            "@cached_property or create the flyer via FlyableLogic.with_device()"
-        )
+        raise NotImplementedError
+
+    @property
+    def _prepared_fly_ctx(self) -> CtxT:
+        """The prepare context, for callers outside prepare -> kickoff -> complete.
+
+        `_fly_ctx` is a `None` *typed as* `CtxT` until prepared, so a verb that
+        read it directly -- a detector's `describe_collect()` or `get_index()`
+        -- would fail with an `AttributeError` on `None` rather than saying what
+        was wrong.
+        """
+        if self._fly_stage is _FlyStage.IDLE:
+            raise RuntimeError(f"{self.name}: prepare() must be called first")
+        return self._fly_ctx
 
     def _reset_fly_state(self) -> None:
         self._fly_ctx = cast(CtxT, None)
@@ -184,18 +206,18 @@ class StandardFlyable(
 
     @AsyncStatus.wrap
     async def _on_stage(self) -> None:
-        await self.flyable_logic.on_stage()
+        await self.logic.on_stage()
         self._reset_fly_state()
 
     @AsyncStatus.wrap
     async def _on_unstage(self) -> None:
-        await self.flyable_logic.on_unstage()
+        await self.logic.on_unstage()
         self._reset_fly_state()
 
     @AsyncStatus.wrap
     async def prepare(self, value: PrepareT) -> None:
         """Move to the start and set up the fly scan."""
-        self._fly_ctx = await self.flyable_logic.on_prepare(value)
+        self._fly_ctx = await self.logic.on_prepare(value)
         self._fly_stage = _FlyStage.PREPARED
 
     @AsyncStatus.wrap
@@ -205,32 +227,41 @@ class StandardFlyable(
             raise RuntimeError(
                 f"{self.name}: prepare() must be called before kickoff()"
             )
-        self._fly_ctx = await self.flyable_logic.on_kickoff(self._fly_ctx)
+        self._fly_ctx = await self.logic.on_kickoff(self._fly_ctx)
         self._fly_stage = _FlyStage.KICKED_OFF
 
     @WatchableAsyncStatus.wrap
     async def complete(self) -> AsyncIterator[WatcherUpdate]:
         """Block until the fly scan is done.
 
-        If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report
-        progress to watchers by observing its readback while the fly scan runs,
-        reusing the same watcher-update stream as `StandardMovable.set`. Flyers
-        whose logic is not movable simply block with no progress updates.
+        A logic whose `on_complete` yields [](#WatcherUpdate) reports its own
+        progress, and those updates are passed straight on to watchers. One that
+        just blocks reports progress only if it is also a `MovableLogic` (e.g. a
+        flying `Motor`), by observing its readback while the fly scan runs,
+        reusing the same watcher-update stream as `StandardMovable.set`. Any
+        other flyer simply blocks with no progress updates.
         """
         if self._fly_stage is not _FlyStage.KICKED_OFF:
             raise RuntimeError(
                 f"{self.name}: kickoff() must be called before complete()"
             )
-        logic = self.flyable_logic
-        if isinstance(logic, MovableLogic):
+        logic = self.logic
+        completing = logic.on_complete(self._fly_ctx)
+        if isinstance(completing, AsyncIterator):
+            # Progress that is neither a readback nor a setpoint -- a detector's
+            # is "collections written out of collections requested" -- so the
+            # logic reports it itself
+            async for update in completing:
+                yield update
+        elif isinstance(logic, MovableLogic):
             initial, target, (units, precision) = await asyncio.gather(
                 logic.readback.get_value(),
                 logic.setpoint.get_value(),
                 logic.get_units_precision(),
             )
-            async with AsyncStatus(logic.on_complete(self._fly_ctx)) as completing:
+            async with AsyncStatus(_awaited(completing)) as completed:
                 async for current_position in observe_value(
-                    logic.readback, done_status=completing
+                    logic.readback, done_status=completed
                 ):
                     yield WatcherUpdate(
                         current=current_position,
@@ -241,5 +272,22 @@ class StandardFlyable(
                         precision=precision,
                     )
         else:
-            await self.flyable_logic.on_complete(self._fly_ctx)
+            await completing
         self._fly_stage = _FlyStage.IDLE
+
+
+class _EphemeralFlyable(StandardFlyable[PrepareT, CtxT]):
+    """A concrete `StandardFlyable` built around a logic object.
+
+    `StandardFlyable.logic` is abstract, so the class itself cannot be
+    instantiated; `FlyableLogic.with_device` needs something concrete to wrap a
+    logic object in.
+    """
+
+    def __init__(self, logic: FlyableLogic[PrepareT, CtxT], name: str = "") -> None:
+        self._logic = logic
+        super().__init__(name=name)
+
+    @cached_property
+    def logic(self) -> FlyableLogic[PrepareT, CtxT]:
+        return self._logic

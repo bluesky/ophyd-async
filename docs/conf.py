@@ -190,6 +190,17 @@ obj_ignore = [
     "0.001",
     "1.0",
     "bluesky.protocols.T_co",
+    # TypeVars documented on StandardFlyable, added in #1359
+    "PrepareT",
+    "CtxT",
+    # event_model publishes no intersphinx entry for this TypedDict
+    "event_model.documents.PartialEventPage",
+    # TypeVar for the plugin an ADWriterFactory builds a data logic around
+    "ophyd_async.epics.adcore._data_logic.NDWriterPluginT",
+    # The context DetectorLogic threads prepare -> kickoff -> complete, private
+    # because nothing outside StandardDetector constructs or inspects one
+    "ophyd_async.core._detector._FlyCtx",
+    "ophyd_async.core._detector._DetectorData",
 ]
 nitpick_ignore = []
 for var in obj_ignore:

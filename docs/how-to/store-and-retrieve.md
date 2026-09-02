@@ -43,3 +43,39 @@ def load_panda(panda1: HDFPanda):
     settings = yield from retrieve_settings(provider, "yaml_file_name", panda1)
     yield from apply_settings_if_different(settings, apply_panda_settings)
 ```
+
+## Storing readable formats too
+
+As well as signal values, [](#store_settings) records how each child contributes to the Device's bluesky verbs — which signals are hinted, which are configuration — and [](#apply_settings) restores that alongside the values. The two change on the same cadence, so they live in one file and are applied by one call. This means a stored file can switch a Device between techniques as well as putting its values back; see [](./change-readable-format.md) for changing a format directly.
+
+Values stay flat in the yaml, and formats go under the reserved [](#READABLE_FORMATS_KEY), so the file stays readable and can be edited by hand:
+
+```yaml
+energy: 7.0
+temperature: 20.0
+<READABLE_FORMATS>:
+  <ROOT_DEVICE>:
+    energy: CONFIG_SIGNAL
+    temperature: CONFIG_SIGNAL
+  stats:
+    stats.total: HINTED_UNCACHED_SIGNAL
+```
+
+The outer key of each formats entry is the [](#StandardReadable) the child is registered on, with `<ROOT_DEVICE>` ([](#ROOT_DEVICE_KEY)) standing for the Device you stored. It is recorded rather than worked out from the child's path, because the same child can be registered on more than one Device with a different format each time.
+
+```{note}
+Applying **merges** into what is already registered: a child the file does not mention keeps whatever format it has. This matches how values behave — applying a stored file leaves signals it has never heard of alone — so a file stored against an older version of a Device does not silently unregister signals that have been added since.
+```
+
+To stop a child contributing, the file has to say so explicitly with a null:
+
+```yaml
+<READABLE_FORMATS>:
+  <ROOT_DEVICE>:
+    energy: HINTED_SIGNAL
+    temperature: null
+```
+
+Nothing writes those nulls for you, because storing a Device records only what it currently registers and cannot know what some other profile registered. A profile that needs a child dropped has to spell it out.
+
+Both parts are optional. A file with no `<READABLE_FORMATS>` key changes no formats, so settings files saved before formats were storable keep working untouched. A file with *only* that key switches technique without writing a single value to hardware.

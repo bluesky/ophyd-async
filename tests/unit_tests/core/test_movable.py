@@ -50,7 +50,7 @@ class StandardMovableImpl(StandardMovable[float]):
         super().__init__(name=name)
 
     @cached_property
-    def movable_logic(self) -> MovableLogic[float]:
+    def logic(self) -> MovableLogic[float]:
         return MovableLogic(setpoint=self.setpoint, readback=self.readback)
 
 
@@ -62,16 +62,16 @@ async def movable() -> StandardMovableImpl:
 
 
 def test_movable_logic_is_cached(movable: StandardMovableImpl):
-    logic = movable.movable_logic
-    logic2 = movable.movable_logic
+    logic = movable.logic
+    logic2 = movable.logic
 
     assert logic == logic2
 
 
 async def test_movable_check_value(movable: StandardMovableImpl):
-    movable.movable_logic.check_move = AsyncMock()
+    movable.logic.check_move = AsyncMock()
     await movable.check_value(5)
-    movable.movable_logic.check_move.assert_awaited_once_with(5)
+    movable.logic.check_move.assert_awaited_once_with(5)
 
 
 async def test_locatable(movable: StandardMovableImpl) -> None:
@@ -133,12 +133,12 @@ async def test_movable_moving_stopped(movable: StandardMovableImpl):
 async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     movable: StandardMovableImpl,
 ):
-    mock_check_move = movable.movable_logic.check_move = AsyncMock()
+    mock_check_move = movable.logic.check_move = AsyncMock()
     timeout = 5
-    mock_calculate_timeout = movable.movable_logic.calculate_timeout = AsyncMock(
+    mock_calculate_timeout = movable.logic.calculate_timeout = AsyncMock(
         return_value=timeout
     )
-    mock_move = movable.movable_logic.move = AsyncMock()
+    mock_move = movable.logic.move = AsyncMock()
 
     with patch("ophyd_async.core._movable.MoveTimeout") as move_timeout:
         pos = 10

@@ -28,7 +28,17 @@ class OdinDataLogic(DetectorDataLogic):
         self.odin = odin
         self.detector_bit_depth = detector_bit_depth
 
-    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
+    async def make_data_provider(
+        self, datakey_name: str, num_collections: int, period: float
+    ) -> StreamableDataProvider:
+        # Odin sizes its own chunks and writes for as long as it is told to, so
+        # neither the frame period nor the count is used here yet.
+        del period, num_collections
+        # Unlike other data logics this one cannot describe its data without
+        # starting: the frame shape is only readable from the file processor
+        # once it is writing. So it does its own writes here and has nothing
+        # left for start(). That is safe while it is the only kind of provider a
+        # detector carrying it can produce, since it is then never discarded.
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Get the current bit depth

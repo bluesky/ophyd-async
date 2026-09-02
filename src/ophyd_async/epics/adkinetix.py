@@ -22,7 +22,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    trigger_info_from_driver,
 )
 from .core import PvSuffix
 
@@ -81,7 +81,7 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(self.driver)
 
 
 class KinetixDetector(AreaDetector[KinetixDriverIO]):

@@ -1,12 +1,16 @@
 from collections.abc import Mapping, Sequence
+from functools import cached_property
 from typing import Generic
 
 from ophyd_async.core import (
     DetectorAcquireLogic,
+    DetectorDataLogic,
+    DetectorLogic,
     DetectorTriggerLogic,
     SignalR,
     StandardDetector,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 
 from ._acquire_logic import ADContAcqAcquireLogic
 from ._data_logic import ADWriterFactory
@@ -30,10 +34,13 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         if plugins is not None:
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
+        logics: list[
+            DetectorTriggerLogic | DetectorAcquireLogic | DetectorDataLogic
+        ] = []
         if trigger_logic:
-            self.add_detector_logics(trigger_logic)
+            logics.append(trigger_logic)
         if acquire_logic:
-            self.add_detector_logics(acquire_logic)
+            logics.append(acquire_logic)
         if writer_factories:
             if prefix is None:
                 raise ValueError("prefix is required when writer_factories are given")
@@ -47,11 +54,21 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
             for factory in writer_factories:
                 writer, data_logic = factory(prefix, driver, plugin_list)
                 setattr(self, factory.writer_name, writer)
-                self.add_detector_logics(data_logic)
-        self.add_config_signals(
-            self.driver.acquire_period, self.driver.acquire_time, *config_sigs
-        )
+                logics.append(data_logic)
+        # The driver is always wired up, so register it whole and let ADBaseIO
+        # declare which of its signals are configuration. Plugins are
+        # deliberately *not* registered: a detector normally carries far more
+        # plugins than are wired into the chain, so opt in per plugin with
+        # `set_readable_format(det.stats, Format.CHILD)` instead.
+        self.set_readable_format(self.driver, Format.CHILD)
+        for signal in config_sigs:
+            self.set_readable_format(signal, Format.CONFIG_SIGNAL)
+        self._logic = DetectorLogic(*logics)
         super().__init__(name=name)
+
+    @cached_property
+    def logic(self) -> DetectorLogic:
+        return self._logic
 
     def get_plugin(
         self, name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
@@ -68,7 +85,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):
-    """Create an ADSimDetector AreaDetector instance.
+    """Create an continuously acquiring AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
@@ -82,21 +99,22 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
         self,
         prefix: str,
         *writer_factories: ADWriterFactory,
-        driver_suffix="cam1:",
-        cb_suffix="CB1:",
+        driver_suffix: str = "cam1:",
+        cb_suffix: str = "CB1:",
+        cb_plugin_name: str = "cb",
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = ADBaseIO(prefix + driver_suffix)
-        cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
+        cb_plugin = NDCircularBuffIO(prefix + cb_suffix, name=cb_plugin_name)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
             trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin),
-            plugins=(plugins or {}) | {"cb": cb_plugin},
+            plugins=(plugins or {}) | {cb_plugin.name: cb_plugin},
             config_sigs=config_sigs,
             name=name,
         )

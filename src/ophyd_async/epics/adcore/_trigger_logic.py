@@ -30,10 +30,25 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
-async def trigger_info_from_num_images(driver: ADBaseIO) -> TriggerInfo:
-    """Default TriggerInfo for AD detectors, reading num_images from the driver."""
-    num = await driver.num_images.get_value()
-    return TriggerInfo(collections_per_event=max(1, num))
+async def trigger_info_from_driver(driver: ADBaseIO) -> TriggerInfo:
+    """Default TriggerInfo for AD detectors, read back from the driver.
+
+    Reads num_images, acquire_time and acquire_period so the returned
+    TriggerInfo carries the current livetime and deadtime as well as the
+    collections per event. This lets prepare() fill in a livetime of 0 ("use
+    current") with the real exposure period, which a data logic needs to size
+    its chunks or buffer.
+    """
+    num, livetime, period = await asyncio.gather(
+        driver.num_images.get_value(),
+        driver.acquire_time.get_value(),
+        driver.acquire_period.get_value(),
+    )
+    return TriggerInfo(
+        collections_per_event=max(1, num),
+        livetime=livetime,
+        deadtime=max(0.0, period - livetime),
+    )
 
 
 @dataclass

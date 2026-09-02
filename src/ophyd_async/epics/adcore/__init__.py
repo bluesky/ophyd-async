@@ -9,7 +9,6 @@ from ._data_logic import (
     ADMultipartDataLogic,
     ADWriterFactory,
     NDArrayDescription,
-    PluginSignalDataLogic,
 )
 from ._detector import AreaDetector, ContAcqDetector
 from ._io import (
@@ -31,6 +30,7 @@ from ._io import (
     NDROIStatIO,
     NDROIStatNIO,
     NDStatsIO,
+    NDStatsTSAcquireMode,
 )
 from ._ndattribute import (
     NDAttributeDataType,
@@ -40,10 +40,11 @@ from ._ndattribute import (
     ndattributes_to_xml,
 )
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
+from ._stats_time_series import StatsTimeSeriesDataLogic, StatsTimeSeriesProvider
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
     prepare_exposures,
-    trigger_info_from_num_images,
+    trigger_info_from_driver,
 )
 
 __all__ = [
@@ -57,6 +58,7 @@ __all__ = [
     "NDPluginBaseIO",
     "NDROIIO",
     "NDStatsIO",
+    "NDStatsTSAcquireMode",
     "NDROIStatNIO",
     "NDROIStatIO",
     "NDCBFlushOnSoftTrgMode",
@@ -69,16 +71,17 @@ __all__ = [
     # TriggerLogic
     "prepare_exposures",
     "ADContAcqTriggerLogic",
-    "trigger_info_from_num_images",
+    "trigger_info_from_driver",
     # AcquireLogic
     "ADAcquireLogic",
     "ADContAcqAcquireLogic",
     # DataLogic
     "NDArrayDescription",
-    "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
     "ADWriterFactory",
+    "StatsTimeSeriesDataLogic",
+    "StatsTimeSeriesProvider",
     # Detector
     "AreaDetector",
     "ContAcqDetector",

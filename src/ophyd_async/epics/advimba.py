@@ -25,7 +25,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    trigger_info_from_driver,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -95,9 +95,6 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     driver: VimbaDriverIO
     override_deadtime: float | None = None
 
-    def config_sigs(self) -> set[SignalR]:
-        return {self.driver.model}
-
     def get_deadtime(self, config_values: SignalDict) -> float:
         return get_camera_deadtime(
             model=config_values[self.driver.model],
@@ -129,7 +126,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(self.driver)
 
 
 class VimbaDetector(AreaDetector[VimbaDriverIO]):

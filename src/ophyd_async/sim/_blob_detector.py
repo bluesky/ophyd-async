@@ -1,6 +1,13 @@
 from collections.abc import Sequence
+from functools import cached_property
 
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import (
+    DetectorLogic,
+    PathProvider,
+    SignalR,
+    StandardDetector,
+)
+from ophyd_async.core import StandardReadableFormat as Format
 
 from ._blob_acquire_logic import BlobAcquireLogic
 from ._blob_data_logic import BlobDataLogic
@@ -19,12 +26,17 @@ class SimBlobDetector(StandardDetector):
         name: str = "",
     ) -> None:
         self.pattern_generator = pattern_generator or PatternGenerator()
-        self.add_detector_logics(
+        for signal in config_sigs:
+            self.set_readable_format(signal, Format.CONFIG_SIGNAL)
+        self._logic = DetectorLogic(
             BlobTriggerLogic(pattern_generator=self.pattern_generator),
             BlobAcquireLogic(pattern_generator=self.pattern_generator),
             BlobDataLogic(
                 path_provider=path_provider, pattern_generator=self.pattern_generator
             ),
         )
-        self.add_config_signals(*config_sigs)
         super().__init__(name=name)
+
+    @cached_property
+    def logic(self) -> DetectorLogic:
+        return self._logic

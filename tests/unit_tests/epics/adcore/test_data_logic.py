@@ -14,6 +14,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics.adcore import ADHDFDataLogic, NDArrayDescription
 from ophyd_async.testing import assert_has_calls
 
 
@@ -31,6 +32,76 @@ async def hdf_det(
     set_mock_value(detector.driver.array_size_y, 768)
     set_mock_value(detector.driver.data_type, adcore.ADBaseDataType.UINT16)
     return detector
+
+
+async def test_make_data_provider_does_not_write(
+    hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
+    static_path_provider: StaticPathProvider,
+):
+    """Describing the data must not open the file, since it may be discarded."""
+    writer = hdf_det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(writer.file_path_exists, True)
+    logic = ADHDFDataLogic(
+        array_description=NDArrayDescription(
+            shape_signals=[hdf_det.driver.array_size_y, hdf_det.driver.array_size_x],
+            data_type_signal=hdf_det.driver.data_type,
+            color_mode_signal=hdf_det.driver.color_mode,
+        ),
+        path_provider=static_path_provider,
+        driver=hdf_det.driver,
+        writer=writer,
+    )
+
+    provider = await logic.make_data_provider("det", num_collections=5, period=0.1)
+    assert provider is not None
+    assert await writer.capture.get_value() is False
+    assert await writer.file_name.get_value() == ""
+
+    await logic.start()
+    assert await writer.capture.get_value() is True
+    assert await writer.file_name.get_value() != ""
+
+
+@pytest.mark.parametrize(
+    "enable_callbacks,plugin_enabled,makes_provider",
+    [
+        # The default switches the plugin on, whatever it was set to
+        (True, EnableDisable.DISABLE, True),
+        # Following the plugin, a disabled one writes nothing...
+        (False, EnableDisable.DISABLE, False),
+        # ...and an enabled one still writes
+        (False, EnableDisable.ENABLE, True),
+    ],
+)
+async def test_hdf_follows_the_plugin_when_not_enabling_it(
+    hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
+    static_path_provider: StaticPathProvider,
+    enable_callbacks: bool,
+    plugin_enabled: EnableDisable,
+    makes_provider: bool,
+):
+    writer = hdf_det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(writer.enable_callbacks, plugin_enabled)
+    logic = ADHDFDataLogic(
+        array_description=NDArrayDescription(
+            shape_signals=[hdf_det.driver.array_size_y, hdf_det.driver.array_size_x],
+            data_type_signal=hdf_det.driver.data_type,
+            color_mode_signal=hdf_det.driver.color_mode,
+        ),
+        path_provider=static_path_provider,
+        driver=hdf_det.driver,
+        writer=writer,
+        enable_callbacks=enable_callbacks,
+    )
+
+    provider = await logic.make_data_provider("det", num_collections=5, period=0.1)
+    assert (provider is not None) is makes_provider
+
+    if makes_provider:
+        await logic.start()
+        expected = EnableDisable.ENABLE if enable_callbacks else plugin_enabled
+        assert await writer.enable_callbacks.get_value() is expected
 
 
 async def test_hdf_writer_file_not_found(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):
@@ -89,6 +160,47 @@ async def test_prepare_hdf(
             call.hdf.num_capture.put(0),
             call.hdf.capture.put(True),
         ],
+    )
+
+
+@pytest.mark.parametrize(
+    "flush_period,livetime,deadtime,expected_frames_per_chunk",
+    [
+        # 0.5s flush / 0.01s period -> 50 frames per chunk (#1309)
+        (0.5, 0.01, 0.0, 50),
+        # 0.5s flush / 0.05s period -> 10 frames per chunk
+        (0.5, 0.04, 0.01, 10),
+        # A sub-frame flush period floors to a single frame per chunk
+        (0.001, 0.05, 0.0, 1),
+    ],
+)
+async def test_hdf_chunk_sized_from_flush_period(
+    static_path_provider: StaticPathProvider,
+    flush_period: float,
+    livetime: float,
+    deadtime: float,
+    expected_frames_per_chunk: int,
+):
+    """A configured flush_period sizes the HDF chunk from the frame period."""
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider, flush_period=flush_period),
+        )
+    set_mock_value(det.driver.array_size_x, 1024)
+    set_mock_value(det.driver.array_size_y, 768)
+    set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UINT16)
+    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    await det.prepare(
+        TriggerInfo(livetime=livetime, deadtime=deadtime, number_of_events=3)
+    )
+    assert await writer.num_frames_chunks.get_value() == expected_frames_per_chunk
+    (sr, *_) = [doc async for doc in det.collect_asset_docs(3)]
+    assert sr[1]["parameters"]["chunk_shape"] == (
+        expected_frames_per_chunk,
+        768,
+        1024,
     )
 
 
@@ -249,14 +361,12 @@ async def test_describe_different_color_modes(
         # Expected to give the right shape in the descriptor
         await hdf_det.prepare(TriggerInfo())
         describe = await hdf_det.describe()
-        assert describe == {
-            "detector": {
-                "dtype": "array",
-                "dtype_numpy": "<u2",
-                "external": "STREAM:",
-                "shape": shape,
-                "source": ANY,
-            },
+        assert describe["detector"] == {
+            "dtype": "array",
+            "dtype_numpy": "<u2",
+            "external": "STREAM:",
+            "shape": shape,
+            "source": ANY,
         }
 
 
@@ -266,12 +376,10 @@ async def test_3d_dataset_shape(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):
     set_mock_value(hdf_det.driver.array_size_z, 10)
     await hdf_det.prepare(TriggerInfo())
     describe = await hdf_det.describe()
-    assert describe == {
-        "detector": {
-            "dtype": "array",
-            "dtype_numpy": "<u2",
-            "external": "STREAM:",
-            "shape": [1, 10, 768, 1024],
-            "source": ANY,
-        },
+    assert describe["detector"] == {
+        "dtype": "array",
+        "dtype_numpy": "<u2",
+        "external": "STREAM:",
+        "shape": [1, 10, 768, 1024],
+        "source": ANY,
     }

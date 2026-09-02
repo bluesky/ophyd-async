@@ -1,4 +1,12 @@
-from ophyd_async.core import PathProvider, SignalR, StandardDetector, TriggerableCommand
+from functools import cached_property
+
+from ophyd_async.core import (
+    DetectorLogic,
+    PathProvider,
+    SignalR,
+    StandardDetector,
+    TriggerableCommand,
+)
 from ophyd_async.fastcs import odin
 from ophyd_async.fastcs.core import fastcs_connector
 
@@ -25,7 +33,7 @@ class EigerDetector(StandardDetector):
     ):
         # Need to do this first so the type hints are filled in
         connector = fastcs_connector(prefix, self)
-        self.add_detector_logics(
+        self._logic = DetectorLogic(
             EigerTriggerLogic(self.detector),
             EigerAcquireLogic(self.detector, self.arm_when_ready),
             odin.OdinDataLogic(
@@ -35,3 +43,7 @@ class EigerDetector(StandardDetector):
             ),
         )
         super().__init__(name=name, connector=connector)
+
+    @cached_property
+    def logic(self) -> DetectorLogic:
+        return self._logic

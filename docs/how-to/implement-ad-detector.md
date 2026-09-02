@@ -26,18 +26,22 @@ Implement methods for each trigger mode your detector supports:
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
 Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 
-If the detector has configuration values that should be captured in the scan then implement:
-- `config_sigs()` - Return the set of signals that should appear in read_configuration()
+Configuration values that should be captured in the scan are declared on the IO class,
+with [](#StandardReadableFormat.CONFIG_SIGNAL), exactly as on any other
+[](#StandardReadable) — the trigger logic does not nominate them.
 
 If you support external triggering you should also implement:
-- `get_deadtime(config_values)` - Calculate the minimum time between exposures based on configuration values
+- `get_deadtime(config_values)` - Calculate the minimum time between exposures. It is
+  given the value of *every* signal the detector reports as configuration, so a signal
+  it needs must be declared with [](#StandardReadableFormat.CONFIG_SIGNAL).
 
 To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
 without a preceding `prepare()`, implement:
 - `default_trigger_info()` - Return the [](#TriggerInfo) to use for the implicit
-  prepare. For AD detectors call `await trigger_info_from_num_images(self.driver)` to
-  read back the current `num_images` from the driver rather than resetting it to 1.
+  prepare. For AD detectors call `await trigger_info_from_driver(self.driver)` to
+  read back the current `num_images`, `acquire_time` and `acquire_period` from the
+  driver rather than resetting them.
 
 
 
@@ -87,7 +91,7 @@ For example, for ADAravis:
 
 The `AreaDetector` baseclass will:
 - Store the driver as `self.driver`
-- Call `add_detector_logics()` to register your trigger and arm logic
+- Build a [](#DetectorLogic) from your trigger and arm logic and return it from `logic`
 - Create and register a data logic for file writing for each factory in `writer_factories`
 - Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
 - Store any plugins as attributes on the detector
@@ -109,15 +113,18 @@ For example, for ADAravis:
 
 ## Add multiple data streams (optional)
 
-The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_detector_logics()` to add additional data sources:
+The composition-based architecture makes it possible to give a detector several data outputs:
 
 ### Reading stats plugins alongside file writing
-```python
-from ophyd_async.epics.adcore import PluginSignalDataLogic
+A plugin scalar needs no data logic: a detector is a [](#StandardReadable), so register
+the signal and it appears in `read()` alongside whatever the file writer produces.
 
-det = adaravis.AravisDetector(prefix, path_provider)
-# Add stats total as a readable signal in events
-det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
+```python
+from ophyd_async.core import StandardReadableFormat as Format
+
+det = adaravis.AravisDetector(prefix, path_provider, plugins={"stats": stats})
+# Add stats total as a hinted signal in events
+det.set_readable_format(det.stats.total, Format.HINTED_UNCACHED_SIGNAL)
 ```
 
 ### Multiple HDF writers for different ROIs
