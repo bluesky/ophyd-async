@@ -10,6 +10,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SoftSignalBackend,
+    callback_after_on_mock_put,
     callback_on_mock_put,
     get_mock_put,
     init_devices,
@@ -445,3 +446,18 @@ async def test_when_async_callback_returns_none_then_readback_is_the_setpoint():
 
     await mock_signal.set(5)
     assert (await mock_signal.get_value()) == 5
+
+
+async def test_callback_after_on_mock_put_is_called_after_value_is_set():
+    signal = soft_signal_rw(float, initial_value=0.0)
+    await signal.connect(mock=True)
+
+    value_at_callback = []
+
+    async def callback(value):
+        value_at_callback.append(await signal.get_value())
+
+    callback_after_on_mock_put(signal, callback)
+
+    await signal.set(1.0)
+    assert value_at_callback == [1.0]

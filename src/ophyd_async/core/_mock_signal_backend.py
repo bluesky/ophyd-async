@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 from collections.abc import Awaitable, Callable
 from functools import cached_property
 from typing import TYPE_CHECKING
@@ -20,6 +21,9 @@ if TYPE_CHECKING:
 MockPutCallback = (
     Callable[[SignalDatatypeT], SignalDatatypeT | None]
     | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
+)
+MockPutCallbackAfter = (
+    Callable[[SignalDatatypeT], None] | Callable[[SignalDatatypeT], Awaitable[None]]
 )
 
 
@@ -48,6 +52,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         # use existing Mock if provided
         self.mock = mock
         self._mock_put_callback: MockPutCallback | None = None
+        self._mock_put_callback_after: MockPutCallbackAfter | None = None
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
@@ -55,6 +60,9 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         if "put_mock" in self.__dict__:
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
+
+    def set_mock_put_callback_after(self, callback: MockPutCallbackAfter | None):
+        self._mock_put_callback_after = callback
 
     @cached_property
     def put_mock(self) -> AsyncMock:
@@ -100,6 +108,12 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         if new_value is None:
             new_value = value
         await self.soft_backend.put(new_value)
+
+        if self._mock_put_callback_after is not None:
+            result = self._mock_put_callback_after(new_value)
+            if inspect.isawaitable(result):
+                await result
+
         await self.put_proceeds.wait()
 
     async def get_reading(self) -> Reading:
