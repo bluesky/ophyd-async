@@ -87,16 +87,8 @@ class MovableFlyer(StandardMovable[float], StandardFlyable[float, None]):
         super().__init__(name=name)
 
     @cached_property
-    def _logic(self) -> MovableFlyableLogic:
+    def standard_logic(self) -> MovableFlyableLogic:
         return MovableFlyableLogic(setpoint=self.setpoint, readback=self.readback)
-
-    @cached_property
-    def movable_logic(self) -> MovableFlyableLogic:
-        return self._logic
-
-    @cached_property
-    def flyable_logic(self) -> MovableFlyableLogic:
-        return self._logic
 
 
 @pytest.fixture
@@ -114,7 +106,7 @@ async def test_ephemeral_flyable_drives_logic_hooks(recording_flyer):
     assert flyer.name == "flyer"
     assert isinstance(flyer, StandardFlyable)
     # The ephemeral device exposes the same logic instance
-    assert flyer.flyable_logic is logic
+    assert flyer.standard_logic is logic
 
     await flyer.prepare(5)
     await flyer.kickoff()
@@ -250,7 +242,7 @@ async def test_flyable_composes_with_readable_staging():
             super().__init__(name=name)
 
         @cached_property
-        def flyable_logic(self) -> FlyableLogic[int, None]:
+        def standard_logic(self) -> FlyableLogic[int, None]:
             return logic
 
     async with init_devices(mock=True):

@@ -7,6 +7,7 @@ from ophyd_async.core import (
     SignalR,
     StandardDetector,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 
 from ._acquire_logic import ADContAcqAcquireLogic
 from ._data_logic import ADWriterFactory
@@ -48,9 +49,16 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 writer, data_logic = factory(prefix, driver, plugin_list)
                 setattr(self, factory.writer_name, writer)
                 self.add_detector_logics(data_logic)
-        self.add_config_signals(
-            self.driver.acquire_period, self.driver.acquire_time, *config_sigs
-        )
+        # Register the driver's timing signals, plus anything the caller asked
+        # for, as configuration. Plugins are deliberately not registered here:
+        # a detector normally carries far more plugins than are wired into the
+        # chain, so opt in per plugin with set_readable_format() instead.
+        for signal in (
+            self.driver.acquire_period,
+            self.driver.acquire_time,
+            *config_sigs,
+        ):
+            self.set_readable_format(signal, Format.CONFIG_SIGNAL)
         super().__init__(name=name)
 
     def get_plugin(

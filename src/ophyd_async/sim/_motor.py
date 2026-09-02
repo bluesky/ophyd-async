@@ -144,7 +144,7 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         super().__init__(name=name)
 
     @cached_property
-    def movable_logic(self):
+    def standard_logic(self):
         return SimMotorMoveLogic(
             readback=self.user_readback,
             readback_set=self._user_readback_set,
