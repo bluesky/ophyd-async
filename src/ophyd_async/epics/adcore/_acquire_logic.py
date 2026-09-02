@@ -60,7 +60,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         )
 
     async def start_acquiring(self):
-        await self.cb_plugin.trigger_.set(True, wait_for_set_completion=False)
+        await self.cb_plugin.trigger_.set(True)
 
     async def wait_for_idle(self):
         if self.acquire_status:
