@@ -116,4 +116,8 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
         # post_count is what governs how many frames are buffered per trigger
         # in continuous-acquisition mode, not the driver's num_images.
         num = await self.cb_plugin.post_count.get_value()
+        if self.process_plugin is not None:
+            exposures_per_collection = await self.process_plugin.num_filter.get_value()
+            collections_per_event = max(1, num // exposures_per_collection)
+            return TriggerInfo(collections_per_event=collections_per_event)
         return TriggerInfo(collections_per_event=max(1, num))
