@@ -128,20 +128,21 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
         *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
         cb_suffix="CB1:",
+        proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = ADBaseIO(prefix + driver_suffix)
         cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
-        process_plugin = next(self.get_plugins_by_type(NDProcessIO), None)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
-            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, process_plugin),
-            plugins=(plugins or {}) | {"cb": cb_plugin},
+            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, proc_plugin),
+            plugins=(plugins or {}) | {"cb": cb_plugin} | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

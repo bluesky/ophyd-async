@@ -104,7 +104,7 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
             self.cb_plugin.pre_count.set(0),
             self.cb_plugin.post_count.set(num),
             self.cb_plugin.preset_trigger_count.set(1),
-            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.IMMEDIATELY),
         )
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
