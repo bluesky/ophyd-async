@@ -128,7 +128,7 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
             # Set preset trigger count to 0 to allow triggering to continue indefinitely
             # until explicitly stopped.
             self.cb_plugin.preset_trigger_count.set(0),
-            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.IMMEDIATELY),
+            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
         )
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
