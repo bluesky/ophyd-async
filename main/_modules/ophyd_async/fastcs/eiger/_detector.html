@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.eiger._detector &#8212; ophyd-async 0.21.3.dev1+g111e081c4 documentation</title>
+    <title>ophyd_async.fastcs.eiger._detector &#8212; ophyd-async 0.21.3.dev2+g9b588a31d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=49f7a972"></script>
+    <script src="../../../../_static/documentation_options.js?v=d743f659"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev1+g111e081c4 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev1+g111e081c4 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev2+g9b588a31d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev2+g9b588a31d documentation - Home"/>
   
   
 </a></div>
@@ -898,7 +898,13 @@ window.runMermaid = runMermaid;</script>
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.fastcs.eiger._detector</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PathProvider</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">StandardDetector</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
+    <span class="n">soft_signal_rw</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.fastcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">odin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.fastcs.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">fastcs_connector</span>
 
@@ -925,6 +931,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
         <span class="c1"># Need to do this first so the type hints are filled in</span>
         <span class="n">connector</span> <span class="o">=</span> <span class="n">fastcs_connector</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span>
@@ -934,8 +942,12 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
                 <span class="n">odin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">od</span><span class="p">,</span>
                 <span class="n">detector_bit_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bit_depth_image</span><span class="p">,</span>
+                <span class="n">pixel_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_config_signals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span><span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span></div>
 
 </pre></div>

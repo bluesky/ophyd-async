@@ -376,7 +376,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 `````
 
-`````{py:class} OdinDataLogic(path_provider: ~ophyd_async.core.PathProvider, odin: ~ophyd_async.fastcs.odin._io.OdinIO, detector_bit_depth: ~ophyd_async.core.SignalR[int])
+`````{py:class} OdinDataLogic(path_provider: ~ophyd_async.core.PathProvider, odin: ~ophyd_async.fastcs.odin._io.OdinIO, detector_bit_depth: ~ophyd_async.core.SignalR[int], pixel_mask: ~ophyd_async.core.SignalRW[str] | None = None)
 :canonical: ophyd_async.fastcs.odin._data_logic.OdinDataLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`

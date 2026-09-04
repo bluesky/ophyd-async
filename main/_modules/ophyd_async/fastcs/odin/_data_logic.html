@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.21.3.dev1+g111e081c4 documentation</title>
+    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.21.3.dev2+g9b588a31d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=49f7a972"></script>
+    <script src="../../../../_static/documentation_options.js?v=d743f659"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev1+g111e081c4 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev1+g111e081c4 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev2+g9b588a31d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev2+g9b588a31d documentation - Home"/>
   
   
 </a></div>
@@ -908,6 +908,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">DetectorDataLogic</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">StreamableDataProvider</span><span class="p">,</span>
     <span class="n">StreamResourceDataProvider</span><span class="p">,</span>
     <span class="n">StreamResourceInfo</span><span class="p">,</span>
@@ -925,10 +926,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">odin</span><span class="p">:</span> <span class="n">OdinIO</span><span class="p">,</span>
         <span class="n">detector_bit_depth</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">pixel_mask</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">odin</span> <span class="o">=</span> <span class="n">odin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">detector_bit_depth</span> <span class="o">=</span> <span class="n">detector_bit_depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span> <span class="o">=</span> <span class="n">pixel_mask</span>
 
 <div class="viewcode-block" id="OdinDataLogic.prepare_unbounded">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinDataLogic.prepare_unbounded">[docs]</a>
@@ -950,6 +953,13 @@ window.runMermaid = runMermaid;</script>
                 <span class="mi">100000</span>  <span class="c1"># Needed temporarily, see https://github.com/bluesky/ophyd-async/issues/1272</span>
             <span class="p">),</span>
         <span class="p">)</span>
+
+        <span class="c1"># Needed temporarily, see https://github.com/DiamondLightSource/fastcs-odin/issues/115</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_mask</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span> <span class="o">/</span> <span class="n">filename</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_meta.h5//mask&quot;</span>
+            <span class="p">)</span>
+
         <span class="c1"># Start writing</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">start_writing</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">writing</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
