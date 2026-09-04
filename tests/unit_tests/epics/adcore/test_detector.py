@@ -74,6 +74,7 @@ def test_get_plugin_by_name_wrong_type_raises_type_error():
     ):
         det.get_plugin_by_name("stats", adcore.NDPluginFileIO)
 
+
 @pytest.fixture
 async def ad_with_stats_and_roi():
     async with init_devices(mock=True):
@@ -97,11 +98,13 @@ async def test_get_plugin_by_port_name_returns_matching_plugin(ad_with_stats_and
 
     assert (
         await det.get_plugin_by_port_name("STATS_PORT", adcore.NDStatsIO)
-    ) is getattr(det, "stats")
-    assert (await det.get_plugin_by_port_name("ROI_PORT")) is getattr(det, "roi")
+    ) is det.stats
+    assert (await det.get_plugin_by_port_name("ROI_PORT")) is det.roi
 
 
-async def test_get_plugin_by_port_name_missing_raises_value_error(ad_with_stats_and_roi):
+async def test_get_plugin_by_port_name_missing_raises_value_error(
+    ad_with_stats_and_roi,
+):
     det, stats, roi = ad_with_stats_and_roi
     set_mock_value(stats.port_name, "STATS_PORT")
 
