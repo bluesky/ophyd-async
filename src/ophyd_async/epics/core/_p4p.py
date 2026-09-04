@@ -386,8 +386,11 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     async def connect(self, timeout: float):
         # options are only available at connetion time
-        if self.options and self.options.element_count is not None:
-            if self.options.element_count <= 1:
+        if (
+            self.options
+            and self.options.element_count is not None
+            and self.options.element_count <= 1
+        ):
                 raise ValueError(
                     f'"{self.read_pv}": p4p can only support epics option'
                     " element_count >=2"
