@@ -41,12 +41,13 @@ class EpicsOptions(Generic[SignalDatatypeT]):
     """
 
     element_count: None | int = None
-    """Epics allows to specify the maximum number of elements to transfer
+    """For array valued records, specifies the number of elements to
+    receive from the beginning of the array.
+    
+    Default `None` for receiving all elements.
 
-    Fast devices provide buffers that acquire large data sets. Typically
-    one only needs the beginning of this buffer.
-
-    None is used as standard argument: transfer as many elements as provided
+    This allows for the reading only the initial buffer from devices
+    which provide large data sets over EPICS.
     """
 
 
