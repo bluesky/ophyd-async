@@ -49,7 +49,7 @@ async def test_hdf_writer_passes_parent_name_to_path_provider(tmp_path: Path):
             "PREFIX:", adcore.ADWriterFactory.hdf(pp), name="sim_detector"
         )
 
-    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())

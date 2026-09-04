@@ -7,6 +7,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     EnableDisable,
     TriggerInfo,
+    callback_on_mock_put,
     init_devices,
     set_mock_value,
 )
@@ -26,6 +27,9 @@ async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     set_mock_value(det.driver.acquire_time, 0.8)
     set_mock_value(det.driver.acquire_period, 1.0)
     set_mock_value(det.driver.acquire, True)
+    # The CB plugin Trigger is a busy record that resets itself to False once the
+    # requested frames are buffered; simulate that immediate completion.
+    callback_on_mock_put(det.cb.trigger_, lambda value: False)
     return det
 
 
@@ -81,7 +85,7 @@ async def cont_acq_detector_with_proc() -> adcore.AreaDetector[adcore.ADBaseIO]:
     async with init_devices(mock=True):
         det = adcore.ContAcqDetector(
             prefix="PREFIX:",
-            plugins={"proc": adcore.NDProcessIO("PREFIX:PROC:")},
+            proc_suffix="PROC:",
         )
 
     set_mock_value(
@@ -91,6 +95,9 @@ async def cont_acq_detector_with_proc() -> adcore.AreaDetector[adcore.ADBaseIO]:
     set_mock_value(det.driver.acquire_time, 0.8)
     set_mock_value(det.driver.acquire_period, 1.0)
     set_mock_value(det.driver.acquire, True)
+    # The CB plugin Trigger is a busy record that resets itself to False once the
+    # requested frames are buffered; simulate that immediate completion.
+    callback_on_mock_put(det.cb.trigger_, lambda value: False)
     return det
 
 
@@ -102,13 +109,13 @@ async def test_cont_acq_controller_success(
     assert_has_calls(
         cont_acq_detector,
         [
-            call.cb.capture.put(False),
+            call.cb.capture.put(True),
             call.cb.enable_callbacks.put(EnableDisable.ENABLE),
             call.cb.pre_count.put(0),
             call.cb.post_count.put(1),
-            call.cb.preset_trigger_count.put(1),
+            call.cb.preset_trigger_count.put(0),
             call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-            call.cb.capture.put(True),
+            call.cb.trigger_.put(True),
         ],
     )
 
@@ -126,7 +133,7 @@ async def test_cont_acq_controller_success_with_process_plugin(
     assert_has_calls(
         cont_acq_detector_with_proc,
         [
-            call.cb.capture.put(False),
+            call.cb.capture.put(True),
             call.proc.num_filter.put(exposures_per_collection),
             call.proc.enable_filter.put(True),
             call.proc.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
@@ -138,8 +145,8 @@ async def test_cont_acq_controller_success_with_process_plugin(
             call.cb.enable_callbacks.put(EnableDisable.ENABLE),
             call.cb.pre_count.put(0),
             call.cb.post_count.put(exposures_per_collection),
-            call.cb.preset_trigger_count.put(1),
+            call.cb.preset_trigger_count.put(0),
             call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-            call.cb.capture.put(True),
+            call.cb.trigger_.put(True),
         ],
     )

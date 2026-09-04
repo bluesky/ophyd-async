@@ -665,16 +665,16 @@ async def test_step_scan_keep_numimages(
 async def test_kinetix_step_scan_with_averaging_filter(
     static_path_provider: StaticPathProvider,
 ):
-    proc = adcore.NDProcessIO("PREFIX:PROC:")
     async with init_devices(mock=True):
         from ophyd_async.epics import adkinetix
 
         det = adkinetix.KinetixDetector(
             "PREFIX:",
             adcore.ADWriterFactory.hdf(static_path_provider),
-            plugins={"proc": proc},
+            proc_suffix="PROC:",
         )
 
+    proc = det.get_plugin_by_name("proc", adcore.NDProcessIO)
     writer = det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)

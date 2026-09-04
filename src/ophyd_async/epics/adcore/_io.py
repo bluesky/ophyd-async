@@ -11,9 +11,6 @@ from ophyd_async.core import (
     SupersetEnum,
     non_zero,
 )
-from ophyd_async.core import (
-    StandardReadableFormat as Format,
-)
 from ophyd_async.epics.core import (
     EpicsDevice,
     EpicsOptions,
@@ -403,25 +400,15 @@ class NDCodecIO(NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCodec.html
     """
 
-    compressor: A[
-        SignalRW[ADCompressor], PvSuffix.rbv("Compressor"), Format.CONFIG_SIGNAL
-    ]
-    mode: A[SignalRW[ADCompressMode], PvSuffix.rbv("Mode"), Format.CONFIG_SIGNAL]
-    comp_factor: A[SignalR[float], PvSuffix("CompFactor_RBV"), Format.CONFIG_SIGNAL]
-    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality"), Format.CONFIG_SIGNAL]
-    zlib_c_level: A[SignalRW[int], PvSuffix.rbv("ZlibCLevel"), Format.CONFIG_SIGNAL]
-    blosc_compressor: A[
-        SignalRW[ADBloscCompressor],
-        PvSuffix.rbv("BloscCompressor"),
-        Format.CONFIG_SIGNAL,
-    ]
-    blosc_c_level: A[SignalRW[int], PvSuffix.rbv("BloscCLevel"), Format.CONFIG_SIGNAL]
-    blosc_num_threads: A[
-        SignalRW[int], PvSuffix.rbv("BloscNumThreads"), Format.CONFIG_SIGNAL
-    ]
-    lz4_hdf5_block_size: A[
-        SignalRW[int], PvSuffix.rbv("LZ4HDF5BlockSize"), Format.CONFIG_SIGNAL
-    ]
+    compressor: A[SignalRW[ADCompressor], PvSuffix.rbv("Compressor")]
+    mode: A[SignalRW[ADCompressMode], PvSuffix.rbv("Mode")]
+    comp_factor: A[SignalR[float], PvSuffix("CompFactor_RBV")]
+    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality")]
+    zlib_c_level: A[SignalRW[int], PvSuffix.rbv("ZlibCLevel")]
+    blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]
+    blosc_c_level: A[SignalRW[int], PvSuffix.rbv("BloscCLevel")]
+    blosc_num_threads: A[SignalRW[int], PvSuffix.rbv("BloscNumThreads")]
+    lz4_hdf5_block_size: A[SignalRW[int], PvSuffix.rbv("LZ4HDF5BlockSize")]
     codec_status: A[SignalR[NDCodecStatus], PvSuffix("CodecStatus")]
     codec_error: A[SignalR[str], PvSuffix("CodecError")]
 
@@ -502,7 +489,7 @@ class NDFileHDF5IO(NDPluginFileIO):
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
     # Compression options
-    szip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]
+    s_zip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]
     z_level: A[SignalRW[int], PvSuffix.rbv("ZLevel")]
     blosc_shuffle: A[SignalRW[ADBloscShuffle], PvSuffix.rbv("BloscShuffle")]
     blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]

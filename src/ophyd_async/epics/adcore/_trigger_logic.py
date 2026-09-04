@@ -74,7 +74,12 @@ async def default_trigger_info_from_detector_settings(
     process_plugin: NDProcessIO | None = None,
     detector_trigger: DetectorTrigger = DetectorTrigger.INTERNAL,
 ) -> TriggerInfo:
-    """Default TriggerInfo for AD detectors, reading num_images from the driver."""
+    """Default TriggerInfo for AD detectors, reading num_images from the driver.
+
+    :param num_images_signal: SignalR for the number of images to acquire
+    :param process_plugin: Optional NDProcessIO plugin for exposures per collection
+    :param detector_trigger: The type of detector trigger (default: INTERNAL)
+    """
     num_images = await num_images_signal.get_value()
 
     if process_plugin is not None:
