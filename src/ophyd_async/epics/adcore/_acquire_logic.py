@@ -6,6 +6,7 @@ from ophyd_async.core import (
     set_and_wait_for_other_value,
     set_and_wait_for_value,
 )
+from ophyd_async.core._signal import wait_for_value
 from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
 
 from ._io import ADBaseIO, ADState, NDCircularBuffIO
@@ -52,7 +53,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         self.acquire_status: AsyncStatus | None = None
 
     async def ensure_ready(self):
-        self.acquire_status = await set_and_wait_for_value(
+        await set_and_wait_for_value(
             self.cb_plugin.capture,
             True,
             wait_for_set_completion=False,
@@ -61,6 +62,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
 
     async def start_acquiring(self):
         await self.cb_plugin.trigger_.set(True)
+        self.acquire_status = await wait_for_value(self.cb_plugin.trigger_, False, timeout=DEFAULT_TIMEOUT)
 
     async def wait_for_idle(self):
         if self.acquire_status:
