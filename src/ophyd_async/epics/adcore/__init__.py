@@ -17,27 +17,27 @@ from ._io import (
     ADBaseColorMode,
     ADBaseDataType,
     ADBaseIO,
-    NDFileHDF5Compression,
+    ADBloscCompressor,
+    ADBloscShuffle,
+    ADCompressor,
     ADFileWriteMode,
     ADImageMode,
     ADState,
     NDArrayBaseIO,
     NDCBFlushOnSoftTrgMode,
     NDCircularBuffIO,
+    NDCodecIO,
+    NDFileHDF5Compression,
     NDFileHDF5IO,
     NDFileIO,
     NDPluginBaseIO,
     NDPluginFileIO,
+    NDProcessFilterCallbacks,
+    NDProcessFilterType,
+    NDProcessIO,
     NDROIStatIO,
     NDROIStatNIO,
     NDStatsIO,
-    NDCodecIO,
-    NDProcessIO,
-    NDProcessFilterType,
-    NDProcessFilterCallbacks,
-    ADCompressor,
-    ADBloscCompressor,
-    ADBloscShuffle,
 )
 from ._ndattribute import (
     NDAttributeDataType,
@@ -49,9 +49,9 @@ from ._ndattribute import (
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
+    default_trigger_info_from_detector_settings,
     prepare_exposures,
     prepare_exposures_per_collection,
-    trigger_info_from_num_images,
 )
 
 __all__ = [
@@ -85,7 +85,7 @@ __all__ = [
     "prepare_exposures",
     "prepare_exposures_per_collection",
     "ADContAcqTriggerLogic",
-    "trigger_info_from_num_images",
+    "default_trigger_info_from_detector_settings",
     # AcquireLogic
     "ADAcquireLogic",
     "ADContAcqAcquireLogic",

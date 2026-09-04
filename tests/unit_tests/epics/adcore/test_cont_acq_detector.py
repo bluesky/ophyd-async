@@ -107,9 +107,7 @@ async def test_cont_acq_controller_success(
             call.cb.pre_count.put(0),
             call.cb.post_count.put(1),
             call.cb.preset_trigger_count.put(1),
-            call.cb.flush_on_soft_trg.put(
-                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
-            ),
+            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
             call.cb.capture.put(True),
         ],
     )
@@ -141,10 +139,7 @@ async def test_cont_acq_controller_success_with_process_plugin(
             call.cb.pre_count.put(0),
             call.cb.post_count.put(exposures_per_collection),
             call.cb.preset_trigger_count.put(1),
-            call.cb.flush_on_soft_trg.put(
-                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
-            ),
+            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
             call.cb.capture.put(True),
         ],
     )
-

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTrigger,
     DetectorTriggerLogic,
     OnOff,
     SignalDict,
@@ -24,8 +25,9 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
+    default_trigger_info_from_detector_settings,
     prepare_exposures,
-    trigger_info_from_num_images,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -93,6 +95,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
     driver: VimbaDriverIO
+    process_plugin: NDProcessIO | None = None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
@@ -129,7 +132,23 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        trigger_mode, exposure_mode = await asyncio.gather(
+            self.driver.trigger_mode.get_value(),
+            self.driver.exposure_mode.get_value(),
+        )
+        det_trigger = DetectorTrigger.INTERNAL
+        if trigger_mode == OnOff.ON:
+            if exposure_mode == VimbaExposeOutMode.TIMED:
+                det_trigger = DetectorTrigger.EXTERNAL_EDGE
+            elif exposure_mode == VimbaExposeOutMode.TRIGGER_WIDTH:
+                det_trigger = DetectorTrigger.EXTERNAL_LEVEL
+            else:
+                raise ValueError(
+                    f"Cannot determine ophyd-async trigger type for {exposure_mode}"
+                )
+        return await default_trigger_info_from_detector_settings(
+            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        )
 
 
 class VimbaDetector(AreaDetector[VimbaDriverIO]):
@@ -141,6 +160,7 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
     :param override_deadtime:
         If provided, this value is used for deadtime instead of looking up
         based on camera model.
+    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -152,18 +172,20 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
         *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
         override_deadtime: float | None = None,
+        proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = VimbaDriverIO(prefix + driver_suffix)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=VimbaTriggerLogic(driver, override_deadtime),
-            plugins=plugins,
+            trigger_logic=VimbaTriggerLogic(driver, proc_plugin, override_deadtime),
+            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

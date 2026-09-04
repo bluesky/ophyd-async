@@ -2,14 +2,25 @@ import asyncio
 from dataclasses import dataclass
 
 from ophyd_async.core import (
-    DetectorTriggerLogic as _DetectorTriggerLogic,
-)
-from ophyd_async.core import (
+    DetectorTrigger,
     EnableDisable,
+    SignalR,
     TriggerInfo,
 )
+from ophyd_async.core import (
+    DetectorTriggerLogic as _DetectorTriggerLogic,
+)
 
-from ._io import ADBaseDataType, ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDCircularBuffIO, NDProcessIO, NDProcessFilterType, NDProcessFilterCallbacks
+from ._io import (
+    ADBaseDataType,
+    ADBaseIO,
+    ADImageMode,
+    NDCBFlushOnSoftTrgMode,
+    NDCircularBuffIO,
+    NDProcessFilterCallbacks,
+    NDProcessFilterType,
+    NDProcessIO,
+)
 
 
 async def prepare_exposures(
@@ -18,8 +29,8 @@ async def prepare_exposures(
     livetime: float = 0.0,
     deadtime: float = 0.0,
 ) -> None:
-    """Prepare the AD driver for a given number of exposures with specified livetime and deadtime.
-    
+    """Prepare the driver for a given num exposures with specified livetime, deadtime.
+
     :param driver: The ADBaseIO driver instance
     :param num: Number of exposures to prepare
     :param livetime: Exposure time for each image (default: 0.0)
@@ -43,7 +54,7 @@ async def prepare_exposures_per_collection(
     filter_type: NDProcessFilterType = NDProcessFilterType.AVERAGE,
 ) -> None:
     """Prepare the AD process plugin for a given number of exposures per collection.
-    
+
     :param process_plugin: The NDProcessIO plugin instance (optional)
     :param exposures_per_collection: Number of exposures per collection (default: 1)
     """
@@ -58,14 +69,25 @@ async def prepare_exposures_per_collection(
     await asyncio.gather(*coros)
 
 
-async def trigger_info_from_num_images(driver: ADBaseIO, process_plugin: NDProcessIO | None = None) -> TriggerInfo:
+async def default_trigger_info_from_detector_settings(
+    num_images_signal: SignalR[int],
+    process_plugin: NDProcessIO | None = None,
+    detector_trigger: DetectorTrigger = DetectorTrigger.INTERNAL,
+) -> TriggerInfo:
     """Default TriggerInfo for AD detectors, reading num_images from the driver."""
-    num_images = await driver.num_images.get_value()
+    num_images = await num_images_signal.get_value()
+
     if process_plugin is not None:
         exposures_per_collection = await process_plugin.num_filter.get_value()
         collections_per_event = max(1, num_images // exposures_per_collection)
-        return TriggerInfo(collections_per_event=collections_per_event)
-    return TriggerInfo(collections_per_event=max(1, num_images))
+        return TriggerInfo(
+            collections_per_event=collections_per_event,
+            exposures_per_collection=exposures_per_collection,
+            trigger=detector_trigger,
+        )
+    return TriggerInfo(
+        collections_per_event=max(1, num_images), trigger=detector_trigger
+    )
 
 
 @dataclass
@@ -103,21 +125,22 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
             self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
             self.cb_plugin.pre_count.set(0),
             self.cb_plugin.post_count.set(num),
-            self.cb_plugin.preset_trigger_count.set(1),
+            # Set preset trigger count to 0 to allow triggering to continue indefinitely
+            # until explicitly stopped.
+            self.cb_plugin.preset_trigger_count.set(0),
             self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.IMMEDIATELY),
         )
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
         if self.process_plugin is not None:
-            await prepare_exposures_per_collection(self.process_plugin, exposures_per_collection)
+            await prepare_exposures_per_collection(
+                self.process_plugin, exposures_per_collection
+            )
 
     async def default_trigger_info(self) -> TriggerInfo:
         # Read post_count (not driver.num_images) because the CB plugin's
         # post_count is what governs how many frames are buffered per trigger
         # in continuous-acquisition mode, not the driver's num_images.
-        num = await self.cb_plugin.post_count.get_value()
-        if self.process_plugin is not None:
-            exposures_per_collection = await self.process_plugin.num_filter.get_value()
-            collections_per_event = max(1, num // exposures_per_collection)
-            return TriggerInfo(collections_per_event=collections_per_event)
-        return TriggerInfo(collections_per_event=max(1, num))
+        return await default_trigger_info_from_detector_settings(
+            self.cb_plugin.post_count, self.process_plugin
+        )

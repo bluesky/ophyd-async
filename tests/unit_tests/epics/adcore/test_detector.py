@@ -64,7 +64,9 @@ def test_get_plugin_by_name_wrong_type_raises_type_error():
     plugins = {"stats": adcore.NDStatsIO("PREFIX:STAT:")}
     det = adcore.AreaDetector(driver=driver, plugins=plugins, name="det")
 
-    assert isinstance(det.get_plugin_by_name("stats", adcore.NDStatsIO), adcore.NDStatsIO)
+    assert isinstance(
+        det.get_plugin_by_name("stats", adcore.NDStatsIO), adcore.NDStatsIO
+    )
 
     with pytest.raises(
         TypeError,
@@ -89,7 +91,9 @@ async def test_get_ndarray_resource_info_undefined_datatype(
             name="det",
         )
     set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UNDEFINED)
-    set_mock_value(det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
+    set_mock_value(
+        det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True
+    )
     with pytest.raises(
         ValueError,
         match=r"^mock\+ca://PREFIX:DRV:DataType_RBV is blank, this is not supported$",
@@ -108,7 +112,9 @@ async def test_get_ndarray_resource_info_unsupported_color_mode(
             name="det",
         )
     set_mock_value(det.driver.color_mode, adcore.ADBaseColorMode.BAYER)
-    set_mock_value(det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
+    set_mock_value(
+        det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO).file_path_exists, True
+    )
     with pytest.raises(
         RuntimeError,
         match=r"^Unsupported ColorMode Bayer! Only Mono and RGB1 are supported\.$",

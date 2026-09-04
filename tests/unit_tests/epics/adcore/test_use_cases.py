@@ -662,7 +662,6 @@ async def test_step_scan_keep_numimages(
         await det.trigger()
 
 
-
 async def test_kinetix_step_scan_with_averaging_filter(
     static_path_provider: StaticPathProvider,
 ):
@@ -690,7 +689,8 @@ async def test_kinetix_step_scan_with_averaging_filter(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 2)
     )
 
-    # Prepare with exposures_per_collection=5 and 2 collections to enable the averaging filter
+    # Prepare with exposures_per_collection=5 and 2 collections to enable
+    # the averaging filter
     await det.prepare(
         TriggerInfo(
             exposures_per_collection=5,
@@ -703,9 +703,7 @@ async def test_kinetix_step_scan_with_averaging_filter(
     # Verify process plugin was configured for averaging
     assert await proc.num_filter.get_value() == 5
     assert await proc.enable_filter.get_value() is True
-    assert (
-        await proc.filter_type.get_value() == adcore.NDProcessFilterType.AVERAGE
-    )
+    assert await proc.filter_type.get_value() == adcore.NDProcessFilterType.AVERAGE
     assert await proc.auto_reset_filter.get_value() is True
     assert await proc.data_type_out.get_value() == adcore.ADBaseDataType.AUTOMATIC
     assert (
