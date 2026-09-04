@@ -377,7 +377,19 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
         super().__init__(datatype, read_pv, write_pv, options)
-
+if (
+    options
+    and options.element_count is not None
+):
+    if get_origin(self.datatype) is not Array1D:
+        raise TypeError(
+            "Cannot specify `element_count` on a signal which isn't `Array1D`"
+        )
+    if write_pv != "":
+        raise TypeError(
+            "Cannot specify `element_count` on any signal kind other than `SignalR`"
+        )
+        
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"
 
