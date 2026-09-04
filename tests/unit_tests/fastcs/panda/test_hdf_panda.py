@@ -115,6 +115,7 @@ async def test_open_returns_correct_descriptors_and_resources(
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1024,),
+                    "join_method": "stack",
                     "dataset": f"/{name}",
                 },
                 "uid": ANY,
@@ -205,7 +206,11 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             {
                 "data_key": "x",
                 "mimetype": "application/x-hdf5",
-                "parameters": {"chunk_shape": (1024,), "dataset": "/x"},
+                "parameters": {
+                    "chunk_shape": (1024,),
+                    "join_method": "stack",
+                    "dataset": "/x",
+                },
                 "uid": ANY,
                 "uri": uri,
             },
@@ -215,7 +220,11 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             {
                 "data_key": "y",
                 "mimetype": "application/x-hdf5",
-                "parameters": {"chunk_shape": (1024,), "dataset": "/y"},
+                "parameters": {
+                    "chunk_shape": (1024,),
+                    "join_method": "stack",
+                    "dataset": "/y",
+                },
                 "uid": ANY,
                 "uri": uri,
             },

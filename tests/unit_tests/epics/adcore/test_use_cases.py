@@ -120,6 +120,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 768, 1024),
+                    "join_method": "stack",
                     "dataset": "/entry/data/data",
                 },
                 "uid": ANY,
@@ -133,6 +134,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (16384,),
+                    "join_method": "stack",
                     "dataset": "/entry/instrument/NDAttributes/det-sum",
                 },
                 "uid": ANY,
@@ -146,6 +148,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (16384,),
+                    "join_method": "stack",
                     "dataset": "/entry/instrument/NDAttributes/sample-temp",
                 },
                 "uid": ANY,
@@ -242,6 +245,7 @@ async def test_step_scan_tiff_detector(
                 "mimetype": "multipart/related;type=image/tiff",
                 "parameters": {
                     "chunk_shape": (1, 768, 1024),
+                    "join_method": "stack",
                     "template": "ophyd_async_tests_{:06d}.tiff",
                 },
                 "uid": ANY,
@@ -340,6 +344,7 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 768, 1024),
+                    "join_method": "stack",
                     "dataset": "/entry/data/data",
                 },
                 "uid": ANY,
@@ -485,6 +490,7 @@ async def test_2_rois_with_hdf(tmp_path):
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 300, 400),
+                    "join_method": "stack",
                     "dataset": "/entry/data/data",
                 },
                 "uid": ANY,
@@ -498,6 +504,7 @@ async def test_2_rois_with_hdf(tmp_path):
                 "mimetype": "application/x-hdf5",
                 "parameters": {
                     "chunk_shape": (1, 100, 200),
+                    "join_method": "stack",
                     "dataset": "/entry/data/data",
                 },
                 "uid": ANY,
@@ -613,6 +620,7 @@ async def test_step_scan_keep_numimages(
             "mimetype": "application/x-hdf5",
             "parameters": {
                 "chunk_shape": (1, 768, 1024),
+                "join_method": "stack",
                 "dataset": "/entry/data/data",
             },
             "uid": ANY,
