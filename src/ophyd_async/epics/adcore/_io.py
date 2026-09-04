@@ -341,15 +341,16 @@ class NDProcessIO(NDPluginBaseIO):
     r_offset: A[SignalRW[float], PvSuffix.rbv("ROffset")]
 
     def __init__(self, prefix: str, name: str = ""):
-        self.output_coefficients = DeviceVector(
-            {i: epics_signal_rw_rbv(float, f"{prefix}OC{i}") for i in range(1, 5)}
-        )
-        self.filter_coefficients = DeviceVector(
-            {i: epics_signal_rw_rbv(float, f"{prefix}FC{i}") for i in range(1, 5)}
-        )
-        self.reset_state_coefficients = DeviceVector(
-            {i: epics_signal_rw_rbv(float, f"{prefix}RC{i}") for i in range(1, 3)}
-        )
+        # TODO: Uncomment once I understand why these don't connect correctly
+        #self.output_coefficients = DeviceVector(
+        #    {i: epics_signal_rw_rbv(float, f"{prefix}OC{i}") for i in range(1, 5)}
+        #)
+        #self.filter_coefficients = DeviceVector(
+        #    {i: epics_signal_rw_rbv(float, f"{prefix}FC{i}") for i in range(1, 5)}
+        #)
+        #self.reset_state_coefficients = DeviceVector(
+        #    {i: epics_signal_rw_rbv(float, f"{prefix}RC{i}") for i in range(1, 3)}
+        #)
         super().__init__(prefix, name=name)
 
 
