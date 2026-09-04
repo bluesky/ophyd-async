@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey
 
 from ._derived_signal_backend import DerivedSignalBackend
@@ -108,8 +108,8 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_value(self) -> SignalDatatypeT:
         return await self.soft_backend.get_value()
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        return await self.soft_backend.get_setpoint()
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        return await self.soft_backend.get_location()
 
     async def get_datakey(self, source: str) -> DataKey:
         return await self.soft_backend.get_datakey(source)
