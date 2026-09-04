@@ -311,8 +311,17 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.converter = make_converter(self.datatype, self.initial_values)
 
     async def _caget(self, pv: str, format: Format) -> AugmentedValue:
+        # Target: avoid breaking backwards compatability
+        #         perhaps overcautious on how to define element count
+        #         aioca.caget documentation states that element_count=1
+        #         by default. If this is provided values do change
+        # Todo:
+        #         need to check what pvaccess and p4p provide
+        kws = {}
+        if self.options.element_count is not None:
+            kws["count"] = self.options.element_count
         return await caget(
-            pv, datatype=self.converter.read_dbr, format=format, timeout=None
+            pv, datatype=self.converter.read_dbr, format=format, timeout=None, **kws
         )
 
     def _make_reading(self, value: AugmentedValue) -> Reading[SignalDatatypeT]:
@@ -384,12 +393,18 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = None
 
         if callback:
+            # see argumentation of _caget for details
+            kws = {}
+            if self.options.element_count is not None:
+                kws["count"] = self.options.element_count
+
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
                 all_updates=self._all_updates,
+                **kws,
             )
 
 

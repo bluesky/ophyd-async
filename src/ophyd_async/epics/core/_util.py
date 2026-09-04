@@ -40,6 +40,16 @@ class EpicsOptions(Generic[SignalDatatypeT]):
     as it causes a deadlock.
     """
 
+    element_count: None | int = None
+    """For array valued records, specifies the number of elements to
+    receive from the beginning of the array.
+    
+    Default `None` for receiving all elements.
+
+    This allows for the reading only the initial buffer from devices
+    which provide large data sets over EPICS.
+    """
+
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
     """Split PV into record name and field."""

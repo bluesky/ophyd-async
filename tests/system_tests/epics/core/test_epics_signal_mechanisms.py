@@ -67,6 +67,7 @@ from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     IOC,
     EpicsTestCaDevice,
+    EpicsTestCaDeviceInitMustFail,
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
@@ -99,8 +100,8 @@ class MechanismIocAndDevices:
         self.prefix = generate_random_pv_prefix()
         ca_prefix = f"{self.prefix}ca:"
         pva_prefix = f"{self.prefix}pva:"
-        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}")
-        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}")
+        self.ca_device = EpicsTestCaDevice(f"ca://{ca_prefix}", name="test_ca")
+        self.pva_device = EpicsTestPvaDevice(f"pva://{pva_prefix}", name="test_pva")
         self.pvi_device = EpicsTestPviDevice(pva_prefix, with_pvi=True)
 
     def get_device(self, protocol: str) -> EpicsTestCaDevice | EpicsTestPvaDevice:
@@ -827,3 +828,92 @@ async def test_pvi_adds_undeclared_signal_dynamically(pvi_device: EpicsTestPviDe
     extra_int = pvi_device.extra_int  # type: ignore[attr-defined]
     assert isinstance(extra_int, SignalRW)
     assert await extra_int.get_value() == 42
+
+
+async def wf_verify_data(sig, identifier, expected_len):
+    des = await sig.describe()
+    assert list(des) == [identifier]
+
+    shape = tuple(des[identifier]["shape"])
+    assert shape == (expected_len,)
+
+    t_data = await sig.get_value()
+    assert len(t_data) == expected_len
+
+    data = await sig.read()
+    assert list(data) == [identifier]
+
+    wf_data = data[identifier]["value"]
+    assert len(wf_data) == shape[0]
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_waveform_different_length(
+    ioc_devices: MechanismIocAndDevices, protocol: str
+):
+    sig = ioc_devices.get_signal(protocol, "float32al5")
+    await sig.connect()
+    await wf_verify_data(sig, sig.name, expected_len=5)
+
+    sig_lim = ioc_devices.get_signal(protocol, "float32al5o3")
+    await sig_lim.connect()
+    await wf_verify_data(sig_lim, sig_lim.name, expected_len=3)
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+@pytest.mark.parametrize(
+    "signal_name, expected_len",
+    [
+        ("float32al5", 5),
+        ("float32al5o3", 3),
+    ],
+)
+async def test_waveform_cb(
+    ioc_devices: MechanismIocAndDevices,
+    protocol: str,
+    signal_name: str,
+    expected_len: int,
+):
+    sig = ioc_devices.get_signal(protocol, signal_name)
+    await sig.connect()
+
+    got_len = None
+    event = asyncio.Event()
+
+    def cb(d):
+        nonlocal got_len
+        data = d[f"test_{protocol}-{signal_name}"]["value"]
+        got_len = len(data)
+        event.set()
+
+    sig.subscribe(cb)
+
+    try:
+        await asyncio.wait_for(event.wait(), timeout=4.0)
+    finally:
+        sig.clear_sub(cb)
+
+    assert got_len == expected_len
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_waveform_invalid_length(
+    ioc_devices: MechanismIocAndDevices, protocol: str
+):
+    dev = EpicsTestCaDeviceInitMustFail(
+        f"{protocol}://{ioc_devices.prefix}{protocol}:", name="test_fail"
+    )
+    sig = dev.float32al5o1
+    assert sig.source.startswith(f"{protocol}://")
+    if protocol == "ca":
+        await sig.connect()
+    elif protocol == "pva":
+        chk, pv_name = sig.source.split("pva://")
+        assert chk == ""
+        with pytest.raises(
+            ValueError,
+            match=f'"{pv_name}": p4p can only support epics option element_count >=2',
+        ):
+            await sig.connect()
+    else:
+        raise NotImplementedError(f"not handling {protocol}")
