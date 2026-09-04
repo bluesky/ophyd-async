@@ -438,7 +438,7 @@ if (
             wait = self.options.wait
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
-    def _get_read_pv(self) -> str:
+    def _get_read_pv_with_element_count(self) -> str:
         """Read pv with subarray index when requested."""
         if self.options.element_count is None:
             return self.read_pv
