@@ -198,6 +198,7 @@ class NDStatsIO(NDPluginBaseIO):
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
     bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
     total: A[SignalR[float], PvSuffix("Total_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
