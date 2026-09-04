@@ -3,6 +3,7 @@ from ophyd_async.core import (
     DeviceVector,
     SignalR,
     SignalRW,
+    SignalX,
     StrictEnum,
     SubsetEnum,
 )
@@ -98,6 +99,14 @@ class PandaTimeUnits(StrictEnum):
     US = "us"
 
 
+class PandaSeqWrite(StrictEnum):
+    """Options for subsequent write command in the Panda table."""
+
+    REPLACE = "REPLACE"
+    APPEND = "APPEND"
+    APPEND_LAST = "APPEND_LAST"
+
+
 class SeqBlock(Device):
     """Sequencer block in the PandA.
 
@@ -111,6 +120,9 @@ class SeqBlock(Device):
     prescale_units: SignalRW[PandaTimeUnits]
     enable: SignalRW[PandaBitMux]
     posa: SignalRW[PandaPosMux]
+    table_clear: SignalX | None
+    table_next_write: SignalRW[PandaSeqWrite] | None
+    table_queued_lines: SignalR[int] | None
 
 
 class PcapBlock(Device):
