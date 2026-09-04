@@ -74,6 +74,51 @@ def test_get_plugin_by_name_wrong_type_raises_type_error():
     ):
         det.get_plugin_by_name("stats", adcore.NDPluginFileIO)
 
+@pytest.fixture
+async def ad_with_stats_and_roi():
+    async with init_devices(mock=True):
+        stats = adcore.NDStatsIO("PREFIX:STAT:")
+        roi = adcore.NDROIIO("PREFIX:ROI:")
+        det = adcore.AreaDetector(
+            adcore.ADBaseIO("PREFIX:DRV:"),
+            plugins={
+                "stats": stats,
+                "roi": roi,
+            },
+            name="det",
+        )
+    return det, stats, roi
+
+
+async def test_get_plugin_by_port_name_returns_matching_plugin(ad_with_stats_and_roi):
+    det, stats, roi = ad_with_stats_and_roi
+    set_mock_value(stats.port_name, "STATS_PORT")
+    set_mock_value(roi.port_name, "ROI_PORT")
+
+    assert (
+        await det.get_plugin_by_port_name("STATS_PORT", adcore.NDStatsIO)
+    ) is getattr(det, "stats")
+    assert (await det.get_plugin_by_port_name("ROI_PORT")) is getattr(det, "roi")
+
+
+async def test_get_plugin_by_port_name_missing_raises_value_error(ad_with_stats_and_roi):
+    det, stats, roi = ad_with_stats_and_roi
+    set_mock_value(stats.port_name, "STATS_PORT")
+
+    with pytest.raises(ValueError, match="^No plugin found with port name 'MISSING'$"):
+        await det.get_plugin_by_port_name("MISSING")
+
+
+async def test_get_plugins_by_type_yields_matching_plugins(ad_with_stats_and_roi):
+    det, stats, roi = ad_with_stats_and_roi
+
+    assert list(det.get_plugins_by_type(adcore.NDStatsIO)) == [det.stats]
+
+    all_plugins = list(det.get_plugins_by_type(adcore.NDPluginBaseIO))
+    assert det.stats in all_plugins
+    assert det.roi in all_plugins
+    assert len(all_plugins) == 2
+
 
 # ---------------------------------------------------------------------------
 # get_ndarray_resource_info error paths
