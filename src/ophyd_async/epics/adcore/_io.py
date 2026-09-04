@@ -4,15 +4,19 @@ from typing import TypeVar
 from ophyd_async.core import (
     DeviceVector,
     EnableDisable,
+    IntersectEnum,
     SignalR,
     SignalRW,
     StrictEnum,
     SupersetEnum,
     non_zero,
-    StandardReadableFormat as Format,
 )
-from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix, epics_signal_rw_rbv
-from ophyd_async.core import IntersectEnum, SubsetEnum
+from ophyd_async.epics.core import (
+    EpicsDevice,
+    EpicsOptions,
+    PvSuffix,
+    epics_signal_rw_rbv,
+)
 
 # Common classes for drivers and plugins
 
@@ -32,7 +36,8 @@ class ADBaseDataType(SupersetEnum):
     # support a datatype
     UNDEFINED = ""
     # The NDProcess plugin adds an automatic datatype option,
-    # which will set the data type to whatever is necessary to hold the data after processing.
+    # which will set the data type to whatever is necessary to hold the data
+    # after processing.
     AUTOMATIC = "Automatic"
 
 
@@ -176,17 +181,6 @@ class NDROIIO(NDPluginBaseIO):
     bin_z: A[SignalRW[int], PvSuffix.rbv("BinZ")]
 
 
-class NDProcessIO(NDPluginBaseIO):
-    """Plugin for performing processing on an NDArrray.
-
-    This mirrors the interface provided by ADCore/db/NDProcess.template.
-    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html
-    """
-
-    enable_offset_scale: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableOffsetScale")]
-    scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
-
-
 class NDStatsIO(NDPluginBaseIO):
     """Plugin for computing statistics from an image or ROI within an image.
 
@@ -198,6 +192,7 @@ class NDStatsIO(NDPluginBaseIO):
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
     bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
     total: A[SignalR[float], PvSuffix("Total_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
@@ -281,15 +276,19 @@ class NDCircularBuffIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger_: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
+    # Disable put completion for trigger, since the busy record reset is broken
+    # upstream. See https://github.com/areaDetector/ADCore/issues/604
+    trigger_: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=False)]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture"), EpicsOptions(wait=non_zero)]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")
     ]
 
+
 class NDProcessFilterCallbacks(StrictEnum):
     EVERY_ARRAY = "Every array"
     ARRAY_N_ONLY = "Array N only"
+
 
 class NDProcessFilterType(StrictEnum):
     RECURSIVE_AVG = "RecursiveAve"
@@ -329,7 +328,9 @@ class NDProcessIO(NDPluginBaseIO):
     reset_filter: A[SignalRW[bool], PvSuffix.rbv("ResetFilter")]
     auto_reset_filter: A[SignalRW[bool], PvSuffix.rbv("AutoResetFilter")]
     filter_type: A[SignalRW[NDProcessFilterType], PvSuffix("FilterType")]
-    filter_callbacks: A[SignalRW[NDProcessFilterCallbacks], PvSuffix.rbv("FilterCallbacks")]
+    filter_callbacks: A[
+        SignalRW[NDProcessFilterCallbacks], PvSuffix.rbv("FilterCallbacks")
+    ]
     num_filter: A[SignalRW[int], PvSuffix.rbv("NumFilter")]
     num_filter_recip: A[SignalR[float], PvSuffix("NumFilterRecip")]
     num_filtered: A[SignalR[int], PvSuffix("NumFiltered_RBV")]
@@ -354,6 +355,7 @@ class NDProcessIO(NDPluginBaseIO):
 
 # Codec/compression classes
 
+
 class ADBloscCompressor(StrictEnum):
     BLOSCLZ = "BloscLZ"
     LZ4 = "LZ4"
@@ -368,9 +370,11 @@ class ADBloscShuffle(StrictEnum):
     BYTE = "Byte"
     BIT = "Bit"
 
+
 class ADCompressMode(StrictEnum):
     COMPRESS = "Compress"
     DECOMPRESS = "Decompress"
+
 
 # Compressor is superset enum, because LZ4HDF5 and ZLIB were added only in ADCore R3-15
 class ADCompressor(SupersetEnum):
@@ -381,6 +385,7 @@ class ADCompressor(SupersetEnum):
     LZ4 = "LZ4"
     LZ4HDF5 = "LZ4HDF5"
     BSLZ4 = "BSLZ4"
+
 
 class NDCodecStatus(StrictEnum):
     SUCCESS = "Success"
@@ -395,15 +400,15 @@ class NDCodecIO(NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCodec.html
     """
 
-    compressor: A[SignalRW[ADCompressor], PvSuffix.rbv("Compressor"), Format.CONFIG_SIGNAL]
-    mode: A[SignalRW[ADCompressMode], PvSuffix.rbv("Mode"), Format.CONFIG_SIGNAL]
-    comp_factor: A[SignalR[float], PvSuffix("CompFactor_RBV"), Format.CONFIG_SIGNAL]
-    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality"), Format.CONFIG_SIGNAL]
-    zlib_c_level: A[SignalRW[int], PvSuffix.rbv("ZlibCLevel"), Format.CONFIG_SIGNAL]
-    blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor"), Format.CONFIG_SIGNAL]
-    blosc_c_level: A[SignalRW[int], PvSuffix.rbv("BloscCLevel"), Format.CONFIG_SIGNAL]
-    blosc_num_threads: A[SignalRW[int], PvSuffix.rbv("BloscNumThreads"), Format.CONFIG_SIGNAL]
-    lz4_hdf5_block_size: A[SignalRW[int], PvSuffix.rbv("LZ4HDF5BlockSize"), Format.CONFIG_SIGNAL]
+    compressor: A[SignalRW[ADCompressor], PvSuffix.rbv("Compressor")]
+    mode: A[SignalRW[ADCompressMode], PvSuffix.rbv("Mode")]
+    comp_factor: A[SignalR[float], PvSuffix("CompFactor_RBV")]
+    jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality")]
+    zlib_c_level: A[SignalRW[int], PvSuffix.rbv("ZlibCLevel")]
+    blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]
+    blosc_c_level: A[SignalRW[int], PvSuffix.rbv("BloscCLevel")]
+    blosc_num_threads: A[SignalRW[int], PvSuffix.rbv("BloscNumThreads")]
+    lz4_hdf5_block_size: A[SignalRW[int], PvSuffix.rbv("LZ4HDF5BlockSize")]
     codec_status: A[SignalR[NDCodecStatus], PvSuffix("CodecStatus")]
     codec_error: A[SignalR[str], PvSuffix("CodecError")]
 
@@ -484,11 +489,9 @@ class NDFileHDF5IO(NDPluginFileIO):
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
     # Compression options
-    szip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]
+    s_zip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]
     z_level: A[SignalRW[int], PvSuffix.rbv("ZLevel")]
     blosc_shuffle: A[SignalRW[ADBloscShuffle], PvSuffix.rbv("BloscShuffle")]
     blosc_compressor: A[SignalRW[ADBloscCompressor], PvSuffix.rbv("BloscCompressor")]
     blosc_level: A[SignalRW[int], PvSuffix.rbv("BloscLevel")]
     jpeg_quality: A[SignalRW[int], PvSuffix.rbv("JPEGQuality")]
-
-

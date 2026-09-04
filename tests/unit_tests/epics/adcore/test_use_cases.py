@@ -662,20 +662,19 @@ async def test_step_scan_keep_numimages(
         await det.trigger()
 
 
-
 async def test_kinetix_step_scan_with_averaging_filter(
     static_path_provider: StaticPathProvider,
 ):
-    proc = adcore.NDProcessIO("PREFIX:PROC:")
     async with init_devices(mock=True):
         from ophyd_async.epics import adkinetix
 
         det = adkinetix.KinetixDetector(
             "PREFIX:",
             adcore.ADWriterFactory.hdf(static_path_provider),
-            plugins={"proc": proc},
+            proc_suffix="PROC:",
         )
 
+    proc = det.get_plugin_by_name("proc", adcore.NDProcessIO)
     writer = det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
@@ -690,7 +689,8 @@ async def test_kinetix_step_scan_with_averaging_filter(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 2)
     )
 
-    # Prepare with exposures_per_collection=5 and 2 collections to enable the averaging filter
+    # Prepare with exposures_per_collection=5 and 2 collections to enable
+    # the averaging filter
     await det.prepare(
         TriggerInfo(
             exposures_per_collection=5,
@@ -703,9 +703,7 @@ async def test_kinetix_step_scan_with_averaging_filter(
     # Verify process plugin was configured for averaging
     assert await proc.num_filter.get_value() == 5
     assert await proc.enable_filter.get_value() is True
-    assert (
-        await proc.filter_type.get_value() == adcore.NDProcessFilterType.AVERAGE
-    )
+    assert await proc.filter_type.get_value() == adcore.NDProcessFilterType.AVERAGE
     assert await proc.auto_reset_filter.get_value() is True
     assert await proc.data_type_out.get_value() == adcore.ADBaseDataType.AUTOMATIC
     assert (

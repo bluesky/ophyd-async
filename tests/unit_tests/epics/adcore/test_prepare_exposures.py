@@ -121,9 +121,7 @@ async def test_prepare_exposures(
                 call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
                 call.auto_reset_filter.put(True),
                 call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(
-                    adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
-                ),
+                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
             ],
         ),
         # Multiple exposures with default AVERAGE filter
@@ -136,9 +134,7 @@ async def test_prepare_exposures(
                 call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
                 call.auto_reset_filter.put(True),
                 call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(
-                    adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
-                ),
+                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
             ],
         ),
         # Multiple exposures with SUM filter type
@@ -151,9 +147,7 @@ async def test_prepare_exposures(
                 call.filter_type.put(adcore.NDProcessFilterType.SUM),
                 call.auto_reset_filter.put(True),
                 call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(
-                    adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
-                ),
+                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
             ],
         ),
         # Multiple exposures with RECURSIVE_AVG filter type
@@ -166,9 +160,7 @@ async def test_prepare_exposures(
                 call.filter_type.put(adcore.NDProcessFilterType.RECURSIVE_AVG),
                 call.auto_reset_filter.put(True),
                 call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(
-                    adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
-                ),
+                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
             ],
         ),
         # Large number of exposures
@@ -181,9 +173,7 @@ async def test_prepare_exposures(
                 call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
                 call.auto_reset_filter.put(True),
                 call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(
-                    adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
-                ),
+                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
             ],
         ),
     ],

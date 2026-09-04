@@ -8,11 +8,11 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     NO_ARG_VOID_SIGNATURE,
     CommandBackend,
+    IntersectEnum,
     SignalBackend,
     SignalDatatypeT,
     SignalR,
     SignalRW,
-    IntersectEnum,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
@@ -74,7 +74,10 @@ def get_supported_values(
         if not set(choices).intersection(pv_choices):
             raise TypeError(error_msg + "to have an intersection with them.")
     else:
-        raise TypeError(f"{datatype} is not a StrictEnum, SubsetEnum, SupersetEnum, or IntersectEnum")
+        raise TypeError(
+            f"{datatype} is not a StrictEnum, SubsetEnum, SupersetEnum, "
+            f"or IntersectEnum"
+        )
     # Create a map from the string value to the enum instance
     # For StrictEnum and SupersetEnum, all values here will be enum values
     # For SubsetEnum, only the values in choices will be enum values, the rest will be
