@@ -13,13 +13,17 @@ from ._io import ADBaseIO, ADState, NDCircularBuffIO
 
 class ADAcquireLogic(DetectorAcquireLogic):
     def __init__(
-        self, driver: ADBaseIO, driver_armed_signal: SignalR[bool] | None = None
+        self,
+        driver: ADBaseIO,
+        driver_armed_signal: SignalR[bool] | None = None,
+        timeout: float = DEFAULT_TIMEOUT,
     ):
         self.driver = driver
         if driver_armed_signal is not None:
             self.driver_armed_signal = driver_armed_signal
         else:
             self.driver_armed_signal = driver.acquire
+        self.timeout = timeout
         self.acquire_status: AsyncStatus | None = None
 
     async def start_acquiring(self):
@@ -29,7 +33,7 @@ class ADAcquireLogic(DetectorAcquireLogic):
             match_signal=self.driver_armed_signal,
             match_value=True,
             wait_for_set_completion=False,
-            timeout=DEFAULT_TIMEOUT,
+            timeout=self.timeout,
         )
 
     async def wait_for_idle(self):
@@ -38,7 +42,7 @@ class ADAcquireLogic(DetectorAcquireLogic):
         await wait_for_good_state(
             self.driver.detector_state,
             {ADState.IDLE, ADState.ABORTED},
-            timeout=DEFAULT_TIMEOUT,
+            timeout=self.timeout,
         )
 
     async def ensure_stopped(self):

@@ -21,6 +21,7 @@ MockPutCallback = (
     Callable[[SignalDatatypeT], SignalDatatypeT | None]
     | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
 )
+MockCallbackFilter = Callable[[SignalDatatypeT], SignalDatatypeT | None]
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -48,6 +49,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         # use existing Mock if provided
         self.mock = mock
         self._mock_put_callback: MockPutCallback | None = None
+        self._callback_filter: MockCallbackFilter | None = None
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
@@ -55,6 +57,9 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         if "put_mock" in self.__dict__:
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
+
+    def set_mock_callback_filter(self, filter: MockCallbackFilter | None):
+        self._callback_filter = filter
 
     @cached_property
     def put_mock(self) -> AsyncMock:
@@ -115,4 +120,21 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         return await self.soft_backend.get_datakey(source)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
-        self.soft_backend.set_callback(callback)
+        # None pass through
+        if callback is None:
+            self.soft_backend.set_callback(None)
+            return
+
+        def filtered(reading: Reading[SignalDatatypeT]) -> None:
+            if self._callback_filter is not None:
+                value = self._callback_filter(reading["value"])
+                # None means veto: the subscriber never sees this update. This
+                # includes the initial value the soft backend emits synchronously
+                # at subscribe time, which is what makes waits time out for real.
+                if value is None:
+                    return
+                # Copy rather than mutate
+                reading = {**reading, "value": value}
+            callback(reading)
+
+        self.soft_backend.set_callback(filtered)
