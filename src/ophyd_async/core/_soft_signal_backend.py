@@ -16,7 +16,6 @@ from event_model import DataKey
 
 from ._datatypes import Table
 from ._signal_backend import (
-    Array1D,
     EnumT,
     Primitive,
     PrimitiveT,
@@ -27,7 +26,7 @@ from ._signal_backend import (
     make_datakey,
     make_metadata,
 )
-from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
+from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls, get_ndim
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
@@ -58,11 +57,19 @@ class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumT]]):
 
 
 @dataclass
-class NDArraySoftConverter(SoftConverter[Array1D]):
+class NDArraySoftConverter(SoftConverter[np.ndarray]):
     datatype: np.dtype | None = None
+    ndim: int | None = None
 
-    def write_value(self, value: Any) -> Array1D:
-        return np.array(() if value is None else value, dtype=self.datatype)
+    def write_value(self, value: Any) -> np.ndarray:
+        if value is None:
+            # An empty array of the requested rank, so that the default value of
+            # an ND signal passes the check below
+            return np.zeros((0,) * (self.ndim or 1), dtype=self.datatype)
+        array = np.array(value, dtype=self.datatype)
+        if self.ndim is not None and array.ndim != self.ndim:
+            raise ValueError(f"Expected {self.ndim}D array, got {array.ndim}D array")
+        return array
 
 
 @dataclass
@@ -92,6 +99,13 @@ class TableSoftConverter(SoftConverter[TableT]):
             raise TypeError(f"Cannot convert {value} to {self.datatype}")
 
 
+_SUPPORTED_NDARRAY_DTYPES = frozenset(
+    get_dtype(datatype)
+    for datatype in get_args(SignalDatatype)
+    if cached_get_origin(datatype) is np.ndarray
+)
+
+
 @lru_cache
 def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
@@ -102,9 +116,10 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
     elif cached_get_origin(datatype) == np.ndarray:
-        if datatype not in get_args(SignalDatatype):
+        dtype = get_dtype(datatype)
+        if dtype not in _SUPPORTED_NDARRAY_DTYPES:
             raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-        return NDArraySoftConverter(get_dtype(datatype))
+        return NDArraySoftConverter(dtype, get_ndim(datatype))
     elif enum_cls:
         return EnumSoftConverter(enum_cls)
     elif issubclass(datatype, Table):

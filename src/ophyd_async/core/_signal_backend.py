@@ -44,10 +44,14 @@ SignalDatatype = (
 - A python primitive [](#bool), [](#int), [](#float), [](#str)
 - An [](#EnumTypes) subclass
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
+- A fixed datatype `npt.NDArray` of the same, which can change dimensions at runtime
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
 - A sequence of [](#EnumTypes) subclasses
 - A [](#Table) subclass
+
+See [](#choose-array-datatypes) for which of the array spellings each backend
+accepts.
 """
 # TODO: These typevars will not be needed when we drop python 3.11
 # as you can do MyConverter[SignalType: SignalTypeUnion]:

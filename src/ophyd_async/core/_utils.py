@@ -240,6 +240,31 @@ def get_dtype(datatype: type) -> np.dtype:
     return np.dtype(get_args(get_args(datatype)[1])[0])
 
 
+def get_ndim(datatype: type) -> int | None:
+    """Get the number of dimensions from a numpy ndarray type annotation.
+
+    Returns None if the annotation leaves the shape unconstrained, as in
+    `np.ndarray[Any, np.dtype[np.int8]]` or `npt.NDArray[np.int8]`.
+
+    ```python
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_ndim(Array1D[np.int8])
+    1
+
+    ```
+    """
+    if not cached_get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    # datatype = numpy.ndarray[tuple[int], numpy.dtype[numpy.int8]]
+    # so the number of shape arguments is the number of dimensions, unless it is
+    # variadic (tuple[Any, ...]) or unparametrized (Any)
+    shape = get_args(get_args(datatype)[0])
+    if not shape or Ellipsis in shape:
+        return None
+    return len(shape)
+
+
 def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """Get the enum class from a datatype.
 
