@@ -8,6 +8,7 @@ import numpy as np
 
 from ophyd_async.core import (
     AsyncStatus,
+    DeviceMock,
     FlyMotorInfo,
     MovableLogic,
     SignalRW,
@@ -15,6 +16,7 @@ from ophyd_async.core import (
     StandardReadable,
     TimeoutCalculator,
     WatchableAsyncStatus,
+    default_mock_class,
     error_if_none,
     soft_signal_r_and_setter,
     soft_signal_rw,
@@ -27,17 +29,15 @@ class SimMotorMoveLogic(MovableLogic[float]):
     readback_set: Callable[[float], None]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
-    _move_task: asyncio.Task | None = None
 
     async def stop(self) -> None:
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
-        if self._move_task is not None:
-            self._move_task.cancel()
 
     async def _internal_sim_move(self, new_position: float) -> None:
-        velocity = await self.velocity.get_value()
-        old_position = await self.setpoint.get_value()
+        velocity, old_position = await asyncio.gather(
+            self.velocity.get_value(), self.readback.get_value()
+        )
         if old_position == new_position:
             return
 
@@ -107,6 +107,8 @@ class SimMotorMoveLogic(MovableLogic[float]):
         await self._internal_sim_move(new_position)
 
 
+# Remove InstantMovableMock as SimMotor owns this logic, depends if instant=True/False
+@default_mock_class(DeviceMock)
 class SimMotor(StandardReadable, StandardMovable[float]):
     """For usage when simulating a motor."""
 
@@ -127,7 +129,7 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
-                float, 0, units=units
+                float, initial_value, units=units
             )
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
