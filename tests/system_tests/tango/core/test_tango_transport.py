@@ -903,6 +903,43 @@ async def test_type_mismatch_longstringarray(tango_test_device):
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(10)
+@pytest.mark.parametrize(
+    "attr, datatype, rejected",
+    [
+        ("float64_spectrum", Array1D[np.float64], False),
+        ("float64_spectrum", npt.NDArray[np.float64], False),
+        ("float64_spectrum", np.ndarray, True),
+        ("float64_image", npt.NDArray[np.float64], False),
+        ("float64_image", np.ndarray[Any, np.dtype[np.float64]], False),
+        ("float64_image", Array1D[np.float64], False),
+        ("float64_image", np.ndarray, True),
+    ],
+)
+async def test_array_datatype_spellings(
+    everything_device_trl, attr, datatype, rejected
+):
+    """Which of the three array spellings a real SPECTRUM or IMAGE attribute
+    accepts.
+
+    Tango matches the dtype and not the rank, so `Array1D` connects to an IMAGE
+    attribute and reads a 2D array. A bare `np.ndarray` has no dtype to match
+    and is refused for both formats.
+    """
+    trl = get_full_attr_trl(everything_device_trl, attr)
+    backend = TangoSignalBackend(datatype, trl, trl)
+    if rejected:
+        with pytest.raises(TypeError) as exc:
+            await backend.connect(1)
+        assert "which is not recognized" in str(exc.value)
+    else:
+        await backend.connect(1)
+        value = await backend.get_value()
+        assert value.dtype == np.dtype(np.float64)
+        assert value.ndim == (1 if attr.endswith("_spectrum") else 2)
+
+
+@pytest.mark.asyncio
 async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "nonexistent")
