@@ -487,7 +487,7 @@ def test_child_device_repr_and_str_with_name():
     assert repr(my_device) == str(my_device) == expected
 
 
-def test_device_repr_without_name():
+def test_device_repr_and_str_without_name():
     unnamed_device = Device()
     expected = object.__repr__(unnamed_device)
     assert repr(unnamed_device) == str(unnamed_device) == expected
