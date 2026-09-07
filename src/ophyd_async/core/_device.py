@@ -350,6 +350,8 @@ class Device(HasName):
             await connect_task
 
     def __repr__(self) -> str:
+        if self.name == "":
+            return super().__repr__()
         return f'{type(self).__name__}[name="{self.name}"]'
 
     def __str__(self) -> str:
