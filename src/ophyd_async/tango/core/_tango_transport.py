@@ -15,7 +15,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
 from tango import (
@@ -991,14 +991,18 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         value = await proxy.get()
         return cast(SignalDatatypeT, value)
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        if self.proxies[self.write_trl] is None:
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        write_proxy = self.proxies[self.write_trl]
+        if write_proxy is None:
             raise NotConnectedError(f"Not connected to {self.write_trl}")
-        proxy = self.proxies[self.write_trl]
-        if proxy is None:
-            raise NotConnectedError(f"Not connected to {self.write_trl}")
-        w_value = await proxy.get_w_value()
-        return cast(SignalDatatypeT, w_value)
+        value, w_value = await asyncio.gather(
+            self.get_value(),
+            write_proxy.get_w_value(),
+        )
+        return Location(
+            setpoint=cast(SignalDatatypeT, w_value),
+            readback=cast(SignalDatatypeT, value),
+        )
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:
