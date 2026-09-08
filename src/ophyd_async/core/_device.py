@@ -352,7 +352,7 @@ class Device(HasName):
     def __repr__(self) -> str:
         if self.name == "":
             return super().__repr__()
-        return f'{type(self).__name__}[name="{self.name}"]'
+        return f'{type(self).__name__}(name="{self.name}")'
 
     def __str__(self) -> str:
         return repr(self)
