@@ -145,6 +145,15 @@ record(waveform, "$(device)float32a") {
   field(PINI, "YES")
 }
 
+# could reuse float32a ... if its ok to extend the array
+# and add different values to the extra fields
+record(waveform, "$(device)float32al5") {
+  field(NELM, "5")
+  field(FTVL, "FLOAT")
+  field(INP, {const:[0.000002, -123.123, 3, 4, 5]})
+  field(PINI, "YES")
+}
+
 record(waveform, "$(device)float64a") {
   field(NELM, "3")
   field(FTVL, "DOUBLE")
@@ -383,6 +392,15 @@ record("*", "$(device)float32a") {
     info(Q:group, {
         "$(device)PVI": {
             "value.float32a.rw": {"+channel": "NAME", "+type": "plain"}
+        }
+    })
+}
+
+record("*", "$(device)float32al5") {
+    info(Q:group, {
+        "$(device)PVI": {
+            "value.float32al5.rw": {"+channel": "NAME", "+type": "plain"},
+            "value.float32al5o3.rw": {"+channel": "NAME", "+type": "plain"},
         }
     })
 }
