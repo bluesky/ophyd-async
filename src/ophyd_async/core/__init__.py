@@ -97,10 +97,13 @@ from ._protocol import (
     Watcher,
 )
 from ._readable import (
-    ConfigSignal,
-    HintedSignal,
+    READABLE_FORMATS_KEY,
+    ROOT_PATH,
+    ReadableFormats,
     StandardReadable,
     StandardReadableFormat,
+    apply_readable_formats,
+    walk_readable_formats,
 )
 from ._settings import Settings, SettingsProvider
 from ._signal import (
@@ -147,6 +150,7 @@ from ._utils import (
     SubsetEnum,
     SupersetEnum,
     WatcherUpdate,
+    abstract_cached_property,
     error_if_none,
     gather_dict,
     get_dtype,
@@ -262,6 +266,11 @@ __all__ = [
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
+    "ReadableFormats",
+    "walk_readable_formats",
+    "apply_readable_formats",
+    "READABLE_FORMATS_KEY",
+    "ROOT_PATH",
     # Detector
     "DetectorTrigger",
     "TriggerInfo",
@@ -314,6 +323,7 @@ __all__ = [
     "make_datakey",
     "wait_for_connection",
     "Ignore",
+    "abstract_cached_property",
     "non_zero",
     # Derived signal
     "derived_signal_r",
@@ -323,8 +333,6 @@ __all__ = [
     "DerivedSignalFactory",
     "merge_gathered_dicts",
     # Back compat - delete before 1.0
-    "ConfigSignal",
-    "HintedSignal",
     # Standard enums
     "EnabledDisabled",
     "EnableDisable",

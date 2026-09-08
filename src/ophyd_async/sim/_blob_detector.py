@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import StandardReadableFormat as Format
 
 from ._blob_acquire_logic import BlobAcquireLogic
 from ._blob_data_logic import BlobDataLogic
@@ -26,5 +27,6 @@ class SimBlobDetector(StandardDetector):
                 path_provider=path_provider, pattern_generator=self.pattern_generator
             ),
         )
-        self.add_config_signals(*config_sigs)
+        for signal in config_sigs:
+            self.set_readable_format(signal, Format.CONFIG_SIGNAL)
         super().__init__(name=name)

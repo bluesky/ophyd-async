@@ -187,7 +187,9 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             "source": uri,
         },
     }
-    assert hdf_panda.hints == {"fields": []}
+    # No hinted fields is {} rather than {"fields": []}, as for any
+    # StandardReadable -- the detector no longer special cases this
+    assert hdf_panda.hints == {}
     # Kick it off and start it completing
     await hdf_panda.kickoff()
     status = hdf_panda.complete()
