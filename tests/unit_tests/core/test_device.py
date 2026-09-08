@@ -470,3 +470,24 @@ async def test_device_processor_customization():
 
     assert ok.name in registry
     assert not_ok.name not in registry
+
+
+def test_device_repr_and_str_with_name():
+    my_device = Device(name="my_device")
+    expected = 'Device[name="my_device"]'
+    assert repr(my_device) == str(my_device) == expected
+
+
+def test_child_device_repr_and_str_with_name():
+    class ChildDevice(Device):
+        pass
+
+    my_device = ChildDevice(name="my_device")
+    expected = 'ChildDevice[name="my_device"]'
+    assert repr(my_device) == str(my_device) == expected
+
+
+def test_device_repr_and_str_without_name():
+    unnamed_device = Device()
+    expected = object.__repr__(unnamed_device)
+    assert repr(unnamed_device) == str(unnamed_device) == expected

@@ -349,6 +349,14 @@ class Device(HasName):
             # Wait for it to complete
             await connect_task
 
+    def __repr__(self) -> str:
+        if self.name == "":
+            return super().__repr__()
+        return f'{type(self).__name__}[name="{self.name}"]'
+
+    def __str__(self) -> str:
+        return repr(self)
+
 
 _not_device_attrs = {
     "_name",
