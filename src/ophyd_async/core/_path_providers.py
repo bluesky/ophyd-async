@@ -61,7 +61,7 @@ class PathInfo(ConfinedModel):
     @classmethod
     def validate_directory_path(cls, directory_path: PurePath) -> PurePath:
         """Ensure that the provided directory path is absolute.
-
+    
         :param directory_path: The directory path to validate
         :return: The validated directory path if it is absolute
         :raises ValueError: If the directory path is not absolute
@@ -178,13 +178,13 @@ class StaticPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: PurePath,
+        directory_path: PurePath | str,
         directory_uri: str | None = None,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
-        self._directory_uri = directory_uri or generate_directory_uri(directory_path)
+        self._directory_path = PurePath(directory_path) if isinstance(directory_path, str) else directory_path
+        self._directory_uri = directory_uri or generate_directory_uri(self._directory_path)
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, datakey_name: str | None = None) -> PathInfo:
@@ -208,13 +208,11 @@ class AutoMaxIncrementingPathProvider(PathProvider):
 
     It's recommended for the base path provider to be non-incrementing.
 
-    Args:
-    base_path_provider: Path to create directories inside of. Note that the filename of
-    this provider is used as the top level directory and the filename
-    max_digits: Number of digits to pad onto the parent directory.
-    starting_value: Number to start incrementing from.
-    dated: Whether to create an extra directory to specify the day.
-
+    :param base_path_provider: Path to create directories inside of. Note that the filename of
+        this provider is used as the top level directory and the filename
+    :param max_digits: Number of digits to pad onto the parent directory.
+    :param starting_value: Number to start incrementing from.
+    :param dated: Whether to create an extra directory to specify the day.
     """
 
     def __init__(
@@ -295,7 +293,7 @@ class AutoIncrementingPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: PurePath,
+        base_directory_path: PurePath | str,
         base_directory_uri: str | None = None,
         create_dir_depth: int = 0,
         max_digits: int = 5,
@@ -306,9 +304,9 @@ class AutoIncrementingPathProvider(PathProvider):
         base_name: str | None = None,
     ) -> None:
         self._filename_provider = filename_provider
-        self._base_directory_path = base_directory_path
+        self._base_directory_path = PurePath(base_directory_path) if isinstance(base_directory_path, str) else base_directory_path
         self._base_directory_uri = base_directory_uri or generate_directory_uri(
-            base_directory_path
+            self._base_directory_path
         )
         if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
@@ -354,15 +352,15 @@ class YMDPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: PurePath,
+        base_directory_path: PurePath | str,
         base_directory_uri: str | None = None,
         create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
         datakey_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
-        self._base_directory_path = base_directory_path
+        self._base_directory_path = PurePath(base_directory_path) if isinstance(base_directory_path, str) else base_directory_path
         self._base_directory_uri = base_directory_uri or generate_directory_uri(
-            base_directory_path
+            self._base_directory_path
         )
         if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
