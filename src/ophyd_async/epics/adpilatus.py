@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTrigger,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
@@ -22,8 +23,9 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
+    default_trigger_info_from_detector_settings,
     prepare_exposures,
-    trigger_info_from_num_images,
 )
 from .core import PvSuffix
 
@@ -73,6 +75,7 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
 
     driver: PilatusDriverIO
     readout_time: PilatusReadoutTime
+    process_plugin: NDProcessIO | None = None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return self.readout_time
@@ -90,7 +93,16 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        trigger_mode = await self.driver.trigger_mode.get_value()
+        det_trigger = DetectorTrigger.INTERNAL
+        if trigger_mode == PilatusTriggerMode.EXT_TRIGGER:
+            det_trigger = DetectorTrigger.EXTERNAL_EDGE
+        elif trigger_mode == PilatusTriggerMode.EXT_ENABLE:
+            det_trigger = DetectorTrigger.EXTERNAL_LEVEL
+
+        return await default_trigger_info_from_detector_settings(
+            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        )
 
 
 class PilatusDetector(AreaDetector[PilatusDriverIO]):
@@ -100,6 +112,7 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
     :param writer_factories: Factories for file writer plugins and their data logics
     :param readout_time: Readout time for the specific Pilatus model
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -111,18 +124,20 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
         *writer_factories: ADWriterFactory,
         readout_time: PilatusReadoutTime = PilatusReadoutTime.PILATUS3,
         driver_suffix="cam1:",
+        proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = PilatusDriverIO(prefix + driver_suffix)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver, driver_armed_signal=driver.armed),
             trigger_logic=PilatusTriggerLogic(driver, readout_time),
-            plugins=plugins,
+            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

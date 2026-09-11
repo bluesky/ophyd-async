@@ -3,7 +3,7 @@ import re
 import inflection
 import pytest
 
-from ophyd_async.core import Device, Signal
+from ophyd_async.core import Device, DeviceVector, Signal
 
 # Need to import them all so the subclass walking gets all subclasses
 # If we forget then the full test suite will find the subclasses, but
@@ -26,7 +26,7 @@ def get_rec_subclasses(cls: type):
 
 
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
-async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
+async def test_regularly_named_attributes(cls: type[adcore.NDArrayBaseIO]):
     io = cls("")
     for name, device in io.children():
         check_name(name, device)
@@ -39,6 +39,8 @@ def check_name(name: str, device: Device):
         # used to resolve clashes with Bluesky terms
         name = name[:-1] if name.endswith("_") else name
         assert inflection.underscore(pv) == name
+    elif isinstance(device, DeviceVector):
+        return
     else:
         for name, signal in device.children():
             check_name(name, signal)
