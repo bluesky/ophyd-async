@@ -176,7 +176,7 @@ class ADHDFDataLogic(DetectorDataLogic):
     array_description: NDArrayDescription
     path_provider: PathProvider
     writer: NDFileHDF5IO
-    driver: NDArrayBaseIO | None
+    driver: NDArrayBaseIO | None = None
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
 
