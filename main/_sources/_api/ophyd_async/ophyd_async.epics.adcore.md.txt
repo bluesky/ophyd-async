@@ -2064,17 +2064,6 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:attribute} driver
-:canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.driver
-:type: ~ophyd_async.epics.adcore._io.NDArrayBaseIO
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.driver
-```
-
-````
-
 ````{py:attribute} writer
 :canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.writer
 :type: ~ophyd_async.epics.adcore._io.NDFileHDF5IO
@@ -2082,6 +2071,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.writer
+```
+
+````
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.driver
+:type: ~ophyd_async.epics.adcore._io.NDArrayBaseIO | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.driver
 ```
 
 ````

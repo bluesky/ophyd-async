@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.3.dev4+gb96c0c5bf documentation</title>
+    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.3.dev5+ge98262cdf documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=8bf7c06d"></script>
+    <script src="../../../../_static/documentation_options.js?v=6b89f891"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev4+gb96c0c5bf documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev4+gb96c0c5bf documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev5+ge98262cdf documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev5+ge98262cdf documentation - Home"/>
   
   
 </a></div>
@@ -1081,16 +1081,16 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    :param array_description: Signals describing the NDArray shape and data type.</span>
 <span class="sd">    :param path_provider: Callable that provides path information for file writing.</span>
-<span class="sd">    :param driver: The AreaDetector driver instance.</span>
 <span class="sd">    :param writer: The NDFileHDFIO plugin instance.</span>
+<span class="sd">    :param driver: The AreaDetector driver instance to extract NDAttributes from.</span>
 <span class="sd">    :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.</span>
 <span class="sd">    :param datakey_suffix: Suffix to append to the data key for the main dataset</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
     <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span>
-    <span class="n">driver</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span>
     <span class="n">writer</span><span class="p">:</span> <span class="n">NDFileHDF5IO</span>
+    <span class="n">driver</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">plugins</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
@@ -1130,7 +1130,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">frames_per_chunk</span><span class="o">=</span><span class="n">frames_per_chunk</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">ndattribute_dtype_sources</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndattribute_dtype_source</span><span class="p">(</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">)</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="k">else</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">,)</span>
         <span class="p">)</span>
         <span class="n">ndattribute_datasets</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">StreamResourceInfo</span><span class="p">(</span>
@@ -1349,8 +1349,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">data_logic_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">writer</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">driver</span><span class="p">,</span> <span class="n">plugins</span><span class="p">:</span> <span class="n">ADHDFDataLogic</span><span class="p">(</span>
                 <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
                 <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
-                <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
                 <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+                <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
                 <span class="n">plugins</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">plugins</span><span class="p">),</span>
                 <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
             <span class="p">),</span>

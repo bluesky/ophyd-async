@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.21.3.dev4+gb96c0c5bf documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.21.3.dev5+ge98262cdf documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=8bf7c06d"></script>
+    <script src="../../_static/documentation_options.js?v=6b89f891"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev4+gb96c0c5bf documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev4+gb96c0c5bf documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.3.dev5+ge98262cdf documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.3.dev5+ge98262cdf documentation - Home"/>
   
   
 </a></div>
@@ -1893,8 +1893,8 @@ that only work with step scans.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array_description</strong> – Signals describing the NDArray shape and data type.</p></li>
 <li><p><strong>path_provider</strong> – Callable that provides path information for file writing.</p></li>
-<li><p><strong>driver</strong> – The AreaDetector driver instance.</p></li>
 <li><p><strong>writer</strong> – The NDFileHDFIO plugin instance.</p></li>
+<li><p><strong>driver</strong> – The AreaDetector driver instance to extract NDAttributes from.</p></li>
 <li><p><strong>plugins</strong> – Additional NDPluginBaseIO instances to extract NDAttributes from.</p></li>
 <li><p><strong>datakey_suffix</strong> – Suffix to append to the data key for the main dataset</p></li>
 </ul>
@@ -1913,14 +1913,14 @@ that only work with step scans.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADHDFDataLogic.driver">
-<span class="sig-name descname"><span class="pre">driver</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._io.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFDataLogic.driver" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADHDFDataLogic.writer">
+<span class="sig-name descname"><span class="pre">writer</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDFileHDF5IO" title="ophyd_async.epics.adcore._io.NDFileHDF5IO"><span class="pre">NDFileHDF5IO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFDataLogic.writer" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADHDFDataLogic.writer">
-<span class="sig-name descname"><span class="pre">writer</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDFileHDF5IO" title="ophyd_async.epics.adcore._io.NDFileHDF5IO"><span class="pre">NDFileHDF5IO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFDataLogic.writer" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADHDFDataLogic.driver">
+<span class="sig-name descname"><span class="pre">driver</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._io.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFDataLogic.driver" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -2763,8 +2763,8 @@ attributes – see the documentation for details.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.array_description"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.array_description</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.path_provider"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.path_provider</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.driver"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.driver</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.writer"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.writer</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.driver"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.driver</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.plugins"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.plugins</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.datakey_suffix"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.datakey_suffix</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADHDFDataLogic.prepare_unbounded"><code class="docutils literal notranslate"><span class="pre">ADHDFDataLogic.prepare_unbounded()</span></code></a></li>
