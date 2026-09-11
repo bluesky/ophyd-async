@@ -43,7 +43,6 @@ dev = [
     "ophyd_async[ca]",
     "ophyd_async[pva]",
     "ophyd_async[tango]",
-    "ophyd_async[demo]",
     "inflection",
     "import-linter",
     "myst-parser",
