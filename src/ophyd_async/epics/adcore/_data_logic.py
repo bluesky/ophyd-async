@@ -409,8 +409,8 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
             data_logic_factory=lambda writer, desc, driver, plugins: ADHDFDataLogic(
                 array_description=desc,
                 path_provider=path_provider,
-                driver=driver,
                 writer=writer,
+                driver=driver,
                 plugins=list(plugins),
                 datakey_suffix=datakey_suffix,
             ),
