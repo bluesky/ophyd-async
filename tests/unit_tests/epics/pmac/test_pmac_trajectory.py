@@ -372,8 +372,8 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert mock_pmac_trajectory_io.mock_calls[
         len(logic.pmac.trajectory.use_axis) :
     ] == [
-        call.time_array.put(np.array(0)),
-        call.user_array.put(np.array(8)),
+        call.time_array.put(np.array([0])),
+        call.user_array.put(np.array([8])),
         call.points_to_build.put(1),
         call.build_profile.execute(),
         call.execute_profile.put(True),
