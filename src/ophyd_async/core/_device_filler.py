@@ -207,7 +207,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             args = get_args(annotation)
 
             if (
-                cached_get_origin(annotation) is Union
+                cached_get_origin(annotation) in (Union, types.UnionType)
                 and types.NoneType in args
                 and len(args) == 2
             ):
