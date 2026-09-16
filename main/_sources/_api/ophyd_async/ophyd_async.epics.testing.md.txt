@@ -971,6 +971,28 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
+````{py:attribute} optional_command
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_command
+:type: ~ophyd_async.core.TriggerableCommand | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_command
+```
+
+````
+
+````{py:attribute} optional_device
+:canonical: ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_device
+:type: ~ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviLeafDevice | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._pvi_nested_devices.EpicsTestPviNestedDevice.optional_device
+```
+
+````
+
 `````
 
 `````{py:class} EpicsTestPviNestedDeviceMissingChild(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
