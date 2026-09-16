@@ -4,6 +4,7 @@ from ._devices import (
     CA_PVA_RECORDS,
     PVA_RECORDS,
     EpicsTestCaDevice,
+    EpicsTestCaDeviceInitMustFail,
     EpicsTestEnum,
     EpicsTestPvaDevice,
     EpicsTestPviDevice,
@@ -52,4 +53,5 @@ __all__ = [
     "EpicsTestTable",
     "generate_random_pv_prefix",
     "start_ioc",
+    "EpicsTestCaDeviceInitMustFail",
 ]
