@@ -102,7 +102,11 @@ class SignalTransformer(Generic[TransformT]):
 
     @cached_property
     def raw_locatables(self) -> dict[str, AsyncLocatable]:
-        return validate_by_type(self._raw_devices, AsyncLocatable)
+        return {
+            name: device
+            for name, device in self._raw_devices.items()
+            if isinstance(device, AsyncLocatable)
+        }
 
     @cached_property
     def transform_readables(self) -> dict[str, AsyncReadable]:
@@ -230,12 +234,27 @@ class SignalTransformer(Generic[TransformT]):
                 callback(derived_readings[name])
 
     async def get_locations(self) -> dict[str, Location]:
-        locations, transform = await asyncio.gather(
-            gather_dict({k: sig.locate() for k, sig in self.raw_locatables.items()}),
+        locations, raw_readings, transform = await asyncio.gather(
+            gather_dict(
+                {name: device.locate() for name, device in self.raw_locatables.items()}
+            ),
+            merge_gathered_dicts(
+                device.read() for device in self._raw_devices.values()
+            ),
             self.get_transform(),
         )
-        raw_setpoints = {k: v["setpoint"] for k, v in locations.items()}
-        raw_readbacks = {k: v["readback"] for k, v in locations.items()}
+        raw_readbacks = {
+            name: raw_readings[device.name]["value"]
+            for name, device in self._raw_devices.items()
+        }
+
+        # For read-only signals, use the readback as the setpoint.
+        raw_setpoints = raw_readbacks.copy()
+
+        # Overwrite with true setpoints where available.
+        for name, location in locations.items():
+            raw_setpoints[name] = location["setpoint"]
+
         derived_setpoints = transform.raw_to_derived(**raw_setpoints)
         derived_readbacks = transform.raw_to_derived(**raw_readbacks)
         return {
