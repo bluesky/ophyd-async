@@ -6,12 +6,12 @@ from ophyd_async.core import (
     DetectorTrigger,
     StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.fastcs.xspress import (
     XspressDetector,
-    XspressTriggerInfo,
 )
 from ophyd_async.testing import assert_has_calls
 
@@ -33,11 +33,10 @@ async def test_prepare_internal_calls_correct_parameters(
     # Need to mock this value as it's a summary of the datsets chunk_0
     set_mock_value(detector.od.fp.data_chunks_0, 10)
     await detector.prepare(
-        XspressTriggerInfo(
+        TriggerInfo(
             number_of_events=100,
-            livetime=0.1,
             trigger=DetectorTrigger.INTERNAL,
-            chunk=10,
+            livetime=0.1,
         )
     )
     assert_has_calls(
