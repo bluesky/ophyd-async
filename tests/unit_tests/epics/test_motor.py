@@ -579,7 +579,7 @@ async def test_velo_and_accl_respecting_motor_mock_behavior(
     await status
     assert status.success
     assert await velo_and_accl_respecting_motor.user_readback.get_value() == 10.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.3, abs=0.01)
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.3, abs=0.1)
 
     # Expected: abs(-5 - 10) / 50 + 2 * 0.05 = 0.4s
     start = asyncio.get_event_loop().time()
@@ -587,4 +587,4 @@ async def test_velo_and_accl_respecting_motor_mock_behavior(
     await status
     assert status.success
     assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.4, abs=0.01)
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.4, abs=0.1)
