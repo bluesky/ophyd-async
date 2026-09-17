@@ -57,6 +57,25 @@ automatically use `InstantMotorMock` without any fixture setup. You can still ov
 the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
 or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
 
+### Choosing a different mock behaviour
+
+`InstantMotorMock` moves the readback to the setpoint instantly, which is ideal for
+tests that only care about the end position. When a test needs the move to take a
+realistic amount of time — for example to check progress-bar updates or fly-scan
+timing — the [](#Motor) module also ships `VeloAndAcclRespectingMotorMock`, which
+drives the readback towards the setpoint over time while respecting the motor's
+velocity and acceleration.
+
+To use it, pass an instance directly to `connect()` instead of relying on the default:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_motor.py
+:language: python
+:pyobject: velo_and_accl_respecting_motor
+```
+
+The same pattern works for any [](#DeviceMock) subclass: instantiate it and pass it as
+the `mock=` argument to `connect()` to override the class default for that Device.
+
 ### pytest-asyncio setup
 
 :::{note}

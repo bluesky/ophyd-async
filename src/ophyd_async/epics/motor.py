@@ -34,7 +34,14 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
+__all__ = [
+    "MotorLimitsError",
+    "Motor",
+    "InstantMotorMock",
+    "VeloAndAcclRespectingMotorMock",
+    "OffsetMode",
+    "UseSetMode",
+]
 
 
 class MotorLimitsError(Exception):
