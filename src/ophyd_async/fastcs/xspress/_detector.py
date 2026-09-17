@@ -41,13 +41,8 @@ class XspressDetector(StandardDetector):
 
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
-        datakey_name = self.name + self._data_logics[0].datakey_suffix
-
         chunk = int(1 / value.livetime) if value.livetime < 1 else 1
 
-        await self.od.file_prefix.set(
-            self._data_logics[0].path_provider(datakey_name).filename  # pyright: ignore[reportAttributeAccessIssue]
-        )
         await self.od.fp.chunks.set(chunk)
         # Wait for all the datasets to have changed their chunk sizes
         await wait_for_value(self.od.fp.data_chunks_0, chunk, timeout=DEFAULT_TIMEOUT)
