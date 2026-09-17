@@ -132,10 +132,13 @@ async def test_device_vector_of_commands(nested_device: EpicsTestPviNestedDevice
 
 
 @pytest.mark.timeout(TIMEOUT)
-async def test_optional_signal_absent_from_tree_is_none(
-    nested_device: EpicsTestPviNestedDevice,
+@pytest.mark.parametrize(
+    "attr_name", ["optional_signal", "optional_command", "optional_device"]
+)
+async def test_optional_field_absent_from_tree_is_none(
+    nested_device: EpicsTestPviNestedDevice, attr_name: str
 ):
-    assert nested_device.optional_signal is None
+    assert getattr(nested_device, attr_name) is None
 
 
 @pytest.mark.timeout(TIMEOUT)
