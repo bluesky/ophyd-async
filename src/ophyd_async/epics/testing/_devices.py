@@ -114,23 +114,34 @@ class EpicsTestPviDevice(EpicsDevice):
     """Device for use in a generic PVI test IOC, independent of PandA/FastCS.
 
     Construct with `with_pvi=True`: signals here are plain type annotations
-    with no `PvSuffix` (discovered and filled in from the IOC's PVI structure
-    by `PviDeviceConnector` at connect time), except `overridden_float`, which
-    deliberately also carries a `PvSuffix` pointing at a *different* record —
-    this checks that the PVI-supplied PV wins once connected.
+    with no `PvSuffix`, discovered and filled in from the IOC's PVI structure
+    by `PviDeviceConnector` at connect time.
 
     Most fields (`mbb_direct_bit_r`, `a_float`, `table`, `ntndarray`, `go`)
     reuse the same attribute names, PVI entries and backing records as
     `EpicsTestCaDevice`/`EpicsTestPvaDevice`, rather than declaring new
-    synthetic ones. Only `wo_float` (no write-only field exists on those
-    devices to reuse) and `overridden_float` (inherently synthetic by
-    design, see above) are bespoke to this device.
+    synthetic ones. Only `wo_float` is bespoke to this device, as no
+    write-only field exists on those devices to reuse.
     """
 
     mbb_direct_bit_r: SignalR[bool]
     a_float: SignalRW[float]
     wo_float: SignalW[float]
-    overridden_float: A[SignalRW[float], PvSuffix("float_prec_1")]
     table: SignalRW[EpicsTestTable]
     ntndarray: SignalR[np.ndarray]
     go: TriggerableCommand
+
+
+class EpicsTestPviDisagreeingSuffixDevice(EpicsDevice):
+    """Device whose `PvSuffix` contradicts the PVI structure serving it.
+
+    `overridden_float` is annotated at the `float_prec_1` record, but the IOC's
+    PVI directory points it at the same record as `a_float`. Two different PVs
+    for one Signal means one of them is wrong, so connecting must raise rather
+    than silently pick either. Construct with `with_pvi=True`.
+
+    It is a device of its own because it cannot connect: a disagreeing Signal
+    would otherwise stop `EpicsTestPviDevice` connecting at all.
+    """
+
+    overridden_float: A[SignalRW[float], PvSuffix("float_prec_1")]

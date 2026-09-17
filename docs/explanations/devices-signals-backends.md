@@ -144,14 +144,14 @@ classDiagram
 Device <|-- StandardReadable
 Device <|-- StandardMovable
 Device <|-- StandardDetector
-Device <|-- StandardFlyer
+Device <|-- StandardFlyable
 ```
 
 There are also some `Device` subclasses that provide helpers for implementing particular protocols, namely:
 - [](#StandardReadable) that supports the [Readable](#bluesky.protocols.Readable) protocol using the values of its children
 - [](#StandardMovable) that supports the [Movable](#bluesky.protocols.Movable), [Locatable](#bluesky.protocols.Locatable), [Stoppable](#bluesky.protocols.Stoppable), and [Subscribable](#bluesky.protocols.Subscribable) protocols by composing a [](#MovableLogic) instance
 - [](#StandardDetector) that supports the [WritesStreamAssets](#bluesky.protocols.WritesStreamAssets) protocol using logic classes for the detector driver and writer
-- [](#StandardFlyer) that supports the [Flyable](#bluesky.protocols.Flyable) protocol for motion and trigger systems
+- [](#StandardFlyable) that supports the [Flyable](#bluesky.protocols.Flyable) protocol for motion and trigger systems by composing a [](#FlyableLogic) instance
 
 ```{seealso}
 [](../how-to/choose-right-baseclass.md)

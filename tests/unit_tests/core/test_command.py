@@ -86,7 +86,7 @@ async def test_soft_command_execution(datatype, value):
     await cmd.connect()
     status = cmd.execute(value)
     await status
-    res = status.result
+    res = status.result()
     if isinstance(value, np.ndarray):
         assert np.array_equal(res, value)
     else:
@@ -210,7 +210,16 @@ async def test_soft_command_mock_calls_original_func():
     assert calls == [5]
 
 
-async def test_soft_command_mock_side_effect_overrides_func():
+def _sync_override(v: int) -> int:
+    return 99
+
+
+async def _async_override(v: int) -> int:
+    return 99
+
+
+@pytest.mark.parametrize("override", [_sync_override, _async_override])
+async def test_soft_command_mock_side_effect_overrides_func(override):
     calls: list[int] = []
 
     def callback(v: int) -> int:
@@ -221,7 +230,7 @@ async def test_soft_command_mock_side_effect_overrides_func():
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
-    with callback_on_mock_execute(cmd, lambda v: 99):
+    with callback_on_mock_execute(cmd, override):
         result = await cmd.execute(5)
     assert result == 99
     assert calls == []
@@ -281,7 +290,7 @@ async def test_soft_command_factory():
     await cmd_rw.connect()
     status = cmd_rw.execute(123)
     await status
-    assert status.result == "123"
+    assert status.result() == "123"
 
     def x_cb() -> None:
         return None
@@ -290,7 +299,7 @@ async def test_soft_command_factory():
     await cmd_x.connect()
     status = cmd_x.execute()
     await status
-    assert status.result is None
+    assert status.result() is None
 
 
 async def test_execution_error_wrapping():
@@ -321,7 +330,7 @@ async def test_command_logging(caplog):
     assert "Connecting to softcmd://mycmd" in caplog.text
     status = cmd.execute(42)
     await status
-    assert status.result == "42"
+    assert status.result() == "42"
     assert "Executing command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
 
@@ -381,7 +390,7 @@ async def test_fill_child_command_vector_index():
         filler.fill_child_command(
             name="my_cmd",
             command_type=Command,
-            vector_index=i,
+            map_key=i,
         )
 
     assert len(vector) == 3

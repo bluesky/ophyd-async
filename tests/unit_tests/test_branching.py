@@ -10,7 +10,16 @@ from autodoc2.config import Config
 from autodoc2.db import InMemoryDb
 from bluesky.protocols import Locatable
 
+# _docs_parser is Sphinx autodoc2 build tooling, not runtime code at all -
+# already excluded from the layers contract as such
+# (tool.importlinter exhaustive_ignores). Not part of the public interface
+# by design - checked.
 from ophyd_async._docs_parser import ShortenedNamesRenderer  # noqa: PLC2701
+
+# get_locatable_type auto-detects Locatable support inside derived_signal_r/
+# derived_signal_rw - a caller never calls it themselves, they just get a
+# working locate() (or not) on the derived signal automatically - checked,
+# nothing here looks missing from the public interface.
 from ophyd_async.core._derived_signal import get_locatable_type  # noqa: PLC2701
 
 # src/ophyd_async/_docs_parser.py:10

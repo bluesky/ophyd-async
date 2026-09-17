@@ -16,6 +16,7 @@ from ophyd_async.core import (
     AsyncStatus,
     callback_on_mock_put,
     get_mock_put,
+    merge_gathered_dicts,
     set_mock_value,
     soft_signal_rw,
 )
@@ -264,6 +265,35 @@ def test_not_connected_error_output():
         "value_error_child_device2: NotConnectedError:\n"
         "    value_error_signal: ValueError\n"
     )
+
+
+@pytest.mark.asyncio
+async def test_merge_gathered_dicts_raises_for_duplicate_keys():
+    with pytest.raises(
+        ValueError, match="Duplicate keys found while merging dictionaries"
+    ) as exc:
+        await merge_gathered_dicts(
+            [
+                asyncio.sleep(0, result={"a": 1}),
+                asyncio.sleep(0, result={"a": 2}),
+                asyncio.sleep(0, result={"b": 3}),
+                asyncio.sleep(0, result={"c": 4}),
+                asyncio.sleep(0, result={"c": 5}),
+            ]
+        )
+
+    assert "a, c" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_merge_gathered_dicts_raises_for_blank_duplicate_keys_message():
+    with pytest.raises(ValueError, match="Have you remembered to name the Device"):
+        await merge_gathered_dicts(
+            [
+                asyncio.sleep(0, result={"": 1}),
+                asyncio.sleep(0, result={"": 2}),
+            ]
+        )
 
 
 async def test_combining_top_level_signal_and_child_device():

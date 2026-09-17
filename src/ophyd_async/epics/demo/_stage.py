@@ -1,15 +1,17 @@
+from typing import Annotated as A
+
 from ophyd_async.core import StandardReadable
+from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._motor import DemoMotor
 
 
-class DemoStage(StandardReadable):
+class DemoStage(StandardReadable, EpicsDevice):
     """A simulated sample stage with X and Y movables."""
 
-    def __init__(self, prefix: str, name="") -> None:
-        # Define some child Devices
-        with self.add_children_as_readables():
-            self.x = DemoMotor(prefix + "X:")
-            self.y = DemoMotor(prefix + "Y:")
-        # Set name of device and child devices
-        super().__init__(name=name)
+    # The stage has a fixed set of child Devices, so we can declare them the
+    # same way as Signals: a PvSuffix addresses each motor relative to the
+    # stage's prefix, and Format.CHILD merges its readings into the stage.
+    x: A[DemoMotor, PvSuffix("X:"), Format.CHILD]
+    y: A[DemoMotor, PvSuffix("Y:"), Format.CHILD]

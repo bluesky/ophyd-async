@@ -1,4 +1,10 @@
-from ophyd_async.core import PathProvider, SignalR, StandardDetector, TriggerableCommand
+from ophyd_async.core import (
+    PathProvider,
+    SignalR,
+    StandardDetector,
+    TriggerableCommand,
+    soft_signal_rw,
+)
 from ophyd_async.fastcs import odin
 from ophyd_async.fastcs.core import fastcs_connector
 
@@ -23,6 +29,8 @@ class EigerDetector(StandardDetector):
         path_provider: PathProvider,
         name="",
     ):
+        self.pixel_mask = soft_signal_rw(str)
+
         # Need to do this first so the type hints are filled in
         connector = fastcs_connector(prefix, self)
         self.add_detector_logics(
@@ -32,6 +40,10 @@ class EigerDetector(StandardDetector):
                 path_provider=path_provider,
                 odin=self.od,
                 detector_bit_depth=self.detector.bit_depth_image,
+                pixel_mask=self.pixel_mask,
             ),
         )
+
+        self.add_config_signals(self.pixel_mask)
+
         super().__init__(name=name, connector=connector)

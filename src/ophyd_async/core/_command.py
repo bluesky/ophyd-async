@@ -179,6 +179,11 @@ class SoftCommandBackend(CommandBackend[P, T]):
     caller blocks until the first finishes.  This is intentional — hardware
     commands should not run concurrently, and it prevents re-entrant callback
     invocations.
+
+    :param command_cb:
+        The callable to wrap. May be sync or async; an async callback is awaited
+        by `execute()`, which returns its result either way.
+    :param sig: The signature of `command_cb`, with all parameters annotated.
     """
 
     signature: inspect.Signature

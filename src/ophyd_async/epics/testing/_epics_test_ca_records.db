@@ -210,10 +210,10 @@ record(bo, "$(device)go") {
 #
 # wo_float/overridden_float/a_float all resolve to the *same* "float"
 # record regardless of PVI key: the r/w/rw designator only affects which
-# SignalR/SignalW/SignalRW type the client constructs. overridden_float
-# also carries a PvSuffix("float_prec_1") on the Python side, pointing at
-# a *different* record: connecting should show the PVI-supplied "float"
-# value winning over the statically-configured one. The SignalR-from-PVI
+# SignalR/SignalW/SignalRW type the client constructs. overridden_float is
+# served here but annotated at the *different* "float_prec_1" record by
+# EpicsTestPviDisagreeingSuffixDevice, which is what makes connecting that
+# device raise. The SignalR-from-PVI
 # case is instead demonstrated by EpicsTestPviDevice.mbb_direct_bit_r,
 # which reuses EpicsTestCaDevice's own "mbb_direct_bit_r" PVI entry below
 # directly rather than a synthetic one on this record.
@@ -264,10 +264,18 @@ record("*", "$(device)longstr") {
     })
 }
 
-record("*", "$(device)longstr2") {
+# longstr2 is an lsi record, and EpicsTestCaDevice addresses it as
+# "longstr2.VAL$" so CA returns the whole value rather than truncating it at
+# 40 chars. "+channel": "NAME" can only serve the bare record name, which
+# would disagree with that annotation (and silently truncate), so serve the
+# field-qualified name out of a stringin's VAL instead -- the same
+# indirection the "d" pointers in _pvi_nested_records.db use.
+record(stringin, "$(device)longstr2:_ref") {
+    field(VAL, "$(device)longstr2.VAL$")
+    field(PINI, "YES")
     info(Q:group, {
         "$(device)PVI": {
-            "value.longstr2.rw": {"+channel": "NAME", "+type": "plain"}
+            "value.longstr2.rw": {"+channel": "VAL", "+type": "plain"}
         }
     })
 }

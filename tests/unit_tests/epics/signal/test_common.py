@@ -3,6 +3,13 @@ from enum import Enum
 import pytest
 
 from ophyd_async.core import StrictEnum, SupersetEnum
+
+# get_supported_values reconciles a PV's live enum choices against a
+# user-supplied StrictEnum/SupersetEnum class at connect time - it's called
+# automatically inside signal connection, a caller never invokes it
+# directly (they just get a clear TypeError from connect() if their enum
+# doesn't match) - checked, nothing here looks missing from the public
+# interface.
 from ophyd_async.epics.core._util import get_supported_values  # noqa: PLC2701
 
 

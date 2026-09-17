@@ -92,3 +92,9 @@ ophyd_async/_version.py
 
 # import linter cache
 .import_linter_cache/
+
+# jython cache
+.jython_cache/
+
+# local-only agent tasks (see "Working pattern" in CLAUDE.md)
+.claude/plans

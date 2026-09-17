@@ -167,16 +167,16 @@ class ADHDFDataLogic(DetectorDataLogic):
 
     :param array_description: Signals describing the NDArray shape and data type.
     :param path_provider: Callable that provides path information for file writing.
-    :param driver: The AreaDetector driver instance.
     :param writer: The NDFileHDFIO plugin instance.
+    :param driver: The AreaDetector driver instance to extract NDAttributes from.
     :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.
     :param datakey_suffix: Suffix to append to the data key for the main dataset
     """
 
     array_description: NDArrayDescription
     path_provider: PathProvider
-    driver: NDArrayBaseIO
     writer: NDFileHDF5IO
+    driver: NDArrayBaseIO | None = None
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
 
@@ -214,7 +214,7 @@ class ADHDFDataLogic(DetectorDataLogic):
             frames_per_chunk=frames_per_chunk,
         )
         ndattribute_dtype_sources = await get_ndattribute_dtype_source(
-            (self.driver, *self.plugins)
+            (self.driver, *self.plugins) if self.driver else (*self.plugins,)
         )
         ndattribute_datasets = [
             StreamResourceInfo(
@@ -409,8 +409,8 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
             data_logic_factory=lambda writer, desc, driver, plugins: ADHDFDataLogic(
                 array_description=desc,
                 path_provider=path_provider,
-                driver=driver,
                 writer=writer,
+                driver=driver,
                 plugins=list(plugins),
                 datakey_suffix=datakey_suffix,
             ),

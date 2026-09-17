@@ -134,9 +134,11 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         The number of digits after the decimal place to display for a float datatype.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param setter:
-        Optional callable performing the set action. May return the settled
+        Optional callable performing the set action. May be sync or async; an
+        async setter is awaited before the put completes. May return the settled
         value; if it returns None and a getter is configured, the getter is
         called to refresh the cache.
     :param poll_period:

@@ -6,6 +6,7 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
+    DeviceMap,
     DeviceVector,
     SignalR,
     SignalRW,
@@ -182,7 +183,11 @@ class NoSignalTypeInVector(Device):
     a: DeviceVector[SignalRW]
 
 
-@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
+class NoSignalTypeInMap(Device):
+    a: DeviceMap[SignalRW]
+
+
+@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector, NoSignalTypeInMap])
 async def test_no_type_annotation_blocks(cls):
     with pytest.raises(TypeError) as exc:
         with_pvi_connector(cls, "PREFIX:")
@@ -239,3 +244,21 @@ async def test_pvi_x_entry_creates_triggerable_command():
     await device.connect(mock=True)
     # In mock mode the backend is a MockCommandBackend, not PvaCommandBackend
     assert isinstance(device.do_thing, TriggerableCommand)
+
+
+class MapDeviceFromAnnotations(Device):
+    device_map: DeviceMap[SignalR[float]]
+
+
+async def test_device_map_is_empty_in_mock_mode():
+    # A DeviceMap is created from its annotation but, unlike a DeviceVector, has
+    # no fabricated mock children: its entries come from the served PVI tree, so
+    # in mock mode (no tree) it connects empty. Its real, annotation-driven fill
+    # is covered end-to-end against a live IOC in
+    # tests/system_tests/epics/core/test_pvi_nested.py.
+    async with init_devices(mock=True):
+        test_device = with_pvi_connector(MapDeviceFromAnnotations, "PREFIX:")
+
+    assert isinstance(test_device.device_map, DeviceMap)
+    assert test_device.device_map.name == "test_device-device_map"
+    assert len(test_device.device_map) == 0

@@ -126,7 +126,9 @@ async def test_observe_value_times_out_with_busy_sleep():
         t.cancel()
 
 
+@pytest.mark.timeout(3)
 async def test_observe_value_times_out_with_no_external_task():
+    done_timeout = 0.3
     sig, setter = soft_signal_r_and_setter(float)
 
     recv = []
@@ -134,28 +136,30 @@ async def test_observe_value_times_out_with_no_external_task():
     start = time.monotonic()
 
     with pytest.raises(asyncio.TimeoutError):
-        async for val in observe_value(sig, done_timeout=0.3):
+        async for val in observe_value(sig, done_timeout=done_timeout):
             recv.append(time.monotonic() - start)
             setter(val + 1)
 
-    # On a dev machine we can do >4000 iterations in 0.3s, but CI is slower.
-    # abs=0.1 is needed to cover two platform-specific overshoots:
-    #
-    # Linux / Python 3.13: wait_for schedules the Queue.get() wakeup via
-    # call_soon, so each iteration yields once to the event loop. Under CI load
-    # that yield occasionally stalls for ~0.25s (the selector sleeping until the
-    # call_later deadline fires), so the last callback arrives just before the
-    # timeout fires, pushing elapsed close to but still within 0.3s.
-    #
-    # Windows / Python 3.12: time.monotonic() is quantised at ~15.6 ms (the
-    # default Windows timer tick). wait_for's cancellation and cleanup machinery
-    # requires several event-loop iterations to complete, each costing a full
-    # timer tick, causing up to ~75 ms of overshoot (observed: 0.375 s).
+    # This is a self-driving busy loop: each iteration refills the queue via
+    # setter(), so q.get() never blocks and the done_timeout fires from the
+    # manual `monotonic() >= deadline` check. On a dev machine that's >4000
+    # iterations in 0.3s; CI is slower, so only require enough to prove the
+    # loop actually ran rather than blocking on the first value.
     assert len(recv) > 50
+
+    # The deadline check and this measurement read the same monotonic clock, so
+    # `elapsed` can never fall meaningfully *below* done_timeout - the loop only
+    # exits once its own clock passes the deadline. The lower bound is therefore
+    # the real invariant under test: done_timeout is honoured, the loop does not
+    # bail out early. We do NOT pin an upper bound: once the deadline passes,
+    # tearing down the busy async-generator (cancelling the in-flight wait_for,
+    # clear_sub, the trailing `await asyncio.sleep(0)`) costs a handful of
+    # event-loop ticks, and on Windows each ticks a full ~15.6 ms timer quantum,
+    # so `elapsed` overshoots by an unbounded, load-dependent amount (0.454s
+    # seen in CI). That overshoot is scheduling latency, not a broken timeout;
+    # the @pytest.mark.timeout(3) above is the backstop against a runaway loop.
     elapsed = time.monotonic() - start
-    assert elapsed == pytest.approx(0.3, abs=0.1), (
-        f"Elapsed: {elapsed} Received: {recv}"
-    )
+    assert elapsed >= done_timeout - 0.05, f"Elapsed: {elapsed} Received: {recv}"
 
 
 async def test_observe_value_uses_correct_timeout():
@@ -206,7 +210,18 @@ async def test_observe_signals_value_timeout_message():
                 recv2.append(value)
 
     async def main_test(tmo):
-        await asyncio.gather(tick2(), tick1(), watch(timeout=tmo, done_timeout=None))
+        # Run the tickers as explicit tasks so that, once `watch` times out,
+        # we can cancel them rather than sleeping out their remaining delays.
+        # (`asyncio.gather` propagates `watch`'s TimeoutError but leaves the
+        # tickers running as orphaned tasks, which filterwarnings=error would
+        # escalate to a failure if they were garbage collected while pending.)
+        tickers = [asyncio.create_task(tick1()), asyncio.create_task(tick2())]
+        try:
+            await watch(timeout=tmo, done_timeout=None)
+        finally:
+            for ticker in tickers:
+                ticker.cancel()
+            await asyncio.gather(*tickers, return_exceptions=True)
 
     with pytest.raises(
         asyncio.TimeoutError,
@@ -221,6 +236,3 @@ async def test_observe_signals_value_timeout_message():
     # Assert first default and set values only
     assert recv1 == [0.0, 10.0]
     assert recv2 == [0.0, 100.0]
-
-    # let all tasks finish correctly
-    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 2)
