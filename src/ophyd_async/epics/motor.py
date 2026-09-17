@@ -95,7 +95,7 @@ class MotorFlyableMovableLogic(
 ):
     """Combined move + fly logic for a motor record.
 
-    A single logic object backs a `Motor`'s `movable_logic` and `flyable_logic`:
+    A single logic object backs a `Motor`'s `standard_logic`:
     it implements `MovableLogic` (the motor-record move, limit and timeout logic)
     and `FlyableLogic` (the fly hooks, which reuse `move`/`check_move` and carry
     all per-scan state in a `MotorFlyCtx` rather than on the logic).
@@ -307,8 +307,8 @@ class Motor(
         super().__init__(name)
 
     @cached_property
-    def _logic(self) -> MotorFlyableMovableLogic:
-        """The combined move + fly logic, shared by movable_logic and flyable_logic."""
+    def standard_logic(self) -> MotorFlyableMovableLogic:
+        """The combined move + fly logic, satisfying both mix-ins at once."""
         return MotorFlyableMovableLogic(
             readback=self.user_readback,
             setpoint=self.user_setpoint,
@@ -323,11 +323,3 @@ class Motor(
             max_velocity=self.max_velocity,
             motor_egu=self.motor_egu,
         )
-
-    @cached_property
-    def movable_logic(self) -> MotorFlyableMovableLogic:
-        return self._logic
-
-    @cached_property
-    def flyable_logic(self) -> MotorFlyableMovableLogic:
-        return self._logic

@@ -4,8 +4,9 @@ import asyncio
 import functools
 import os
 import time
+import warnings
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
@@ -15,9 +16,7 @@ from bluesky.protocols import (
     Collectable,
     Flyable,
     HasHints,
-    Hints,
     Preparable,
-    Reading,
     Stageable,
     StreamAsset,
     Triggerable,
@@ -29,8 +28,12 @@ from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 from ophyd_async.core._log import logger
 
 from ._data_providers import ReadableDataProvider, StreamableDataProvider
-from ._device import Device
-from ._protocol import AsyncConfigurable, AsyncReadable
+from ._readable import (
+    StandardReadable,
+    StandardReadableFormat,
+    _HintedFields,
+    _Verb,
+)
 from ._settings import Settings
 from ._signal import (
     SignalDict,
@@ -353,34 +356,47 @@ class _KickoffCtx:
 
 
 class StandardDetector(
-    Device,
+    StandardReadable,
     Stageable,
-    AsyncConfigurable,
-    AsyncReadable,
     Triggerable,
     Preparable,
     Flyable,
     Collectable,
     WritesStreamAssets,
-    HasHints,
 ):
     """Detector base class for step and fly scanning detectors.
 
     Aggregates trigger, arm, reading or stream logic together.
+
+    Signals read during a step scan are registered with
+    [](#StandardReadable.set_readable_format), exactly as on any other
+    `StandardReadable`; data produced by a `DetectorDataLogic` is added on top
+    of those in `read()` and `describe()`.
+
+    `read()` and `describe()` require `prepare()` to have run, and raise
+    otherwise, so that a descriptor can never be emitted without the detector's
+    data keys. `trigger()` prepares implicitly, so a step scan never has to do
+    it explicitly. `read_configuration()` and `describe_configuration()` have no
+    such requirement.
     """
 
     # Logic for the detector
     _trigger_logic: DetectorTriggerLogic | None = None
     _acquire_logic: DetectorAcquireLogic | None = None
     _data_logics: Sequence[DetectorDataLogic] = ()
-    # Signals to include in read_configuration
-    _config_signals: Sequence[SignalR] = ()
     # Context produced by prepare, used by trigger and kickoff
     _prepare_ctx: _PrepareCtx | None = None
     # Context produced by kickoff, used by complete
     _kickoff_ctx: _KickoffCtx | None = None
     # The triggers that are supported by the trigger logic
     _supported_triggers: set[DetectorTrigger] = {DetectorTrigger.INTERNAL}
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # Contribute to _StandardBase's fan out rather than replacing stage(),
+        # so the readable children registered on this detector still get staged
+        self._stage_funcs += (self._stage_detector,)
+        self._unstage_funcs += (self._unstage_detector,)
 
     # Report the number of events for the next kickoff
     @cached_property
@@ -410,7 +426,8 @@ class StandardDetector(
                 # Store the triggers that are supported
                 self._supported_triggers = _get_supported_triggers(logic)
                 # Add the config signals it needs
-                self.add_config_signals(*logic.config_sigs())
+                for sig in logic.config_sigs():
+                    self.set_readable_format(sig, StandardReadableFormat.CONFIG_SIGNAL)
             elif isinstance(logic, DetectorAcquireLogic):
                 if self._acquire_logic is not None:
                     raise RuntimeError("Detector already has acquire logic")
@@ -420,12 +437,21 @@ class StandardDetector(
             else:
                 raise TypeError(f"Unknown logic type: {type(logic)}")
 
+    # Back compat - delete before 1.0
     def add_config_signals(self, *signals: SignalR) -> None:
         """Add a signal to read_configuration().
 
         :param sig: The signal to add
         """
-        self._config_signals = (*self._config_signals, *signals)
+        warnings.warn(
+            DeprecationWarning(
+                "Use `set_readable_format(signal, StandardReadableFormat"
+                ".CONFIG_SIGNAL)` instead of `add_config_signals(signal)`"
+            ),
+            stacklevel=2,
+        )
+        for signal in signals:
+            self.set_readable_format(signal, StandardReadableFormat.CONFIG_SIGNAL)
 
     async def get_trigger_deadtime(
         self, settings: Settings | None = None
@@ -453,9 +479,9 @@ class StandardDetector(
         return self._supported_triggers, deadtime
 
     @AsyncStatus.wrap
-    async def stage(self) -> None:
+    async def _stage_detector(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        coros = [data_logic.stop() for data_logic in self._data_logics]
+        coros: list[Awaitable] = [data_logic.stop() for data_logic in self._data_logics]
         if self._acquire_logic:
             coros.append(self._acquire_logic.ensure_ready())
         await asyncio.gather(*coros)
@@ -617,7 +643,7 @@ class StandardDetector(
         """Trigger a single exposure.
 
         If [`prepare()`](#StandardDetector.prepare) has not been called since
-        the last [`stage()`](#StandardDetector.stage), an implicit prepare is
+        the last `stage()`, an implicit prepare is
         performed. When [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`
         [](#DetectorTriggerLogic.default_trigger_info) is called to read current
         hardware state; otherwise a bare [`TriggerInfo()`](#TriggerInfo) is
@@ -721,22 +747,37 @@ class StandardDetector(
         ):
             yield update
 
-    async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(
-            sig.describe() for sig in self._config_signals
-        )
+    def _extra_funcs_for(self, verb: _Verb) -> Iterator[Callable[[], Awaitable[dict]]]:
+        """Contribute what the data logics produce to read() and describe().
 
-    async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_signals)
+        StandardReadable gathers these alongside the registered children, so
+        the verb methods themselves need no overriding.
 
-    async def describe(self) -> dict[str, DataKey]:
+        Raising when nothing has been prepared is deliberate, and predates
+        registered children being readable at all: a detector that has not been
+        prepared has no data keys, so a `describe()` that quietly succeeded
+        would emit a descriptor missing the detector's data. In practice
+        `trigger()` prepares implicitly, so `trigger_and_read` never reaches
+        this. `read_configuration()` and `describe_configuration()` are
+        unaffected, as this hook only feeds the data verbs.
+
+        The cost is that the *registered children* are unreachable through
+        `read()`/`describe()` until then too, since this raises before the
+        registry is consulted. That is accepted rather than worked around:
+        reading an unprepared detector is already defined as an error.
+        """
+        if verb not in (_Verb.DESCRIBE, _Verb.READ):
+            return
         ctx = error_if_none(self._prepare_ctx, "Prepare not run")
-        # Readable and Streamable data providers produce data during read
-        coros = [dp.make_datakeys() for dp in ctx.readable_data_providers] + [
-            dp.make_datakeys(ctx.trigger_info.collections_per_event)
-            for dp in ctx.streamable_data_providers
-        ]
-        return await merge_gathered_dicts(coros)
+        for dp in ctx.readable_data_providers:
+            yield dp.make_datakeys if verb is _Verb.DESCRIBE else dp.make_readings
+        if verb is _Verb.DESCRIBE:
+            # Streamable providers describe their shape for a step scan, but
+            # produce their data through collect_asset_docs rather than read()
+            for sdp in ctx.streamable_data_providers:
+                yield functools.partial(
+                    sdp.make_datakeys, ctx.trigger_info.collections_per_event
+                )
 
     async def describe_collect(self) -> dict[str, DataKey]:
         ctx = error_if_none(self._prepare_ctx, "Prepare not run")
@@ -747,18 +788,11 @@ class StandardDetector(
         ]
         return await merge_gathered_dicts(coros)
 
-    @property
-    def hints(self) -> Hints:
-        fields: list[str] = []
+    def _extra_hint_sources(self) -> Iterator[HasHints]:
+        """Contribute the data logics' hinted fields alongside the children's."""
         for dl in self._data_logics:
-            fields.extend(dl.get_hinted_fields(self.name + dl.datakey_suffix))
-        return Hints(fields=fields)
-
-    async def read(self) -> dict[str, Reading]:
-        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
-        return await merge_gathered_dicts(
-            dp.make_readings() for dp in ctx.readable_data_providers
-        )
+            if fields := dl.get_hinted_fields(self.name + dl.datakey_suffix):
+                yield _HintedFields(fields)
 
     async def collect_asset_docs(
         self, index: int | None = None
@@ -784,9 +818,9 @@ class StandardDetector(
         return min_collections_written // ctx.trigger_info.collections_per_event
 
     @AsyncStatus.wrap
-    async def unstage(self) -> None:
+    async def _unstage_detector(self) -> None:
         """Stop the detector and file writing."""
-        coros = [data_logic.stop() for data_logic in self._data_logics]
+        coros: list[Awaitable] = [data_logic.stop() for data_logic in self._data_logics]
         if self._acquire_logic:
             coros.append(self._acquire_logic.ensure_stopped())
         await asyncio.gather(*coros)
