@@ -3,13 +3,32 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Callable
 from datetime import date
-from pathlib import Path, PurePath, PureWindowsPath
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from typing import Protocol
 from urllib.parse import urlparse, urlunparse
 
 from pydantic import Field, field_validator
 
 from ._utils import ConfinedModel
+
+
+def normalize_path(path: PurePath | str) -> PurePath:
+    """Convert a string path into a PurePath with the appropriate flavour.
+
+    Note that we cannot just use PurePath(path) because it will always use the
+    system's default flavour, which may not match the semantics of the input string,
+    or PurePath object.
+
+    :param path: A path as a string or an existing PurePath.
+    :return: The original PurePath, or a PureWindowsPath if the string uses
+        Windows semantics (a drive letter or backslash separators),
+        otherwise a PurePosixPath.
+    """
+    if isinstance(path, PurePath):
+        return path
+    if re.match(r"^[a-zA-Z]:[\\/]", path) or "\\" in path:
+        return PureWindowsPath(path)
+    return PurePosixPath(path)
 
 
 def generate_directory_uri(directory_path: PurePath) -> str:
@@ -25,7 +44,7 @@ def generate_directory_uri(directory_path: PurePath) -> str:
             f"{directory_path.as_posix()}/",
             "",
             "",
-            None,
+            "",
         )
     )
 
@@ -178,13 +197,15 @@ class StaticPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: PurePath,
+        directory_path: PurePath | str,
         directory_uri: str | None = None,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
-        self._directory_uri = directory_uri or generate_directory_uri(directory_path)
+        self._directory_path = normalize_path(directory_path)
+        self._directory_uri = directory_uri or generate_directory_uri(
+            self._directory_path
+        )
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, datakey_name: str | None = None) -> PathInfo:
@@ -208,13 +229,11 @@ class AutoMaxIncrementingPathProvider(PathProvider):
 
     It's recommended for the base path provider to be non-incrementing.
 
-    Args:
-    base_path_provider: Path to create directories inside of. Note that the filename of
-    this provider is used as the top level directory and the filename
-    max_digits: Number of digits to pad onto the parent directory.
-    starting_value: Number to start incrementing from.
-    dated: Whether to create an extra directory to specify the day.
-
+    :param base_path_provider: Path to create directories inside of. Note that the
+        filename of this provider is used as the top level directory and the filename
+    :param max_digits: Number of digits to pad onto the parent directory.
+    :param starting_value: Number to start incrementing from.
+    :param dated: Whether to create an extra directory to specify the day.
     """
 
     def __init__(
@@ -295,7 +314,7 @@ class AutoIncrementingPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: PurePath,
+        base_directory_path: PurePath | str,
         base_directory_uri: str | None = None,
         create_dir_depth: int = 0,
         max_digits: int = 5,
@@ -306,9 +325,9 @@ class AutoIncrementingPathProvider(PathProvider):
         base_name: str | None = None,
     ) -> None:
         self._filename_provider = filename_provider
-        self._base_directory_path = base_directory_path
+        self._base_directory_path = normalize_path(base_directory_path)
         self._base_directory_uri = base_directory_uri or generate_directory_uri(
-            base_directory_path
+            self._base_directory_path
         )
         if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
@@ -354,15 +373,15 @@ class YMDPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: PurePath,
+        base_directory_path: PurePath | str,
         base_directory_uri: str | None = None,
         create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
         datakey_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
-        self._base_directory_path = base_directory_path
+        self._base_directory_path = normalize_path(base_directory_path)
         self._base_directory_uri = base_directory_uri or generate_directory_uri(
-            base_directory_path
+            self._base_directory_path
         )
         if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
