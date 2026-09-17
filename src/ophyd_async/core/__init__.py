@@ -86,6 +86,8 @@ from ._path_providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+    generate_directory_uri,
+    normalize_path,
 )
 from ._protocol import (
     AsyncConfigurable,
@@ -341,4 +343,6 @@ __all__ = [
     "SoftCommandBackend",
     "soft_command",
     "TriggerableCommand",
+    "generate_directory_uri",
+    "normalize_path",
 ]
