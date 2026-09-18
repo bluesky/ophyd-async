@@ -35,15 +35,20 @@ sim = ["h5py"]
 ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
 tango = ["pytango>=10.1.3"]
-demo = ["ipython", "matplotlib", "pyqt6", "pytest"]
+demo = [
+    "ipython",
+    "matplotlib",
+    "pyqt6 < 6.10", # 6.10+ needs glibc 2.34; keep dev installable on RHEL8-era hosts
+    "pytest"
+]
 
 [dependency-groups]
 dev = [
+    "ophyd_async[demo]",
     "ophyd_async[sim]",
     "ophyd_async[ca]",
     "ophyd_async[pva]",
     "ophyd_async[tango]",
-    "ophyd_async[demo]",
     "inflection",
     "import-linter",
     "myst-parser",
