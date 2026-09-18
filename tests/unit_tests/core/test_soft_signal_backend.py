@@ -5,6 +5,7 @@ from collections.abc import Callable, Sequence
 from typing import Any, TypeVar
 
 import numpy as np
+import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
@@ -42,7 +43,7 @@ def enum_d(value):
 
 
 def waveform_d(value):
-    return {"dtype": "array", "shape": [len(value)]}
+    return {"dtype": "array", "shape": list(np.shape(value))}
 
 
 def enumwf_d(value):
@@ -51,6 +52,14 @@ def enumwf_d(value):
 
 def table_d(value):
     return {"dtype": "array", "shape": [len(value)]}
+
+
+def float_array_2d():
+    return np.array([[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
+
+
+def uint_array_2d():
+    return np.array([[1, 1], [2, 2], [3, 3], [4, 4]])
 
 
 # Can be removed once numpy >=2 is pinned.
@@ -76,6 +85,20 @@ scalar_int_dtype = (
         (Array1D[np.uint64], np.array([]), np.array([995444]), waveform_d, "<u8"),
         (Array1D[np.float32], np.array([]), np.array([1.0]), waveform_d, "<f4"),
         (Array1D[np.float64], np.array([]), np.array([0.2]), waveform_d, "<f8"),
+        (
+            npt.NDArray[np.uint16],
+            np.zeros([2, 2], dtype=np.float64),
+            uint_array_2d(),
+            waveform_d,
+            "<u2",
+        ),
+        (
+            npt.NDArray[np.float64],
+            np.zeros([2, 2], dtype=np.float64),
+            float_array_2d(),
+            waveform_d,
+            "<f8",
+        ),
         (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
         (Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
         (typing.Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
@@ -129,6 +152,51 @@ async def test_soft_signal_backend_get_put_monitor(
         # Put to new value and check that
         await backend.put(put_value)
         await q.assert_updates(put_value)
+
+
+@pytest.mark.parametrize(
+    "datatype, ndim",
+    [
+        (np.ndarray, None),
+        (npt.NDArray[np.float64], None),
+        (Array1D[np.float64], 1),
+        (np.ndarray[tuple[int, int], np.dtype[np.float64]], 2),
+    ],
+)
+async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | None):
+    backend = SoftSignalBackend(datatype)
+    await backend.connect(timeout=1)
+    assert backend.converter.ndim == ndim
+
+
+@pytest.mark.parametrize(
+    "datatype, put_value, expected",
+    [
+        (np.ndarray, [[1.0, 2.0]], (1, 2)),
+        (npt.NDArray[np.float64], [1.0, 2.0], (2,)),
+        (npt.NDArray[np.float64], [[1.0, 2.0]], (1, 2)),
+        (Array1D[np.float64], [1.0, 2.0], (2,)),
+        (Array1D[np.float64], 1.0, "Expected 1D array, got 0D array"),
+        (Array1D[np.float64], [[1.0, 2.0]], "Expected 1D array, got 2D array"),
+        (np.ndarray[tuple[int, int], np.dtype[np.float64]], [[1.0, 2.0]], (1, 2)),
+        (
+            np.ndarray[tuple[int, int], np.dtype[np.float64]],
+            [1.0, 2.0],
+            "Expected 2D array, got 1D array",
+        ),
+    ],
+)
+async def test_soft_signal_backend_checks_shape(
+    datatype: type[T], put_value: Any, expected: tuple[int, ...] | str
+):
+    backend = SoftSignalBackend(datatype)
+    await backend.connect(timeout=1)
+    if isinstance(expected, str):
+        with pytest.raises(ValueError, match=expected):
+            await backend.put(put_value)
+    else:
+        await backend.put(put_value)
+        assert (await backend.get_value()).shape == expected
 
 
 async def test_soft_signal_backend_enum_value_equivalence():
