@@ -38,7 +38,7 @@ tango = ["pytango>=10.1.3"]
 demo = [
     "ipython",
     "matplotlib",
-    "pyqt6 < 6.10", # 6.10+ needs glibc 2.34; keep dev installable on RHEL8-era hosts
+    "pyqt6 <6.12", # 6.10+ needs glibc 2.34; keep dev installable on RHEL8-era hosts
     "pytest"
 ]
 
