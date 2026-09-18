@@ -28,12 +28,20 @@ from ophyd_async.core import (
     callback_on_mock_put,
     default_mock_class,
     error_if_none,
+    set_mock_put_proceeds,
     set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
+__all__ = [
+    "MotorLimitsError",
+    "Motor",
+    "InstantMotorMock",
+    "VeloAndAcclRespectingMotorMock",
+    "OffsetMode",
+    "UseSetMode",
+]
 
 
 class MotorLimitsError(Exception):
@@ -259,6 +267,39 @@ class InstantMotorMock(DeviceMock["Motor"]):
             set_mock_value(device.motor_done_move, 1)  # Done
 
         callback_on_mock_put(device.user_setpoint, _instant_move)
+
+
+class VeloAndAcclRespectingMotorMock(DeviceMock["Motor"]):
+    """Mock behaviour that respects motor velocity and acceleration time."""
+
+    async def connect(self, device: Motor) -> None:
+        """Mock signals to simulate a move respecting velocity and acceleration."""
+        set_mock_value(device.velocity, 10)
+        set_mock_value(device.max_velocity, 100)
+        set_mock_value(device.acceleration_time, 0.1)
+
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        async def _velo_and_accl_respecting_move(value):
+            set_mock_put_proceeds(device.user_setpoint, False)
+            current = await device.user_readback.get_value()
+            velocity = await device.velocity.get_value()
+            acceleration_time = await device.acceleration_time.get_value()
+            move_time = abs(value - current) / velocity + 2 * acceleration_time
+            set_mock_value(device.motor_done_move, 0)
+            elapsed = 0.0
+            while elapsed < move_time:
+                await asyncio.sleep(min(0.1, move_time - elapsed))
+                elapsed += 0.1
+                fraction = min(elapsed / move_time, 0.1)
+                position = current + (value - current) * fraction
+                set_mock_value(device.user_readback, position)
+            set_mock_value(device.user_readback, value)
+            set_mock_value(device.motor_done_move, 1)
+            set_mock_put_proceeds(device.user_setpoint, True)
+
+        callback_on_mock_put(device.user_setpoint, _velo_and_accl_respecting_move)
 
 
 @default_mock_class(InstantMotorMock)
