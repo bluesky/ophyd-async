@@ -57,9 +57,12 @@ class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
             member.
 
         """
-        if isinstance(value, str) and not isinstance(value, cls):
-            return value
-        return super().__call__(value, *args, **kwargs)
+        try:
+            return super().__call__(value, *args, **kwargs)
+        except ValueError:
+            if isinstance(value, str):
+                return value
+            raise
 
 
 class StrictEnum(StrEnum, metaclass=UppercaseNameEnumMeta):

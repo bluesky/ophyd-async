@@ -176,7 +176,7 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
             async for status in observe_value(
                 status_signal, done_timeout=DEFAULT_TIMEOUT
             ):
-                if status == PmacStatus.SUCCESS:
+                if status is PmacStatus.SUCCESS:
                     return
         except TimeoutError as exc:
             if status is not None:
