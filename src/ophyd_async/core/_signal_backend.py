@@ -10,6 +10,7 @@ from ._datatypes import Array1D, Table
 from ._utils import (
     Callback,
     EnumTypes,
+    IntersectEnum,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
@@ -34,6 +35,7 @@ SignalDatatype = (
     | Array1D[np.float64]
     | np.ndarray
     | Sequence[str]
+    | Sequence[IntersectEnum]
     | Sequence[StrictEnum]
     | Sequence[SubsetEnum]
     | Sequence[SupersetEnum]

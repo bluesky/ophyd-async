@@ -1,3 +1,5 @@
+import asyncio
+
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
@@ -5,6 +7,7 @@ from ophyd_async.core import (
     SignalR,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
+    wait_for_value,
 )
 from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
 
@@ -51,17 +54,28 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None
 
-    async def start_acquiring(self):
-        self.acquire_status = await set_and_wait_for_value(
+    async def ensure_ready(self):
+        await set_and_wait_for_value(
             self.cb_plugin.capture,
             True,
             wait_for_set_completion=False,
             timeout=DEFAULT_TIMEOUT,
         )
 
+    async def start_acquiring(self):
+        await self.cb_plugin.trigger_.set(True)
+
     async def wait_for_idle(self):
-        if self.acquire_status:
-            await self.acquire_status
+        num_images, acquire_time = await asyncio.gather(
+            self.cb_plugin.post_count.get_value(),
+            self.driver.acquire_time.get_value(),
+        )
+
+        await wait_for_value(
+            self.cb_plugin.trigger_,
+            False,
+            timeout=num_images * acquire_time + DEFAULT_TIMEOUT,
+        )
 
     async def ensure_stopped(self):
         await stop_busy_record(self.cb_plugin.capture)

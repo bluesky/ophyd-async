@@ -74,7 +74,11 @@ class SupersetEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
     """Some members should exist in the Backend, and there should be no extras."""
 
 
-EnumTypes = StrictEnum | SubsetEnum | SupersetEnum
+class IntersectEnum(StrEnum, metaclass=AnyStringUppercaseNameEnumMeta):
+    """Some members should exist in the Backend, but there may be extras."""
+
+
+EnumTypes = IntersectEnum | StrictEnum | SubsetEnum | SupersetEnum
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -244,7 +248,7 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """Get the enum class from a datatype.
 
     :raises TypeError: if type is not a [](#StrictEnum) or [](#SubsetEnum)
-    or [](#SupersetEnum) subclass
+    or [](#SupersetEnum) or [](#IntersectEnum) subclass
     ```python
     >>> from ophyd_async.core import StrictEnum
     >>> from collections.abc import Sequence
@@ -266,7 +270,8 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
             raise TypeError(
                 f"{datatype} should inherit from ophyd_async.core.SubsetEnum "
                 "or ophyd_async.core.StrictEnum "
-                "or ophyd_async.core.SupersetEnum."
+                "or ophyd_async.core.SupersetEnum "
+                "or ophyd_async.core.IntersectEnum."
             )
         return datatype
     return None

@@ -21,7 +21,7 @@ async def test_adsimdetector(
         detector = adsimdetector.SimDetector(
             "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
         )
-    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = detector.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 

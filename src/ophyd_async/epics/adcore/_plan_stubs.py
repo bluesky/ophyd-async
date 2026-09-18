@@ -29,7 +29,7 @@ def setup_ndattributes(
 @plan
 def setup_ndstats_sum(detector: AreaDetector, stats_name: str = "stats"):
     """Set up nd stats sum nd attribute for a detector."""
-    stats = detector.get_plugin(stats_name, NDStatsIO)
+    stats = detector.get_plugin_by_name(stats_name, NDStatsIO)
     yield from (
         setup_ndattributes(
             stats,
