@@ -25,6 +25,7 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.testing import (
     assert_configuration,
     assert_reading,
@@ -630,7 +631,7 @@ async def test_config_signals_in_describe_configuration(
     signal = soft_signal_rw(
         signal_type, initial_value=initial_value, name="test-config"
     )
-    det.add_config_signals(signal)
+    det.set_readable_format(signal, Format.CONFIG_SIGNAL)
 
     await det.stage()
 
@@ -1055,3 +1056,32 @@ async def test_data_logic_not_implemented_errors():
 
     # stop() should not raise (has default implementation)
     await logic.stop()  # Should pass
+
+
+async def test_detector_readable_format_changes_at_runtime():
+    # A StandardDetector is a StandardReadable, so a plugin signal can be moved
+    # between configuration and hinted reads without redefining the Device.
+    det = StandardDetector(name="det")
+    det.temperature, _ = soft_signal_r_and_setter(float, 20.0, name="temperature")
+
+    name = det.temperature.name
+    det.set_readable_format(det.temperature, Format.CONFIG_SIGNAL)
+    assert set(await det.read_configuration()) == {name}
+    # Empty hints are {} rather than {"fields": []}, as for any StandardReadable
+    assert det.hints == {}
+
+    det.set_readable_format(det.temperature, Format.HINTED_UNCACHED_SIGNAL)
+    assert set(await det.read_configuration()) == set()
+    assert det.hints == {"fields": [name]}
+
+    det.set_readable_format(det.temperature, None)
+    assert set(await det.read_configuration()) == set()
+    assert det.hints == {}
+
+
+async def test_detector_add_config_signals_is_deprecated():
+    det = StandardDetector(name="det")
+    signal, _ = soft_signal_r_and_setter(float, 1.0, name="sig")
+    with pytest.deprecated_call():
+        det.add_config_signals(signal)
+    assert set(await det.read_configuration()) == {signal.name}

@@ -9,12 +9,17 @@ import numpy as np
 from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
+    READABLE_FORMATS_KEY,
     Device,
+    ReadableFormats,
     Settings,
     SettingsProvider,
     SignalRW,
+    StandardReadableFormat,
     Table,
+    apply_readable_formats,
     walk_config_signals,
+    walk_readable_formats,
     walk_rw_signals,
 )
 
@@ -53,21 +58,38 @@ def get_current_settings(
 def store_settings(
     provider: SettingsProvider, name: str, device: Device, only_config: bool = False
 ) -> MsgGenerator[None]:
-    """Walk a Device for SignalRWs and store their values.
+    """Walk a Device for SignalRWs and store their values and readable formats.
 
     If `only_config` is True, store only configuration settings on `Configurable`.
+    Readable formats are stored in both cases, since they are what *determines*
+    which signals are configuration.
+
+    Values are stored flat, keyed by dotted attribute path. Readable formats go
+    under the reserved [](#READABLE_FORMATS_KEY), which is not a valid Python
+    identifier and so cannot collide with a path.
 
     :param provider: The provider to store the settings with.
     :param name: The name to store the settings under.
     :param device: The Device to walk for SignalRWs.
-    :param only_config: If True, store only configuration settings.
+    :param only_config: If True, store only configuration signal values.
     """
     if only_config:
         signals = yield from wait_for_awaitable(walk_config_signals(device))
     else:
         signals = walk_rw_signals(device)
-    named_values = yield from _get_values_of_signals(signals)
-    yield from wait_for_awaitable(provider.store(name, named_values))
+    data: dict[str, Any] = yield from _get_values_of_signals(signals)
+    formats = walk_readable_formats(device)
+    if formats:
+        # Omitted entirely when there is nothing to say, so that a settings only
+        # file stays exactly as it was before formats were storable
+        data[READABLE_FORMATS_KEY] = {
+            owner: {
+                child: None if format is None else format.value
+                for child, format in entries.items()
+            }
+            for owner, entries in formats.items()
+        }
+    yield from wait_for_awaitable(provider.store(name, data))
 
 
 @plan
@@ -78,26 +100,52 @@ def retrieve_settings(
 
     If `only_config` is True, retrieve only configuration settings on `Configurable`.
 
+    A file stored before readable formats existed simply has no
+    [](#READABLE_FORMATS_KEY), which reads correctly as "do not change any
+    formats" -- so no migration or version marker is needed.
+
     :param provider: The provider to retrieve the settings from.
     :param name: The name of the settings to retrieve.
     :param device: The Device to retrieve the settings for.
     :param only_config: If True, retrieve only configuration settings.
     """
-    named_values = yield from wait_for_awaitable(provider.retrieve(name))
+    # Copy, as the provider may hand back a dict it holds on to and the reserved
+    # keys are popped out of it below
+    data = dict((yield from wait_for_awaitable(provider.retrieve(name))))
+    # Reserved keys first, so what is left is signal paths and the unknown name
+    # check below still catches genuine typos. Any <RESERVED> key is dropped,
+    # not just the one understood here: a path can never look like that, so a
+    # key written by a newer version is ignored rather than reported as a typo.
+    stored_formats = data.pop(READABLE_FORMATS_KEY, {})
+    for key in [k for k in data if k.startswith("<") and k.endswith(">")]:
+        del data[key]
+    readable_formats: ReadableFormats = {
+        owner: {
+            # A null means "stop this child contributing", so it is not coerced
+            child: None if format is None else StandardReadableFormat(format)
+            for child, format in entries.items()
+        }
+        for owner, entries in stored_formats.items()
+    }
     if only_config:
         signals = yield from wait_for_awaitable(walk_config_signals(device))
     else:
         signals = walk_rw_signals(device)
-    unknown_names = set(named_values) - set(signals)
+    unknown_names = set(data) - set(signals)
     if unknown_names:
         raise NameError(f"Unknown signal names {sorted(unknown_names)}")
-    signal_values = {signals[name]: value for name, value in named_values.items()}
-    return Settings(device, signal_values)
+    signal_values = {signals[name]: value for name, value in data.items()}
+    return Settings(device, signal_values, readable_formats)
 
 
 @plan
 def apply_settings(settings: Settings) -> MsgGenerator[None]:
-    """Set every SignalRW to the given value in Settings. If value is None ignore it."""
+    """Set every SignalRW to the given value in Settings. If value is None ignore it.
+
+    Then apply any readable formats the Settings carries. Formats go last
+    because they touch no hardware and cannot fail, so a failed value write
+    leaves the Device's readable registry untouched.
+    """
     signal_values = {
         signal: value for signal, value in settings.items() if value is not None
     }
@@ -105,6 +153,8 @@ def apply_settings(settings: Settings) -> MsgGenerator[None]:
         for signal, value in signal_values.items():
             yield from bps.abs_set(signal, value, group="apply_settings")
         yield from bps.wait("apply_settings")
+    if settings.readable_formats:
+        apply_readable_formats(settings.device, settings.readable_formats)
 
 
 @plan
