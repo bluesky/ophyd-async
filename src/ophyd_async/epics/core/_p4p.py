@@ -371,11 +371,25 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         write_pv: str = "",
         options: EpicsOptions | None = None,
     ):
+        # with p4p: single element seems not feasible
+        #           have a look to :meth:`_get_read_pv
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
         super().__init__(datatype, read_pv, write_pv, options)
-
+if (
+    options
+    and options.element_count is not None
+):
+    if get_origin(self.datatype) is not Array1D:
+        raise TypeError(
+            "Cannot specify `element_count` on a signal which isn't `Array1D`"
+        )
+    if write_pv != "":
+        raise TypeError(
+            "Cannot specify `element_count` on any signal kind other than `SignalR`"
+        )
+        
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"
 
@@ -383,6 +397,16 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.initial_values[pv] = await pvget_with_timeout(pv, timeout)
 
     async def connect(self, timeout: float):
+        # options are only available at connetion time
+        if (
+            self.options
+            and self.options.element_count is not None
+            and self.options.element_count <= 1
+        ):
+                raise ValueError(
+                    f'"{self.read_pv}": p4p can only support epics option'
+                    " element_count >=2"
+                )
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
@@ -414,8 +438,14 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             wait = self.options.wait
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
+    def _get_read_pv_with_element_count(self) -> str:
+        """Read pv with subarray index when requested."""
+        if self.options.element_count is None:
+            return self.read_pv
+        return f"{self.read_pv}.[0:{self.options.element_count - 1:d}]"
+
     async def get_datakey(self, source: str) -> DataKey:
-        value = await context().get(self.read_pv)
+        value = await context().get(self._get_read_pv())
         metadata = _metadata_from_value(self.converter.datatype, value)
         return make_datakey(
             self.converter.datatype, self.converter.value(value), source, metadata
@@ -425,12 +455,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         request = _pva_request_string(
             self.converter.value_fields + self.converter.reading_fields
         )
-        value = await context().get(self.read_pv, request=request)
+        value = await context().get(self._get_read_pv(), request=request)
         return self._make_reading(value)
 
     async def get_value(self) -> SignalDatatypeT:
         request = _pva_request_string(self.converter.value_fields)
-        value = await context().get(self.read_pv, request=request)
+        value = await context().get(self._get_read_pv(), request=request)
         return self.converter.value(value)
 
     async def get_setpoint(self) -> SignalDatatypeT:
@@ -456,7 +486,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 self.converter.value_fields + self.converter.reading_fields
             )
             self.subscription = context().monitor(
-                self.read_pv, async_callback, request=request
+                self._get_read_pv(), async_callback, request=request
             )
 
 
