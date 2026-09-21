@@ -228,7 +228,7 @@ async def test_pmac_trajectory_kickoff(
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
     value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
-    with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
+    with patch("ophyd_async.epics.pmac._pmac_trajectory.PMAC_SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
         await flyer.prepare(value)
         # This will consume another 2 frames
