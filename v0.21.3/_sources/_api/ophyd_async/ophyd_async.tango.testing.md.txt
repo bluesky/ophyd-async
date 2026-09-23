@@ -1,0 +1,240 @@
+# {py:mod}`ophyd_async.tango.testing`
+
+```{py:module} ophyd_async.tango.testing
+```
+
+```{autodoc2-docstring} ophyd_async.tango.testing
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ExampleStrEnum <ophyd_async.tango.testing._example_types.ExampleStrEnum>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._example_types.ExampleStrEnum
+    :summary:
+    ```
+* - {py:obj}`TangoTestDevice <ophyd_async.tango.testing._test_device.TangoTestDevice>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`generate_random_trl_prefix <ophyd_async.tango.testing._example_types.generate_random_trl_prefix>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._example_types.generate_random_trl_prefix
+    :summary:
+    ```
+* - {py:obj}`start_tango_device_servers <ophyd_async.tango.testing._launch.start_tango_device_servers>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._launch.start_tango_device_servers
+    :summary:
+    ```
+* - {py:obj}`trl <ophyd_async.tango.testing._launch.trl>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._launch.trl
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DEVICE_SERVERS <ophyd_async.tango.testing.DEVICE_SERVERS>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing.DEVICE_SERVERS
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} DEVICE_SERVERS
+:canonical: ophyd_async.tango.testing.DEVICE_SERVERS
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing.DEVICE_SERVERS
+```
+
+````
+
+`````{py:class} ExampleStrEnum()
+:canonical: ophyd_async.tango.testing._example_types.ExampleStrEnum
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.tango.testing._example_types.ExampleStrEnum
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.tango.testing._example_types.ExampleStrEnum.A
+:value: >
+   'AAA'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._example_types.ExampleStrEnum.A
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.tango.testing._example_types.ExampleStrEnum.B
+:value: >
+   'BBB'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._example_types.ExampleStrEnum.B
+```
+
+````
+
+````{py:attribute} C
+:canonical: ophyd_async.tango.testing._example_types.ExampleStrEnum.C
+:value: >
+   'CCC'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._example_types.ExampleStrEnum.C
+```
+
+````
+
+`````
+
+`````{py:class} TangoTestDevice(trl: str = '', name: str = '')
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice
+
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice
+```
+
+````{py:attribute} a_str
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.a_str
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.a_str
+```
+
+````
+
+````{py:attribute} a_bool
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.a_bool
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.a_bool
+```
+
+````
+
+````{py:attribute} strenum
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.strenum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.tango.testing._example_types.ExampleStrEnum], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.strenum
+```
+
+````
+
+````{py:attribute} my_state
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.my_state
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.tango.core.DevStateEnum], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.my_state
+```
+
+````
+
+````{py:attribute} float64
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.float64
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.float64
+```
+
+````
+
+````{py:attribute} int32_spectrum
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.int32_spectrum
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.Array1D[~numpy.int_]], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.int32_spectrum
+```
+
+````
+
+````{py:attribute} float64_image
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.float64_image
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float64]]], TangoPolling(0.1)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.float64_image
+```
+
+````
+
+````{py:attribute} void_cmd
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.void_cmd
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.void_cmd
+```
+
+````
+
+````{py:attribute} float_to_bool_cmd
+:canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.float_to_bool_cmd
+:type: ~ophyd_async.core.Command[[float], bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_device.TangoTestDevice.float_to_bool_cmd
+```
+
+````
+
+`````
+
+````{py:function} generate_random_trl_prefix() -> str
+:canonical: ophyd_async.tango.testing._example_types.generate_random_trl_prefix
+
+```{autodoc2-docstring} ophyd_async.tango.testing._example_types.generate_random_trl_prefix
+```
+````
+
+````{py:function} start_tango_device_servers(script: ~pathlib.Path, *args: str) -> ~ophyd_async.testing.ManagedSubprocess
+:canonical: ophyd_async.tango.testing._launch.start_tango_device_servers
+
+```{autodoc2-docstring} ophyd_async.tango.testing._launch.start_tango_device_servers
+```
+````
+
+````{py:function} trl(prefix: str, port: int, device_name: str) -> str
+:canonical: ophyd_async.tango.testing._launch.trl
+
+```{autodoc2-docstring} ophyd_async.tango.testing._launch.trl
+```
+````
