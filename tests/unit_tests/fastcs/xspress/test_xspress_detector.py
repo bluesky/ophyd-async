@@ -42,7 +42,6 @@ async def test_prepare_internal_calls_correct_parameters(
     assert_has_calls(
         detector,
         [
-            call.od.file_prefix.put("filename"),
             call.od.fp.chunks.put(10),
             call.xspress.trigger_mode.put(2),
             call.xspress.num_images.put(100),
@@ -52,6 +51,7 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.fp.frames.put(0),
             call.od.fp.process_frames_per_block.put(1000),
             call.od.file_path.put(str(tmp_path)),
+            call.od.file_prefix.put("filename"),
             call.od.fp.start_writing.execute(),
         ],
         reset_after=False,
