@@ -436,7 +436,11 @@ async def test_non_existent_errors(
     [
         (Array1D[np.int32], "Array1D[np.int32]"),
         (np.ndarray, "ndarray"),
-        (npt.NDArray[np.float64], "Array1D[np.float64]"),
+        (npt.NDArray[np.float64], "npt.NDArray[np.float64]"),
+        (
+            np.ndarray[tuple[int, int], np.dtype[np.float64]],
+            "np.ndarray[tuple[int, int], np.dtype[np.float64]]",
+        ),
     ],
 )
 def test_format_error_message(dt, expected):

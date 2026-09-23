@@ -76,17 +76,14 @@ directory's `conftest.py`.
 
 import asyncio
 from pathlib import Path
-from typing import Annotated as A
 
 import conftest
-import numpy as np
 import pytest
 import yaml
 from bluesky.protocols import Location
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import (
-    Array1D,
     DeviceVector,
     NotConnectedError,
     SignalRW,
@@ -99,7 +96,7 @@ from ophyd_async.plan_stubs import (
     retrieve_settings,
     store_settings,
 )
-from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
+from ophyd_async.tango.core import DevStateEnum, TangoDevice
 from ophyd_async.tango.testing import ExampleStrEnum, TangoTestDevice
 from ophyd_async.testing import MonitorQueue, approx_value
 
@@ -114,45 +111,6 @@ LIFECYCLE_FIELDS = [
     "int32_spectrum",
     "float64_image",
 ]
-
-
-class _MockableTestDevice(TangoDevice, StandardReadable):
-    """`TangoTestDevice`, minus `float64_image`, for the mock-parity test below.
-
-    `float64_image` is annotated `np.ndarray[Any, np.dtype[np.float64]]` on
-    the real `TangoTestDevice` - needed so the *real* connector's
-    dtype-matching accepts it (see `TangoTestDevice`'s own docstring: real
-    image attributes need a dtype-narrowed annotation to pass
-    `_verify_datatype_matches`, confirmed by trying the obvious fix of
-    switching it to bare `np.ndarray` - that breaks real `connect()`
-    instead). But `SoftSignalBackend.make_converter` only accepts bare
-    `np.ndarray` or an `Array1D[dtype]` (1-D, shape `tuple[int, ...]`) for
-    mock/soft signals, not that "any-shape, fixed-dtype" spelling, so
-    `TangoTestDevice.connect(mock=True)` raises `TypeError: Expected
-    Array1D[dtype], got numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]`
-    - for the *whole device*, since `connect(mock=True)` mock-fills every
-    declared field, not just the one that was asked for. Every other
-    image-typed signal in this codebase is annotated bare `np.ndarray` (e.g.
-    `EpicsTestPvaDevice.ntndarray`), which doesn't hit this -
-    `TangoTestDevice.float64_image` looks to be the only dtype-narrowed one.
-    Not fixed at the `core` level here (mock-mode support for "any-shape,
-    fixed-dtype" ndarrays is a `SignalDatatype`/`SoftSignalBackend` change,
-    out of scope for this slice) - see #1335; this local subclass sidesteps
-    it so the other 6 fields still get real mock-parity coverage.
-    """
-
-    a_str: A[SignalRW[str], TangoPolling(0.1)]
-    a_bool: A[SignalRW[bool], TangoPolling(0.1)]
-    strenum: A[SignalRW[ExampleStrEnum], TangoPolling(0.1)]
-    my_state: A[SignalRW[DevStateEnum], TangoPolling(0.1)]
-    float64: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
-    int32_spectrum: A[SignalRW[Array1D[np.int_]], TangoPolling(0.1)]
-
-    def __init__(self, trl: str = "", name: str = "") -> None:
-        super().__init__(trl, name=name, auto_fill_signals=False)
-
-
-MOCK_PARITY_FIELDS = [f for f in LIFECYCLE_FIELDS if f != "float64_image"]
 
 
 # Set the first time `reset_everything_device` actually does its (slow)
@@ -344,15 +302,14 @@ async def test_signal_mock_parity(
     everything_device_trl: str, reset_everything_device: None
 ):
     """A mock-connected device agrees on shape/dtype with a real-connected
-    one, and never touches the network for get/set. See `_MockableTestDevice`
-    for why this uses that rather than the real `TangoTestDevice`."""
-    real = _MockableTestDevice(everything_device_trl, name="real")
+    one, and never touches the network for get/set."""
+    real = TangoTestDevice(everything_device_trl, name="real")
     # Never dialled: mock mode skips connect_real entirely.
-    mock = _MockableTestDevice("does/not/matter#dbase=no", name="mock")
+    mock = TangoTestDevice("does/not/matter#dbase=no", name="mock")
     await real.connect()
     await mock.connect(mock=True)
 
-    for field in MOCK_PARITY_FIELDS:
+    for field in LIFECYCLE_FIELDS:
         real_signal = getattr(real, field)
         mock_signal = getattr(mock, field)
 
