@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Generic, TypedDict, TypeVar
 
 import numpy as np
+import numpy.typing as npt
 from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
@@ -32,6 +33,17 @@ SignalDatatype = (
     | Array1D[np.uint64]
     | Array1D[np.float32]
     | Array1D[np.float64]
+    | npt.NDArray[np.bool_]
+    | npt.NDArray[np.int8]
+    | npt.NDArray[np.uint8]
+    | npt.NDArray[np.int16]
+    | npt.NDArray[np.uint16]
+    | npt.NDArray[np.int32]
+    | npt.NDArray[np.uint32]
+    | npt.NDArray[np.int64]
+    | npt.NDArray[np.uint64]
+    | npt.NDArray[np.float32]
+    | npt.NDArray[np.float64]
     | np.ndarray
     | Sequence[str]
     | Sequence[StrictEnum]

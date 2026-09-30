@@ -24,13 +24,18 @@ accepted a scalar or a nested list and stored it unchanged.
 
 ## Decision
 
-Soft signals accept `npt.NDArray[np.<dtype>]` as a fixed datatype array whose
-number of dimensions is unconstrained.
+An array Signal is declared with exactly one of three spellings:
 
-The soft converter records the number of dimensions the annotation asks for and
-raises `ValueError` on a write of a different rank. `Array1D[np.float64]` accepts
-only 1D arrays, `np.ndarray[tuple[int, int], np.dtype[np.float64]]` only 2D, and
-`npt.NDArray[np.float64]` any rank.
+- `Array1D[np.<dtype>]`: fixed datatype, one dimension
+- `npt.NDArray[np.<dtype>]`: fixed datatype, any number of dimensions
+- `np.ndarray`: datatype and number of dimensions read from the control system
+
+`SignalDatatype` lists `npt.NDArray` for the same dtypes as `Array1D`. Any other
+parametrized ndarray, such as `np.ndarray[tuple[int, int], np.dtype[np.float64]]`
+for a 2D array, is rejected with `TypeError`.
+
+The soft converter raises `ValueError` when a value written to an `Array1D`
+Signal is not one dimensional. `npt.NDArray` and `np.ndarray` accept any rank.
 
 EPICS Signals reject any parametrized array annotation that is not one
 dimensional, with a `TypeError` raised when the Signal is created rather than

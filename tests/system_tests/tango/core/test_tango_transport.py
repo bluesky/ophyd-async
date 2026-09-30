@@ -911,7 +911,6 @@ async def test_type_mismatch_longstringarray(tango_test_device):
         ("float64_spectrum", npt.NDArray[np.float64], False),
         ("float64_spectrum", np.ndarray, True),
         ("float64_image", npt.NDArray[np.float64], False),
-        ("float64_image", np.ndarray[Any, np.dtype[np.float64]], False),
         ("float64_image", Array1D[np.float64], False),
         ("float64_image", np.ndarray, True),
     ],

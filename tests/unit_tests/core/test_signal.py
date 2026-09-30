@@ -1117,8 +1117,14 @@ class SomeClass:
         (dict, "Can't make converter for %s", None),
         (
             npt.NDArray[np.str_],
-            "Expected Array1D[dtype], got %s",
+            "Expected Array1D[dtype] or npt.NDArray[dtype], got %s",
             "Expected Array1D[dtype] or np.ndarray, got npt.NDArray[np.str]",
+        ),
+        (
+            np.ndarray[tuple[int, int], np.dtype[np.float64]],
+            "Expected Array1D[dtype] or npt.NDArray[dtype], got %s",
+            "Expected Array1D[dtype] or np.ndarray, "
+            "got np.ndarray[tuple[int, int], np.dtype[np.float64]]",
         ),
     ],
 )

@@ -160,7 +160,6 @@ async def test_soft_signal_backend_get_put_monitor(
         (np.ndarray, None),
         (npt.NDArray[np.float64], None),
         (Array1D[np.float64], 1),
-        (np.ndarray[tuple[int, int], np.dtype[np.float64]], 2),
     ],
 )
 async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | None):
@@ -178,12 +177,6 @@ async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | N
         (Array1D[np.float64], [1.0, 2.0], (2,)),
         (Array1D[np.float64], 1.0, "Expected 1D array, got 0D array"),
         (Array1D[np.float64], [[1.0, 2.0]], "Expected 1D array, got 2D array"),
-        (np.ndarray[tuple[int, int], np.dtype[np.float64]], [[1.0, 2.0]], (1, 2)),
-        (
-            np.ndarray[tuple[int, int], np.dtype[np.float64]],
-            [1.0, 2.0],
-            "Expected 2D array, got 1D array",
-        ),
     ],
 )
 async def test_soft_signal_backend_checks_shape(
