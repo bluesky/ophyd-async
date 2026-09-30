@@ -557,7 +557,7 @@ def init_devices(
     set_name: bool = True,
     child_name_separator: str = "-",
     connect: bool = True,
-    mock: bool = False,
+    mock: bool | type[DeviceMock] | dict[type[Device], bool | type[DeviceMock]] = False,
     timeout: float = 10.0,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.
@@ -569,7 +569,13 @@ def init_devices(
     :param connect:
         If True, call `device.connect(mock, timeout)` in parallel on all Devices
         created within the context manager.
-    :param mock: If True, connect Signals in mock mode.
+    :param mock:
+        If True, connect in mock mode using each Device's registered default
+        mock. If a [](#DeviceMock) subclass, use that for every Device. If a
+        dict, look up each Device's class and its bases (most derived first)
+        and use the first match, where `True` means the registered default and
+        `False` or no match means connect for real. For example
+        `{Device: True, Motor: MyMotorMock}` mocks everything, overriding Motors.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
     :raises NotConnectedError: If devices could not be connected.
@@ -584,6 +590,17 @@ def init_devices(
     ```
     """
 
+    def mock_for(device: Device) -> bool | DeviceMock:
+        if isinstance(mock, dict):
+            mock_cls = next(
+                (mock[cls] for cls in type(device).__mro__ if cls in mock), False
+            )
+        else:
+            mock_cls = mock
+        if isinstance(mock_cls, type):
+            return mock_cls()
+        return bool(mock_cls)
+
     async def process_devices(devices: dict[str, Device]):
         if set_name:
             for name, device in devices.items():
@@ -591,7 +608,8 @@ def init_devices(
                     device.set_name(name, child_name_separator=child_name_separator)
         if connect:
             coros = {
-                name: device.connect(mock, timeout) for name, device in devices.items()
+                name: device.connect(mock_for(device), timeout)
+                for name, device in devices.items()
             }
             await wait_for_connection(**coros)
 

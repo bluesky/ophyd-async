@@ -7,7 +7,9 @@ from bluesky.run_engine import RunEngine, TransitionError
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
+    DeviceMock,
     NotConnectedError,
+    default_mock_class,
     init_devices,
     set_mock_value,
 )
@@ -16,7 +18,10 @@ from ophyd_async.epics import motor
 
 class FailingDevice(Device):
     async def connect(
-        self, mock: bool = False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+        self,
+        mock: bool | DeviceMock = False,
+        timeout=DEFAULT_TIMEOUT,
+        force_reconnect=False,
     ):
         raise AttributeError()
 
@@ -25,7 +30,10 @@ class WorkingDevice(Device):
     connected = False
 
     async def connect(
-        self, mock: bool = True, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+        self,
+        mock: bool | DeviceMock = True,
+        timeout=DEFAULT_TIMEOUT,
+        force_reconnect=False,
     ):
         self.connected = True
         return await super().connect(mock=True)
@@ -79,6 +87,53 @@ async def test_init_devices_detects_redeclared_devices():
     assert original_working_device is not working_device
     assert working_device.connected and working_device.name == "working_device"
     assert not original_working_device.connected and original_working_device.name == ""
+
+
+class RecordingMock(DeviceMock):
+    async def connect(self, device: Device) -> None:
+        device.connected_mock = self
+
+
+class DefaultMock(RecordingMock): ...
+
+
+class CustomMock(RecordingMock): ...
+
+
+@default_mock_class(DefaultMock)
+class DeviceA(Device): ...
+
+
+@default_mock_class(DefaultMock)
+class DeviceB(Device): ...
+
+
+@pytest.mark.parametrize(
+    "mock, expected_a, expected_b",
+    [
+        (False, None, None),
+        (True, DefaultMock, DefaultMock),
+        (CustomMock, CustomMock, CustomMock),
+        ({DeviceA: CustomMock}, CustomMock, None),
+        ({DeviceA: CustomMock, DeviceB: DefaultMock}, CustomMock, DefaultMock),
+        ({}, None, None),
+        ({Device: CustomMock}, CustomMock, CustomMock),
+        ({Device: True, DeviceA: CustomMock}, CustomMock, DefaultMock),
+        ({Device: CustomMock, DeviceB: False}, CustomMock, None),
+    ],
+)
+async def test_init_devices_mock_options(mock, expected_a, expected_b):
+    async with init_devices(mock=mock):
+        device_a = DeviceA()
+        device_b = DeviceB()
+
+    mock_a = getattr(device_a, "connected_mock", None)
+    mock_b = getattr(device_b, "connected_mock", None)
+    assert (type(mock_a) if mock_a else None) is expected_a
+    assert (type(mock_b) if mock_b else None) is expected_b
+    # Each device must get its own mock instance, not a shared one
+    if mock_a and mock_b:
+        assert mock_a is not mock_b
 
 
 def test_connecting_in_plan_raises(RE):
