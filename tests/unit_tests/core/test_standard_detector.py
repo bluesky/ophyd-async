@@ -173,6 +173,33 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
         return [datakey_name]
 
 
+async def test_stream_resource_data_provider_1d_single_collection_is_array():
+    provider = StreamResourceDataProvider(
+        uri="file://localhost/tmp/test.h5",
+        resources=[
+            StreamResourceInfo(
+                data_key="det-spectrum",
+                shape=(3,),
+                chunk_shape=(1, 3),
+                dtype_numpy="<f8",
+                parameters={"dataset": "/entry/data/spectrum"},
+            )
+        ],
+        mimetype="application/x-hdf5",
+        collections_written_signal=soft_signal_rw(int),
+    )
+
+    assert await provider.make_datakeys(collections_per_event=1) == {
+        "det-spectrum": {
+            "dtype": "array",
+            "dtype_numpy": "<f8",
+            "external": "STREAM:",
+            "shape": [1, 3],
+            "source": "file://localhost/tmp/test.h5",
+        }
+    }
+
+
 # Parameterized Tests for Logic Combinations
 
 
