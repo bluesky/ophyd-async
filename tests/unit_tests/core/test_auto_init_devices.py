@@ -108,12 +108,20 @@ class DeviceA(Device): ...
 class DeviceB(Device): ...
 
 
+class DeviceAOnlyMock(RecordingMock, DeviceMock[DeviceA]): ...
+
+
+class DeviceAOnlySubMock(DeviceAOnlyMock): ...
+
+
 @pytest.mark.parametrize(
     "mock, expected_a, expected_b",
     [
         (False, None, None),
         (True, DefaultMock, DefaultMock),
         (CustomMock, CustomMock, CustomMock),
+        (DeviceAOnlyMock, DeviceAOnlyMock, DefaultMock),
+        (DeviceAOnlySubMock, DeviceAOnlySubMock, DefaultMock),
         ({DeviceA: CustomMock}, CustomMock, None),
         ({DeviceA: CustomMock, DeviceB: DefaultMock}, CustomMock, DefaultMock),
         ({}, None, None),
