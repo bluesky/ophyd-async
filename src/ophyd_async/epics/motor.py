@@ -28,8 +28,8 @@ from ophyd_async.core import (
     callback_on_mock_put,
     default_mock_class,
     error_if_none,
-    set_mock_put_proceeds,
     set_mock_value,
+    simulate_move,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
@@ -282,22 +282,17 @@ class VeloAndAcclRespectingMotorMock(DeviceMock["Motor"]):
         set_mock_value(device.motor_done_move, 1)
 
         async def _velo_and_accl_respecting_move(value):
-            set_mock_put_proceeds(device.user_setpoint, False)
-            current = await device.user_readback.get_value()
-            velocity = await device.velocity.get_value()
-            acceleration_time = await device.acceleration_time.get_value()
-            move_time = abs(value - current) / velocity + 2 * acceleration_time
+            current, velocity, acceleration_time = await asyncio.gather(
+                device.user_readback.get_value(),
+                device.velocity.get_value(),
+                device.acceleration_time.get_value(),
+            )
             set_mock_value(device.motor_done_move, 0)
-            elapsed = 0.0
-            while elapsed < move_time:
-                await asyncio.sleep(min(0.1, move_time - elapsed))
-                elapsed += 0.1
-                fraction = min(elapsed / move_time, 0.1)
-                position = current + (value - current) * fraction
+            async for position in simulate_move(
+                current, value, velocity, acceleration_time
+            ):
                 set_mock_value(device.user_readback, position)
-            set_mock_value(device.user_readback, value)
             set_mock_value(device.motor_done_move, 1)
-            set_mock_put_proceeds(device.user_setpoint, True)
 
         callback_on_mock_put(device.user_setpoint, _velo_and_accl_respecting_move)
 

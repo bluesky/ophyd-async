@@ -569,22 +569,22 @@ async def test_instant_motor_mock_preserves_parent_mock_tracking():
 async def test_velo_and_accl_respecting_motor_mock_behavior(
     velo_and_accl_respecting_motor: Motor,
 ):
-    """Test that move time matches distance / velocity + 2 * acceleration_time."""
+    """Test that move time matches distance / velocity + acceleration_time."""
     await velo_and_accl_respecting_motor.velocity.set(50.0)
     await velo_and_accl_respecting_motor.acceleration_time.set(0.05)
 
-    # Expected: abs(10 - 0) / 50 + 2 * 0.05 = 0.3s
+    # Expected: abs(10 - 0) / 50 + 0.05 = 0.25s
     start = asyncio.get_event_loop().time()
     status = velo_and_accl_respecting_motor.set(10.0)
     await status
     assert status.success
     assert await velo_and_accl_respecting_motor.user_readback.get_value() == 10.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.3, abs=0.1)
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.25, abs=0.1)
 
-    # Expected: abs(-5 - 10) / 50 + 2 * 0.05 = 0.4s
+    # Expected: abs(-5 - 10) / 50 + 0.05 = 0.35s
     start = asyncio.get_event_loop().time()
     status = velo_and_accl_respecting_motor.set(-5.0)
     await status
     assert status.success
     assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.4, abs=0.1)
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.35, abs=0.1)
