@@ -89,8 +89,8 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
         odin,
         [
             call.acquisition_id.put(""),
-            call.file_prefix.put("filename"),
             call.file_path.put(str(tmp_path)),
+            call.file_prefix.put("filename"),
             call.fp.data_compression.put("BSLZ4"),
             call.fp.data_datatype.put("uint16"),
             call.fp.frames.put(0),
