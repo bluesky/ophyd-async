@@ -12,7 +12,7 @@ from ophyd_async.core import (
     SignalDict,
     SignalR,
     SignalRW,
-    StrictEnum,
+    SupersetEnum,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -36,7 +36,7 @@ __all__ = [
 _MIN_DEAD_TIME = 0.002
 
 
-class MerlinTriggerMode(StrictEnum):
+class MerlinTriggerMode(SupersetEnum):
     """Trigger modes for ADMerlin detector."""
 
     INTERNAL = "Internal"
