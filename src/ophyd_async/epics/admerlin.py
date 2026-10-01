@@ -30,6 +30,7 @@ from .adcore import (
 )
 
 __all__ = [
+    "MerlinCounterDepth",
     "MerlinDetector",
     "MerlinDriverIO",
     "MerlinTriggerLogic",
