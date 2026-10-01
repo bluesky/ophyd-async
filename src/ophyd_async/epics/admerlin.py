@@ -13,11 +13,13 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
+    derived_signal_r,
 )
 from ophyd_async.epics.core import PvSuffix
 
 from .adcore import (
     ADAcquireLogic,
+    ADBaseDataType,
     ADBaseIO,
     ADWriterFactory,
     AreaDetector,
@@ -27,6 +29,7 @@ from .adcore import (
 )
 
 __all__ = [
+    "MerlinCounterDepth",
     "MerlinDetector",
     "MerlinDriverIO",
     "MerlinTriggerLogic",
@@ -51,6 +54,13 @@ class MerlinTriggerMode(StrictEnum):
     SOFTWARE = "Software"
 
 
+class MerlinCounterDepth(StrictEnum):
+    """Pixel counter depth (ADMerlin CounterDepth)."""
+
+    BIT_12 = "12 bit"
+    BIT_24 = "24 bit"
+
+
 class MerlinDriverIO(ADBaseIO):
     """Driver for merlin model:DU897_BV as deployed on p99.
 
@@ -59,6 +69,20 @@ class MerlinDriverIO(ADBaseIO):
     """
 
     trigger_mode: A[SignalRW[MerlinTriggerMode], PvSuffix.rbv("TriggerMode")]
+    counter_depth: A[SignalRW[MerlinCounterDepth], PvSuffix.rbv("CounterDepth")]
+
+    def __init__(self, prefix: str, name: str = ""):
+        super().__init__(prefix, name=name)
+        self.data_type = derived_signal_r(
+            self.get_data_type, counter_depth=self.counter_depth
+        )
+
+    def get_data_type(self, counter_depth: str) -> ADBaseDataType:
+        return (
+            ADBaseDataType.UINT16
+            if counter_depth == MerlinCounterDepth.BIT_12
+            else ADBaseDataType.UINT32
+        )
 
 
 # The deadtime of an Merlin controller varies depending on the exact model of camera.

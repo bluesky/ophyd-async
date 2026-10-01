@@ -33,6 +33,27 @@ def test_pvs_correct(test_admerlin: admerlin.MerlinDetector):
         test_admerlin.driver.trigger_mode.source
         == "mock+ca://PREFIX:cam1:TriggerMode_RBV"
     )
+    assert (
+        test_admerlin.driver.counter_depth.source
+        == "mock+ca://PREFIX:cam1:CounterDepth_RBV"
+    )
+
+
+@pytest.mark.parametrize(
+    "counter_depth,expected_data_type",
+    [
+        (admerlin.MerlinCounterDepth.BIT_12, adcore.ADBaseDataType.UINT16),
+        (admerlin.MerlinCounterDepth.BIT_24, adcore.ADBaseDataType.UINT32),
+    ],
+)
+async def test_data_type_derived_from_counter_depth(
+    test_admerlin: admerlin.MerlinDetector,
+    counter_depth: admerlin.MerlinCounterDepth,
+    expected_data_type: adcore.ADBaseDataType,
+):
+    driver = test_admerlin.driver
+    set_mock_value(driver.counter_depth, counter_depth)
+    assert await driver.data_type.get_value() == expected_data_type
 
 
 async def test_deadtime(
