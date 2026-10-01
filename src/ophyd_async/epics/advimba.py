@@ -15,6 +15,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
+    SupersetEnum
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -69,7 +70,7 @@ class VimbaOverlap(StrictEnum):
     PREV_FRAME = "PreviousFrame"
 
 
-class VimbaExposeOutMode(StrictEnum):
+class VimbaExposeOutMode(SupersetEnum):
     """Exposure control modes for Vimba detectors."""
 
     TIMED = "Timed"  # Use ExposureTime PV
