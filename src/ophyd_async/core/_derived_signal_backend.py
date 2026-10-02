@@ -312,10 +312,9 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         derived = await self.transformer.get_derived_values()
         return derived[self.name]
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        # TODO: should be get_location
+    async def get_location(self) -> Location[SignalDatatypeT]:
         locations = await self.transformer.get_locations()
-        return locations[self.name]["setpoint"]
+        return locations[self.name]
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         self.transformer.set_callback(self.name, callback)

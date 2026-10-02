@@ -761,7 +761,7 @@ async def test_tango_transport_get_value(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_transport_get_setpoint(tango_test_device):
+async def test_tango_transport_get_location(tango_test_device):
     source = get_full_attr_trl(tango_test_device, "floatvalue")
     transport = await make_backend(float, source, connect=False)
 
@@ -772,8 +772,8 @@ async def test_tango_transport_get_setpoint(tango_test_device):
     await transport.connect(1)
     new_setpoint = 2.0
     await transport.put(new_setpoint)
-    setpoint = await transport.get_setpoint()
-    assert setpoint == new_setpoint
+    location = await transport.get_location()
+    assert location["setpoint"] == new_setpoint
 
 
 # --------------------------------------------------------------------
