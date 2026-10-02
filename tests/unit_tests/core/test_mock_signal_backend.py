@@ -1,10 +1,12 @@
 import asyncio
+import contextlib
 import re
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     Device,
     MockSignalBackend,
     SignalRW,
@@ -14,11 +16,14 @@ from ophyd_async.core import (
     get_mock_put,
     init_devices,
     mock_puts_blocked,
+    observe_value,
+    set_callback_filter,
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
     soft_signal_r_and_setter,
     soft_signal_rw,
+    wait_for_value,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
@@ -445,3 +450,75 @@ async def test_when_async_callback_returns_none_then_readback_is_the_setpoint():
 
     await mock_signal.set(5)
     assert (await mock_signal.get_value()) == 5
+
+
+async def test_set_callback_filter_vetoes_all_updates():
+    signal = soft_signal_rw(int, initial_value=0)
+    await signal.connect(mock=True)
+
+    # Set the filter before anything subscribes: a live _SignalCache serves new
+    # subscribers from its stored reading without consulting the backend.
+    set_callback_filter(signal, lambda v: None)
+
+    assert await signal.get_value(cached=False) == 0
+
+    with pytest.raises(TimeoutError):
+        await wait_for_value(signal, 0, timeout=0.1)
+
+
+async def test_set_callback_filter_substitutes_values():
+    signal = soft_signal_rw(int, initial_value=1)
+    await signal.connect(mock=True)
+
+    # Double every value on its way to subscribers
+    set_callback_filter(signal, lambda v: v * 2)
+
+    await wait_for_value(signal, 2, timeout=DEFAULT_TIMEOUT)
+
+    # cached=False forces a backend read, which bypasses the filter. Without it
+    # get_value() would use the live cache, which holds the filtered value.
+    assert await signal.get_value(cached=False) == 1
+
+    # The filter applies to updates too, not just the initial emission
+    set_mock_value(signal, 5)
+    await wait_for_value(signal, 10, timeout=DEFAULT_TIMEOUT)
+
+
+async def test_set_callback_filter_applies_to_existing_subscription():
+    signal = soft_signal_rw(int, initial_value=0)
+    await signal.connect(mock=True)
+
+    seen: list[int] = []
+
+    async def collect():
+        async for value in observe_value(signal):
+            seen.append(value)
+
+    task = asyncio.create_task(collect())
+    await asyncio.sleep(0.05)
+    assert seen == [0]  # subscription is live
+
+    set_callback_filter(signal, lambda v: None if v == 1 else v)
+
+    set_mock_value(signal, 1)
+    set_mock_value(signal, 2)
+    await asyncio.sleep(0.05)
+
+    task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
+
+    # 1 was vetoed, 2 passed through: proves the filter reached a live subscription
+    assert seen == [0, 2]
+
+
+async def test_set_callback_filter_unset_on_context_exit():
+    signal = soft_signal_rw(int, initial_value=0)
+    await signal.connect(mock=True)
+
+    with set_callback_filter(signal, lambda v: None):
+        with pytest.raises(TimeoutError):
+            await wait_for_value(signal, 0, timeout=0.1)
+
+    # Filter removed on exit, so the signal is observable again
+    await wait_for_value(signal, 0, timeout=DEFAULT_TIMEOUT)
