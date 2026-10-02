@@ -92,7 +92,7 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def source(self) -> str:
-        """Returns the source of the signal.
+        """The source of the signal.
 
         E.g. "ca://PV_PREFIX:SIGNAL", or "" if not available until connection.
         """
@@ -100,7 +100,7 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def datatype(self) -> type[SignalDatatypeT] | None:
-        """Returns the datatype of the signal.
+        """The datatype of the signal.
 
         This will return what was passed at construction time. None means the
         backend will calculate it from the control system on connection.

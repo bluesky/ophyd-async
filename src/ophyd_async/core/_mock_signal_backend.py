@@ -58,7 +58,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_mock(self) -> AsyncMock:
-        """Return the mock that will track calls to `put()`."""
+        """The mock that will track calls to `put()`."""
         put_mock = AsyncMock(
             name="put",
             spec=Callable,
@@ -87,7 +87,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
-        """Return an Event that will block `put()` until set.
+        """An Event that will block `put()` until set.
 
         The Event is initially set, but can be unset to block `put()`.
         """
