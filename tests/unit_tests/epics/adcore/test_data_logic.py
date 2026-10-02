@@ -93,6 +93,39 @@ async def test_prepare_hdf(
 
 
 @pytest.mark.parametrize(
+    "factory_cls,extension",
+    [
+        (adcore.ADWriterFactory.jpeg, ".jpg"),
+        (adcore.ADWriterFactory.tiff, ".tiff"),
+    ],
+)
+async def test_prepare_multipart(
+    static_path_provider: StaticPathProvider, factory_cls, extension: str
+):
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector("PREFIX:", factory_cls(static_path_provider))
+    name = factory_cls.__name__
+    writer = det.get_plugin(name, adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    await det.prepare(TriggerInfo(number_of_events=3))
+    assert_has_calls(
+        writer,
+        [
+            call.lazy_open.put(True),
+            call.create_directory.put(0),
+            call.file_path.put(f"{static_path_provider().directory_path}{os.sep}"),
+            call.file_name.put("ophyd_async_tests"),
+            call.file_template.put("%s%s_%6.6d" + extension),
+            call.auto_increment.put(True),
+            call.file_number.put(0),
+            call.file_write_mode.put(adcore.ADFileWriteMode.STREAM),
+            call.num_capture.put(0),
+            call.capture.put(True),
+        ],
+    )
+
+
+@pytest.mark.parametrize(
     "factory_cls,is_hdf",
     [
         (adcore.ADWriterFactory.hdf, True),
