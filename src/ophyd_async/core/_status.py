@@ -305,7 +305,6 @@ async def forward_watcher_updates(
     :param name: Name to assign to the combined WatcherUpdate.
     :param combine: If True, combine the progress of all statuses into a single update.
     """
-
     updates: asyncio.Queue[tuple[int, dict[str, Any]]] = asyncio.Queue()
     progress = [0.0] * len(statuses)
 
@@ -335,14 +334,15 @@ async def forward_watcher_updates(
             yield WatcherUpdate(**kw)
             continue
         span = abs(kw["target"] - kw["initial"])
-        progress[i] = 1.0 if span == 0 else min(abs(kw["current"] - kw["initial"]) / span, 1.0)
+        progress[i] = (
+            1.0 if span == 0 else min(abs(kw["current"] - kw["initial"]) / span, 1.0)
+        )
         mean = sum(progress) / len(progress)
         yield WatcherUpdate(
             current=mean, initial=0.0, target=1.0, name=name, fraction=1.0 - mean
         )
     # Propagate any child failure.
     await all_done
-
 
 
 @AsyncStatus.wrap
