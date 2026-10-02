@@ -11,7 +11,14 @@ import pytest
 from bluesky.protocols import Movable, Status
 from bluesky.utils import FailedStatus
 
-from ophyd_async.core import AsyncStatus, Device, completed_status
+from ophyd_async.core import (
+    AsyncStatus,
+    Device,
+    WatchableAsyncStatus,
+    WatcherUpdate,
+    completed_status,
+    forward_watcher_updates,
+)
 
 
 @contextlib.contextmanager
@@ -360,3 +367,49 @@ async def test_device_name_in_failure_message_asyncstatus_wrap(RE):
     # undecorated methods will not print the device name
     status: AsyncStatus = ctx.value.args[0]
     assert f"device: {device_name}" in repr(status)
+
+
+def _watchable_move(name: str, values: list) -> WatchableAsyncStatus:
+    async def updates():
+        for value in values:
+            yield WatcherUpdate(
+                current=value, initial=values[0], target=values[-1], name=name
+            )
+            await asyncio.sleep(0)
+
+    return WatchableAsyncStatus(updates())
+
+
+@pytest.mark.parametrize("combine", [True, False])
+@pytest.mark.parametrize(
+    "moves",
+    [
+        {"a": [0.0, 1.0, 2.0]},
+        {"a": [0.0, 1.0, 2.0], "b": [10.0, 15.0, 20.0]},
+        {"a": [0, 1, 2], "b": [0.0, 0.25, 0.5]},
+    ],
+    ids=["one_status", "two_same_type", "two_mixed_types"],
+)
+async def test_forward_watcher_updates(moves: dict[str, list], combine: bool):
+    children = [_watchable_move(name, values) for name, values in moves.items()]
+    parent = WatchableAsyncStatus(
+        forward_watcher_updates(children, "parent", combine=combine)
+    )
+    watcher = Mock()
+    parent.watch(watcher)
+    await parent
+
+    updates = [call.kwargs for call in watcher.call_args_list]
+    if combine:
+        currents = [u["current"] for u in updates]
+        assert currents == sorted(currents)
+        assert all(
+            u["name"] == "parent" and u["initial"] == 0.0 and u["target"] == 1.0
+            for u in updates
+        )
+        assert updates[-1]["current"] == 1.0
+        assert updates[-1]["fraction"] == 0.0
+    else:
+        # Updates from different children interleave, but each child's stay in order
+        for name, values in moves.items():
+            assert [u["current"] for u in updates if u["name"] == name] == values
