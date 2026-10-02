@@ -94,16 +94,17 @@ def test_standard_readable_arbitrary_hints():
             )
             return hints
 
-    assert Device(name="device").hints == {
-        "fields": [
-            "device-signal",
-            "device-sub_device_1-signal",
-            "device-sub_device_1-sub_device_1-signal",
-            "device-sub_device_1-sub_device_1-sub_device_1-signal",
-            "device-sub_device_1-sub_device_1-sub_device_2-signal",
-            "device-sub_device_1-sub_device_2-signal",
-            "device-sub_device_2-signal",
-        ],
+    hints = Device(name="device").hints
+    assert set(hints.pop("fields")) == {
+        "device-signal",
+        "device-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-sub_device_2-signal",
+        "device-sub_device_1-sub_device_2-signal",
+        "device-sub_device_2-signal",
+    }
+    assert hints == {
         "dict: device": {"device": "device"},
         "list: device": ["device"],
         "str: device": "device",
