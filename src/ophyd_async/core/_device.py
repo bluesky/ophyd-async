@@ -6,7 +6,7 @@ import sys
 from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, get_args, get_origin
 from unittest.mock import Mock
 
 from bluesky.protocols import HasName
@@ -553,11 +553,24 @@ class DeviceProcessor:
         await self._process_devices(devices)
 
 
+def _mocked_device_type(mock_cls: type[DeviceMock]) -> type[Device]:
+    # Find X in the nearest `DeviceMock[X]` base; unresolved TypeVars or
+    # forward refs fall back to Device so the mock applies to everything
+    for cls in mock_cls.__mro__:
+        for base in cls.__dict__.get("__orig_bases__", ()):
+            origin = get_origin(base)
+            if isinstance(origin, type) and issubclass(origin, DeviceMock):
+                args = get_args(base)
+                if args and isinstance(args[0], type):
+                    return args[0]
+    return Device
+
+
 def init_devices(
     set_name: bool = True,
     child_name_separator: str = "-",
     connect: bool = True,
-    mock: bool = False,
+    mock: bool | type[DeviceMock] | dict[type[Device], bool | type[DeviceMock]] = False,
     timeout: float = 10.0,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.
@@ -569,7 +582,15 @@ def init_devices(
     :param connect:
         If True, call `device.connect(mock, timeout)` in parallel on all Devices
         created within the context manager.
-    :param mock: If True, connect Signals in mock mode.
+    :param mock:
+        If True, connect in mock mode using each Device's registered default
+        mock. If a [](#DeviceMock) subclass, use it for every Device matching
+        its generic parameter (e.g. `DeviceMock[Motor]` is used for Motors) and
+        the registered default mock for the rest. If a dict, look up each
+        Device's class and its bases (most derived first) and use the first
+        match, where `True` means the registered default and `False` or no
+        match means connect for real. For example
+        `{Device: True, Motor: MyMotorMock}` mocks everything, overriding Motors.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
     :raises NotConnectedError: If devices could not be connected.
@@ -583,6 +604,20 @@ def init_devices(
     assert t1x.name == "t1x"
     ```
     """
+    mocked_type = _mocked_device_type(mock) if isinstance(mock, type) else Device
+
+    def mock_for(device: Device) -> bool | DeviceMock:
+        if isinstance(mock, dict):
+            mock_cls = next(
+                (mock[cls] for cls in type(device).__mro__ if cls in mock), False
+            )
+        elif isinstance(mock, type) and not isinstance(device, mocked_type):
+            mock_cls = True
+        else:
+            mock_cls = mock
+        if isinstance(mock_cls, type):
+            return mock_cls()
+        return bool(mock_cls)
 
     async def process_devices(devices: dict[str, Device]):
         if set_name:
@@ -591,7 +626,8 @@ def init_devices(
                     device.set_name(name, child_name_separator=child_name_separator)
         if connect:
             coros = {
-                name: device.connect(mock, timeout) for name, device in devices.items()
+                name: device.connect(mock_for(device), timeout)
+                for name, device in devices.items()
             }
             await wait_for_connection(**coros)
 
