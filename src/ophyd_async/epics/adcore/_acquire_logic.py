@@ -50,6 +50,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None
+        self.trigger_status: AsyncStatus | None = None
 
     async def start_acquiring(self):
         self.acquire_status = await set_and_wait_for_value(
@@ -59,9 +60,18 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
             timeout=DEFAULT_TIMEOUT,
         )
 
+        self.trigger_status = await set_and_wait_for_value(
+            self.cb_plugin.trigger,
+            True,
+            timeout=DEFAULT_TIMEOUT,
+            wait_for_set_completion=False,
+        )
+
     async def wait_for_idle(self):
         if self.acquire_status:
             await self.acquire_status
 
     async def ensure_stopped(self):
         await stop_busy_record(self.cb_plugin.capture)
+        if self.trigger_status:
+            await self.trigger_status
