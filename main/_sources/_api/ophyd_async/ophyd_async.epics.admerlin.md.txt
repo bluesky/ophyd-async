@@ -15,6 +15,10 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`MerlinCounterDepth <ophyd_async.epics.admerlin.MerlinCounterDepth>`
+  - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinCounterDepth
+    :summary:
+    ```
 * - {py:obj}`MerlinDetector <ophyd_async.epics.admerlin.MerlinDetector>`
   - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDetector
     :summary:
@@ -35,6 +39,36 @@
 
 ### API
 
+`````{py:class} MerlinCounterDepth()
+:canonical: ophyd_async.epics.admerlin.MerlinCounterDepth
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinCounterDepth
+```
+
+````{py:attribute} BIT_12
+:canonical: ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_12
+:value: >
+   '12 bit'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_12
+```
+
+````
+
+````{py:attribute} BIT_24
+:canonical: ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_24
+:value: >
+   '24 bit'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_24
+```
+
+````
+
+`````
+
 ````{py:class} MerlinDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, driver_suffix='cam1:', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.admerlin.MerlinDetector
 
@@ -45,7 +79,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epi
 
 ````
 
-`````{py:class} MerlinDriverIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
+`````{py:class} MerlinDriverIO(prefix: str, name: str = '')
 :canonical: ophyd_async.epics.admerlin.MerlinDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
@@ -60,6 +94,17 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} counter_depth
+:canonical: ophyd_async.epics.admerlin.MerlinDriverIO.counter_depth
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.admerlin.MerlinCounterDepth], ophyd_async.epics.core.PvSuffix.rbv('CounterDepth')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDriverIO.counter_depth
 ```
 
 ````
@@ -125,7 +170,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 `````{py:class} MerlinTriggerMode()
 :canonical: ophyd_async.epics.admerlin.MerlinTriggerMode
 
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
+Bases: {py:obj}`ophyd_async.core.SupersetEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode
 ```
