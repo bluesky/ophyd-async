@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev4+g1bc3719f7 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev5+gba696ab24 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b2f4d9bb"></script>
+    <script src="../_static/documentation_options.js?v=289da771"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev4+g1bc3719f7 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev4+g1bc3719f7 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
   
   
 </a></div>
@@ -567,6 +567,25 @@ automatically use <code class="docutils literal notranslate"><span class="pre">I
 the automatic mock for specific tests by passing an explicit <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> instance
 or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">LazyMock</span></code></a> directly to <code class="docutils literal notranslate"><span class="pre">connect()</span></code>, as the <code class="docutils literal notranslate"><span class="pre">mock_motor</span></code> fixture above does.</p>
 </section>
+<section id="choosing-a-different-mock-behaviour">
+<h3>Choosing a different mock behaviour<a class="headerlink" href="#choosing-a-different-mock-behaviour" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">InstantMotorMock</span></code> moves the readback to the setpoint instantly, which is ideal for
+tests that only care about the end position. When a test needs the move to take a
+realistic amount of time — for example to check progress-bar updates or fly-scan
+timing — the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor" title="ophyd_async.epics.motor.Motor"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Motor</span></code></a> module also ships <code class="docutils literal notranslate"><span class="pre">VeloAndAcclRespectingMotorMock</span></code>, which
+drives the readback towards the setpoint over time while respecting the motor’s
+velocity and acceleration.</p>
+<p>To use it, pass an instance directly to <code class="docutils literal notranslate"><span class="pre">connect()</span></code> instead of relying on the default:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">velo_and_accl_respecting_motor</span><span class="p">():</span>
+    <span class="n">motor</span> <span class="o">=</span> <span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;motor&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">VeloAndAcclRespectingMotorMock</span><span class="p">())</span>
+    <span class="k">yield</span> <span class="n">motor</span>
+</pre></div>
+</div>
+<p>The same pattern works for any <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> subclass: instantiate it and pass it as
+the <code class="docutils literal notranslate"><span class="pre">mock=</span></code> argument to <code class="docutils literal notranslate"><span class="pre">connect()</span></code> to override the class default for that Device.</p>
+</section>
 <section id="pytest-asyncio-setup">
 <h3>pytest-asyncio setup<a class="headerlink" href="#pytest-asyncio-setup" title="Link to this heading">#</a></h3>
 <div class="admonition note">
@@ -869,6 +888,7 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests-that-call-the-bluesky-verbs-directly">Tests that call the bluesky verbs directly</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-fixture-and-set-signal-values">Create a fixture and set signal values</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automatic-mock-behavior-injection">Automatic mock behavior injection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-different-mock-behaviour">Choosing a different mock behaviour</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pytest-asyncio-setup">pytest-asyncio setup</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-output-of-verbs-in-tests">Checking the output of verbs in tests</a></li>
 </ul>

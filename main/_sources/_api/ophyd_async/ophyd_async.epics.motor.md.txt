@@ -23,6 +23,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.motor.InstantMotorMock
     :summary:
     ```
+* - {py:obj}`VeloAndAcclRespectingMotorMock <ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock>`
+  - ```{autodoc2-docstring} ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock
+    :summary:
+    ```
 * - {py:obj}`OffsetMode <ophyd_async.epics.motor.OffsetMode>`
   - ```{autodoc2-docstring} ophyd_async.epics.motor.OffsetMode
     :summary:
@@ -84,6 +88,25 @@ Bases: {py:obj}`ophyd_async.core.DeviceMock`\[{py:obj}`Motor`\]
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.motor.InstantMotorMock.connect
+```
+
+````
+
+`````
+
+`````{py:class} VeloAndAcclRespectingMotorMock(name: str = '', parent: ~ophyd_async.core._device.DeviceMock | None = None)
+:canonical: ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock
+
+Bases: {py:obj}`ophyd_async.core.DeviceMock`\[{py:obj}`Motor`\]
+
+```{autodoc2-docstring} ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock
+```
+
+````{py:method} connect(device: ~ophyd_async.epics.motor.Motor) -> None
+:canonical: ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.VeloAndAcclRespectingMotorMock.connect
 ```
 
 ````

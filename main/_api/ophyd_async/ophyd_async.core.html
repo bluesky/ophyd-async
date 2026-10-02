@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.21.4.dev4+g1bc3719f7 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.21.4.dev5+gba696ab24 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=b2f4d9bb"></script>
+    <script src="../../_static/documentation_options.js?v=289da771"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev4+g1bc3719f7 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev4+g1bc3719f7 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
   
   
 </a></div>
@@ -911,22 +911,25 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.non_zero" title="ophyd_async.core._utils.non_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_zero</span></code></a></p></td>
 <td><p>Return True if the value cast to an int is not zero.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_r" title="ophyd_async.core._derived_signal.derived_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_r</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.simulate_move" title="ophyd_async.core._utils.simulate_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate_move</span></code></a></p></td>
+<td><p>Yield positions at 10Hz along a trapezoidal velocity profile.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_r" title="ophyd_async.core._derived_signal.derived_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_r</span></code></a></p></td>
 <td><p>Create a read only derived signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_rw" title="ophyd_async.core._derived_signal.derived_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_rw" title="ophyd_async.core._derived_signal.derived_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></a></p></td>
 <td><p>Create a read-write derived signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_w" title="ophyd_async.core._derived_signal.derived_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_w</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_w" title="ophyd_async.core._derived_signal.derived_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_w</span></code></a></p></td>
 <td><p>Create a write only derived signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core._command.soft_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_command</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core._command.soft_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_command</span></code></a></p></td>
 <td><p>Create a <a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by a Python callable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.generate_directory_uri" title="ophyd_async.core._path_providers.generate_directory_uri"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_directory_uri</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.generate_directory_uri" title="ophyd_async.core._path_providers.generate_directory_uri"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_directory_uri</span></code></a></p></td>
 <td><p>Generate a directory URI from a given directory path.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.normalize_path" title="ophyd_async.core._path_providers.normalize_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_path</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.normalize_path" title="ophyd_async.core._path_providers.normalize_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_path</span></code></a></p></td>
 <td><p>Convert a string path into a PurePath with the appropriate flavour.</p></td>
 </tr>
 </tbody>
@@ -4529,6 +4532,22 @@ or <a class="reference internal" href="#ophyd_async.core.SupersetEnum" title="op
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.simulate_move">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">simulate_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceleration_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator" title="(in Python v3.14)"><span class="pre">AsyncIterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#simulate_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.simulate_move" title="Link to this definition">#</a></dt>
+<dd><p>Yield positions at 10Hz along a trapezoidal velocity profile.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_position</strong> – Where the move starts.</p></li>
+<li><p><strong>new_position</strong> – Where the move ends, always the last value yielded.</p></li>
+<li><p><strong>velocity</strong> – Speed of the constant velocity section, 0 means instant.</p></li>
+<li><p><strong>acceleration_time</strong> – Time taken to ramp up to (and down from) velocity.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.derived_signal_r">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">derived_signal_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_to_derived</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">raw_devices_and_constants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.Primitive" title="ophyd_async.core._signal_backend.Primitive"><span class="pre">Primitive</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_derived_signal.html#derived_signal_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.derived_signal_r" title="Link to this definition">#</a></dt>
 <dd><p>Create a read only derived signal.</p>
@@ -5602,6 +5621,7 @@ otherwise a PurePosixPath.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.wait_for_connection"><code class="docutils literal notranslate"><span class="pre">wait_for_connection()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Ignore"><code class="docutils literal notranslate"><span class="pre">Ignore</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.non_zero"><code class="docutils literal notranslate"><span class="pre">non_zero()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.simulate_move"><code class="docutils literal notranslate"><span class="pre">simulate_move()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.derived_signal_r"><code class="docutils literal notranslate"><span class="pre">derived_signal_r()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.derived_signal_rw"><code class="docutils literal notranslate"><span class="pre">derived_signal_rw()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.derived_signal_w"><code class="docutils literal notranslate"><span class="pre">derived_signal_w()</span></code></a></li>

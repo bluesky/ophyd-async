@@ -491,6 +491,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.non_zero
     :summary:
     ```
+* - {py:obj}`simulate_move <ophyd_async.core._utils.simulate_move>`
+  - ```{autodoc2-docstring} ophyd_async.core._utils.simulate_move
+    :summary:
+    ```
 * - {py:obj}`derived_signal_r <ophyd_async.core._derived_signal.derived_signal_r>`
   - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_r
     :summary:
@@ -3734,6 +3738,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.non_zero
 
 ```{autodoc2-docstring} ophyd_async.core._utils.non_zero
+```
+````
+
+````{py:function} simulate_move(old_position: float, new_position: float, velocity: float, acceleration_time: float) -> ~collections.abc.AsyncIterator[float]
+:canonical: ophyd_async.core._utils.simulate_move
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._utils.simulate_move
 ```
 ````
 
