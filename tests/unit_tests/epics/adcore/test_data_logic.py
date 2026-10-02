@@ -49,7 +49,7 @@ async def test_hdf_writer_passes_parent_name_to_path_provider(tmp_path: Path):
             "PREFIX:", adcore.ADWriterFactory.hdf(pp), name="sim_detector"
         )
 
-    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -63,7 +63,7 @@ async def test_prepare_hdf(
     static_path_provider: StaticPathProvider,
     hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await hdf_det.prepare(TriggerInfo(number_of_events=3))
     assert_has_calls(
@@ -114,7 +114,7 @@ async def test_can_specify_different_uri_and_path(
 
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector("PREFIX:", factory_cls(path_provider))
-    writer = det.get_plugin(factory_cls.__name__, adcore.NDPluginFileIO)
+    writer = det.get_plugin_by_name(factory_cls.__name__, adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -171,7 +171,7 @@ async def test_can_override_uri_with_different_path_semantics(
 
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector("PREFIX:", factory_cls(path_provider))
-    writer = det.get_plugin(factory_cls.__name__, adcore.NDPluginFileIO)
+    writer = det.get_plugin_by_name(factory_cls.__name__, adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await det.stage()
     await det.prepare(TriggerInfo())
@@ -193,8 +193,8 @@ async def test_can_override_uri_with_different_path_semantics(
 async def test_stats_describe_raises_error_with_dbr_native(
     hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    stats = hdf_det.get_plugin("stats")
-    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
+    stats = hdf_det.get_plugin_by_name("stats")
+    writer = hdf_det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(
         stats.nd_attributes_file,
@@ -234,7 +234,7 @@ async def test_describe_different_color_modes(
     color_mode: adcore.ADBaseColorMode,
     shape: list[int] | type[RuntimeError],
 ):
-    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(hdf_det.driver.color_mode, color_mode)
     if shape is RuntimeError:
@@ -261,7 +261,7 @@ async def test_describe_different_color_modes(
 
 
 async def test_3d_dataset_shape(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):
-    writer = hdf_det.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = hdf_det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     set_mock_value(hdf_det.driver.array_size_z, 10)
     await hdf_det.prepare(TriggerInfo())
