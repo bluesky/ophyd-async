@@ -53,17 +53,6 @@ tox -p                  # all envs in parallel (CI equivalent)
 - **No `ABC` base needed** — `@abstractmethod` without `ABC`/`ABCMeta` is intentional; pyright enforces implementation statically.
 - **A new `TypeVar` needs an entry in `docs/conf.py`.** Docs build with `nitpicky = True` and warnings-as-errors, and TypeVars never resolve as references, so every one is listed by qualified name (`ophyd_async.core._utils.T`, …) in the `nitpick_ignore` list near the end of `conf.py`. Miss it and `tox -e docs` fails on `reference target not found` while every other env stays green. Prefer declaring TypeVars in the `_utils.py` of their package, next to the existing ones, so the list stays in one place.
 
-## Working pattern (long, multi-session tasks)
-
-- **STATE.md is local-only** (git-ignored via `.claude/plans/`) — a private scratchpad, **never committed**. The durable, shareable record is the git history + the GitHub issue, not this file.
-- **Session start:** if `.claude/plans/<active-task>/STATE.md` exists, read it, verify against `git status` and `git log --oneline -10`, and flag discrepancies *before* doing work.
-- **After each subtask:** update STATE.md (uncommitted) and make a small, focused commit of just the code change. Small, frequent commits; messages say *why*.
-- **STATE.md schema:** Done (with SHAs) / In progress (with exact next command) / Decisions + rationale / Invariants / Open questions.
-- **Settled design decisions** get mirrored to the relevant GitHub issue, not left only in the local STATE.md. Make an ADR as part of the PR for anything substantial.
-- **One PR-sized slice per session.** Never rely on context surviving across sessions — files and git are the source of truth.
-- **PR closes its issues:** a PR body must have a `Fixes #NNN` (or `Closes #NNN`) line for **every** issue it resolves, so GitHub auto-closes them on merge — one line per issue on a multi-issue PR.
-- **Set a PR body with `gh api`, not `gh pr edit`:** `gh pr edit --body-file` silently no-ops here — it exits 0, warns only about Projects-classic deprecation, and leaves the body unchanged. Use `gh api -X PATCH repos/bluesky/ophyd-async/pulls/NNNN -F body=@file`. Read the body back either way (web-UI edits trim it) and confirm each closing line survived.
-
 ## Updating this guide
 
 Say **"Update CLAUDE.md with…"** to persist a convention (Copilot has no auto-memory — it must be written here). Claude also keeps private auto-memory under `~/.claude/projects/…/memory/`; durable, shareable rules belong here.
