@@ -230,7 +230,7 @@ class Device(HasName):
 
     @property
     def name(self) -> str:
-        """Return the name of the Device."""
+        """The name of the Device."""
         return self._name
 
     @cached_property
@@ -246,7 +246,7 @@ class Device(HasName):
 
     @cached_property
     def log(self) -> LoggerAdapter:
-        """Return a logger configured with the device name."""
+        """A logger configured with the device name."""
         return LoggerAdapter(
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
