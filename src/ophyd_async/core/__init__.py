@@ -135,7 +135,12 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._status import (
+    AsyncStatus,
+    WatchableAsyncStatus,
+    completed_status,
+    forward_watcher_updates,
+)
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -208,6 +213,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "WatcherUpdate",
     "completed_status",
+    "forward_watcher_updates",
     # Signal
     "Signal",
     "SignalR",
