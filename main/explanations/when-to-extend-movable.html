@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>When should a device extend movable &#8212; ophyd-async 0.21.4.dev7+g877e87e47 documentation</title>
+    <title>When should a device extend movable &#8212; ophyd-async 0.21.4.dev8+gafe639529 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=089fe8e9"></script>
+    <script src="../_static/documentation_options.js?v=29063e02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev8+gafe639529 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev8+gafe639529 documentation - Home"/>
   
   
 </a></div>
@@ -651,6 +651,36 @@ how to opt out of the default mock for fine-grained control.</p>
 </div>
 </section>
 </section>
+<section id="reporting-progress-when-moving-several-children">
+<h2>Reporting progress when moving several children<a class="headerlink" href="#reporting-progress-when-moving-several-children" title="Link to this heading">#</a></h2>
+<p>If a device’s <code class="docutils literal notranslate"><span class="pre">set</span></code> moves several <code class="docutils literal notranslate"><span class="pre">Movable</span></code> children in parallel, wrap it with
+<a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus.wrap" title="ophyd_async.core.WatchableAsyncStatus.wrap"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">WatchableAsyncStatus.wrap</span></code></a> and pass the children’s statuses to
+<a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.forward_watcher_updates" title="ophyd_async.core.forward_watcher_updates"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">forward_watcher_updates</span></code></a>, so progress bars watching the parent see the child moves:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Stage</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">(</span><span class="n">instant</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">(</span><span class="n">instant</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+        <span class="n">statuses</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">forward_watcher_updates</span><span class="p">(</span><span class="n">statuses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">update</span>
+</pre></div>
+</div>
+<p>Start every child move before iterating, so they run concurrently. The iterator ends
+once all children have finished, and re-raises the error if any child fails.</p>
+<p><code class="docutils literal notranslate"><span class="pre">combine</span></code> controls what the parent’s watchers receive:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">combine=True</span></code> (default): a single update named after the parent, giving the mean
+fractional progress of all children from 0 to 1. Use this when one progress bar
+should represent the whole move, as children may have different units and ranges.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">combine=False</span></code>: each child’s update unchanged, interleaved in the order they
+arrive. Use this when watchers should show one progress bar per child, keyed by
+the child’s <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
+</ul>
+</section>
 </section>
 
 
@@ -707,6 +737,7 @@ how to opt out of the default mock for fine-grained control.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-a-standardmovable">Testing a StandardMovable</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting-progress-when-moving-several-children">Reporting progress when moving several children</a></li>
 </ul>
   </nav></div>
 

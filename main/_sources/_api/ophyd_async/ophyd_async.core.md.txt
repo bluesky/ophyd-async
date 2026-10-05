@@ -355,6 +355,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._status.completed_status
     :summary:
     ```
+* - {py:obj}`forward_watcher_updates <ophyd_async.core._status.forward_watcher_updates>`
+  - ```{autodoc2-docstring} ophyd_async.core._status.forward_watcher_updates
+    :summary:
+    ```
 * - {py:obj}`soft_signal_r_and_setter <ophyd_async.core._signal.soft_signal_r_and_setter>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_r_and_setter
     :summary:
@@ -1365,6 +1369,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._status.completed_status
+```
+````
+
+````{py:function} forward_watcher_updates(statuses: list[~ophyd_async.core._status.WatchableAsyncStatus], name: str, combine: bool = True) -> ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate]
+:canonical: ophyd_async.core._status.forward_watcher_updates
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._status.forward_watcher_updates
 ```
 ````
 

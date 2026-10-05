@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._status &#8212; ophyd-async 0.21.4.dev7+g877e87e47 documentation</title>
+    <title>ophyd_async.core._status &#8212; ophyd-async 0.21.4.dev8+gafe639529 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=089fe8e9"></script>
+    <script src="../../../_static/documentation_options.js?v=29063e02"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev8+gafe639529 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev8+gafe639529 documentation - Home"/>
   
   
 </a></div>
@@ -1203,6 +1203,63 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">return</span> <span class="n">wrap_f</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="forward_watcher_updates">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.forward_watcher_updates">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">forward_watcher_updates</span><span class="p">(</span>
+    <span class="n">statuses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">WatchableAsyncStatus</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">combine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward watcher updates from several watchable moves.</span>
+
+<span class="sd">    If ``combine`` is True, yield the mean fractional progress (0 to 1) of all</span>
+<span class="sd">    moves, since one status drives one progress bar and the children&#39;s positions</span>
+<span class="sd">    have different units and ranges. Otherwise, yield each child&#39;s update</span>
+<span class="sd">    unchanged, in the order they arrive.</span>
+
+<span class="sd">    :param statuses: List of WatchableAsyncStatus instances to forward updates from.</span>
+<span class="sd">    :param name: Name to assign to the combined WatcherUpdate.</span>
+<span class="sd">    :param combine: If True, combine the progress of all statuses into a single update.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">updates</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="n">progress</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">statuses</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_watcher</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Watcher</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="c1"># Watchers are only ever called with keywords, see _update_watcher.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">watcher</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">updates</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">watcher</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">status</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">statuses</span><span class="p">):</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">_make_watcher</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+
+    <span class="n">all_done</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">statuses</span><span class="p">))</span>
+    <span class="c1"># Keep going after all_done until the queue is drained, else final updates are lost</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">all_done</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">updates</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">updates</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">getter</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">updates</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">({</span><span class="n">getter</span><span class="p">,</span> <span class="n">all_done</span><span class="p">},</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">getter</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+                <span class="n">getter</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="k">continue</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">getter</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">updates</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">combine</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">span</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">kw</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">kw</span><span class="p">[</span><span class="s2">&quot;initial&quot;</span><span class="p">])</span>
+        <span class="n">progress</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="k">if</span> <span class="n">span</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">kw</span><span class="p">[</span><span class="s2">&quot;current&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">kw</span><span class="p">[</span><span class="s2">&quot;initial&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">span</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">progress</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">progress</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+            <span class="n">current</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">mean</span>
+        <span class="p">)</span>
+    <span class="c1"># Propagate any child failure.</span>
+    <span class="k">await</span> <span class="n">all_done</span></div>
 
 
 
