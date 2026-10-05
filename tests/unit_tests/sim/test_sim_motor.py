@@ -37,15 +37,15 @@ class TwoMotorStage(Device):
 async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
     stage = TwoMotorStage(combine, name="stage")
     for motor in (stage.x, stage.y):
-        await motor.velocity.set(10.0)
-        await motor.acceleration_time.set(0.1)
+        await asyncio.gather(motor.velocity.set(10.0), motor.acceleration_time.set(0.1))
     watcher = Mock()
     status = stage.set((1.0, 2.0))
     status.watch(watcher)
     await status
 
-    assert await stage.x.user_readback.get_value() == 1.0
-    assert await stage.y.user_readback.get_value() == 2.0
+    x, y = await asyncio.gather(stage.x.user_readback.get_value(), stage.y.user_readback.get_value()
+    assert x == 1.0
+    assert y == 2.0
     updates = [c.kwargs for c in watcher.call_args_list]
     if combine:
         assert {u["name"] for u in updates} == {"stage"}
