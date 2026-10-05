@@ -43,7 +43,9 @@ async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
     status.watch(watcher)
     await status
 
-    x, y = await asyncio.gather(stage.x.user_readback.get_value(), stage.y.user_readback.get_value()
+    x, y = await asyncio.gather(
+        stage.x.user_readback.get_value(), stage.y.user_readback.get_value()
+    )
     assert x == 1.0
     assert y == 2.0
     updates = [c.kwargs for c in watcher.call_args_list]
