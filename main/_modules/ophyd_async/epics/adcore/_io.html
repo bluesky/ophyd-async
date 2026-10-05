@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.4.dev6+gd54a39fe5 documentation</title>
+    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.4.dev7+g877e87e47 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=a140c22c"></script>
+    <script src="../../../../_static/documentation_options.js?v=089fe8e9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
   
   
 </a></div>
@@ -1257,7 +1257,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">capture</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Capture&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">non_zero</span><span class="p">)]</span>
     <span class="n">array_size0</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ArraySize0&quot;</span><span class="p">)]</span>
     <span class="n">array_size1</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ArraySize1&quot;</span><span class="p">)]</span>
-    <span class="n">create_directory</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;CreateDirectory&quot;</span><span class="p">)]</span></div>
+    <span class="n">create_directory</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;CreateDirectory&quot;</span><span class="p">)]</span>
+    <span class="n">lazy_open</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;LazyOpen&quot;</span><span class="p">)]</span></div>
 
 
 
@@ -1308,8 +1309,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">flush_now</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FlushNow&quot;</span><span class="p">)]</span>
     <span class="n">xml_file_name</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;XMLFileName&quot;</span><span class="p">)]</span>
     <span class="n">num_frames_chunks</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumFramesChunks&quot;</span><span class="p">)]</span>
-    <span class="n">chunk_size_auto</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ChunkSizeAuto&quot;</span><span class="p">)]</span>
-    <span class="n">lazy_open</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;LazyOpen&quot;</span><span class="p">)]</span></div>
+    <span class="n">chunk_size_auto</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ChunkSizeAuto&quot;</span><span class="p">)]</span></div>
 
 </pre></div>
 

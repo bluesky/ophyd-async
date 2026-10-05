@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.4.dev6+gd54a39fe5 documentation</title>
+    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.4.dev7+g877e87e47 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=a140c22c"></script>
+    <script src="../../../../_static/documentation_options.js?v=089fe8e9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev7+g877e87e47 documentation - Home"/>
   
   
 </a></div>
@@ -1197,10 +1197,13 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Work out where to write</span>
         <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">datakey_name</span><span class="p">)</span>
         <span class="c1"># Setup the file writer</span>
-        <span class="k">await</span> <span class="n">prepare_file_paths</span><span class="p">(</span>
-            <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span>
-            <span class="n">file_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%6.6d</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span>
-            <span class="n">writer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">,</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">lazy_open</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">prepare_file_paths</span><span class="p">(</span>
+                <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span>
+                <span class="n">file_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%6.6d</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span>
+                <span class="n">writer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">,</span>
+            <span class="p">),</span>
         <span class="p">)</span>
         <span class="c1"># Start capturing</span>
         <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>

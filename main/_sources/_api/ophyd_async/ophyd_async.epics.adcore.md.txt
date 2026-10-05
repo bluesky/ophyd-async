@@ -1582,6 +1582,17 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
 
 ````
 
+````{py:attribute} lazy_open
+:canonical: ophyd_async.epics.adcore._io.NDFileIO.lazy_open
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('LazyOpen')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDFileIO.lazy_open
+```
+
+````
+
 `````
 
 ````{py:class} NDPluginFileIO(prefix: str = '', with_pvi: bool = False, name: str = '', connector: ~ophyd_async.core.DeviceConnector | None = None)
@@ -1776,17 +1787,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginFileIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDFileHDF5IO.chunk_size_auto
-```
-
-````
-
-````{py:attribute} lazy_open
-:canonical: ophyd_async.epics.adcore._io.NDFileHDF5IO.lazy_open
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('LazyOpen')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDFileHDF5IO.lazy_open
 ```
 
 ````
