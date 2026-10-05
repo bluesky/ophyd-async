@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adpilatus &#8212; ophyd-async 0.21.4.dev5+gba696ab24 documentation</title>
+    <title>ophyd_async.epics.adpilatus &#8212; ophyd-async 0.21.4.dev6+gd54a39fe5 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=289da771"></script>
+    <script src="../../../_static/documentation_options.js?v=a140c22c"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev5+gba696ab24 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev6+gd54a39fe5 documentation - Home"/>
   
   
 </a></div>
@@ -904,7 +904,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
 
@@ -914,6 +914,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">SupersetEnum</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.adcore</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -930,6 +932,7 @@ window.runMermaid = runMermaid;</script>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;PilatusDetector&quot;</span><span class="p">,</span>
     <span class="s2">&quot;PilatusDriverIO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PilatusGain&quot;</span><span class="p">,</span>
     <span class="s2">&quot;PilatusTriggerLogic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;PilatusTriggerMode&quot;</span><span class="p">,</span>
     <span class="s2">&quot;PilatusReadoutTime&quot;</span><span class="p">,</span>
@@ -951,6 +954,18 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="PilatusGain">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PilatusGain</span><span class="p">(</span><span class="n">SupersetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shaping time and gain settings for the ADPilatus detector.&quot;&quot;&quot;</span>
+
+    <span class="n">FAST_LOW</span> <span class="o">=</span> <span class="s2">&quot;7-30KeV/Fast/LowG&quot;</span>
+    <span class="n">MEDIUM_MEDIUM</span> <span class="o">=</span> <span class="s2">&quot;5-18KeV/Med/MedG&quot;</span>
+    <span class="n">SLOW_HIGH</span> <span class="o">=</span> <span class="s2">&quot;3-6KeV/Slow/HighG&quot;</span>
+    <span class="n">SLOW_ULTRAHIGH</span> <span class="o">=</span> <span class="s2">&quot;2-5KeV/Slow/UltraG&quot;</span></div>
+
+
+
 <div class="viewcode-block" id="PilatusDriverIO">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusDriverIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PilatusDriverIO</span><span class="p">(</span><span class="n">ADBaseIO</span><span class="p">):</span>
@@ -959,7 +974,13 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This mirrors the interface provided by ADPilatus/db/pilatus.template.&quot;&quot;&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;See HTML docs at https://areadetector.github.io/areaDetector/ADPilatus/pilatusDoc.html&quot;&quot;&quot;</span>
     <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">PilatusTriggerMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span>
-    <span class="n">armed</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Armed&quot;</span><span class="p">)]</span></div>
+    <span class="n">armed</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Armed&quot;</span><span class="p">)]</span>
+    <span class="n">header_string</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;HeaderString&quot;</span><span class="p">)]</span>
+    <span class="n">energy</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Energy&quot;</span><span class="p">)]</span>
+    <span class="n">threshold_energy</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ThresholdEnergy&quot;</span><span class="p">)]</span>
+    <span class="n">gain_menu</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">PilatusGain</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;GainMenu&quot;</span><span class="p">)]</span>
+    <span class="n">threshold_auto_apply</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ThresholdAutoApply&quot;</span><span class="p">)]</span>
+    <span class="n">threshold_apply</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ThresholdApply&quot;</span><span class="p">)]</span></div>
 
 
 
@@ -984,6 +1005,20 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">driver</span><span class="p">:</span> <span class="n">PilatusDriverIO</span>
     <span class="n">readout_time</span><span class="p">:</span> <span class="n">PilatusReadoutTime</span>
+    <span class="n">edge_trigger_mode</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate `edge_trigger_mode` is a trigger-capable mode.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_trigger_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">,</span>
+            <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">MULT_TRIGGER</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;edge_trigger_mode must be PilatusTriggerMode.EXT_TRIGGER or &quot;</span>
+                <span class="s2">&quot;PilatusTriggerMode.MULT_TRIGGER&quot;</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="PilatusTriggerLogic.get_deadtime">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.get_deadtime">[docs]</a>
@@ -1001,7 +1036,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="PilatusTriggerLogic.prepare_edge">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_edge">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_trigger_mode</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span> <span class="ow">or</span> <span class="n">_MAX_NUM_IMAGE</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span></div>
 
 
@@ -1028,6 +1063,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
 <span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
 <span class="sd">    :param readout_time: Readout time for the specific Pilatus model</span>
+<span class="sd">    :param edge_trigger_mode: Trigger mode the driver is set to for external</span>
+<span class="sd">        edge-triggered acquisitions. Defaults to `PilatusTriggerMode.EXT_TRIGGER`</span>
+<span class="sd">        (one trigger starts a burst of `num` images); set to</span>
+<span class="sd">        `PilatusTriggerMode.MULT_TRIGGER` for one image per trigger pulse.</span>
 <span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to &quot;cam1:&quot;</span>
 <span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
@@ -1039,6 +1078,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
         <span class="n">readout_time</span><span class="p">:</span> <span class="n">PilatusReadoutTime</span> <span class="o">=</span> <span class="n">PilatusReadoutTime</span><span class="o">.</span><span class="n">PILATUS3</span><span class="p">,</span>
+        <span class="n">edge_trigger_mode</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span> <span class="o">=</span> <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">,</span>
         <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
@@ -1050,7 +1090,9 @@ window.runMermaid = runMermaid;</script>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">driver_armed_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">armed</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">PilatusTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">readout_time</span><span class="p">),</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">PilatusTriggerLogic</span><span class="p">(</span>
+                <span class="n">driver</span><span class="p">,</span> <span class="n">readout_time</span><span class="p">,</span> <span class="n">edge_trigger_mode</span><span class="o">=</span><span class="n">edge_trigger_mode</span>
+            <span class="p">),</span>
             <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>

@@ -23,6 +23,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO
     :summary:
     ```
+* - {py:obj}`PilatusGain <ophyd_async.epics.adpilatus.PilatusGain>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain
+    :summary:
+    ```
 * - {py:obj}`PilatusTriggerLogic <ophyd_async.epics.adpilatus.PilatusTriggerLogic>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic
     :summary:
@@ -39,7 +43,7 @@
 
 ### API
 
-````{py:class} PilatusDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, readout_time: ~ophyd_async.epics.adpilatus.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, driver_suffix='cam1:', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} PilatusDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, readout_time: ~ophyd_async.epics.adpilatus.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, edge_trigger_mode: ~ophyd_async.epics.adpilatus.PilatusTriggerMode = PilatusTriggerMode.EXT_TRIGGER, driver_suffix='cam1:', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adpilatus.PilatusDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus.PilatusDriverIO`\]
@@ -79,6 +83,122 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ````
 
+````{py:attribute} header_string
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.header_string
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('HeaderString')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.header_string
+```
+
+````
+
+````{py:attribute} energy
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.energy
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('Energy')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.energy
+```
+
+````
+
+````{py:attribute} threshold_energy
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_energy
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('ThresholdEnergy')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_energy
+```
+
+````
+
+````{py:attribute} gain_menu
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.gain_menu
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adpilatus.PilatusGain], PvSuffix('GainMenu')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.gain_menu
+```
+
+````
+
+````{py:attribute} threshold_auto_apply
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_auto_apply
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ThresholdAutoApply')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_auto_apply
+```
+
+````
+
+````{py:attribute} threshold_apply
+:canonical: ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_apply
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('ThresholdApply')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusDriverIO.threshold_apply
+```
+
+````
+
+`````
+
+`````{py:class} PilatusGain()
+:canonical: ophyd_async.epics.adpilatus.PilatusGain
+
+Bases: {py:obj}`ophyd_async.core.SupersetEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain
+```
+
+````{py:attribute} FAST_LOW
+:canonical: ophyd_async.epics.adpilatus.PilatusGain.FAST_LOW
+:value: >
+   '7-30KeV/Fast/LowG'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain.FAST_LOW
+```
+
+````
+
+````{py:attribute} MEDIUM_MEDIUM
+:canonical: ophyd_async.epics.adpilatus.PilatusGain.MEDIUM_MEDIUM
+:value: >
+   '5-18KeV/Med/MedG'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain.MEDIUM_MEDIUM
+```
+
+````
+
+````{py:attribute} SLOW_HIGH
+:canonical: ophyd_async.epics.adpilatus.PilatusGain.SLOW_HIGH
+:value: >
+   '3-6KeV/Slow/HighG'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain.SLOW_HIGH
+```
+
+````
+
+````{py:attribute} SLOW_ULTRAHIGH
+:canonical: ophyd_async.epics.adpilatus.PilatusGain.SLOW_ULTRAHIGH
+:value: >
+   '2-5KeV/Slow/UltraG'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusGain.SLOW_ULTRAHIGH
+```
+
+````
+
 `````
 
 `````{py:class} PilatusTriggerLogic
@@ -107,6 +227,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.readout_time
+```
+
+````
+
+````{py:attribute} edge_trigger_mode
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.edge_trigger_mode
+:type: ~ophyd_async.epics.adpilatus.PilatusTriggerMode
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.edge_trigger_mode
 ```
 
 ````
