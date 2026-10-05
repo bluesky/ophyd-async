@@ -40,8 +40,9 @@ from ._device import (
     DeviceMock,
     DeviceProcessor,
     DeviceVector,
-    LazyMock,
+    connect_devices,
     default_mock_class,
+    get_default_mock_class,
     init_devices,
 )
 from ._device_filler import DeviceAnnotation, DeviceFiller
@@ -168,6 +169,7 @@ def __getattr__(name):
 
     renames = {
         "NotConnected": NotConnectedError,
+        "LazyMock": DeviceMock,
     }
     rename = renames.get(name)
     if rename is not None:
@@ -190,6 +192,7 @@ __all__ = [
     "DeviceMap",
     "DeviceVector",
     "DeviceProcessor",
+    "connect_devices",
     "init_devices",
     # Movable
     "MovableLogic",
@@ -235,9 +238,9 @@ __all__ = [
     "soft_signal_rw",
     # Mock signal
     "DeviceMock",
-    "LazyMock",
     "MockSignalBackend",
     "default_mock_class",
+    "get_default_mock_class",
     # Mocking utilities
     "get_mock",
     "set_mock_attr",

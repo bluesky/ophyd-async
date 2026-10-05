@@ -12,8 +12,8 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    DeviceMock,
     DeviceVector,
-    LazyMock,
     NotConnectedError,
     Signal,
 )
@@ -132,7 +132,7 @@ class TangoDeviceConnector(DeviceConnector):
 
             self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: DeviceMock):
         if isinstance(device, DeviceVector):
             # Make 2 entries for this DeviceVector
             self.filler.create_device_dict_entries_to_mock([1, 2])

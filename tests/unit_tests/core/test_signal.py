@@ -17,12 +17,14 @@ from ophyd_async.core import (
     Array1D,
     AsyncReadable,
     Device,
+    DeviceMock,
     SignalR,
     SignalRW,
     SoftSignalBackend,
     StandardReadable,
     StrictEnum,
     callback_on_mock_put,
+    default_mock_class,
     init_devices,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
@@ -1329,3 +1331,49 @@ async def test_soft_signal_r_and_setter_with_poll_period():
 async def test_soft_signal_r_and_setter_poll_period_without_getter_raises():
     with pytest.raises(ValueError, match="poll_period requires a getter"):
         soft_signal_r_and_setter(float, poll_period=0.1)
+
+
+@pytest.mark.parametrize(
+    "make_signal",
+    [
+        lambda: epics_signal_rw(float, "PV:X"),
+        lambda: soft_signal_rw(float),
+    ],
+    ids=["epics", "soft"],
+)
+async def test_mock_reconnect_allows_new_subscriptions_and_cached_reads(make_signal):
+    sig = make_signal()
+    await sig.connect(mock=True)
+    sig.subscribe_reading(lambda r: None)
+    await sig.connect(mock=True)
+    seen: list[float] = []
+    sig.subscribe_reading(lambda r: seen.append(r[sig.name]["value"]))
+    set_mock_value(sig, 42.0)
+    await asyncio.sleep(0)
+    assert seen[-1] == 42.0
+    assert await sig.get_value(cached=True) == 42.0
+
+
+class _SubscribingMock(DeviceMock["_SubscribingDevice"]):
+    async def connect(self, device: "_SubscribingDevice") -> None:
+        device.sig.subscribe_reading(
+            lambda r: device.seen.append(r[device.sig.name]["value"])
+        )
+
+
+@default_mock_class(_SubscribingMock)
+class _SubscribingDevice(Device):
+    def __init__(self, name=""):
+        self.seen: list[float] = []
+        self.sig = epics_signal_rw(float, "PV:Y")
+        super().__init__(name)
+
+
+async def test_repeated_mock_connects_leave_one_live_subscription():
+    dev = _SubscribingDevice()
+    for _ in range(3):
+        await dev.connect(mock=True)
+    dev.seen.clear()
+    set_mock_value(dev.sig, 5.0)
+    await asyncio.sleep(0)
+    assert dev.seen == [5.0]
