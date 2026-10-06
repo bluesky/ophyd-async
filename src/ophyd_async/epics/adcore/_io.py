@@ -443,6 +443,7 @@ class NDFileIO(NDArrayBaseIO):
     array_size0: A[SignalR[int], PvSuffix("ArraySize0")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1")]
     create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
+    lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
 
 NDPluginFileIOT = TypeVar("NDPluginFileIOT", bound="NDPluginFileIO")
@@ -486,7 +487,6 @@ class NDFileHDF5IO(NDPluginFileIO):
     xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
     num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
     chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
-    lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
     # Compression options
     s_zip_num_pixels: A[SignalRW[int], PvSuffix.rbv("SZipNumPixels")]

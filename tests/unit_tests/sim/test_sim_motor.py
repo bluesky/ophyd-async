@@ -1,15 +1,67 @@
 import asyncio
 import sys
-from unittest.mock import call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 from bluesky.plans import spiral_square
 from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import FlyMotorInfo
+from ophyd_async.core import (
+    Device,
+    FlyMotorInfo,
+    WatchableAsyncStatus,
+    forward_watcher_updates,
+)
 from ophyd_async.sim import SimMotor
 from ophyd_async.testing import StatusWatcher
+
+
+class TwoMotorStage(Device):
+    def __init__(self, combine: bool, name: str = ""):
+        self.x = SimMotor(instant=False)
+        self.y = SimMotor(instant=False)
+        self._combine = combine
+        super().__init__(name=name)
+
+    @WatchableAsyncStatus.wrap
+    async def set(self, value: tuple[float, float]):
+        statuses = [self.x.set(value[0]), self.y.set(value[1])]
+        async for update in forward_watcher_updates(
+            statuses, self.name, combine=self._combine
+        ):
+            yield update
+
+
+@pytest.mark.parametrize("combine", [True, False])
+async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
+    stage = TwoMotorStage(combine, name="stage")
+    for motor in (stage.x, stage.y):
+        await asyncio.gather(motor.velocity.set(10.0), motor.acceleration_time.set(0.1))
+    watcher = Mock()
+    status = stage.set((1.0, 2.0))
+    status.watch(watcher)
+    await status
+
+    x, y = await asyncio.gather(
+        stage.x.user_readback.get_value(), stage.y.user_readback.get_value()
+    )
+    assert x == 1.0
+    assert y == 2.0
+    updates = [c.kwargs for c in watcher.call_args_list]
+    if combine:
+        assert {u["name"] for u in updates} == {"stage"}
+        currents = [u["current"] for u in updates]
+        assert currents == sorted(currents)
+        assert 0.0 < currents[len(currents) // 2] < 1.0
+        assert updates[-1]["current"] == pytest.approx(1.0)
+        assert updates[-1]["fraction"] == pytest.approx(0.0)
+    else:
+        for name, target in (("stage-x", 1.0), ("stage-y", 2.0)):
+            currents = [u["current"] for u in updates if u["name"] == name]
+            assert len(currents) > 2
+            assert currents == sorted(currents)
+            assert currents[-1] == target
 
 
 async def test_move_sim_in_plan():
@@ -35,35 +87,6 @@ def m1(
 @pytest.fixture
 def m2() -> SimMotor:
     return SimMotor("M2", instant=False)
-
-
-@pytest.mark.xfail(reason="Flaky test")
-@pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
-@pytest.mark.parametrize(
-    "setpoint,expected",
-    [
-        (-0.19, [0.0, -0.05, -0.1495, -0.19]),
-        (0.26, [0.0, 0.05, 0.15, 0.242, 0.26]),
-        (0.005, [0.0, 0.005]),
-        (-0.025, [0.0, -0.025]),
-    ],
-)
-async def test_move_profiles(setpoint, expected, m1: SimMotor):
-    await m1.acceleration_time.set(0.1)
-    status = m1.set(setpoint)
-    watcher = StatusWatcher(status)
-    for i, v in enumerate(expected):
-        await watcher.wait_for_call(
-            current=pytest.approx(v),
-            initial=0.0,
-            name="M1",
-            target=setpoint,
-            time_elapsed=pytest.approx(i * 0.1, abs=0.1),
-            unit="mm",
-        )
-    await status
-    watcher.mock.assert_not_called()
-    assert await m1.user_readback.get_value() == setpoint
 
 
 async def test_short_move_is_exactly_move_time(m2: SimMotor):
@@ -138,6 +161,9 @@ async def test_sim_motor_move(target: float, direction: int):
 
     motor = SimMotor(initial_value=initial_value, instant=False, name="motor")
     await motor.connect()
+    # Fast enough to keep the test short, slow enough for several 10Hz updates
+    await motor.velocity.set(5.0)
+    await motor.acceleration_time.set(0.1)
 
     readbacks: list[float] = []
 

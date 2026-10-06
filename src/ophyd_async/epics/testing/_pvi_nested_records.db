@@ -33,8 +33,8 @@
 # at ":PULSE:1:PVI", which is where "PULSE:1:DELAY"/"STEP"/etc actually
 # live.
 #
-# optional_signal has no db content at all here: its absence from the
-# served tree is the entire point (see
+# optional_signal, optional_command and optional_device have no db content
+# at all here: their absence from the served tree is the entire point (see
 # test_device_create_device_with_optional_signals in
 # tests/unit_tests/epics/pvi/test_pvi.py for the mocked equivalent).
 

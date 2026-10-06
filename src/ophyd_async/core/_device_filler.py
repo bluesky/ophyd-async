@@ -207,7 +207,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             args = get_args(annotation)
 
             if (
-                cached_get_origin(annotation) is Union
+                cached_get_origin(annotation) in (Union, types.UnionType)
                 and types.NoneType in args
                 and len(args) == 2
             ):
@@ -429,7 +429,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         :param source: The source of the data that should have done the filling, for
                        reporting as an error message
         """
-        unfilled = set(self._unfilled_connectors).union(self._unfilled_backends)
+        unfilled = (
+            set(self._unfilled_connectors)
+            .union(self._unfilled_backends)
+            .union(self._unfilled_command_backends)
+        )
         unfilled_optional = sorted(unfilled.intersection(self._optional_devices))
 
         for name in unfilled_optional:

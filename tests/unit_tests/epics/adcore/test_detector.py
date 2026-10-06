@@ -8,6 +8,53 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adcore
 
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        adcore.ADWriterFactory.hdf,
+        adcore.ADWriterFactory.jpeg,
+        adcore.ADWriterFactory.tiff,
+    ],
+)
+@pytest.mark.parametrize("hinted", [True, False])
+def test_writer_image_hints(static_path_provider: StaticPathProvider, factory, hinted):
+    driver = adcore.ADBaseIO("PREFIX:DRV:")
+    stats = adcore.NDStatsIO("PREFIX:STAT:")
+    det = adcore.AreaDetector(
+        driver,
+        "PREFIX:",
+        factory(static_path_provider, datakey_suffix="-image", hinted=hinted),
+        plugins={"stats": stats},
+        name="det",
+    )
+    assert det.hints == {"fields": ["det-image"] if hinted else []}
+    det.add_detector_logics(adcore.PluginSignalDataLogic(driver, stats.total))
+    assert det.hints == {
+        "fields": (["det-image"] if hinted else []) + ["det-stats-total"]
+    }
+
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        adcore.ADWriterFactory.hdf,
+        adcore.ADWriterFactory.jpeg,
+        adcore.ADWriterFactory.tiff,
+    ],
+)
+def test_writer_image_hints_enabled_by_default(
+    static_path_provider: StaticPathProvider, factory
+):
+    det = adcore.AreaDetector(
+        adcore.ADBaseIO("PREFIX:DRV:"),
+        "PREFIX:",
+        factory(static_path_provider),
+        name="det",
+    )
+    assert det.hints == {"fields": ["det"]}
+
+
 # ---------------------------------------------------------------------------
 # AreaDetector.__init__ guards
 # ---------------------------------------------------------------------------

@@ -48,6 +48,8 @@ class EpicsTestPviNestedDevice(EpicsDevice):
     signal_vector: DeviceVector[SignalRW[float]]
     command_vector: DeviceVector[TriggerableCommand]
     optional_signal: SignalRW[int] | None
+    optional_command: TriggerableCommand | None
+    optional_device: EpicsTestPviLeafDevice | None
 
 
 class EpicsTestPviMapDevice(EpicsDevice):

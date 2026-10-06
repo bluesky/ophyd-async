@@ -86,6 +86,8 @@ from ._path_providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+    generate_directory_uri,
+    normalize_path,
 )
 from ._protocol import (
     AsyncConfigurable,
@@ -133,7 +135,12 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._status import (
+    AsyncStatus,
+    WatchableAsyncStatus,
+    completed_status,
+    forward_watcher_updates,
+)
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -155,6 +162,7 @@ from ._utils import (
     get_unique,
     in_micros,
     non_zero,
+    simulate_move,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -207,6 +215,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "WatcherUpdate",
     "completed_status",
+    "forward_watcher_updates",
     # Signal
     "Signal",
     "SignalR",
@@ -317,6 +326,7 @@ __all__ = [
     "wait_for_connection",
     "Ignore",
     "non_zero",
+    "simulate_move",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
@@ -343,4 +353,6 @@ __all__ = [
     "SoftCommandBackend",
     "soft_command",
     "TriggerableCommand",
+    "generate_directory_uri",
+    "normalize_path",
 ]
