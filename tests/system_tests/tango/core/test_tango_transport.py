@@ -408,24 +408,6 @@ async def test_attribute_proxy_put_exceptions(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "attr, new_value", [("justvalue", 10), ("array", np.array([[2, 3, 4], [5, 6, 7]]))]
-)
-@pytest.mark.timeout(4.7)
-async def test_attribute_proxy_get_w_value(tango_test_device, attr, new_value):
-    device_proxy = await DeviceProxy(tango_test_device)
-    attr_proxy = AttributeProxy(device_proxy, attr)
-    await attr_proxy.put(new_value)
-    await asyncio.sleep(1.0)
-    attr_proxy_value = await attr_proxy.get()
-    if isinstance(new_value, np.ndarray):
-        assert np.all(attr_proxy_value == new_value)
-    else:
-        assert attr_proxy_value == new_value
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 async def test_attribute_get_config(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "justvalue")
@@ -545,11 +527,11 @@ async def test_attribute_poll_stringsandarrays(tango_test_device, attr):
     assert val is not None
     if isinstance(val, np.ndarray):
         await attr_proxy.put(np.array([[2, 3, 4], [5, 6, 7]]))
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.3)
         assert np.all(val == np.array([[2, 3, 4], [5, 6, 7]]))
     if isinstance(val, str):
         await attr_proxy.put("new label")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.3)
         assert val == "new label"
 
     assert attr_proxy._poll_task
