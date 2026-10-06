@@ -2107,6 +2107,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
+````{py:attribute} hinted
+:canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.hinted
+:type: bool
+:value: >
+   True
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.hinted
+```
+
+````
+
 ````{py:method} prepare_unbounded(datakey_name: str) -> ~ophyd_async.core.StreamableDataProvider
 :canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.prepare_unbounded
 :async:
@@ -2204,6 +2215,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 :value: <Multiline-String>
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.datakey_suffix
+```
+
+````
+
+````{py:attribute} hinted
+:canonical: ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.hinted
+:type: bool
+:value: >
+   True
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.hinted
 ```
 
 ````
@@ -2310,7 +2332,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.NDPluginF
 
 ````
 
-````{py:method} hdf(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'HDF1:', writer_name: str = 'hdf', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDFileHDF5IO]
+````{py:method} hdf(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'HDF1:', writer_name: str = 'hdf', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None, hinted: bool = True) -> ADWriterFactory[NDFileHDF5IO]
 :canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.hdf
 :staticmethod:
 
@@ -2319,7 +2341,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.NDPluginF
 
 ````
 
-````{py:method} jpeg(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'JPEG1:', writer_name: str = 'jpeg', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDPluginFileIO]
+````{py:method} jpeg(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'JPEG1:', writer_name: str = 'jpeg', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None, hinted: bool = True) -> ADWriterFactory[NDPluginFileIO]
 :canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.jpeg
 :staticmethod:
 
@@ -2328,7 +2350,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.NDPluginF
 
 ````
 
-````{py:method} tiff(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'TIFF1:', writer_name: str = 'tiff', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDPluginFileIO]
+````{py:method} tiff(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'TIFF1:', writer_name: str = 'tiff', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None, hinted: bool = True) -> ADWriterFactory[NDPluginFileIO]
 :canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.tiff
 :staticmethod:
 
