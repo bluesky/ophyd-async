@@ -321,7 +321,7 @@ async def test_status_of_set_and_wait_for_value():
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
     async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.1)
         await match_signal.set(value / 2)
         await asyncio.sleep(0.001)
 
@@ -334,11 +334,11 @@ async def test_status_of_set_and_wait_for_value():
     assert status.done
 
     with pytest.raises(asyncio.TimeoutError):
-        status = await set_and_wait_for_value(set_signal, 4, timeout=0.1)
+        status = await set_and_wait_for_value(set_signal, 4, timeout=0.03)
 
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_value(
-            set_signal, 8, timeout=0.1, wait_for_set_completion=False
+            set_signal, 8, timeout=0.03, wait_for_set_completion=False
         )
 
     status = await set_and_wait_for_other_value(set_signal, 32, match_signal, 16)
@@ -352,7 +352,7 @@ async def test_status_of_set_and_wait_for_value():
 
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, -1, timeout=0.5
+            set_signal, 30, match_signal, -1, timeout=0.2
         )
 
     # The timeouts above each leave their set running; a starved loop is what
@@ -372,7 +372,7 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
     put_finished = asyncio.Event()
 
     async def set_slower_than_the_match_timeout(value: Any, **kwargs):
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.15)
         put_finished.set()
 
     await set_signal.connect(mock=True)
@@ -382,7 +382,7 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
 
     with pytest.raises(asyncio.TimeoutError):
         await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, -1, timeout=0.1
+            set_signal, 30, match_signal, -1, timeout=0.03
         )
 
     # The set is still in flight, and completes on its own afterwards rather
@@ -398,7 +398,7 @@ async def test_callable_match_value_set_and_wait_for_value():
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
     async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.1)
         await match_signal.set(value / 2)
 
     await set_signal.connect(mock=True)
@@ -420,7 +420,7 @@ async def test_callable_match_value_set_and_wait_for_value():
 
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.5
+            set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.2
         )
 
 
@@ -512,14 +512,14 @@ async def test_wait_for_value_with_value():
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, "something else", timeout=2))
     )
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.05)
     assert not t.done()
     set_mock_value(signal, "something else")
     # Upper bound loosened generously: after the value is set, the wait
     # should resolve quickly, but a slow/loaded runner can push this past a
     # tight bound. The lower bound still guards that the wait genuinely
-    # waited through the 0.2s sleep.
-    assert 0.1 < await t < 1.9
+    # waited through the 0.05s sleep.
+    assert 0.03 < await t < 1.9
 
 
 async def test_wait_for_value_with_function():
@@ -538,14 +538,14 @@ async def test_wait_for_value_with_function():
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, less_than_42, timeout=2))
     )
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.05)
     assert not t.done()
     set_mock_value(signal, 41)
     # Upper bound loosened generously: after the value is set, the wait
     # should resolve quickly, but a slow/loaded runner can push this past a
     # tight bound. The lower bound still guards that the wait genuinely
-    # waited through the 0.2s sleep.
-    assert 0.1 < await t < 1.9
+    # waited through the 0.05s sleep.
+    assert 0.03 < await t < 1.9
     # Generous upper bound: the value already matches, so this returns
     # almost immediately - the bound only guards against a hang. A tight
     # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.

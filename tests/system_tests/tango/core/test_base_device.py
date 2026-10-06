@@ -292,7 +292,7 @@ async def test_tango_sim(sim_test_context_trls):
     RE(bp.count(list(detector.channel.values())))
 
     set_status = motor.set(1.0)
-    await asyncio.sleep(1.0)
+    await asyncio.sleep(0.5)
 
     await motor.stop(success=True)
     await set_status

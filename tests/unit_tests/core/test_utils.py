@@ -443,7 +443,7 @@ async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
     )
     if set_to_delay:
         with pytest.raises(asyncio.TimeoutError) as exc_info:
-            await asyncio.wait_for(gather_awaitable, timeout=0.3)
+            await asyncio.wait_for(gather_awaitable, timeout=0.1)
         cause = exc_info.value.__cause__
         assert isinstance(cause, CancelledError)
         assert _contains_message(cause, expected_message)
