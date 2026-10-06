@@ -171,6 +171,7 @@ class ADHDFDataLogic(DetectorDataLogic):
     :param driver: The AreaDetector driver instance to extract NDAttributes from.
     :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.
     :param datakey_suffix: Suffix to append to the data key for the main dataset
+    :param hinted: Include the image in hints. Set False for BestEffortCallback.
     """
 
     array_description: NDArrayDescription
@@ -179,6 +180,7 @@ class ADHDFDataLogic(DetectorDataLogic):
     driver: NDArrayBaseIO | None = None
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
+    hinted: bool = True
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
@@ -241,8 +243,7 @@ class ADHDFDataLogic(DetectorDataLogic):
         await stop_busy_record(self.writer.capture)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        # The main NDArray dataset is always hinted
-        return [datakey_name]
+        return [datakey_name] if self.hinted else []
 
 
 @dataclass
@@ -256,6 +257,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
     :param mimetype:
         Mimetype for the written files (e.g. "multipart/related;type=image/jpeg").
     :param datakey_suffix: Suffix to append to the data key for the main dataset
+    :param hinted: Include the image in hints. Set False for BestEffortCallback.
     """
 
     array_description: NDArrayDescription
@@ -264,6 +266,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
     extension: str
     mimetype: str
     datakey_suffix: str = ""
+    hinted: bool = True
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
@@ -300,8 +303,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         await stop_busy_record(self.writer.capture)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        # The main NDArray dataset is always hinted
-        return [datakey_name]
+        return [datakey_name] if self.hinted else []
 
 
 @dataclass
@@ -387,6 +389,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         array_description: NDArrayDescription
         | Callable[[ADBaseIO], NDArrayDescription]
         | None = None,
+        hinted: bool = True,
     ) -> "ADWriterFactory[NDFileHDF5IO]":
         """Create a factory for an HDF5 file writer.
 
@@ -402,6 +405,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
             Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
             when the shape/type comes from a plugin rather than the main driver
             (e.g. an ROI plugin).
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
         """
         return ADWriterFactory(
             writer_cls=NDFileHDF5IO,
@@ -416,6 +420,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
                 driver=driver,
                 plugins=list(plugins),
                 datakey_suffix=datakey_suffix,
+                hinted=hinted,
             ),
         )
 
@@ -428,6 +433,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         array_description: NDArrayDescription
         | Callable[[ADBaseIO], NDArrayDescription]
         | None = None,
+        hinted: bool = True,
     ) -> "ADWriterFactory[NDPluginFileIO]":
         """Create a factory for a JPEG file writer.
 
@@ -442,6 +448,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
             Override the array shape/type description built from the driver.
             Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
             when the shape/type comes from a plugin.
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
         """
         return ADWriterFactory(
             writer_cls=NDPluginFileIO,
@@ -457,6 +464,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
                     extension=".jpg",
                     mimetype="multipart/related;type=image/jpeg",
                     datakey_suffix=datakey_suffix,
+                    hinted=hinted,
                 )
             ),
         )
@@ -470,6 +478,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
         array_description: NDArrayDescription
         | Callable[[ADBaseIO], NDArrayDescription]
         | None = None,
+        hinted: bool = True,
     ) -> "ADWriterFactory[NDPluginFileIO]":
         """Create a factory for a TIFF file writer.
 
@@ -484,6 +493,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
             Override the array shape/type description built from the driver.
             Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
             when the shape/type comes from a plugin.
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
         """
         return ADWriterFactory(
             writer_cls=NDPluginFileIO,
@@ -499,6 +509,7 @@ class ADWriterFactory(Generic[NDPluginFileIOT]):
                     extension=".tiff",
                     mimetype="multipart/related;type=image/tiff",
                     datakey_suffix=datakey_suffix,
+                    hinted=hinted,
                 )
             ),
         )
