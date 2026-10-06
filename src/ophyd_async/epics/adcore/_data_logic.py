@@ -269,10 +269,13 @@ class ADMultipartDataLogic(DetectorDataLogic):
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Setup the file writer
-        await prepare_file_paths(
-            path_info=path_info,
-            file_template="%s%s_%6.6d" + self.extension,
-            writer=self.writer,
+        await asyncio.gather(
+            self.writer.lazy_open.set(True),
+            prepare_file_paths(
+                path_info=path_info,
+                file_template="%s%s_%6.6d" + self.extension,
+                writer=self.writer,
+            ),
         )
         # Start capturing
         await set_and_wait_for_value(

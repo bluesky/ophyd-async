@@ -15,6 +15,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
+    SupersetEnum,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -50,7 +51,7 @@ class VimbaConvertFormat(StrictEnum):
     RGB16 = "RGB16"
 
 
-class VimbaTriggerSource(StrictEnum):
+class VimbaTriggerSource(SupersetEnum):
     """Mode for the source of triggers on the Vimba."""
 
     FREERUN = "Freerun"
@@ -69,7 +70,7 @@ class VimbaOverlap(StrictEnum):
     PREV_FRAME = "PreviousFrame"
 
 
-class VimbaExposeOutMode(StrictEnum):
+class VimbaExposeOutMode(SupersetEnum):
     """Exposure control modes for Vimba detectors."""
 
     TIMED = "Timed"  # Use ExposureTime PV

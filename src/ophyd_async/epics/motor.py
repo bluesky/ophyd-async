@@ -29,11 +29,19 @@ from ophyd_async.core import (
     default_mock_class,
     error_if_none,
     set_mock_value,
+    simulate_move,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
+__all__ = [
+    "MotorLimitsError",
+    "Motor",
+    "InstantMotorMock",
+    "VeloAndAcclRespectingMotorMock",
+    "OffsetMode",
+    "UseSetMode",
+]
 
 
 class MotorLimitsError(Exception):
@@ -259,6 +267,34 @@ class InstantMotorMock(DeviceMock["Motor"]):
             set_mock_value(device.motor_done_move, 1)  # Done
 
         callback_on_mock_put(device.user_setpoint, _instant_move)
+
+
+class VeloAndAcclRespectingMotorMock(DeviceMock["Motor"]):
+    """Mock behaviour that respects motor velocity and acceleration time."""
+
+    async def connect(self, device: Motor) -> None:
+        """Mock signals to simulate a move respecting velocity and acceleration."""
+        set_mock_value(device.velocity, 10)
+        set_mock_value(device.max_velocity, 100)
+        set_mock_value(device.acceleration_time, 0.1)
+
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        async def _velo_and_accl_respecting_move(value):
+            current, velocity, acceleration_time = await asyncio.gather(
+                device.user_readback.get_value(),
+                device.velocity.get_value(),
+                device.acceleration_time.get_value(),
+            )
+            set_mock_value(device.motor_done_move, 0)
+            async for position in simulate_move(
+                current, value, velocity, acceleration_time
+            ):
+                set_mock_value(device.user_readback, position)
+            set_mock_value(device.motor_done_move, 1)
+
+        callback_on_mock_put(device.user_setpoint, _velo_and_accl_respecting_move)
 
 
 @default_mock_class(InstantMotorMock)

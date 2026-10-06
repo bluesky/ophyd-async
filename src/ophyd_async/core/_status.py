@@ -291,6 +291,60 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
         return wrap_f
 
 
+async def forward_watcher_updates(
+    statuses: list[WatchableAsyncStatus], name: str, combine: bool = True
+) -> AsyncIterator[WatcherUpdate]:
+    """Forward watcher updates from several watchable moves.
+
+    If ``combine`` is True, yield the mean fractional progress (0 to 1) of all
+    moves, since one status drives one progress bar and the children's positions
+    have different units and ranges. Otherwise, yield each child's update
+    unchanged, in the order they arrive.
+
+    :param statuses: List of WatchableAsyncStatus instances to forward updates from.
+    :param name: Name to assign to the combined WatcherUpdate.
+    :param combine: If True, combine the progress of all statuses into a single update.
+    """
+    updates: asyncio.Queue[tuple[int, dict[str, Any]]] = asyncio.Queue()
+    progress = [0.0] * len(statuses)
+
+    def _make_watcher(i: int) -> Watcher[Any]:
+        # Watchers are only ever called with keywords, see _update_watcher.
+        def watcher(*_: Any, **kw: Any) -> None:
+            updates.put_nowait((i, kw))
+
+        return watcher
+
+    for i, status in enumerate(statuses):
+        status.watch(_make_watcher(i))
+
+    all_done = asyncio.ensure_future(asyncio.gather(*statuses))
+    # Keep going after all_done until the queue is drained, else final updates are lost
+    while not all_done.done() or not updates.empty():
+        if updates.empty():
+            getter = asyncio.ensure_future(updates.get())
+            await asyncio.wait({getter, all_done}, return_when=asyncio.FIRST_COMPLETED)
+            if not getter.done():
+                getter.cancel()
+                continue
+            i, kw = getter.result()
+        else:
+            i, kw = updates.get_nowait()
+        if not combine:
+            yield WatcherUpdate(**kw)
+            continue
+        span = abs(kw["target"] - kw["initial"])
+        progress[i] = (
+            1.0 if span == 0 else min(abs(kw["current"] - kw["initial"]) / span, 1.0)
+        )
+        mean = sum(progress) / len(progress)
+        yield WatcherUpdate(
+            current=mean, initial=0.0, target=1.0, name=name, fraction=1.0 - mean
+        )
+    # Propagate any child failure.
+    await all_done
+
+
 @AsyncStatus.wrap
 async def completed_status(exception: Exception | None = None):
     """Return a completed AsyncStatus.

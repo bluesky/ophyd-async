@@ -32,6 +32,27 @@ async def test_adpilatus(
 def test_pvs_correct(test_adpilatus: adpilatus.PilatusDetector):
     assert test_adpilatus.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert test_adpilatus.driver.armed.source == "mock+ca://PREFIX:cam1:Armed"
+    assert (
+        test_adpilatus.driver.header_string.source
+        == "mock+ca://PREFIX:cam1:HeaderString"
+    )
+    assert test_adpilatus.driver.energy.source == "mock+ca://PREFIX:cam1:Energy_RBV"
+    assert (
+        test_adpilatus.driver.threshold_energy.source
+        == "mock+ca://PREFIX:cam1:ThresholdEnergy_RBV"
+    )
+    assert test_adpilatus.driver.gain_menu.source == "mock+ca://PREFIX:cam1:GainMenu"
+    assert (
+        test_adpilatus.driver.threshold_auto_apply.source
+        == "mock+ca://PREFIX:cam1:ThresholdAutoApply_RBV"
+    )
+
+
+async def test_threshold_apply_triggers_command(
+    test_adpilatus: adpilatus.PilatusDetector,
+):
+    await test_adpilatus.driver.threshold_apply.trigger()
+    assert_has_calls(test_adpilatus.driver, [call.threshold_apply.execute()])
 
 
 @pytest.mark.parametrize(
@@ -86,6 +107,63 @@ async def test_prepare_external_edge(
             call.acquire.put(True),
         ],
     )
+
+
+async def test_prepare_external_edge_with_mult_trigger_mode(
+    static_path_provider: StaticPathProvider,
+):
+    async with init_devices(mock=True):
+        detector = adpilatus.PilatusDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider),
+            edge_trigger_mode=adpilatus.PilatusTriggerMode.MULT_TRIGGER,
+        )
+    set_mock_value(detector.driver.armed, True)
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    await detector.prepare(
+        TriggerInfo(
+            trigger=DetectorTrigger.EXTERNAL_EDGE,
+            number_of_events=5,
+            livetime=0.5,
+        )
+    )
+    assert_has_calls(
+        detector.driver,
+        [
+            call.trigger_mode.put(adpilatus.PilatusTriggerMode.MULT_TRIGGER),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(5),
+            call.acquire_time.put(0.5),
+            call.acquire.put(True),
+        ],
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_mode",
+    [
+        adpilatus.PilatusTriggerMode.INTERNAL,
+        adpilatus.PilatusTriggerMode.EXT_ENABLE,
+        adpilatus.PilatusTriggerMode.ALIGNMENT,
+    ],
+)
+def test_edge_trigger_mode_rejects_non_edge_modes(
+    invalid_mode: adpilatus.PilatusTriggerMode, tmp_path
+):
+    path_provider = StaticPathProvider(StaticFilenameProvider("data"), tmp_path)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "edge_trigger_mode must be PilatusTriggerMode.EXT_TRIGGER or "
+            "PilatusTriggerMode.MULT_TRIGGER"
+        ),
+    ):
+        adpilatus.PilatusDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(path_provider),
+            edge_trigger_mode=invalid_mode,
+        )
 
 
 async def test_prepare_external_level(
