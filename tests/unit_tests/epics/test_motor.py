@@ -20,6 +20,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import (
     Motor,
+    MotorAlarmError,
     MotorLimitsError,
     VeloAndAcclRespectingMotorMock,
 )
@@ -85,6 +86,26 @@ async def test_motor_moving_well(motor: Motor) -> None:
     set_mock_put_proceeds(motor.user_setpoint, True)
     await wait_for_pending_wakeups()
     assert s.done
+
+
+@pytest.mark.parametrize(
+    "severity, expected_error",
+    [
+        (0, None),
+        (1, "severity 1"),
+        (2, "severity 2"),
+        (-1, "severity -1"),
+    ],
+)
+async def test_motor_move_checks_readback_alarm(
+    motor: Motor, severity: int, expected_error: str | None
+):
+    set_mock_value(motor.user_readback, 0.55, alarm_severity=severity)
+    if expected_error is None:
+        await motor.set(0.55)
+    else:
+        with pytest.raises(MotorAlarmError, match=expected_error):
+            await motor.set(0.55)
 
 
 async def test_motor_move_timeout(motor: Motor):
