@@ -1,6 +1,8 @@
+import asyncio
+import inspect
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
-from typing import TypeVar
+from typing import Any, TypeVar
 from unittest.mock import AsyncMock, Mock
 
 from ._command import Command, CommandConnector, MockCommandBackend, MockExecuteCallback
@@ -150,17 +152,61 @@ def set_mock_values(
     )
 
 
-@contextmanager
-def _unset_side_effect_cm(backend: MockSignalBackend):
-    yield
-    backend.set_mock_put_callback(None)
+class MockPutHandle:
+    """The callback set by `callback_on_mock_put`, which can cancel running puts.
+
+    Use it as a context manager to unset the callback on exit.
+    """
+
+    def __init__(self, backend: MockSignalBackend, callback: MockPutCallback):
+        self._backend = backend
+        self._callback = callback
+        self._running: set[asyncio.Future] = set()
+        self._cancelled: set[asyncio.Future] = set()
+        backend.set_mock_put_callback(self._call)
+
+    async def _call(self, value: Any) -> Any:
+        result = self._callback(value)
+        if not inspect.isawaitable(result):
+            return result
+        running = asyncio.ensure_future(result)
+        self._running.add(running)
+        try:
+            return await running
+        except asyncio.CancelledError:
+            # Only swallow a cancel that came from cancel()
+            if running in self._cancelled:
+                return None
+            raise
+        finally:
+            self._running.discard(running)
+            self._cancelled.discard(running)
+
+    def cancel(self):
+        """Cancel the async callbacks that are still running.
+
+        Each put they belong to completes without error, as if its callback had
+        returned None. This mimics a stop PV ending a put callback in progress.
+        """
+        for running in self._running:
+            self._cancelled.add(running)
+            running.cancel()
+
+    def __enter__(self) -> "MockPutHandle":
+        return self
+
+    def __exit__(self, *exc_info):
+        self._backend.set_mock_put_callback(None)
 
 
-def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallback):
+def callback_on_mock_put(
+    signal: Signal[SignalDatatypeT], callback: MockPutCallback
+) -> MockPutHandle:
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being unset on exit, or
-    as an ordinary function.
+    as an ordinary function. Either way it returns a `MockPutHandle` whose
+    `cancel()` interrupts a running async callback, completing its put.
 
     The value that the callback returns (if not None) will be set to the signal
     readback. If None is returned then the readback will be set to the setpoint.
@@ -189,9 +235,7 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
         await motor.setpoint.set(10.0)
     ```
     """
-    backend = _get_mock_signal_backend(signal)
-    backend.set_mock_put_callback(callback)
-    return _unset_side_effect_cm(backend)
+    return MockPutHandle(_get_mock_signal_backend(signal), callback)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):

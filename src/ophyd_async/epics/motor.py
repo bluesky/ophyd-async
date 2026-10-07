@@ -281,20 +281,25 @@ class VeloAndAcclRespectingMotorMock(DeviceMock["Motor"]):
         # Motor starts in "done" state (not moving)
         set_mock_value(device.motor_done_move, 1)
 
-        async def _velo_and_accl_respecting_move(value):
+        async def _move(value: float) -> None:
             current, velocity, acceleration_time = await asyncio.gather(
                 device.user_readback.get_value(),
                 device.velocity.get_value(),
                 device.acceleration_time.get_value(),
             )
             set_mock_value(device.motor_done_move, 0)
-            async for position in simulate_move(
-                current, value, velocity, acceleration_time
-            ):
-                set_mock_value(device.user_readback, position)
-            set_mock_value(device.motor_done_move, 1)
+            try:
+                async for position in simulate_move(
+                    current, value, velocity, acceleration_time
+                ):
+                    set_mock_value(device.user_readback, position)
+            finally:
+                # Done however the move ended; readback stays where it reached
+                set_mock_value(device.motor_done_move, 1)
 
-        callback_on_mock_put(device.user_setpoint, _velo_and_accl_respecting_move)
+        # STOP ends the move, but the put to the setpoint completes normally
+        moves = callback_on_mock_put(device.user_setpoint, _move)
+        callback_on_mock_put(device.motor_stop, lambda _: moves.cancel())
 
 
 @default_mock_class(InstantMotorMock)

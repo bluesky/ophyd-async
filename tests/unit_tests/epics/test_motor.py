@@ -17,6 +17,7 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_units,
     set_mock_value,
+    wait_for_value,
 )
 from ophyd_async.epics.motor import (
     Motor,
@@ -588,3 +589,37 @@ async def test_velo_and_accl_respecting_motor_mock_behavior(
     assert status.success
     assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
     assert asyncio.get_event_loop().time() - start == pytest.approx(0.35, abs=0.1)
+
+
+@pytest.mark.parametrize(
+    "interrupt, expected_error",
+    [
+        # RunEngine path: Motor.stop() puts to STOP, then cancels the set() status
+        ("motor_stop", RuntimeError),
+        # Someone else writes to STOP; the motor record finishes the move normally
+        ("stop_signal", None),
+        # set() timeout cancels the simulated move without any stop
+        ("timeout", TimeoutError),
+    ],
+)
+async def test_velo_and_accl_respecting_motor_mock_interrupted_move(
+    velo_and_accl_respecting_motor: Motor, interrupt: str, expected_error
+):
+    motor = velo_and_accl_respecting_motor
+    # velocity 10 over 10 units, so the full move takes about 1.1s
+    status = motor.set(10.0, timeout=0.3 if interrupt == "timeout" else 5)
+    if interrupt == "motor_stop":
+        await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+        await motor.stop()
+    elif interrupt == "stop_signal":
+        await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+        await motor.motor_stop.set(1)
+    if expected_error:
+        with pytest.raises(expected_error):
+            await status
+    else:
+        await status
+    # DMOV is only set back to 1 when the simulated move exits, so stopping short of
+    # the target means the move ended early rather than finishing
+    assert await motor.motor_done_move.get_value() == 1
+    assert await motor.user_readback.get_value() < 10.0
