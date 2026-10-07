@@ -185,8 +185,10 @@ class MockPutHandle:
     def cancel(self):
         """Cancel the async callbacks that are still running.
 
-        Each put they belong to completes without error, as if its callback had
-        returned None. This mimics a stop PV ending a put callback in progress.
+        There is more than one if the signal was put to again before an earlier
+        put completed. Each put they belong to completes without error, as if its
+        callback had returned None. This mimics a stop PV ending a put callback in
+        progress.
         """
         for running in self._running:
             self._cancelled.add(running)
