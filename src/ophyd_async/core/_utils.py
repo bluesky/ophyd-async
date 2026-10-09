@@ -502,7 +502,10 @@ async def simulate_move(
         update_times.append(move_time)
     # Iterate through the update times, calculating new position for each
     for t in update_times:
-        if t <= ramp_time:
+        if t >= move_time:
+            # Final update, exactly at the target
+            position = new_position
+        elif t <= ramp_time:
             # Ramp up phase, calculate area under the ramp up triangle
             current_velocity = t / ramp_time * max_velocity
             position = old_position + current_velocity * t / 2
