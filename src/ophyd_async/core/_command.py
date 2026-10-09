@@ -107,7 +107,7 @@ class Command(Device, Generic[P, T]):
 
     @property
     def source(self) -> str:
-        """Returns the source of the command."""
+        """The source of the command."""
         return self._connector.backend.source(self.name)
 
     @AsyncStatus.wrap
@@ -316,7 +316,7 @@ class MockCommandBackend(CommandBackend[P, T]):
 
     @cached_property
     def execute_mock(self) -> AsyncMock:
-        """Return the mock that will track calls to the command execution."""
+        """The mock that will track calls to the command execution."""
         execute_mock = AsyncMock(name="execute", side_effect=self._make_side_effect())
         self._mock().attach_mock(execute_mock, "execute")
         return execute_mock

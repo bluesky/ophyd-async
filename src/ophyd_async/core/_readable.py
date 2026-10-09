@@ -116,38 +116,40 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
 
     @property
     def hints(self) -> Hints:
+        # fields and dimensions keys from sub devices are flattened
+        # into the hints.
+        flattened_fields = []
+        flattened_dimensions = []
+
         hints: Hints = {}
         for new_hint in self._has_hints:
-            # Merge the existing and new hints, based on the type of the value.
-            # This avoids default dict merge behavior that overrides the values;
-            # we want to combine them when they are Sequences, and ensure they are
-            # identical when string values.
+            # If a hints key in a subdevice isn't given in bluesky protocols, then it
+            # doesn't carry over to the device holding it.
             for key, value in new_hint.hints.items():
-                # fail early for unkwon types
-                if isinstance(value, str):
-                    if key in hints:
-                        if hints[key] != value:
-                            msg = f"Hints key {key} value may not be overridden"
-                            raise RuntimeError(msg)
-                    else:
-                        hints[key] = value  # type: ignore[literal-required]
-                elif isinstance(value, Sequence):
-                    if key in hints:
-                        for new_val in value:
-                            if new_val in hints[key]:
-                                msg = f"Hint {key} {new_val} overrides existing hint"
-                                raise RuntimeError(msg)
-                        hints[key] = (  # type: ignore[literal-required]
-                            hints[key] + value  # type: ignore[literal-required]
+                if key in ("fields", "dimensions"):
+                    if not isinstance(value, Sequence):
+                        raise RuntimeError(
+                            f"{new_hint.name}: '{key}' key must be a Sequence, "
+                            f"received {type(value)}"
                         )
-                    else:
-                        hints[key] = value  # type: ignore[literal-required]
-                else:
-                    msg = (
-                        f"{new_hint.name}: Unknown type for value '{value}'"
-                        f" for key '{key}'"
+                    already_parsed = (
+                        flattened_fields if key == "fields" else flattened_dimensions
                     )
-                    raise TypeError(msg)
+                    if common := [v for v in value if v in already_parsed]:
+                        raise RuntimeError(
+                            f"Hint '{key}' {list(common)} override existing hint."
+                        )
+
+                    already_parsed += list(value)
+                elif key == "gridding":
+                    if (already_set := hints.get(key, None)) and already_set != value:
+                        raise RuntimeError("Hint key 'gridding' may not be overridden.")
+                    hints["gridding"] = value  # type: ignore
+
+        if flattened_fields:
+            hints["fields"] = flattened_fields
+        if flattened_dimensions:
+            hints["dimensions"] = flattened_dimensions
 
         return hints
 
