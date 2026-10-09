@@ -56,7 +56,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore import AreaDetector
+from ophyd_async.epics.adcore import AreaDetector, NDProcessIO
 from ophyd_async.epics.adsimdetector import SimDetector
 from ophyd_async.plan_stubs import (
     apply_settings,
@@ -102,10 +102,12 @@ def adsim(RE: RunEngine, shared_tmp_path: Path) -> AreaDetector:
     prefix = "BL01T"
     provider = StaticPathProvider(StaticFilenameProvider("adsim"), shared_tmp_path)
     with init_devices():
+        process_plugin = NDProcessIO(f"{prefix}-DI-CAM-01:PROC:")
         adsim = SimDetector(
             f"{prefix}-DI-CAM-01:",
             adcore.ADWriterFactory.hdf(provider, writer_suffix="HDF5:"),
             driver_suffix="DET:",
+            plugins={"proc1": process_plugin},
         )
 
     return adsim

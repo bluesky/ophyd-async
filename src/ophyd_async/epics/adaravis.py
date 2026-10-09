@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTrigger,
     DetectorTriggerLogic,
     OnOff,
     SignalDict,
@@ -22,8 +23,9 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
+    default_trigger_info_from_detector_settings,
     prepare_exposures,
-    trigger_info_from_num_images,
 )
 from .adgenicam import get_camera_deadtime
 from .core import PvSuffix
@@ -57,6 +59,7 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
     driver: AravisDriverIO
+    process_plugin: NDProcessIO | None = None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
@@ -83,7 +86,13 @@ class AravisTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num, livetime)
 
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        trigger_mode = await self.driver.trigger_mode.get_value()
+        det_trigger = DetectorTrigger.INTERNAL
+        if trigger_mode == OnOff.ON:
+            det_trigger = DetectorTrigger.EXTERNAL_EDGE
+        return await default_trigger_info_from_detector_settings(
+            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        )
 
 
 class AravisDetector(AreaDetector[AravisDriverIO]):
@@ -105,19 +114,21 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
         prefix: str,
         *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
+        proc_suffix: str | None = None,
         override_deadtime: float | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = AravisDriverIO(prefix + driver_suffix)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=AravisTriggerLogic(driver, override_deadtime),
-            plugins=plugins,
+            trigger_logic=AravisTriggerLogic(driver, proc_plugin, override_deadtime),
+            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

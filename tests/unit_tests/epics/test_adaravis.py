@@ -23,7 +23,7 @@ async def test_adaravis(
         detector = adaravis.AravisDetector(
             "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
         )
-    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
+    writer = detector.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
@@ -97,7 +97,7 @@ async def test_trigger_uses_num_images(
 ):
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     detector = test_adaravis
-    writer = detector.get_plugin("hdf", adcore.NDFileHDF5IO)
+    writer = detector.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
     set_mock_value(detector.driver.num_images, num_images)
     await detector.stage()
     callback_on_mock_put(
