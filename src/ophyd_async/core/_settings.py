@@ -5,6 +5,7 @@ from collections.abc import Callable, Iterator, MutableMapping
 from typing import Any, Generic
 
 from ._device import Device, DeviceT
+from ._readable import ReadableFormats
 from ._signal import SignalRW
 from ._signal_backend import SignalDatatypeT
 
@@ -33,11 +34,20 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
     """
 
     def __init__(
-        self, device: DeviceT, settings: MutableMapping[SignalRW, Any] | None = None
+        self,
+        device: DeviceT,
+        settings: MutableMapping[SignalRW, Any] | None = None,
+        readable_formats: ReadableFormats | None = None,
     ):
         self.device = device
         self._settings = {}
         self.update(settings or {})
+        self.readable_formats: ReadableFormats = dict(readable_formats or {})
+        """How the Device's children contribute to its bluesky verbs.
+
+        Stored and applied alongside the signal values, as the two change on
+        the same cadence. Applied by [](#apply_settings).
+        """
 
     def __getitem__(self, key: SignalRW[SignalDatatypeT]) -> SignalDatatypeT:
         return self._settings[key]
@@ -70,10 +80,39 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
         return len(self._settings)
 
     def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings[DeviceT]:
-        """Create a new Settings that is the union of self overridden by other."""
-        if isinstance(other, Settings) and not self._is_in_device(other.device):
-            raise ValueError(f"{other.device} is not a child of {self.device}")
-        return Settings(self.device, self._settings | dict(other))
+        """Create a new Settings that is the union of self overridden by other.
+
+        Readable formats merge per (owner, child), the same granularity that
+        values merge at and that [](#apply_readable_formats) applies at, so
+        `other` only replaces the children it actually mentions.
+
+        :raises ValueError:
+            If `other` is a `Settings` for a Device outside this one, or for a
+            Device below this one while carrying readable formats -- their paths
+            would be relative to a different root.
+        """
+        formats = {
+            owner: dict(entries) for owner, entries in self.readable_formats.items()
+        }
+        if isinstance(other, Settings):
+            if other.device is not self.device:
+                if not self._is_in_device(other.device):
+                    msg = f"{other.device} is not a child of {self.device}"
+                    raise ValueError(msg)
+                if other.readable_formats:
+                    # Paths in a ReadableFormats are relative to its own device,
+                    # so <ROOT> and every dotted path would mean something
+                    # different once merged. Re-rooting them is not implemented
+                    # as nothing needs it yet; better to say so than to silently
+                    # attach them to the wrong Device.
+                    msg = (
+                        f"Cannot merge readable formats from {other.device}, whose "
+                        f"paths are relative to it rather than to {self.device}"
+                    )
+                    raise ValueError(msg)
+            for owner, entries in other.readable_formats.items():
+                formats.setdefault(owner, {}).update(entries)
+        return Settings(self.device, self._settings | dict(other), formats)
 
     def partition(
         self, predicate: Callable[[SignalRW], bool]
@@ -88,13 +127,22 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
             The first contains the signals for which the predicate returned True,
             and the second contains the signals for which the predicate returned False.
 
+        Both halves carry the *same* `readable_formats`. Formats are not a value
+        that can differ, and a device specific apply plan normally applies only
+        the halves and never the original Settings (see `apply_panda_settings`),
+        so putting them on one half would mean whichever half that plan applied
+        first silently decided whether formats were restored at all. Applying
+        them more than once is harmless: it writes to no hardware and is
+        idempotent.
+
         :example:
         ```python
         settings = Settings(device, {device.special: 1, device.sig: 2})
         specials, others = settings.partition(lambda sig: "special" in sig.name)
         ```
         """
-        where_true, where_false = Settings(self.device), Settings(self.device)
+        where_true = Settings(self.device, readable_formats=self.readable_formats)
+        where_false = Settings(self.device, readable_formats=self.readable_formats)
         for signal, value in self.items():
             dest = where_true if predicate(signal) else where_false
             dest[signal] = value
