@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev10+gf4e2cd876 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=3a530aea"></script>
+    <script src="../_static/documentation_options.js?v=ea5ebe5b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev10+gf4e2cd876 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev10+gf4e2cd876 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
   
   
 </a></div>
@@ -736,6 +736,12 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
 </pre></div>
 </div>
 <p>Either way, the value the callback returns (if not <code class="docutils literal notranslate"><span class="pre">None</span></code>) becomes the readback; returning <code class="docutils literal notranslate"><span class="pre">None</span></code> leaves the readback as the value that was put.</p>
+<p><code class="docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code> returns a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockPutHandle" title="ophyd_async.core.MockPutHandle"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MockPutHandle</span></code></a>. Its <code class="docutils literal notranslate"><span class="pre">cancel()</span></code> interrupts any async callback still running, and the put completes as if the callback had returned <code class="docutils literal notranslate"><span class="pre">None</span></code>. Use it to mimic a stop PV that ends a put callback in progress, as the motor mock does:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># STOP ends the move, but the put to the setpoint completes normally</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_move</span><span class="p">)</span>
+        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_stop</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">moves</span><span class="o">.</span><span class="n">cancel</span><span class="p">())</span>
+</pre></div>
+</div>
 <p>For a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_command" title="ophyd_async.core.soft_command"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">soft_command</span></code></a> and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute" title="ophyd_async.core.get_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a> to assert the call was made, or use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_execute" title="ophyd_async.core.callback_on_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code></a> to suppress the real function and return something else. Like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a>, it takes a sync or async callback, and its return value becomes the result of <code class="docutils literal notranslate"><span class="pre">execute()</span></code>.</p>
 <p>For hardware-backed <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a>s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured “empty” default for the declared return type (e.g. 0 for ints, [] for arrays). The same <code class="docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code> override applies.</p>
 </section>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev10+gf4e2cd876 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=3a530aea"></script>
+    <script src="../../../_static/documentation_options.js?v=ea5ebe5b"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev10+gf4e2cd876 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev10+gf4e2cd876 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
   
   
 </a></div>
@@ -1200,20 +1200,25 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Motor starts in &quot;done&quot; state (not moving)</span>
         <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_velo_and_accl_respecting_move</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_move</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">current</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
                 <span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
                 <span class="n">device</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
                 <span class="n">device</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="p">)</span>
             <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">simulate_move</span><span class="p">(</span>
-                <span class="n">current</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">acceleration_time</span>
-            <span class="p">):</span>
-                <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
-            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">async</span> <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">simulate_move</span><span class="p">(</span>
+                    <span class="n">current</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">acceleration_time</span>
+                <span class="p">):</span>
+                    <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="c1"># Done however the move ended; readback stays where it reached</span>
+                <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_velo_and_accl_respecting_move</span><span class="p">)</span></div>
+        <span class="c1"># STOP ends the move, but the put to the setpoint completes normally</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_move</span><span class="p">)</span>
+        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_stop</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">moves</span><span class="o">.</span><span class="n">cancel</span><span class="p">())</span></div>
 </div>
 
 

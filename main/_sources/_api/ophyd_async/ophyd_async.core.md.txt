@@ -155,6 +155,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend
     :summary:
     ```
+* - {py:obj}`MockPutHandle <ophyd_async.core._mock_signal_utils.MockPutHandle>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.MockPutHandle
+    :summary:
+    ```
 * - {py:obj}`SignalDict <ophyd_async.core._signal.SignalDict>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalDict
     :summary:
@@ -2160,12 +2164,28 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback)
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback) -> ~ophyd_async.core._mock_signal_utils.MockPutHandle
 :canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
 ```
 ````
+
+`````{py:class} MockPutHandle(backend: ~ophyd_async.core._mock_signal_backend.MockSignalBackend, callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback)
+:canonical: ophyd_async.core._mock_signal_utils.MockPutHandle
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.MockPutHandle
+```
+
+````{py:method} cancel()
+:canonical: ophyd_async.core._mock_signal_utils.MockPutHandle.cancel
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.MockPutHandle.cancel
+```
+
+````
+
+`````
 
 ````{py:function} callback_on_mock_execute(command: ~ophyd_async.core._command.Command, callback: ~ophyd_async.core._command.MockExecuteCallback)
 :canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_execute
