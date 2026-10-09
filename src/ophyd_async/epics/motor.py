@@ -36,6 +36,7 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal
 
 __all__ = [
     "MotorLimitsError",
+    "MotorAlarmError",
     "Motor",
     "InstantMotorMock",
     "VeloAndAcclRespectingMotorMock",
@@ -48,6 +49,10 @@ class MotorLimitsError(Exception):
     """Exception for invalid motor limits."""
 
     pass
+
+
+class MotorAlarmError(Exception):
+    """Exception for a motor that has an alarm severity set after a move."""
 
 
 # Back compat - delete before 1.0
@@ -193,8 +198,19 @@ class MotorFlyableMovableLogic(
             raise ValueError(msg) from error
 
     async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
-        """Move by setting the setpoint and waiting for put completion."""
+        """Move by setting the setpoint and waiting for put completion.
+
+        Raises `MotorAlarmError` if the readback has an alarm severity set once
+        the put has completed.
+        """
         await self.setpoint.set(new_position, timeout=timeout())
+        reading = await self.readback.read()
+        severity = reading[self.readback.name].get("alarm_severity", 0)
+        if severity:
+            raise MotorAlarmError(
+                f"Motor {self.readback.name} is in alarm (severity {severity}) "
+                f"after a move to {new_position}."
+            )
 
     async def on_prepare(self, value: FlyMotorInfo) -> MotorFlyCtx:
         """Move to the beginning of a run-up distance ready for a fly scan."""

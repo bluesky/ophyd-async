@@ -61,10 +61,21 @@ def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
     return connector.backend
 
 
-def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
-    """Set the value of a signal that is in mock mode."""
+def set_mock_value(
+    signal: Signal[SignalDatatypeT],
+    value: SignalDatatypeT,
+    timestamp: float | None = None,
+    alarm_severity: int = 0,
+):
+    """Set the value of a signal that is in mock mode.
+
+    :param signal: A signal connected in mock mode.
+    :param value: The new value.
+    :param timestamp: The reading timestamp, `None` means now.
+    :param alarm_severity: The alarm severity, 0 means ok.
+    """
     backend = _get_mock_signal_backend(signal)
-    backend.set_value(value)
+    backend.set_value(value, timestamp, alarm_severity)
 
 
 def set_mock_units(signal: Signal, units: str):
