@@ -134,8 +134,8 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
             await use_axis.set(False)
 
         await asyncio.gather(
-            self.pmac.trajectory.time_array.set(np.array(0)),
-            self.pmac.trajectory.user_array.set(np.array(UserProgram.END)),
+            self.pmac.trajectory.time_array.set(np.array([0])),
+            self.pmac.trajectory.user_array.set(np.array([UserProgram.END])),
             self.pmac.trajectory.points_to_build.set(1),
         )
         await self.pmac.trajectory.build_profile.trigger()
