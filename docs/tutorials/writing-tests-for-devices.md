@@ -155,6 +155,14 @@ with callback_on_mock_put(motor.setpoint, on_put):
 
 Either way, the value the callback returns (if not `None`) becomes the readback; returning `None` leaves the readback as the value that was put.
 
+`callback_on_mock_put` returns a [](#MockPutHandle). Its `cancel()` interrupts any async callback still running, and the put completes as if the callback had returned `None`. Use it to mimic a stop PV that ends a put callback in progress, as the motor mock does:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: STOP ends the move
+:end-at: moves.cancel()
+```
+
 For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else. Like [](#callback_on_mock_put), it takes a sync or async callback, and its return value becomes the result of `execute()`.
 
 For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
