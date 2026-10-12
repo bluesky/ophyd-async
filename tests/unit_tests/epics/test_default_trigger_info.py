@@ -137,6 +137,4 @@ async def test_trigger_uses_num_images_and_process_plugin(
 
     assert shape_0 == expected_collections
     assert await proc.num_filter.get_value() == expected_exposures
-    assert (
-        await num_signal.get_value() == expected_collections * expected_exposures
-    )
+    assert await num_signal.get_value() == expected_collections * expected_exposures

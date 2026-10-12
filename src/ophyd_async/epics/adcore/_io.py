@@ -342,7 +342,9 @@ class NDProcessIO(NDPluginBaseIO):
     def __init__(self, prefix: str, name: str = ""):
         super().__init__(prefix, name=name)
 
+
 # Codec/compression classes
+
 
 class ADBloscCompressor(StrictEnum):
     BLOSCLZ = "BloscLZ"
