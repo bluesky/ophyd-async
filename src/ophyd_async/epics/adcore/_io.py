@@ -4,10 +4,10 @@ from typing import TypeVar
 from ophyd_async.core import (
     DeviceVector,
     EnableDisable,
-    IntersectEnum,
     SignalR,
     SignalRW,
     StrictEnum,
+    SubsetEnum,
     SupersetEnum,
     non_zero,
 )
@@ -86,7 +86,7 @@ class NDArrayBaseIO(EpicsDevice):
 # Classes for drivers
 
 
-class ADImageMode(IntersectEnum):
+class ADImageMode(SubsetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"

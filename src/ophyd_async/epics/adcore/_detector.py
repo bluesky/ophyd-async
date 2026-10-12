@@ -60,7 +60,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         )
         super().__init__(name=name)
 
-    def get_plugin_by_name(
+    def get_plugin(
         self, name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
     ) -> NDPluginBaseIOT:
         """Get a plugin by name and type.

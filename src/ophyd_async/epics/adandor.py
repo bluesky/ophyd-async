@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
@@ -22,8 +21,9 @@ from ophyd_async.epics.adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -81,17 +81,12 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(Andor2TriggerMode.EXT_TRIGGER)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        trigger_mode = await self.driver.trigger_mode.get_value()
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == Andor2TriggerMode.EXT_TRIGGER:
-            det_trigger = DetectorTrigger.EXTERNAL_EDGE
-        elif trigger_mode != Andor2TriggerMode.INTERNAL:
-            raise ValueError(
-                f"Could not determine ophyd-async trigger type for {trigger_mode}"
-            )
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

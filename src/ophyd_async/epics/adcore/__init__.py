@@ -51,9 +51,9 @@ from ._ndattribute import (
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
-    prepare_exposures_per_collection,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 
 __all__ = [
@@ -87,9 +87,9 @@ __all__ = [
     "ADBloscShuffle",
     # TriggerLogic
     "prepare_exposures",
-    "prepare_exposures_per_collection",
+    "prepare_filter",
     "ADContAcqTriggerLogic",
-    "default_trigger_info_from_detector_settings",
+    "trigger_info_from_driver",
     # AcquireLogic
     "ADAcquireLogic",
     "ADContAcqAcquireLogic",

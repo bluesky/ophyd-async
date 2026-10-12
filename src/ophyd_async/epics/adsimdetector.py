@@ -18,8 +18,9 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 
 __all__ = [
@@ -33,13 +34,16 @@ class SimDetectorTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADSimDetector."""
 
     driver: ADBaseIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await prepare_exposures(self.driver, num, livetime, deadtime)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        return await default_trigger_info_from_detector_settings(
+        return await trigger_info_from_driver(
             self.driver.num_images, self.process_plugin
         )
 
@@ -73,7 +77,7 @@ class SimDetector(AreaDetector[ADBaseIO]):
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=SimDetectorTriggerLogic(driver),
+            trigger_logic=SimDetectorTriggerLogic(driver, proc_plugin),
             plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,

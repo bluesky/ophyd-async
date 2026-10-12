@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     OnOff,
     SignalDict,
@@ -24,8 +23,9 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from .adgenicam import get_camera_deadtime
 from .core import PvSuffix
@@ -85,13 +85,12 @@ class AravisTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_source.set(AravisTriggerSource.LINE1)
         await prepare_exposures(self.driver, num, livetime)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        trigger_mode = await self.driver.trigger_mode.get_value()
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == OnOff.ON:
-            det_trigger = DetectorTrigger.EXTERNAL_EDGE
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

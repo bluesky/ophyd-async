@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     OnOff,
     SignalDict,
@@ -27,8 +26,9 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -96,7 +96,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
     driver: VimbaDriverIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
@@ -132,23 +132,12 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
         )
         await prepare_exposures(self.driver, num)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        trigger_mode, exposure_mode = await asyncio.gather(
-            self.driver.trigger_mode.get_value(),
-            self.driver.exposure_mode.get_value(),
-        )
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == OnOff.ON:
-            if exposure_mode == VimbaExposeOutMode.TIMED:
-                det_trigger = DetectorTrigger.EXTERNAL_EDGE
-            elif exposure_mode == VimbaExposeOutMode.TRIGGER_WIDTH:
-                det_trigger = DetectorTrigger.EXTERNAL_LEVEL
-            else:
-                raise ValueError(
-                    f"Cannot determine ophyd-async trigger type for {exposure_mode}"
-                )
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

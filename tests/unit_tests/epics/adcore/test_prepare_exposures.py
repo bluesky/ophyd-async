@@ -178,15 +178,21 @@ async def test_prepare_exposures(
         ),
     ],
 )
-async def test_prepare_exposures_per_collection(
+async def test_prepare_filter(
     process_plugin: adcore.NDProcessIO,
     exposures_per_collection,
     filter_type,
     expected_calls,
 ):
-    await adcore.prepare_exposures_per_collection(
+    await adcore.prepare_filter(
         process_plugin,
-        exposures_per_collection=exposures_per_collection,
+        num_filter=exposures_per_collection,
         filter_type=filter_type,
     )
     assert get_mock(process_plugin).mock_calls == expected_calls
+
+
+async def test_prepare_filter_without_plugin():
+    await adcore.prepare_filter(None, num_filter=1)
+    with pytest.raises(ValueError, match="Process plugin must be provided"):
+        await adcore.prepare_filter(None, num_filter=2)

@@ -9,7 +9,6 @@ from enum import Enum
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
@@ -26,8 +25,9 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from .core import PvSuffix
 
@@ -93,7 +93,7 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
 
     driver: PilatusDriverIO
     readout_time: PilatusReadoutTime
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
     edge_trigger_mode: PilatusTriggerMode = field(
         default=PilatusTriggerMode.EXT_TRIGGER, kw_only=True
     )
@@ -124,16 +124,12 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(PilatusTriggerMode.EXT_ENABLE)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE)
 
-    async def default_trigger_info(self):
-        trigger_mode = await self.driver.trigger_mode.get_value()
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == PilatusTriggerMode.EXT_TRIGGER:
-            det_trigger = DetectorTrigger.EXTERNAL_EDGE
-        elif trigger_mode == PilatusTriggerMode.EXT_ENABLE:
-            det_trigger = DetectorTrigger.EXTERNAL_LEVEL
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
 
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+    async def default_trigger_info(self):
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

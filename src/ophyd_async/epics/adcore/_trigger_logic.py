@@ -48,50 +48,52 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
-async def prepare_exposures_per_collection(
-    process_plugin: NDProcessIO,
-    exposures_per_collection: int = 1,
+async def prepare_filter(
+    process_plugin: NDProcessIO | None,
+    num_filter: int = 1,
     filter_type: NDProcessFilterType = NDProcessFilterType.AVERAGE,
 ) -> None:
-    """Prepare the AD process plugin for a given number of exposures per collection.
+    """Prepare the AD process plugin for a given number of images to filter.
 
     :param process_plugin: The NDProcessIO plugin instance (optional)
-    :param exposures_per_collection: Number of exposures per collection (default: 1)
+    :param num_filter: Number of images to filter (default: 1)
+    :param filter_type: Type of filter to apply (default: NDProcessFilterType.AVERAGE)
     """
-    coros = [
-        process_plugin.num_filter.set(exposures_per_collection),
+    if process_plugin is None:
+        # prepare() always calls this, so a single exposure needs no plugin
+        if num_filter == 1:
+            return
+        raise ValueError("Process plugin must be provided to setup filtering!")
+
+    await asyncio.gather(
+        process_plugin.num_filter.set(num_filter),
         process_plugin.enable_filter.set(True),
         process_plugin.filter_type.set(filter_type),
         process_plugin.auto_reset_filter.set(True),
         process_plugin.data_type_out.set(ADBaseDataType.AUTOMATIC),
         process_plugin.filter_callbacks.set(NDProcessFilterCallbacks.ARRAY_N_ONLY),
-    ]
-    await asyncio.gather(*coros)
+    )
 
 
-async def default_trigger_info_from_detector_settings(
+async def trigger_info_from_driver(
     num_images_signal: SignalR[int],
     process_plugin: NDProcessIO | None = None,
-    detector_trigger: DetectorTrigger = DetectorTrigger.INTERNAL,
 ) -> TriggerInfo:
     """Default TriggerInfo for AD detectors, reading num_images from the driver.
 
     :param num_images_signal: SignalR for the number of images to acquire
     :param process_plugin: Optional NDProcessIO plugin for exposures per collection
-    :param detector_trigger: The type of detector trigger (default: INTERNAL)
     """
     num_images = await num_images_signal.get_value()
+    exposures_per_collection = 1
 
-    if process_plugin is not None:
+    if process_plugin is not None and await process_plugin.enable_filter.get_value():
         exposures_per_collection = await process_plugin.num_filter.get_value()
-        collections_per_event = max(1, num_images // exposures_per_collection)
-        return TriggerInfo(
-            collections_per_event=collections_per_event,
-            exposures_per_collection=exposures_per_collection,
-            trigger=detector_trigger,
-        )
+
     return TriggerInfo(
-        collections_per_event=max(1, num_images), trigger=detector_trigger
+        collections_per_event=max(1, num_images // exposures_per_collection),
+        exposures_per_collection=exposures_per_collection,
+        trigger=DetectorTrigger.INTERNAL,
     )
 
 
@@ -137,15 +139,12 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
         )
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
-        if self.process_plugin is not None:
-            await prepare_exposures_per_collection(
-                self.process_plugin, exposures_per_collection
-            )
+        await prepare_filter(self.process_plugin, exposures_per_collection)
 
     async def default_trigger_info(self) -> TriggerInfo:
         # Read post_count (not driver.num_images) because the CB plugin's
         # post_count is what governs how many frames are buffered per trigger
         # in continuous-acquisition mode, not the driver's num_images.
-        return await default_trigger_info_from_detector_settings(
+        return await trigger_info_from_driver(
             self.cb_plugin.post_count, self.process_plugin
         )

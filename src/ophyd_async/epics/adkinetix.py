@@ -8,14 +8,14 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
     SignalRW,
     StrictEnum,
+    TriggerableCommand,
 )
-from ophyd_async.epics.adcore._io import NDProcessIO
+from ophyd_async.epics.adcore import NDProcessIO
 
 from .adcore import (
     ADAcquireLogic,
@@ -23,9 +23,9 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
-    default_trigger_info_from_detector_settings,
     prepare_exposures,
-    prepare_exposures_per_collection,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from .core import PvSuffix
 
@@ -67,7 +67,9 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
     driver: KinetixDriverIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
+    acquire_period_sig: SignalRW[float] | None = None
+    start_external_clock_sig: SignalRW[bool] | TriggerableCommand | None = None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001
@@ -85,20 +87,11 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num)
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
-        if self.process_plugin is not None:
-            await prepare_exposures_per_collection(
-                self.process_plugin, exposures_per_collection
-            )
+        await prepare_filter(self.process_plugin, num_filter=exposures_per_collection)
 
     async def default_trigger_info(self):
-        trigger_mode = await self.driver.trigger_mode.get_value()
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == KinetixTriggerMode.EDGE:
-            det_trigger = DetectorTrigger.EXTERNAL_EDGE
-        elif trigger_mode == KinetixTriggerMode.GATE:
-            det_trigger = DetectorTrigger.EXTERNAL_LEVEL
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTrigger,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
@@ -16,9 +15,6 @@ from ophyd_async.core import (
     StrictEnum,
     SupersetEnum,
     derived_signal_r,
-)
-from ophyd_async.epics.adcore._trigger_logic import (
-    default_trigger_info_from_detector_settings,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -31,6 +27,8 @@ from .adcore import (
     NDPluginBaseIO,
     NDProcessIO,
     prepare_exposures,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 
 __all__ = [
@@ -96,7 +94,7 @@ class MerlinTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for MerlinDriverIO."""
 
     driver: MerlinDriverIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME
@@ -110,18 +108,12 @@ class MerlinTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(MerlinTriggerMode.TRIGGER_START_RISING)
         await prepare_exposures(self.driver, num, livetime)
 
-    async def default_trigger_info(self):
-        trigger_mode = await self.driver.trigger_mode.get_value()
-        det_trigger = DetectorTrigger.INTERNAL
-        if trigger_mode == MerlinTriggerMode.TRIGGER_START_RISING:
-            det_trigger = DetectorTrigger.EXTERNAL_EDGE
-        elif trigger_mode != MerlinTriggerMode.INTERNAL:
-            raise ValueError(
-                f"Cannot determine ophyd-async trigger type for {trigger_mode}"
-            )
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
 
-        return await default_trigger_info_from_detector_settings(
-            self.driver.num_images, self.process_plugin, detector_trigger=det_trigger
+    async def default_trigger_info(self):
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
         )
 
 

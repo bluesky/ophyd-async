@@ -40,7 +40,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
         ),
     ]
     set_mock_value(stat.nd_attributes_file, adcore.ndattributes_to_xml(ndattributes))
-    writer = det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
     set_mock_value(det.driver.array_size_x, 1024)
@@ -203,7 +203,7 @@ async def test_step_scan_tiff_detector(
             "PREFIX:", adcore.ADWriterFactory.tiff(static_path_provider)
         )
 
-    writer = det.get_plugin_by_name("tiff", adcore.NDPluginFileIO)
+    writer = det.get_plugin("tiff", adcore.NDPluginFileIO)
     set_mock_value(det.driver.array_size_x, 1024)
     set_mock_value(det.driver.array_size_y, 768)
 
@@ -269,7 +269,7 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
             "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
         )
 
-    writer = det.get_plugin_by_name("hdf", adcore.NDPluginFileIO)
+    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(det.driver.model, "A funny model")
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
@@ -434,8 +434,8 @@ async def test_2_rois_with_hdf(tmp_path):
             ),
             plugins={"roi1": roi1, "roi2": roi2},
         )
-    hdf1 = det.get_plugin_by_name("hdf1", adcore.NDFileHDF5IO)
-    hdf2 = det.get_plugin_by_name("hdf2", adcore.NDFileHDF5IO)
+    hdf1 = det.get_plugin("hdf1", adcore.NDFileHDF5IO)
+    hdf2 = det.get_plugin("hdf2", adcore.NDFileHDF5IO)
     await det.stage()
 
     # When arm is pressed, then make a single frame on each HDF
@@ -571,7 +571,7 @@ async def test_step_scan_keep_numimages(
     set_mock_value(det.driver.array_size_y, 768)
     await det.driver.num_images.set(42)
     assert await det.driver.num_images.get_value() == 42
-    writer = det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
     await assert_configuration(
         det,
         {
@@ -674,8 +674,8 @@ async def test_kinetix_step_scan_with_averaging_filter(
             proc_suffix="PROC:",
         )
 
-    proc = det.get_plugin_by_name("proc", adcore.NDProcessIO)
-    writer = det.get_plugin_by_name("hdf", adcore.NDFileHDF5IO)
+    proc = det.get_plugin("proc", adcore.NDProcessIO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
     set_mock_value(det.driver.array_size_x, 512)
