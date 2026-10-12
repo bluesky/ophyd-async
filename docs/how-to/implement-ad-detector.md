@@ -24,8 +24,9 @@ Implement methods for each trigger mode your detector supports:
 - `prepare_internal(num, livetime, deadtime)` - Setup for internal triggering (detector generates its own triggers)
 - `prepare_edge(num, livetime)` - Setup for external edge triggering (rising edge starts an internally-timed exposure)
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
-Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 - `prepare_exposures_per_collection(exposures_per_collection)` - If your detector should produce multiple exposures per individual frame written to disk, implement this method to configure the detector to produce the requested number of exposures per collection. For AD detectors, this is typically done with an optional process plugin that will perform a filter over a predefined number of exposures (i.e. an average or sum).
+
+Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 
 If the detector has configuration values that should be captured in the scan then implement:
 - `config_sigs()` - Return the set of signals that should appear in read_configuration()
