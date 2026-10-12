@@ -18,6 +18,7 @@ from ophyd_async.core import (
     get_mock_put,
     merge_gathered_dicts,
     set_mock_value,
+    simulate_move,
     soft_signal_rw,
 )
 from ophyd_async.epics.core import epics_signal_rw
@@ -469,3 +470,17 @@ def _patch_motor(motor: Motor, initial_position=0):
     set_mock_value(motor.max_velocity, 5)
     set_mock_value(motor.high_limit_travel, float("inf"))
     set_mock_value(motor.low_limit_travel, float("-inf"))
+
+
+@pytest.mark.parametrize(
+    "acceleration_time",
+    [
+        0.05,
+        # No ramp at all, which used to make the last position NaN
+        0,
+    ],
+)
+async def test_simulate_move_ends_at_target(acceleration_time: float):
+    positions = [p async for p in simulate_move(0, 1.5, 10, acceleration_time)]
+    assert positions[-1] == 1.5
+    assert positions == sorted(positions)
