@@ -9,7 +9,7 @@ from bluesky.protocols import Flyable, Preparable
 from pydantic import Field
 
 from ._movable import MovableLogic
-from ._signal import observe_value
+from ._signal import observe_signals_value, observe_value
 from ._standard_base import _StandardBase
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
@@ -192,10 +192,47 @@ class StandardFlyable(
         await self.flyable_logic.on_unstage()
         self._reset_fly_state()
 
-    @AsyncStatus.wrap
-    async def prepare(self, value: PrepareT) -> None:
-        """Move to the start and set up the fly scan."""
-        self._fly_ctx = await self.flyable_logic.on_prepare(value)
+    @WatchableAsyncStatus.wrap
+    async def prepare(self, value: PrepareT) -> AsyncIterator[WatcherUpdate]:
+        """Move to the start and set up the fly scan.
+
+        If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report
+        progress of the move to the start to watchers by observing its readback,
+        starting once `on_prepare` writes the setpoint it is moving to.
+        """
+        logic = self.flyable_logic
+
+        async def on_prepare() -> None:
+            self._fly_ctx = await logic.on_prepare(value)
+
+        if isinstance(logic, MovableLogic):
+            initial, (units, precision) = await asyncio.gather(
+                logic.readback.get_value(), logic.get_units_precision()
+            )
+            current, target = initial, None
+            setpoint_seen = False
+            async with AsyncStatus(on_prepare()) as preparing:
+                async for signal, signal_value in observe_signals_value(
+                    logic.readback, logic.setpoint, done_status=preparing
+                ):
+                    if signal is logic.readback:
+                        current = signal_value
+                    elif setpoint_seen:
+                        target = signal_value
+                    else:
+                        # The first setpoint value is the stale one from before the move
+                        setpoint_seen = True
+                    if target is not None:
+                        yield WatcherUpdate(
+                            current=current,
+                            initial=initial,
+                            target=target,
+                            name=self.name,
+                            unit=units,
+                            precision=precision,
+                        )
+        else:
+            await on_prepare()
         self._fly_stage = _FlyStage.PREPARED
 
     @AsyncStatus.wrap

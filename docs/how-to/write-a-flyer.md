@@ -71,8 +71,8 @@ status on the context so `on_complete` can await it:
 :pyobject: MotorFlyableMovableLogic.on_complete
 ```
 
-Because the logic is also a `MovableLogic`, `complete()` reports progress to watchers
-(e.g. progress bars) automatically by observing the readback — reusing the same
+Because the logic is also a `MovableLogic`, `prepare()` and `complete()` report progress
+to watchers (e.g. progress bars) automatically by observing the readback — reusing the same
 [](#WatcherUpdate) machinery as [](#StandardMovable.set). A flyer whose logic is *not*
 movable (see the next section) just blocks with no progress updates. See
 [](../explanations/when-to-extend-movable.md) for more on `MovableLogic`.
