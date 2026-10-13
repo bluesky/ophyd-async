@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>A crash course on asyncio &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
+    <title>A crash course on asyncio &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=ea5ebe5b"></script>
+    <script src="../_static/documentation_options.js?v=78b849c7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
   
   
 </a></div>
@@ -492,7 +492,7 @@
                   
   <section id="a-crash-course-on-asyncio">
 <span id="asyncio-primer"></span><h1>A crash course on asyncio<a class="headerlink" href="#a-crash-course-on-asyncio" title="Link to this heading">#</a></h1>
-<p>Ophyd-async uses Python’s <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.14">asyncio</a> library to communicate
+<p>Ophyd-async uses Python’s <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.15">asyncio</a> library to communicate
 with many pieces of hardware without blocking while any one of them responds.
 This page gives you enough asyncio vocabulary to follow the ophyd-async
 tutorials. It assumes that you can already write and call ordinary Python
@@ -552,7 +552,7 @@ Except for environments that support top-level <code class="docutils literal not
 <h2>Call synchronous hardware APIs<a class="headerlink" href="#call-synchronous-hardware-apis" title="Link to this heading">#</a></h2>
 <p>Some third-party hardware libraries provide only blocking, synchronous methods.
 Calling one directly from a coroutine stops every task on the event-loop thread
-until it returns. <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.to_thread</span></code></a> lets the function run in a separate
+until it returns. <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.to_thread</span></code></a> lets the function run in a separate
 thread while the event loop continues:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">blocking_detector</span><span class="o">.</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
@@ -574,7 +574,7 @@ after the first has finished:</p>
 <span class="n">pressure</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pressure_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>When operations are independent, <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.gather" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.gather</span></code></a> can run them concurrently:</p>
+<p>When operations are independent, <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.gather" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.gather</span></code></a> can run them concurrently:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
     <span class="n">temperature_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
     <span class="n">pressure_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
@@ -648,7 +648,7 @@ Preserve their required order with separate <code class="docutils literal notran
 </ul>
 <p>You now have the asyncio concepts needed for <a class="reference internal" href="using-devices.html"><span class="std std-doc">Using Devices</span></a>. For more
 device-specific patterns, see <a class="reference internal" href="../how-to/interact-with-signals.html"><span class="std std-doc">How to interact with signals and commands while implementing bluesky verbs</span></a>. The
-<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.14">Python asyncio documentation</a> covers the full standard
+<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.15">Python asyncio documentation</a> covers the full standard
 library.</p>
 </section>
 </section>

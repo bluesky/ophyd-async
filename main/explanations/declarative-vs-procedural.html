@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=ea5ebe5b"></script>
+    <script src="../_static/documentation_options.js?v=78b849c7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
   
   
 </a></div>
@@ -568,7 +568,7 @@
     <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>For a traditional EPICS IOC there is no such introspection mechanism, so we require a PV Suffix to be supplied via an <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.14"><span class="xref myst">annotation</span></a>. For example, in <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo.DemoPointDetectorChannel</span></code> we describe the PV Suffix and whether the signal appears in <code class="docutils literal notranslate"><span class="pre">read()</span></code> or <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> using <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">typing.Annotated</span></code></a>:</p>
+<p>For a traditional EPICS IOC there is no such introspection mechanism, so we require a PV Suffix to be supplied via an <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.15"><span class="xref myst">annotation</span></a>. For example, in <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo.DemoPointDetectorChannel</span></code> we describe the PV Suffix and whether the signal appears in <code class="docutils literal notranslate"><span class="pre">read()</span></code> or <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> using <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">typing.Annotated</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetectorChannel</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A channel for `DemoPointDetector` with int value based on X and Y Motors.&quot;&quot;&quot;</span>
 

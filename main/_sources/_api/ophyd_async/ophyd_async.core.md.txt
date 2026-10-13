@@ -3310,7 +3310,7 @@ Bases: {py:obj}`ophyd_async.core._standard_base._StandardBase`, {py:obj}`bluesky
 
 ````
 
-````{py:method} prepare(value: ~ophyd_async.core._flyable.PrepareT) -> None
+````{py:method} prepare(value: ~ophyd_async.core._flyable.PrepareT) -> ~collections.abc.AsyncIterator[~ophyd_async.core._utils.WatcherUpdate]
 :canonical: ophyd_async.core._flyable.StandardFlyable.prepare
 :async:
 

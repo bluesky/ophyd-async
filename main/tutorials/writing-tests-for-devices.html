@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=ea5ebe5b"></script>
+    <script src="../_static/documentation_options.js?v=78b849c7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
   
   
 </a></div>
@@ -492,7 +492,7 @@
                   
   <section id="writing-tests-for-devices">
 <h1>Writing Tests for Devices<a class="headerlink" href="#writing-tests-for-devices" title="Link to this heading">#</a></h1>
-<p>In this tutorial we will explore how to write tests for ophyd-async Devices that do not require the real hardware. This allows us to catch bugs in our logic by inspecting what it would send to the hardware, and once it is working gives us confidence that it will stay working. Python provides some standard tools like <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#module-unittest.mock" title="Python 3.14"><span class="xref myst">mocking, patching</span></a> and <a class="reference external" href="https://docs.pytest.org/en/stable/reference/fixtures.html#fixtures" title="pytest 9.1.1">fixtures</a>, and ophyd-async provides some utility methods to help too.</p>
+<p>In this tutorial we will explore how to write tests for ophyd-async Devices that do not require the real hardware. This allows us to catch bugs in our logic by inspecting what it would send to the hardware, and once it is working gives us confidence that it will stay working. Python provides some standard tools like <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#module-unittest.mock" title="Python 3.15"><span class="xref myst">mocking, patching</span></a> and <a class="reference external" href="https://docs.pytest.org/en/stable/reference/fixtures.html#fixtures" title="pytest 9.1.1">fixtures</a>, and ophyd-async provides some utility methods to help too.</p>
 <p>There are two categories of test that will typically be written for a Device:</p>
 <ul class="simple">
 <li><p>Tests that call the bluesky verbs (like <code class="docutils literal notranslate"><span class="pre">set()</span></code> or <code class="docutils literal notranslate"><span class="pre">read()</span></code>) directly</p></li>
@@ -642,7 +642,7 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
 <p>We write an <code class="docutils literal notranslate"><span class="pre">async</span></code> test method so we can <code class="docutils literal notranslate"><span class="pre">await</span></code> our calls to verbs. We include the fixture we defined earlier in the function arguments and pytest will automatically create it for us and pass it to the function call. We make use of the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_reading" title="ophyd_async.testing.assert_reading"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">assert_reading</span></code></a>, <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_value" title="ophyd_async.testing.assert_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">assert_value</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_configuration" title="ophyd_async.testing.assert_configuration"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">assert_configuration</span></code></a> helpers to check that our motor gives the right output, then use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> to change the value of the read only Signal before checking the verbs give the right output.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Some of our tests produce timestamps, instead of checking their values we use <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.ANY" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">unittest.mock.ANY</span></code></a> to say that the timestamp just has to be present to pass.</p>
+<p>Some of our tests produce timestamps, instead of checking their values we use <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.ANY" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">unittest.mock.ANY</span></code></a> to say that the timestamp just has to be present to pass.</p>
 </div>
 </section>
 </section>
@@ -665,7 +665,7 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
     <span class="p">]</span>
 </pre></div>
 </div>
-<p>This time we use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute" title="ophyd_async.core.get_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a> to get an <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">unittest.mock.AsyncMock</span></code></a> that will be called every time <code class="docutils literal notranslate"><span class="pre">stop_.trigger()</span></code> is called. We check it hasn’t been called, then call our method, then check it has been called with no arguments. We also show that we can call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock" title="ophyd_async.core.get_mock"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock</span></code></a> on the parent to see all of the mock calls that have been made on all its children, useful to check ordering.</p>
+<p>This time we use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute" title="ophyd_async.core.get_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a> to get an <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">unittest.mock.AsyncMock</span></code></a> that will be called every time <code class="docutils literal notranslate"><span class="pre">stop_.trigger()</span></code> is called. We check it hasn’t been called, then call our method, then check it has been called with no arguments. We also show that we can call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock" title="ophyd_async.core.get_mock"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock</span></code></a> on the parent to see all of the mock calls that have been made on all its children, useful to check ordering.</p>
 <p>For <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a>s, the equivalent is <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_put" title="ophyd_async.core.get_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_put</span></code></a>, which returns an <code class="docutils literal notranslate"><span class="pre">AsyncMock</span></code> that records every <code class="docutils literal notranslate"><span class="pre">Signal.set()</span></code> / <code class="docutils literal notranslate"><span class="pre">put()</span></code> call.</p>
 </section>
 <section id="checking-for-watcher-updates">
@@ -835,7 +835,7 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
     <span class="p">}</span>
 </pre></div>
 </div>
-<p>Here we create a <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.defaultdict" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">collections.defaultdict</span></code></a> and put the RunEngine produced documents in it. Then we use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> to set the channels of the detector to some known values. Finally we run the plan and use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_emitted" title="ophyd_async.testing.assert_emitted"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">assert_emitted</span></code></a> to check the correct numbers of documents have been produced. We can also inspect individual documents for more details.</p>
+<p>Here we create a <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.defaultdict" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">collections.defaultdict</span></code></a> and put the RunEngine produced documents in it. Then we use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> to set the channels of the detector to some known values. Finally we run the plan and use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_emitted" title="ophyd_async.testing.assert_emitted"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">assert_emitted</span></code></a> to check the correct numbers of documents have been produced. We can also inspect individual documents for more details.</p>
 </section>
 </section>
 <section id="conclusion">

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._flyable &#8212; ophyd-async 0.21.4.dev11+g888f84c63 documentation</title>
+    <title>ophyd_async.core._flyable &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=ea5ebe5b"></script>
+    <script src="../../../_static/documentation_options.js?v=78b849c7"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev11+g888f84c63 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
   
   
 </a></div>
@@ -909,7 +909,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._movable</span><span class="w"> </span><span class="kn">import</span> <span class="n">MovableLogic</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">observe_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">observe_signals_value</span><span class="p">,</span> <span class="n">observe_value</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._standard_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">_StandardBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -1129,10 +1129,47 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="StandardFlyable.prepare">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyable.prepare">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PrepareT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the start and set up the fly scan.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_ctx</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">flyable_logic</span><span class="o">.</span><span class="n">on_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PrepareT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the start and set up the fly scan.</span>
+
+<span class="sd">        If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report</span>
+<span class="sd">        progress of the move to the start to watchers by observing its readback,</span>
+<span class="sd">        starting once `on_prepare` writes the setpoint it is moving to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flyable_logic</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fly_ctx</span> <span class="o">=</span> <span class="k">await</span> <span class="n">logic</span><span class="o">.</span><span class="n">on_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">MovableLogic</span><span class="p">):</span>
+            <span class="n">initial</span><span class="p">,</span> <span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+                <span class="n">logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="n">logic</span><span class="o">.</span><span class="n">get_units_precision</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">current</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">initial</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="n">setpoint_seen</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">on_prepare</span><span class="p">())</span> <span class="k">as</span> <span class="n">preparing</span><span class="p">:</span>
+                <span class="k">async</span> <span class="k">for</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
+                    <span class="n">logic</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">logic</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">preparing</span>
+                <span class="p">):</span>
+                    <span class="k">if</span> <span class="n">signal</span> <span class="ow">is</span> <span class="n">logic</span><span class="o">.</span><span class="n">readback</span><span class="p">:</span>
+                        <span class="n">current</span> <span class="o">=</span> <span class="n">signal_value</span>
+                    <span class="k">elif</span> <span class="n">setpoint_seen</span><span class="p">:</span>
+                        <span class="n">target</span> <span class="o">=</span> <span class="n">signal_value</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># The first setpoint value is the stale one from before the move</span>
+                        <span class="n">setpoint_seen</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                            <span class="n">current</span><span class="o">=</span><span class="n">current</span><span class="p">,</span>
+                            <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span>
+                            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                            <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                            <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+                        <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">on_prepare</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_stage</span> <span class="o">=</span> <span class="n">_FlyStage</span><span class="o">.</span><span class="n">PREPARED</span></div>
 
 
