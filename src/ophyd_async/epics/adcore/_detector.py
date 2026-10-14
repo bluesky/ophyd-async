@@ -1,4 +1,4 @@
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Generic
 
 from ophyd_async.core import (
@@ -80,36 +80,6 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 f"got {type(plugin).__name__}"
             )
         return plugin
-
-    async def get_plugin_by_port_name(
-        self, port_name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
-    ) -> NDPluginBaseIOT:
-        """Get a plugin by its NDArray port name and type.
-
-        :param port_name: The NDArray port name to search for
-        :param plugin_type: Expected type of the plugin
-        :return: The plugin instance
-        :raises ValueError: If no plugin with the specified port name is found
-        """
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if isinstance(attr, plugin_type):
-                if await attr.port_name.get_value() == port_name:
-                    return attr
-        raise ValueError(f"No plugin found with port name '{port_name}'")
-
-    def get_plugins_by_type(
-        self, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
-    ) -> Iterator[NDPluginBaseIOT]:
-        """Yield all plugins of a specific type.
-
-        :param plugin_type: Expected type of the plugins
-        :return: Iterator of plugin instances
-        """
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if isinstance(attr, plugin_type):
-                yield attr
 
 
 class ContAcqDetector(AreaDetector[ADBaseIOT]):

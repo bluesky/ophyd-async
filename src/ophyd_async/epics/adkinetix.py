@@ -13,7 +13,6 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
-    TriggerableCommand,
 )
 from ophyd_async.epics.adcore import NDProcessIO
 
