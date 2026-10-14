@@ -59,6 +59,15 @@ class PandaPosMux(SubsetEnum):
     ZERO = "ZERO"
 
 
+class PandaTimeUnits(StrictEnum):
+    """Options for units of time in the PandA."""
+
+    MIN = "min"
+    S = "s"
+    MS = "ms"
+    US = "us"
+
+
 class PulseBlock(Device):
     """Used for configuring pulses in the PandA.
 
@@ -68,9 +77,12 @@ class PulseBlock(Device):
 
     enable: SignalRW[PandaBitMux]
     delay: SignalRW[float]
+    delay_units: SignalRW[PandaTimeUnits]
     pulses: SignalRW[int]
     step: SignalRW[float]
+    step_units: SignalRW[PandaTimeUnits]
     width: SignalRW[float]
+    width_units: SignalRW[PandaTimeUnits]
 
 
 class PcompBlock(Device):
@@ -87,15 +99,6 @@ class PcompBlock(Device):
     start: SignalRW[int]
     step: SignalRW[int]
     width: SignalRW[int]
-
-
-class PandaTimeUnits(StrictEnum):
-    """Options for units of time in the PandA."""
-
-    MIN = "min"
-    S = "s"
-    MS = "ms"
-    US = "us"
 
 
 class SeqBlock(Device):
