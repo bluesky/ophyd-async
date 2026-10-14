@@ -38,9 +38,9 @@ To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
 without a preceding `prepare()`, implement:
 - `default_trigger_info()` - Return the [](#TriggerInfo) to use for the implicit
-  prepare. For AD detectors call `await default_trigger_info_from_detector_settings(self.driver.num_images)` to
+  prepare. For AD detectors call `await trigger_info_from_driver(self.driver.num_images)` to
   read back the current `num_images` from the driver rather than resetting it to 1. You should also pass a process 
-  plugin to `default_trigger_info_from_detector_settings()` if your detector uses one to produce multiple exposures per collection, and a [](#DetectorTrigger) computed from your detector's current configuration if your detector supports external triggering.
+  plugin to `trigger_info_from_driver()` if your detector uses one to produce multiple exposures per collection, and a [](#DetectorTrigger) computed from your detector's current configuration if your detector supports external triggering.
 
 
 

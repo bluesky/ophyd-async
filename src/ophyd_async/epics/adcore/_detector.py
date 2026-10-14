@@ -113,11 +113,13 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
 
 
 class ContAcqDetector(AreaDetector[ADBaseIOT]):
-    """Create an ADSimDetector AreaDetector instance.
+    """Create an continuously acquiring AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param cb_suffix: Suffix for the circular buffer plugin PV, defaults to "CB1:"
+    :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device

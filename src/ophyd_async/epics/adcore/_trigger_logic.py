@@ -101,7 +101,7 @@ async def trigger_info_from_driver(
 class ADContAcqTriggerLogic(_DetectorTriggerLogic):
     driver: ADBaseIO
     cb_plugin: NDCircularBuffIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
 
     async def _ensure_driver_acquiring(self, livetime: float):
         # Check the current state of the system

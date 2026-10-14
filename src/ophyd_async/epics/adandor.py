@@ -68,7 +68,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Andor2DriverIO."""
 
     driver: Andor2DriverIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME

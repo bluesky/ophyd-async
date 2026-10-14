@@ -100,6 +100,7 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None
     :param override_deadtime:
         If provided, this value is used for deadtime instead of looking up
         based on camera model.
@@ -112,7 +113,7 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
         self,
         prefix: str,
         *writer_factories: ADWriterFactory,
-        driver_suffix="cam1:",
+        driver_suffix: str = "cam1:",
         proc_suffix: str | None = None,
         override_deadtime: float | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
