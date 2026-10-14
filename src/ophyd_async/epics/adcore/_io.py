@@ -9,6 +9,7 @@ from ophyd_async.core import (
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
+    TriggerableCommand,
     non_zero,
 )
 from ophyd_async.epics.core import (
@@ -324,7 +325,7 @@ class NDProcessIO(NDPluginBaseIO):
     # high_clip_thresh: A[SignalRW[float], PvSuffix.rbv("HighClipThresh")]
     # high_clip_value: A[SignalRW[float], PvSuffix.rbv("HighClipValue")]
     enable_filter: A[SignalRW[bool], PvSuffix.rbv("EnableFilter")]
-    reset_filter: A[SignalRW[bool], PvSuffix.rbv("ResetFilter")]
+    reset_filter: A[TriggerableCommand, PvSuffix.rbv("ResetFilter")]
     auto_reset_filter: A[SignalRW[bool], PvSuffix.rbv("AutoResetFilter")]
     filter_type: A[SignalRW[NDProcessFilterType], PvSuffix("FilterType")]
     filter_callbacks: A[

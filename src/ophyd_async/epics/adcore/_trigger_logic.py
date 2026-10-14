@@ -57,7 +57,7 @@ async def prepare_filter(
 
     :param process_plugin: The NDProcessIO plugin instance (optional)
     :param num_filter: Number of images to filter (default: 1)
-    :param filter_type: Type of filter to apply. If none, use which is currently set in the plugin
+    :param filter_type: Type of filter to apply (optional)
     """
     if process_plugin is None:
         # prepare() always calls this, so a single exposure needs no plugin
@@ -65,16 +65,22 @@ async def prepare_filter(
             return
         raise ValueError("Process plugin must be provided to setup filtering!")
 
-    coros = [
+    # Clear any already ingested frames
+    await process_plugin.reset_filter.trigger()
+
+    # By default, use whichever filter is configured in the IOC.
+    if filter_type is not None:
+        await process_plugin.filter_type.set(filter_type)
+
+    # Setup the plugin to perform filtering for the specified number of images
+    await asyncio.gather(
         process_plugin.num_filter.set(num_filter),
         process_plugin.enable_filter.set(True),
         process_plugin.auto_reset_filter.set(True),
         process_plugin.data_type_out.set(ADBaseDataType.AUTOMATIC),
         process_plugin.filter_callbacks.set(NDProcessFilterCallbacks.ARRAY_N_ONLY),
-    ]
-    if filter_type is not None:
-        coros.append(process_plugin.filter_type.set(filter_type))
-    await asyncio.gather(*coros)
+        process_plugin.enable_callbacks.set(EnableDisable.ENABLE),
+    )
 
 
 async def trigger_info_from_driver(

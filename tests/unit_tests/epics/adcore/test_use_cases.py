@@ -681,6 +681,7 @@ async def test_kinetix_step_scan_with_averaging_filter(
     set_mock_value(det.driver.array_size_x, 512)
     set_mock_value(det.driver.array_size_y, 512)
     set_mock_value(writer.file_path_exists, True)
+    set_mock_value(proc.filter_type, adcore.NDProcessFilterType.AVERAGE)
 
     await det.stage()
 

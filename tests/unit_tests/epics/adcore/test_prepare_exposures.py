@@ -2,7 +2,7 @@ from unittest.mock import call
 
 import pytest
 
-from ophyd_async.core import get_mock, init_devices
+from ophyd_async.core import EnableDisable, get_mock, init_devices, set_mock_value
 from ophyd_async.epics import adcore
 
 
@@ -17,6 +17,7 @@ async def adbase():
 async def process_plugin():
     async with init_devices(mock=True):
         process = adcore.NDProcessIO("PREFIX:PROC:")
+    set_mock_value(process.filter_type, adcore.NDProcessFilterType.AVERAGE)
     return process
 
 
@@ -109,87 +110,44 @@ async def test_prepare_exposures(
 
 
 @pytest.mark.parametrize(
-    "exposures_per_collection,filter_type,expected_calls",
+    ("exposures_per_collection", "filter_type", "expected_filter"),
     [
-        # Default filter type (AVERAGE) with 1 exposure
-        (
-            1,
-            adcore.NDProcessFilterType.AVERAGE,
-            [
-                call.num_filter.put(1),
-                call.enable_filter.put(True),
-                call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
-                call.auto_reset_filter.put(True),
-                call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
-            ],
-        ),
-        # Multiple exposures with default AVERAGE filter
-        (
-            5,
-            adcore.NDProcessFilterType.AVERAGE,
-            [
-                call.num_filter.put(5),
-                call.enable_filter.put(True),
-                call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
-                call.auto_reset_filter.put(True),
-                call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
-            ],
-        ),
-        # Multiple exposures with SUM filter type
-        (
-            10,
-            adcore.NDProcessFilterType.SUM,
-            [
-                call.num_filter.put(10),
-                call.enable_filter.put(True),
-                call.filter_type.put(adcore.NDProcessFilterType.SUM),
-                call.auto_reset_filter.put(True),
-                call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
-            ],
-        ),
-        # Multiple exposures with RECURSIVE_AVG filter type
+        # None keeps the filter type pre-configured in the IOC (AVERAGE)
+        (1, None, adcore.NDProcessFilterType.AVERAGE),
+        (5, adcore.NDProcessFilterType.AVERAGE, adcore.NDProcessFilterType.AVERAGE),
+        (10, adcore.NDProcessFilterType.SUM, adcore.NDProcessFilterType.SUM),
         (
             3,
             adcore.NDProcessFilterType.RECURSIVE_AVG,
-            [
-                call.num_filter.put(3),
-                call.enable_filter.put(True),
-                call.filter_type.put(adcore.NDProcessFilterType.RECURSIVE_AVG),
-                call.auto_reset_filter.put(True),
-                call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
-            ],
+            adcore.NDProcessFilterType.RECURSIVE_AVG,
         ),
-        # Large number of exposures
-        (
-            100,
-            adcore.NDProcessFilterType.AVERAGE,
-            [
-                call.num_filter.put(100),
-                call.enable_filter.put(True),
-                call.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
-                call.auto_reset_filter.put(True),
-                call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-                call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
-            ],
-        ),
+        (100, adcore.NDProcessFilterType.AVERAGE, adcore.NDProcessFilterType.AVERAGE),
     ],
 )
 async def test_prepare_filter(
     process_plugin: adcore.NDProcessIO,
     exposures_per_collection,
     filter_type,
-    expected_calls,
+    expected_filter,
 ):
     await adcore.prepare_filter(
         process_plugin,
         num_filter=exposures_per_collection,
         filter_type=filter_type,
     )
+    expected_calls = [call.reset_filter.execute()]
+    if filter_type is not None:
+        expected_calls.append(call.filter_type.put(filter_type))
+    expected_calls += [
+        call.num_filter.put(exposures_per_collection),
+        call.enable_filter.put(True),
+        call.auto_reset_filter.put(True),
+        call.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
+        call.filter_callbacks.put(adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY),
+        call.enable_callbacks.put(EnableDisable.ENABLE),
+    ]
     assert get_mock(process_plugin).mock_calls == expected_calls
+    assert await process_plugin.filter_type.get_value() == expected_filter
 
 
 async def test_prepare_filter_without_plugin():

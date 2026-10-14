@@ -134,14 +134,15 @@ async def test_cont_acq_controller_success_with_process_plugin(
         cont_acq_detector_with_proc,
         [
             call.cb.capture.put(True),
+            call.proc.reset_filter.execute(),
             call.proc.num_filter.put(exposures_per_collection),
             call.proc.enable_filter.put(True),
-            call.proc.filter_type.put(adcore.NDProcessFilterType.AVERAGE),
             call.proc.auto_reset_filter.put(True),
             call.proc.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
             call.proc.filter_callbacks.put(
                 adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
             ),
+            call.proc.enable_callbacks.put(EnableDisable.ENABLE),
             call.cb.enable_callbacks.put(EnableDisable.ENABLE),
             call.cb.pre_count.put(0),
             call.cb.post_count.put(exposures_per_collection),
