@@ -51,13 +51,13 @@ async def prepare_exposures(
 async def prepare_filter(
     process_plugin: NDProcessIO | None,
     num_filter: int = 1,
-    filter_type: NDProcessFilterType = NDProcessFilterType.AVERAGE,
+    filter_type: NDProcessFilterType | None = None,
 ) -> None:
     """Prepare the AD process plugin for a given number of images to filter.
 
     :param process_plugin: The NDProcessIO plugin instance (optional)
     :param num_filter: Number of images to filter (default: 1)
-    :param filter_type: Type of filter to apply (default: NDProcessFilterType.AVERAGE)
+    :param filter_type: Type of filter to apply. If none, use which is currently set in the plugin
     """
     if process_plugin is None:
         # prepare() always calls this, so a single exposure needs no plugin
@@ -65,14 +65,16 @@ async def prepare_filter(
             return
         raise ValueError("Process plugin must be provided to setup filtering!")
 
-    await asyncio.gather(
+    coros = [
         process_plugin.num_filter.set(num_filter),
         process_plugin.enable_filter.set(True),
-        process_plugin.filter_type.set(filter_type),
         process_plugin.auto_reset_filter.set(True),
         process_plugin.data_type_out.set(ADBaseDataType.AUTOMATIC),
         process_plugin.filter_callbacks.set(NDProcessFilterCallbacks.ARRAY_N_ONLY),
-    )
+    ]
+    if filter_type is not None:
+        coros.append(process_plugin.filter_type.set(filter_type))
+    await asyncio.gather(*coros)
 
 
 async def trigger_info_from_driver(
