@@ -68,8 +68,6 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
 
     driver: KinetixDriverIO
     process_plugin: NDProcessIO | None
-    acquire_period_sig: SignalRW[float] | None = None
-    start_external_clock_sig: SignalRW[bool] | TriggerableCommand | None = None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001
