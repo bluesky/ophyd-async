@@ -25,8 +25,10 @@ from .adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -94,6 +96,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
     driver: VimbaDriverIO
+    process_plugin: NDProcessIO | None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
@@ -129,8 +132,13 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
         )
         await prepare_exposures(self.driver, num)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
+        )
 
 
 class VimbaDetector(AreaDetector[VimbaDriverIO]):
@@ -142,6 +150,7 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
     :param override_deadtime:
         If provided, this value is used for deadtime instead of looking up
         based on camera model.
+    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -153,18 +162,20 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
         *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
         override_deadtime: float | None = None,
+        proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = VimbaDriverIO(prefix + driver_suffix)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=VimbaTriggerLogic(driver, override_deadtime),
-            plugins=plugins,
+            trigger_logic=VimbaTriggerLogic(driver, proc_plugin, override_deadtime),
+            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

@@ -660,3 +660,104 @@ async def test_step_scan_keep_numimages(
         TimeoutError, match="Timeout Error while waiting 0.1s to update"
     ):
         await det.trigger()
+
+
+async def test_kinetix_step_scan_with_averaging_filter(
+    static_path_provider: StaticPathProvider,
+):
+    async with init_devices(mock=True):
+        from ophyd_async.epics import adkinetix
+
+        det = adkinetix.KinetixDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider),
+            proc_suffix="PROC:",
+        )
+
+    proc = det.get_plugin("proc", adcore.NDProcessIO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(det.driver.acquire_period, 0.1)
+    set_mock_value(det.driver.acquire_time, 0.05)
+    set_mock_value(det.driver.array_size_x, 512)
+    set_mock_value(det.driver.array_size_y, 512)
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(proc.filter_type, adcore.NDProcessFilterType.AVERAGE)
+
+    await det.stage()
+
+    # When arm is pressed, produce frames
+    callback_on_mock_put(
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 2)
+    )
+
+    # Prepare with exposures_per_collection=5 and 2 collections to enable
+    # the averaging filter
+    await det.prepare(
+        TriggerInfo(
+            exposures_per_collection=5,
+            collections_per_event=2,
+            livetime=0.05,
+            exposure_timeout=1.0,
+        )
+    )
+
+    # Verify process plugin was configured for averaging
+    assert await proc.num_filter.get_value() == 5
+    assert await proc.enable_filter.get_value() is True
+    assert await proc.filter_type.get_value() == adcore.NDProcessFilterType.AVERAGE
+    assert await proc.auto_reset_filter.get_value() is True
+    assert await proc.data_type_out.get_value() == adcore.ADBaseDataType.AUTOMATIC
+    assert (
+        await proc.filter_callbacks.get_value()
+        == adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
+    )
+
+    # Verify num_images is set to collections * exposures_per_collection = 2 * 5 = 10
+    assert await det.driver.num_images.get_value() == 10
+
+    # Trigger and collect
+    await det.trigger()
+    path_info = static_path_provider()
+    description = await det.describe()
+    uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
+    assert description == {
+        "det": {
+            "dtype": "array",
+            "dtype_numpy": "|i1",
+            "external": "STREAM:",
+            "shape": [2, 512, 512],
+            "source": uri,
+        },
+    }
+    assert det.hints == {"fields": ["det"]}
+    await assert_reading(det, {})
+    docs = [doc async for doc in det.collect_asset_docs()]
+    sr = docs[:1]
+    sd = docs[1:]
+    assert sr == [
+        (
+            "stream_resource",
+            {
+                "data_key": "det",
+                "mimetype": "application/x-hdf5",
+                "parameters": {
+                    "chunk_shape": (1, 512, 512),
+                    "dataset": "/entry/data/data",
+                },
+                "uid": ANY,
+                "uri": uri,
+            },
+        ),
+    ]
+    assert sd == [
+        (
+            "stream_datum",
+            {
+                "descriptor": "",
+                "indices": {"start": 0, "stop": 1},
+                "seq_nums": {"start": 0, "stop": 0},
+                "stream_resource": sr[0][1]["uid"],
+                "uid": ANY,
+            },
+        ),
+    ]
