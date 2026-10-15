@@ -7,12 +7,16 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Annotated as A
 
+from bluesky.protocols import Movable
+
 from ophyd_async.core import (
+    AsyncStatus,
     DetectorTriggerLogic,
     SignalDict,
     SignalR,
     SignalRW,
     StrictEnum,
+    SupersetEnum,
 )
 
 from .adcore import (
@@ -32,6 +36,10 @@ __all__ = [
     "KinetixTriggerLogic",
     "KinetixTriggerMode",
     "KinetixReadoutMode",
+    "KinetixMinExpRes",
+    "KinetixSpeedTableIdx",
+    "KinetixCommIntf",
+    "KinetixFanSpeed",
 ]
 
 
@@ -52,11 +60,71 @@ class KinetixReadoutMode(StrictEnum):
     SUB_ELECTRON = "4"
 
 
+class KinetixMinExpRes(StrictEnum):
+    """Minimum exposure time resolution for ADKinetix detector.
+
+    On older firmware versions, only up to 1 ms exposure time resolution
+    is supported, while newer versions support up to 1 us.
+    """
+
+    SEC = "s"
+    MSEC = "ms"
+    USEC = "us"
+
+
+class KinetixSpeedTableIdx(StrictEnum):
+    """Speed table index for ADKinetix detector."""
+
+    IDX_0 = "0"
+    IDX_1 = "1"
+    IDX_2 = "2"
+    IDX_3 = "3"
+
+
+class KinetixCommIntf(StrictEnum):
+    """Communication interface for ADKinetix detector."""
+
+    UNKNOWN = "Unknown"
+    USB = "USB"
+    USB_1_1 = "USB 1.1"
+    USB_2_0 = "USB 2.0"
+    USB_3_0 = "USB 3.0"
+    USB_3_1 = "USB 3.1"
+    PCIE = "PCIE"
+    PCIE_X1 = "PCIE x1"
+    PCIE_X4 = "PCIE x4"
+    PCIE_X8 = "PCIE x8"
+    VIRTUAL = "Virtual"
+    ETHERNET = "Ethernet"
+
+
+class KinetixFanSpeed(SupersetEnum):
+    """Fan speed for ADKinetix detector."""
+
+    OFF = "Off"
+    LOW = "Low"
+    MEDIUM = "Medium"
+    HIGH = "High"
+
+
 class KinetixDriverIO(ADBaseIO):
     """Mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
 
-    trigger_mode: A[SignalRW[KinetixTriggerMode], PvSuffix("TriggerMode")]
-    readout_port_idx: A[SignalRW[KinetixReadoutMode], PvSuffix("ReadoutPortIdx")]
+    trigger_mode: A[SignalRW[KinetixTriggerMode], PvSuffix.rbv("TriggerMode")]
+    min_exp_res: A[SignalRW[KinetixMinExpRes], PvSuffix.rbv("MinExpRes")]
+    selected_interface: A[SignalR[KinetixCommIntf], PvSuffix("SelectedInterface_RBV")]
+    fan_speed: A[SignalRW[KinetixFanSpeed], PvSuffix.rbv("FanSpeed")]
+
+    # Readout settings
+    readout_port_idx: A[SignalRW[KinetixReadoutMode], PvSuffix.rbv("ReadoutPortIdx")]
+    readout_mode: A[SignalR[str], PvSuffix("ReadoutMode_RBV")]
+    readout_mode_valid: A[SignalR[bool], PvSuffix("ReadoutModeValid_RBV")]
+    readout_port_name: A[SignalR[str], PvSuffix("ReadoutPortName_RBV")]
+    speed_idx: A[SignalRW[KinetixSpeedTableIdx], PvSuffix.rbv("SpeedIdx")]
+    gain_idx: A[SignalRW[KinetixSpeedTableIdx], PvSuffix.rbv("GainIdx")]
+    speed_desc: A[SignalR[str], PvSuffix("SpeedDesc_RBV")]
+    gain_desc: A[SignalR[str], PvSuffix("GainDesc_RBV")]
+    apply_readout_mode: A[SignalRW[bool], PvSuffix("ApplyReadoutMode")]
 
 
 @dataclass
@@ -64,6 +132,20 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
     driver: KinetixDriverIO
+
+    def config_sigs(self):
+        return {
+            self.driver.acquire_time,
+            self.driver.trigger_mode,
+            self.driver.readout_mode,
+            self.driver.min_exp_res,
+            self.driver.selected_interface,
+            self.driver.fan_speed,
+            self.driver.model,
+            self.driver.manufacturer,
+            self.driver.serial_number,
+            self.driver.sdk_version,
+        }
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001
@@ -84,7 +166,7 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         return await trigger_info_from_num_images(self.driver)
 
 
-class KinetixDetector(AreaDetector[KinetixDriverIO]):
+class KinetixDetector(AreaDetector[KinetixDriverIO], Movable):
     """Create an ADKinetix AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
@@ -115,3 +197,14 @@ class KinetixDetector(AreaDetector[KinetixDriverIO]):
             config_sigs=config_sigs,
             name=name,
         )
+
+    @AsyncStatus.wrap
+    async def set(self, mode: KinetixReadoutMode):
+        """Switch the readout mode of the detector."""
+
+        await self.driver.readout_port_idx.set(mode)
+
+        if not await self.driver.readout_mode_valid.get_value():
+            raise RuntimeError(f"Failed to switch to readout mode {mode.name}!")
+
+        await self.driver.apply_readout_mode.set(True)
