@@ -1,8 +1,12 @@
 from enum import Enum
+from typing import Any
 
+import numpy as np
+import numpy.typing as npt
 import pytest
 
-from ophyd_async.core import StrictEnum, SupersetEnum
+from ophyd_async.core import Array1D, StrictEnum, SupersetEnum
+from ophyd_async.epics.core import epics_signal_rw
 
 # get_supported_values reconciles a PV's live enum choices against a
 # user-supplied StrictEnum/SupersetEnum class at connect time - it's called
@@ -90,3 +94,28 @@ def test_given_supersetenum_that_partial_values_plus_extra_values_are_invalid():
 def test_given_supersetenum_that_no_matches_is_invalid():
     with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
         get_supported_values("", MySupersetEnum, ("no_match_1", "no_match_2"))
+
+
+@pytest.mark.parametrize(
+    "datatype, expected",
+    [
+        (Array1D[np.float64], None),
+        (np.ndarray, None),
+        (npt.NDArray[np.float64], "npt.NDArray[np.float64]"),
+        (
+            np.ndarray[tuple[int, int], np.dtype[np.float64]],
+            "np.ndarray[tuple[int, int], np.dtype[np.float64]]",
+        ),
+    ],
+)
+def test_epics_signal_only_accepts_arrays_of_known_rank(
+    datatype: type[Any], expected: str | None
+):
+    if expected is None:
+        assert epics_signal_rw(datatype, "PV")
+    else:
+        with pytest.raises(TypeError) as ctx:
+            epics_signal_rw(datatype, "PV")
+        assert str(ctx.value) == (
+            f"Expected Array1D[dtype] or np.ndarray, got {expected}"
+        )
