@@ -69,6 +69,23 @@ async def test_set_mock_value():
     assert await mock_signal._connector.backend.get_value() == 10
 
 
+async def test_set_mock_value_timestamp_and_alarm_severity():
+    signal = soft_signal_rw(int)
+    await signal.connect(mock=True)
+    reading = (await signal.read())[signal.name]
+    assert reading["alarm_severity"] == 0
+    set_mock_value(signal, 5, timestamp=123.0, alarm_severity=2)
+    reading = (await signal.read())[signal.name]
+    assert reading["value"] == 5
+    assert reading["timestamp"] == 123.0
+    assert reading["alarm_severity"] == 2
+    # Defaults mean now and ok
+    set_mock_value(signal, 6)
+    reading = (await signal.read())[signal.name]
+    assert reading["timestamp"] > 123.0
+    assert reading["alarm_severity"] == 0
+
+
 async def test_set_mock_put_proceeds():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)

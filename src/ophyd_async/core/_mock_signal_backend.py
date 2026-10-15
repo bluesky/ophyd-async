@@ -69,9 +69,19 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the value of the signal."""
-        self.soft_backend.set_value(value)
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the value, timestamp and alarm severity of the signal.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
+        self.soft_backend.set_value(value, timestamp, alarm_severity)
 
     def set_units(self, units: str):
         self.soft_backend.metadata["units"] = units

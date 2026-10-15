@@ -188,14 +188,24 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
             except Exception:
                 continue
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the current value, alarm and timestamp."""
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the current value, timestamp and alarm severity.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
         # setp = self.converter.write_value(value)
         # self._setpoint = setp
         self.reading = Reading(
             value=self.converter.write_value(value),
-            timestamp=time.time(),
-            alarm_severity=0,
+            timestamp=time.time() if timestamp is None else timestamp,
+            alarm_severity=alarm_severity,
         )
         if self.callback:
             self.callback(self.reading)
