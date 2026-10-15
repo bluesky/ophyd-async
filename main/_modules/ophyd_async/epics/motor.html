@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=78b849c7"></script>
+    <script src="../../../_static/documentation_options.js?v=f06bd51d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
   
   
 </a></div>
@@ -936,6 +936,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;MotorLimitsError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MotorAlarmError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Motor&quot;</span><span class="p">,</span>
     <span class="s2">&quot;InstantMotorMock&quot;</span><span class="p">,</span>
     <span class="s2">&quot;VeloAndAcclRespectingMotorMock&quot;</span><span class="p">,</span>
@@ -950,6 +951,13 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for invalid motor limits.&quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="MotorAlarmError">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.MotorAlarmError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MotorAlarmError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for a motor that has an alarm severity set after a move.&quot;&quot;&quot;</span></div>
 
 
 
@@ -1102,8 +1110,19 @@ window.runMermaid = runMermaid;</script>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutCalculator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move by setting the setpoint and waiting for put completion.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move by setting the setpoint and waiting for put completion.</span>
+
+<span class="sd">        Raises `MotorAlarmError` if the readback has an alarm severity set once</span>
+<span class="sd">        the put has completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">())</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">severity</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">severity</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MotorAlarmError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Motor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is in alarm (severity </span><span class="si">{</span><span class="n">severity</span><span class="si">}</span><span class="s2">) &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;after a move to </span><span class="si">{</span><span class="n">new_position</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlyMotorInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorFlyCtx</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the beginning of a run-up distance ready for a fly scan.&quot;&quot;&quot;</span>

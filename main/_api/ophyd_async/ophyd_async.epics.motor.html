@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=78b849c7"></script>
+    <script src="../../_static/documentation_options.js?v=f06bd51d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev12+g25a4f9ed2 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
   
   
 </a></div>
@@ -576,6 +576,13 @@
 <p>Exception for invalid motor limits.</p>
 </dd></dl>
 
+<dl class="py exception">
+<dt class="sig sig-object py" id="ophyd_async.epics.motor.MotorAlarmError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.motor.</span></span><span class="sig-name descname"><span class="pre">MotorAlarmError</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/motor.html#MotorAlarmError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.MotorAlarmError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Exception for a motor that has an alarm severity set after a move.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.motor.</span></span><span class="sig-name descname"><span class="pre">Motor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/motor.html#Motor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor" title="Link to this definition">#</a></dt>
@@ -725,6 +732,7 @@ builds a <code class="docutils literal notranslate"><span class="pre">FlyableLog
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.MotorLimitsError"><code class="docutils literal notranslate"><span class="pre">MotorLimitsError</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.MotorAlarmError"><code class="docutils literal notranslate"><span class="pre">MotorAlarmError</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor"><code class="docutils literal notranslate"><span class="pre">Motor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.movable_logic"><code class="docutils literal notranslate"><span class="pre">Motor.movable_logic()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.flyable_logic"><code class="docutils literal notranslate"><span class="pre">Motor.flyable_logic()</span></code></a></li>

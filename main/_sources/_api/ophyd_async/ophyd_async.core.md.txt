@@ -1864,7 +1864,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend
 ```
 
-````{py:method} set_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT)
+````{py:method} set_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT, timestamp: float | None = None, alarm_severity: int = 0)
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_value
 
 ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_value
@@ -2011,7 +2011,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} set_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT)
+````{py:method} set_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT, timestamp: float | None = None, alarm_severity: int = 0)
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_value
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_value
@@ -2136,7 +2136,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-````{py:function} set_mock_value(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], value: ~ophyd_async.core._signal_backend.SignalDatatypeT)
+````{py:function} set_mock_value(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], value: ~ophyd_async.core._signal_backend.SignalDatatypeT, timestamp: float | None = None, alarm_severity: int = 0)
 :canonical: ophyd_async.core._mock_signal_utils.set_mock_value
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_value
