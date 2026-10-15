@@ -1,3 +1,4 @@
+from itertools import count
 from unittest.mock import MagicMock
 
 import pytest
@@ -53,7 +54,6 @@ def test_standard_readable_hints():
 
 def test_standard_readable_hints_raises_when_overriding_string_literal():
     sr = StandardReadable()
-
     hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"gridding": "rectilinear_nonsequential"}
 
@@ -65,8 +65,50 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hints key .* value may not be overridden"):
+    with pytest.raises(RuntimeError, match=r"Hint key .* may not be overridden"):
         sr.hints  # noqa: B018
+
+
+def test_standard_readable_arbitrary_hints():
+    counter = count()
+
+    class Device(StandardReadable):
+        def __init__(self, name: str = "") -> None:
+            super().__init__(name)
+            with self.add_children_as_readables(Format.HINTED_SIGNAL):
+                self.signal = soft_signal_rw(float)
+            if next(counter) < 3:
+                with self.add_children_as_readables(Format.CHILD):
+                    self.sub_device_1 = Device()
+                    self.sub_device_2 = Device()
+
+        @property
+        def hints(self):
+            hints = StandardReadable.hints.__get__(self)
+            hints.update(
+                {
+                    f"dict: {self.name}": {self.name: self.name},
+                    f"list: {self.name}": [self.name],
+                    f"str: {self.name}": self.name,
+                }  # type: ignore
+            )
+            return hints
+
+    hints = Device(name="device").hints
+    assert set(hints.pop("fields")) == {
+        "device-signal",
+        "device-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-sub_device_1-signal",
+        "device-sub_device_1-sub_device_1-sub_device_2-signal",
+        "device-sub_device_1-sub_device_2-signal",
+        "device-sub_device_2-signal",
+    }
+    assert hints == {
+        "dict: device": {"device": "device"},
+        "list: device": ["device"],
+        "str: device": "device",
+    }
 
 
 def test_standard_readable_hints_raises_when_overriding_sequence():
@@ -83,20 +125,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hint fields .* overrides existing hint"):
-        sr.hints  # noqa: B018
-
-
-@pytest.mark.parametrize("invalid_type", [1, 1.0, {"abc": "def"}, {1, 2, 3}])
-def test_standard_readable_hints_invalid_types(invalid_type):
-    sr = StandardReadable()
-
-    hint1 = MagicMock(spec=HasHints)
-    hint1.hints = {"test": invalid_type}
-
-    sr._has_hints = (hint1,)
-
-    with pytest.raises(TypeError, match=r"Unknown type for value .* for key .*"):
+    with pytest.raises(RuntimeError, match=r"Hint 'fields' .* override existing hint"):
         sr.hints  # noqa: B018
 
 
