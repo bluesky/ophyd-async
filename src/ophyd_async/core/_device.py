@@ -84,9 +84,24 @@ class DeviceMock(Generic[DeviceT]):
     ```
     """
 
-    def __init__(self, name: str = "", parent: DeviceMock | None = None) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        parent: DeviceMock | None = None,
+        *,
+        mock_types: Mapping[type[Device], type[DeviceMock]] | None = None,
+    ) -> None:
+        """Create a DeviceMock.
+
+        :param name: The name of the Device within its parent.
+        :param parent: The DeviceMock of the parent Device.
+        :param mock_types:
+            DeviceMock classes keyed by Device type, used for the Devices in the
+            tree below this one, see [](#get_default_mock_class).
+        """
         self.name = name
         self.parent = parent
+        self.mock_types = mock_types or {}
         self._mock: Mock | None = None
 
     def __call__(self) -> Mock:
@@ -104,9 +119,59 @@ class DeviceMock(Generic[DeviceT]):
         """
 
 
-# Keep LazyMock as an alias for backwards compatibility
-# Remove for ophyd-async 1.0
-LazyMock = DeviceMock
+async def connect_devices(
+    devices: Mapping[str, Device],
+    mock: bool | Mapping[type[Device], type[DeviceMock]] = False,
+    timeout: float = DEFAULT_TIMEOUT,
+    force_reconnect: bool = False,
+) -> None:
+    """Connect Devices in parallel, raising one error that lists any failures.
+
+    :param devices: The Devices to connect, keyed by the name to report them as.
+    :param mock:
+        If True, connect in mock mode. A `Mapping` of Device type to DeviceMock class
+        also connects in mock mode, using the first class whose key matches each
+        Device in the tree (see [](#get_default_mock_class)), including the top
+        level Devices. An empty `Mapping` is equivalent to `True`.
+    :param timeout: Time to wait before failing with a TimeoutError.
+    :param force_reconnect: If True, force a reconnect even if the last connect
+        succeeded. It has no effect in mock mode.
+    :raises TypeError:
+        If `mock` is not a bool or a `Mapping`, or a `Mapping` key is not a Device
+        subclass or a value is not a DeviceMock subclass.
+    :raises NotConnectedError: If devices could not be connected.
+    """
+    if isinstance(mock, bool):
+        # Every Device is connected with the same flag
+        def mock_arg_for(device: Device) -> DeviceMock | bool:
+            return mock
+    elif isinstance(mock, Mapping):
+        # A Mapping becomes the DeviceMock for each top level Device
+        for typ, cls in mock.items():
+            if not (isinstance(typ, type) and issubclass(typ, Device)):
+                raise TypeError(f"mock mapping key {typ!r} is not a Device subclass")
+            if not (isinstance(cls, type) and issubclass(cls, DeviceMock)):
+                raise TypeError(
+                    f"mock mapping value {cls!r} for {typ.__name__} is not a "
+                    "DeviceMock subclass"
+                )
+
+        def mock_arg_for(device: Device) -> DeviceMock | bool:
+            return get_default_mock_class(device, mock)(mock_types=mock)
+    else:
+        raise TypeError(
+            f"mock must be a bool or a DeviceMock, not {type(mock).__name__}. "
+            "To override DeviceMock classes by Device type, pass the mapping "
+            "to init_devices or ensure_connected"
+        )
+
+    coros = {
+        name: device.connect(
+            mock=mock_arg_for(device), timeout=timeout, force_reconnect=force_reconnect
+        )
+        for name, device in devices.items()
+    }
+    await wait_for_connection(**coros)
 
 
 class DeviceConnector:
@@ -133,22 +198,26 @@ class DeviceConnector:
     async def connect_mock(self, device: Device, mock: DeviceMock):
         """Use during [](#Device.connect) with `mock=True`.
 
-        This is called when there is no cached connect done in `mock=True`
-        mode. It connects the Device and all its children in mock mode.
+        This is called by `connect(mock=...)` with a mock. It connects the Device and
+        all its children in mock mode.
+
+        :param device: The Device being connected.
+        :param mock:
+            The DeviceMock for `device`. Each child gets a DeviceMock of the class
+            [](#get_default_mock_class) returns for it with `mock.mock_types`.
         """
         # Connect serially, no errors to gather up as in mock mode
         exceptions: dict[str, Exception] = {}
         for name, child_device in device.children():
             try:
-                child_mock_class = child_device._mock_class  # noqa: SLF001
-                await child_device.connect(mock=child_mock_class(name, mock))
+                child_mock_class = get_default_mock_class(child_device, mock.mock_types)
+                await child_device.connect(
+                    mock=child_mock_class(name, mock, mock_types=mock.mock_types)
+                )
             except Exception as exc:
                 exceptions[name] = exc
         if exceptions:
             raise NotConnectedError.with_other_exceptions_logged(exceptions)
-
-        # Call the DeviceMock's connect method to inject custom logic
-        await mock.connect(device)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Use during [](#Device.connect) with `mock=False`.
@@ -156,12 +225,12 @@ class DeviceConnector:
         This is called when there is no cached connect done in `mock=False`
         mode. It connects the Device and all its children in real mode in parallel.
         """
-        # Connect in parallel, gathering up NotConnectedErrors
-        coros = {
-            name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
-            for name, child_device in device.children()
-        }
-        await wait_for_connection(**coros)
+        await connect_devices(
+            dict(device.children()),
+            mock=False,
+            timeout=timeout,
+            force_reconnect=force_reconnect,
+        )
 
 
 def _fail_if_overwriting_parent(self: Device, name: str, value: Any):
@@ -305,33 +374,45 @@ class Device(HasName):
     ) -> None:
         """Connect the device and all child devices.
 
-        Successful connects will be cached so subsequent calls will return
-        immediately. Contains a timeout that gets propagated to child.connect
-        methods.
+        Successful real (`mock=False`) connects will be cached so subsequent calls
+        will return immediately. Contains a timeout that gets propagated to
+        child.connect methods.
 
         :param mock:
-            If True then use [](#MockSignalBackend) for all Signals. If passed a
-            [](#DeviceMock) then pass this down for use within the Signals,
-            otherwise create one using the registered default mock for this device
-            type, or a plain [](#DeviceMock) if no default is registered.
+            `False` connects for real. `True` connects in mock mode, where each
+            Device uses its [](#default_mock_class). A [](#DeviceMock) instance is
+            used as-is for this Device, and its `mock_types` choose the
+            DeviceMock classes of the children. To override classes by Device type,
+            use [](#init_devices), [](#ensure_connected) or [](#connect_devices).
+            Calling this directly on a child after its parent has connected makes
+            its mock a root: it gets its registered default mock class, loses the
+            parent's `mock_types` and is detached from the parent's mock tree, so
+            re-connect from the parent instead. `mock` is not validated at
+            runtime; [](#init_devices) and [](#ensure_connected) do that.
         :param timeout: Time to wait before failing with a TimeoutError.
         :param force_reconnect:
-            If True, force a reconnect even if the last connect succeeded.
+            If True, force a reconnect even if the last connect succeeded. Mock
+            connects always rebuild, so it has no effect in mock mode.
+
+        Re-connecting a Device, in either mode, may drop subscriptions made before
+        the re-connect, so subscribe again afterwards.
         """
         connector: DeviceConnector = error_if_none(
             getattr(self, "_connector", None),
             f"{self}: doesn't have attribute `_connector`,"
             f" did you call `super().__init__` in your `__init__` method?",
         )
-        if mock:
-            # Always connect in mock mode serially
+        if mock is not False:
+            # Every mock connect rebuilds this device and its children's DeviceMocks
             if isinstance(mock, DeviceMock):
                 # Use the user supplied mock
                 self._mock = mock
-            elif not self._mock:
-                # Make a new mock of the registered type
-                self._mock = self._mock_class()
+            else:
+                self._mock = get_default_mock_class(self)()
             await connector.connect_mock(self, self._mock)
+            # Run the DeviceMock's hook once the connector has finished, so it
+            # fires for every Device, Signal and Command
+            await self._mock.connect(self)
         else:
             # Try to cache the connect in real mode
             can_use_previous_connect = (
@@ -557,7 +638,7 @@ def init_devices(
     set_name: bool = True,
     child_name_separator: str = "-",
     connect: bool = True,
-    mock: bool = False,
+    mock: bool | Mapping[type[Device], type[DeviceMock]] = False,
     timeout: float = 10.0,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.
@@ -569,7 +650,11 @@ def init_devices(
     :param connect:
         If True, call `device.connect(mock, timeout)` in parallel on all Devices
         created within the context manager.
-    :param mock: If True, connect Signals in mock mode.
+    :param mock:
+        If True, connect in mock mode. A `Mapping` of Device type to DeviceMock class
+        also connects in mock mode, using the first class whose key matches each
+        Device in the tree (see [](#get_default_mock_class)), including the top
+        level Devices.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
     :raises NotConnectedError: If devices could not be connected.
@@ -590,12 +675,26 @@ def init_devices(
                 if not device.name:
                     device.set_name(name, child_name_separator=child_name_separator)
         if connect:
-            coros = {
-                name: device.connect(mock, timeout) for name, device in devices.items()
-            }
-            await wait_for_connection(**coros)
+            await connect_devices(devices, mock, timeout)
 
     return DeviceProcessor(process_devices)
+
+
+def get_default_mock_class(
+    device: Device, mock_types: Mapping[type[Device], type[DeviceMock]] | None = None
+) -> type[DeviceMock]:
+    """Get the DeviceMock class to use for a Device.
+
+    :param device: The Device to get the DeviceMock class for.
+    :param mock_types:
+        DeviceMock classes keyed by Device type. The class of the first key
+        `device` is an `isinstance` of is used, so put more specific types first.
+        Otherwise the class registered with [](#default_mock_class) is used.
+    """
+    return next(
+        (cls for typ, cls in (mock_types or {}).items() if isinstance(device, typ)),
+        device._mock_class,  # noqa: SLF001
+    )
 
 
 def default_mock_class(

@@ -21,7 +21,7 @@ from bluesky.protocols import (
 from event_model import DataKey
 from stamina import retry_context
 
-from ._device import Device, DeviceConnector, LazyMock
+from ._device import Device, DeviceConnector, DeviceMock
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
@@ -51,7 +51,7 @@ class SignalConnector(DeviceConnector):
     def __init__(self, backend: SignalBackend):
         self.backend = self._init_backend = backend
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: DeviceMock):
         self.backend = MockSignalBackend(self._init_backend, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
@@ -193,22 +193,33 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         self, cached: bool | None = None
     ) -> _SignalCache | SignalBackend:
         # If cached is None then calculate it based on whether we already have a cache
+        cache = self._live_cache()
         if cached is None:
-            cached = self._cache is not None
+            cached = cache is not None
         if cached:
-            cache = error_if_none(self._cache, f"{self.source} not being monitored")
+            cache = error_if_none(cache, f"{self.source} not being monitored")
             return cache
         else:
             return self._connector.backend
 
-    def _get_cache(self) -> _SignalCache:
-        if not self._cache:
-            self._cache = _SignalCache(self._connector.backend, self)
+    def _live_cache(self) -> _SignalCache | None:
+        # A connect that swapped the backend leaves the cache subscribed to the
+        # old one, which never updates again, so drop it and its listeners
+        if self._cache and self._cache.backend is not self._connector.backend:
+            self._cache.close()
+            self._cache = None
         return self._cache
 
+    def _get_cache(self) -> _SignalCache:
+        cache = self._live_cache()
+        if cache is None:
+            cache = self._cache = _SignalCache(self._connector.backend, self)
+        return cache
+
     def _del_cache(self, needed: bool):
-        if self._cache and not needed:
-            self._cache.close()
+        cache = self._live_cache()
+        if cache and not needed:
+            cache.close()
             self._cache = None
 
     @_add_timeout

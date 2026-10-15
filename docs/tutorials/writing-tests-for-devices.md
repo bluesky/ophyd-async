@@ -25,7 +25,7 @@ We will be writing a test using the pytest framework which encourages fixtures t
 :pyobject: mock_motor
 ```
 
-This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#LazyMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
+This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#DeviceMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
 
 If we had any cleanup to do, we would do that after the yield statement.
 
@@ -53,9 +53,36 @@ used when connected in mock mode:
 ```
 
 Now whenever a `Motor` is connected using [](#init_devices)`(mock=True)`, it will
-automatically use `InstantMotorMock` without any fixture setup. You can still override
-the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
-or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
+automatically use `InstantMotorMock` without any fixture setup.
+
+A default mock class should make the Device's verbs work in the most minimal way
+possible, e.g. a move completes instantly. Mocks that model real behavior, like velocity
+or timing, should be opt-in rather than registered as the default.
+
+You can still override the automatic mock for specific tests by passing a
+[](#DeviceMock) instance to `connect()`, as the `mock_motor` fixture above does.
+
+:::{note}
+`connect(mock=True)` always makes a new mock for the Device and any of its children, so subscriptions and staging made before it are dropped. Subscribe or stage again afterwards.
+:::
+
+(override-mock-by-type)=
+### Overriding mocks by Device type
+
+To override by Device type, including Devices deep in a composite Device, pass a mapping
+of Device type to `DeviceMock` class to [](#init_devices), [](#ensure_connected) or [](#connect_devices):
+
+```python
+with init_devices(mock={Motor: VeloAndAcclRespectingMotorMock}):
+    motor = Motor("PREFIX:")
+    stage = Stage("PREFIX:")
+```
+
+Here `motor`, and every `Motor` inside `stage`, uses `VeloAndAcclRespectingMotorMock`
+instead of `InstantMotorMock`, so moves take as long as velocity and acceleration time
+dictate. Mappings can also be keyed by Signal or Command types, whose
+mocks run their connect hook too. [](#get_default_mock_class) returns the class that is chosen for a
+Device.
 
 ### Choosing a different mock behaviour
 
@@ -66,7 +93,9 @@ timing — the [](#Motor) module also ships `VeloAndAcclRespectingMotorMock`, wh
 drives the readback towards the setpoint over time while respecting the motor's
 velocity and acceleration.
 
-To use it, pass an instance directly to `connect()` instead of relying on the default:
+To override the mock for every Device of a type, rather than one Device, pass `init_devices(mock={DeviceType: MockType})`, as explained in [](#override-mock-by-type).
+
+To use it for a single Device, pass an instance directly to `connect()` instead of relying on the default:
 
 ```{literalinclude} ../../tests/unit_tests/epics/test_motor.py
 :language: python

@@ -8,16 +8,25 @@ import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Command,
     Device,
     DeviceFiller,
     DeviceMap,
+    DeviceMock,
     DeviceProcessor,
     DeviceVector,
     NotConnectedError,
     Reference,
+    Signal,
     SignalRW,
+    connect_devices,
+    default_mock_class,
+    get_default_mock_class,
+    get_mock,
     init_devices,
     set_mock_attr,
+    set_mock_value,
+    soft_command,
     soft_signal_rw,
     wait_for_connection,
 )
@@ -238,6 +247,298 @@ async def test_device_with_init_devices():
     assert parent.dict_with_children[123].parent == parent.dict_with_children
     assert parent.child1.connected
     assert parent.dict_with_children[123].connected
+
+
+class RecordingMock(DeviceMock):
+    async def connect(self, device: Device) -> None:
+        device.connected_with = type(self)  # type: ignore
+
+
+class LeafMock(RecordingMock):
+    pass
+
+
+class MiddleMock(RecordingMock):
+    pass
+
+
+class XMock(RecordingMock):
+    pass
+
+
+class YMock(RecordingMock):
+    pass
+
+
+@default_mock_class(LeafMock)
+class Leaf(Device):
+    def __init__(self) -> None:
+        self.sig = soft_signal_rw(float)
+        super().__init__()
+
+
+@default_mock_class(MiddleMock)
+class Middle(Device):
+    def __init__(self) -> None:
+        self.leaf = Leaf()
+        super().__init__()
+
+
+class Root(Device):
+    def __init__(self, name: str = "root") -> None:
+        self.middle = Middle()
+        self.leaves = DeviceVector({1: Leaf()})
+        super().__init__(name)
+
+
+def connected_with(device: Device) -> dict[str, type[DeviceMock]]:
+    """Map the name of each non-Signal Device in the tree to its DeviceMock class."""
+    result = {device.name: getattr(device, "connected_with", DeviceMock)}
+    for _, child in device.children():
+        if not isinstance(child, Signal):
+            result.update(connected_with(child))
+    return result
+
+
+def tree(root, middle, middle_leaf, leaves, leaves_1) -> dict[str, type[DeviceMock]]:
+    return {
+        "root": root,
+        "root-middle": middle,
+        "root-middle-leaf": middle_leaf,
+        "root-leaves": leaves,
+        "root-leaves-1": leaves_1,
+    }
+
+
+DEFAULT_TREE = tree(DeviceMock, MiddleMock, LeafMock, DeviceMock, LeafMock)
+
+
+def as_mock(root: Device, choice):
+    """Turn a mapping of mock_types into the DeviceMock for `root`."""
+    if isinstance(choice, dict):
+        return get_default_mock_class(root, choice)(mock_types=choice)
+    return choice
+
+
+@pytest.mark.parametrize(
+    "mock, expected",
+    [
+        (True, DEFAULT_TREE),
+        ({}, DEFAULT_TREE),
+        # Two levels deep, reaching the Leaf in the DeviceVector too
+        (
+            {Leaf: XMock},
+            tree(DeviceMock, MiddleMock, XMock, DeviceMock, XMock),
+        ),
+        # Matching the root itself
+        (
+            {Root: XMock},
+            tree(XMock, MiddleMock, LeafMock, DeviceMock, LeafMock),
+        ),
+        (
+            {Middle: XMock, Root: YMock},
+            tree(YMock, XMock, LeafMock, DeviceMock, LeafMock),
+        ),
+        (
+            {Device: XMock},
+            tree(XMock, XMock, XMock, XMock, XMock),
+        ),
+        (
+            {Leaf: YMock, Device: XMock},
+            tree(XMock, XMock, YMock, XMock, YMock),
+        ),
+        # First match wins
+        (
+            {Device: XMock, Leaf: YMock},
+            tree(XMock, XMock, XMock, XMock, XMock),
+        ),
+    ],
+    ids=[
+        "True",
+        "empty mapping",
+        "two levels deep",
+        "root itself",
+        "mapping beats registered default",
+        "Device key is whole-tree default",
+        "specific first",
+        "Device first",
+    ],
+)
+async def test_connect_mock_chooses_mock_classes(mock, expected):
+    root = Root()
+
+    await root.connect(mock=as_mock(root, mock))
+
+    assert connected_with(root) == expected
+    # Signal mocks still hang off the root mock
+    await root.middle.leaf.sig.set(1.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
+
+
+async def test_connect_mock_instance_is_adopted_and_children_use_defaults():
+    root = Root()
+    instance = XMock()
+
+    await root.connect(mock=instance)
+
+    assert get_mock(root) is instance()
+    assert connected_with(root) == tree(
+        XMock, MiddleMock, LeafMock, DeviceMock, LeafMock
+    )
+    await root.middle.leaf.sig.set(1.0)
+    instance().middle.leaf.sig.put.assert_called_once_with(1.0)
+
+
+async def test_init_devices_and_ensure_connected_take_mapping(RE):
+    mapping = {Leaf: XMock}
+    async with init_devices(mock=mapping):
+        root = Root()
+    assert connected_with(root)["root-middle-leaf"] is XMock
+
+    async with init_devices(mock={}):
+        empty = Root("empty")
+    assert connected_with(empty) == {
+        k.replace("root", "empty"): v for k, v in DEFAULT_TREE.items()
+    }
+
+    other = Root("other")
+    RE(ensure_connected(other, mock=mapping))
+    assert connected_with(other)["other-leaves-1"] is XMock
+
+
+@pytest.mark.parametrize(
+    "bad_mock, match",
+    [
+        ("yes", "mock must be a bool"),
+        (1, "mock must be a bool"),
+        (0, "mock must be a bool"),
+        (None, "mock must be a bool"),
+        (DeviceMock, "mock must be a bool"),
+        (DeviceMock(), "mock must be a bool"),
+        ({Leaf: "X"}, "value 'X' for Leaf is not a DeviceMock subclass"),
+        ({Leaf: Leaf}, "is not a DeviceMock subclass"),
+        ({Leaf: XMock()}, "is not a DeviceMock subclass"),
+        ({"Leaf": XMock}, "key 'Leaf' is not a Device subclass"),
+        ({XMock: XMock}, "is not a Device subclass"),
+    ],
+)
+async def test_bad_mock_raises_type_error(bad_mock, match, RE):
+    with pytest.raises(TypeError, match=match):
+        await connect_devices({"root": Root("root")}, mock=bad_mock)
+    with pytest.raises(TypeError, match=match):
+        async with init_devices(mock=bad_mock):
+            Root("root")
+    with pytest.raises(TypeError, match=match):
+        RE(ensure_connected(Root("root"), mock=bad_mock))
+
+
+@pytest.mark.parametrize("first", [True, {}])
+@pytest.mark.parametrize("second", [True, {}])
+@pytest.mark.parametrize("force_reconnect", [False, True])
+async def test_empty_mapping_is_identical_to_true(first, second, force_reconnect):
+    async def connect(mock):
+        root, mtr = Root("root"), motor.Motor("PREFIX:", name="mtr")
+        await connect_devices({"root": root, "mtr": mtr}, mock=mock)
+        return root, mtr
+
+    expected_root, expected_mtr = await connect(True)
+    root, mtr = await connect(first)
+    await connect_devices(
+        {"root": root, "mtr": mtr}, mock=second, force_reconnect=force_reconnect
+    )
+
+    assert connected_with(root) == connected_with(expected_root) == DEFAULT_TREE
+    assert connected_with(mtr) == connected_with(expected_mtr)
+    # InstantMotorMock moves the readback to the setpoint straight away
+    await mtr.set(3.0)
+    assert await mtr.user_readback.get_value() == 3.0
+
+
+async def test_connect_mock_again_builds_new_mocks_and_reattaches_children():
+    root = Root()
+    await root.connect(mock=True)
+    root_mock, leaf_mock = get_mock(root), get_mock(root.middle.leaf)
+
+    await root.connect(mock=True)
+
+    assert get_mock(root) is not root_mock
+    assert get_mock(root.middle.leaf) is not leaf_mock
+    await root.middle.leaf.sig.set(1.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
+    assert root_mock.mock_calls == []
+
+
+async def test_connect_mock_child_then_parent_attaches_child_under_parent():
+    root = Root()
+    await root.middle.connect(mock=True)
+    alone = get_mock(root.middle)
+
+    await root.connect(mock=True)
+
+    assert get_mock(root.middle) is not alone
+    await root.middle.leaf.sig.set(1.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
+
+
+async def test_connect_mock_again_keeps_soft_signal_value():
+    root = Root()
+    await root.connect(mock=True)
+    await root.middle.leaf.sig.set(1.5)
+
+    await root.connect(mock=True)
+
+    assert await root.middle.leaf.sig.get_value() == 1.5
+
+
+async def test_connect_mock_same_instance_again_is_adopted_again():
+    root = Root()
+    instance = XMock()
+    await root.connect(mock=instance)
+    leaf_mock = get_mock(root.middle.leaf)
+
+    await root.connect(mock=instance)
+
+    assert get_mock(root) is instance()
+    assert get_mock(root.middle.leaf) is not leaf_mock
+
+
+@pytest.mark.parametrize(
+    "first, second, expected",
+    [
+        (
+            True,
+            {Leaf: XMock},
+            tree(DeviceMock, MiddleMock, XMock, DeviceMock, XMock),
+        ),
+        ({Leaf: XMock}, True, DEFAULT_TREE),
+        (
+            {Leaf: XMock},
+            {Leaf: YMock},
+            tree(DeviceMock, MiddleMock, YMock, DeviceMock, YMock),
+        ),
+        (True, XMock(), tree(XMock, MiddleMock, LeafMock, DeviceMock, LeafMock)),
+        (XMock(), YMock(), tree(YMock, MiddleMock, LeafMock, DeviceMock, LeafMock)),
+    ],
+    ids=[
+        "True to mapping",
+        "mapping to True",
+        "different mapping",
+        "True to instance",
+        "different instance",
+    ],
+)
+async def test_connect_mock_again_applies_new_mock_choice(first, second, expected):
+    root = Root()
+    await root.connect(mock=as_mock(root, first))
+    root_mock, leaf_mock = get_mock(root), get_mock(root.middle.leaf)
+
+    await root.connect(mock=as_mock(root, second))
+
+    assert get_mock(root) is not root_mock
+    assert get_mock(root.middle.leaf) is not leaf_mock
+    assert connected_with(root) == expected
+    await root.middle.leaf.sig.set(1.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
 
 
 async def test_wait_for_connection():
@@ -491,3 +792,84 @@ def test_device_repr_and_str_without_name():
     unnamed_device = Device()
     expected = object.__repr__(unnamed_device)
     assert repr(unnamed_device) == str(unnamed_device) == expected
+
+
+class MockedByType(Device):
+    def __init__(self, name: str = "") -> None:
+        self.leaf = Leaf()
+        super().__init__(name)
+
+
+async def test_init_devices_mapping_applies_to_top_level_and_nested_devices():
+    async with init_devices(mock={Leaf: XMock}):
+        leaf = Leaf()
+        holder = MockedByType()
+
+    assert connected_with(leaf)["leaf"] is XMock
+    assert connected_with(holder.leaf)["holder-leaf"] is XMock
+    assert connected_with(holder)["holder"] is DeviceMock
+
+
+class SeenMock(DeviceMock):
+    seen: list[str] = []
+
+    async def connect(self, device: Device) -> None:
+        self.seen.append(device.name)
+
+
+class FortyTwoMock(SeenMock):
+    async def connect(self, device) -> None:
+        await super().connect(device)
+        set_mock_value(device, 42.0)
+
+
+def _noop() -> None:
+    pass
+
+
+class HookInner(Device):
+    def __init__(self, name: str = "") -> None:
+        self.sig = soft_signal_rw(float)
+        self.cmd = soft_command(_noop)
+        super().__init__(name)
+
+
+class HookOuter(Device):
+    def __init__(self, name: str = "") -> None:
+        self.inner = HookInner()
+        super().__init__(name)
+
+
+async def test_signal_and_command_keyed_mapping_hooks_run_children_first():
+    SeenMock.seen.clear()
+    # Held in a variable, so this also checks the Mapping key typing
+    mock_types = {SignalRW: FortyTwoMock, Command: SeenMock, Device: SeenMock}
+    async with init_devices(mock=mock_types):
+        outer = HookOuter()
+    assert await outer.inner.sig.get_value() == 42.0
+    assert SeenMock.seen == [
+        "outer-inner-sig",
+        "outer-inner-cmd",
+        "outer-inner",
+        "outer",
+    ]
+
+    # Reconnecting runs the hooks again, replacing the injected value
+    SeenMock.seen.clear()
+    set_mock_value(outer.inner.sig, 1.0)
+    await outer.connect(mock=SeenMock(mock_types=mock_types))
+    assert await outer.inner.sig.get_value() == 42.0
+    assert SeenMock.seen == [
+        "outer-inner-sig",
+        "outer-inner-cmd",
+        "outer-inner",
+        "outer",
+    ]
+
+
+def test_lazy_mock_alias_is_device_mock():
+    with pytest.warns(DeprecationWarning, match="'LazyMock' is deprecated") as record:
+        from ophyd_async.core import LazyMock
+
+    assert LazyMock is DeviceMock
+    assert record[0].filename == __file__

@@ -1,6 +1,13 @@
+from collections.abc import Mapping
+
 from bluesky.utils import plan
 
-from ophyd_async.core import DEFAULT_TIMEOUT, Device, LazyMock, wait_for_connection
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceMock,
+    connect_devices,
+)
 
 from ._wait_for_awaitable import wait_for_awaitable
 
@@ -8,7 +15,7 @@ from ._wait_for_awaitable import wait_for_awaitable
 @plan
 def ensure_connected(
     *devices: Device,
-    mock: bool | LazyMock = False,
+    mock: bool | Mapping[type[Device], type[DeviceMock]] = False,
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
@@ -19,10 +26,12 @@ def ensure_connected(
     }
     if non_unique:
         raise ValueError(f"Devices do not have unique names {non_unique}")
-    coros = {
-        device.name: device.connect(
-            mock=mock, timeout=timeout, force_reconnect=force_reconnect
+
+    yield from wait_for_awaitable(
+        connect_devices(
+            {device.name: device for device in devices},
+            mock=mock,
+            timeout=timeout,
+            force_reconnect=force_reconnect,
         )
-        for device in devices
-    }
-    yield from wait_for_awaitable(wait_for_connection(**coros))
+    )

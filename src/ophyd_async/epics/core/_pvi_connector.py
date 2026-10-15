@@ -14,8 +14,8 @@ from ophyd_async.core import (
     Device,
     DeviceFiller,
     DeviceMap,
+    DeviceMock,
     DeviceVector,
-    LazyMock,
     Signal,
     SignalR,
     SignalRW,
@@ -87,7 +87,7 @@ class PviDeviceConnector(_PvPrefixDeviceConnector):
         fill_children_with_prefix(self.prefix, self.filler, filled=False)
         self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock) -> None:
+    async def connect_mock(self, device: Device, mock: DeviceMock) -> None:
         # A DeviceVector gets fabricated mock children; a DeviceMap does not (its
         # entries come from the served PVI tree, so in mock mode it stays empty).
         if isinstance(device, DeviceVector):

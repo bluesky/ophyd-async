@@ -7,6 +7,7 @@ from bluesky.protocols import HasHints, Hints
 from ophyd_async.core import (
     Device,
     DeviceMap,
+    DeviceMock,
     DeviceVector,
     SignalR,
     SignalRW,
@@ -66,6 +67,28 @@ def with_pvi_connector(
     device = device_type(connector=connector, name=name)
     connector.create_children_from_annotations(device)
     return device
+
+
+async def test_init_devices_mock_mapping_overrides_pvi_filled_children():
+    class RecordingMock(DeviceMock):
+        connected: list[Device] = []
+
+        async def connect(self, device: Device) -> None:
+            RecordingMock.connected.append(device)
+
+    async with init_devices(mock={Block1: RecordingMock}):
+        test_device = with_pvi_connector(Block3, "PREFIX:")
+
+    # Block1s at every depth were connected with RecordingMock, and nothing else
+    connected = RecordingMock.connected
+    assert all(isinstance(device, Block1) for device in connected)
+    for block in [
+        test_device.signal_device,
+        test_device.device.device,
+        test_device.device_vector[1].device,
+        test_device.device_vector[1].device_vector[1],
+    ]:
+        assert block in connected
 
 
 async def test_fill_pvi_entries_mock_mode():

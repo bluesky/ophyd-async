@@ -8,7 +8,7 @@ from functools import cached_property
 from typing import Generic, cast
 from unittest.mock import AsyncMock
 
-from ._device import Device, DeviceConnector, LazyMock
+from ._device import Device, DeviceConnector, DeviceMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
 from ._utils import (
@@ -61,7 +61,7 @@ class CommandConnector(DeviceConnector, Generic[P, T]):
     def __init__(self, backend: CommandBackend[P, T]):
         self.backend = self._init_backend = backend
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: DeviceMock):
         """Connect the backend in mock mode."""
         self.backend = MockCommandBackend(self._init_backend, mock)
 
@@ -265,7 +265,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
 class MockCommandBackend(CommandBackend[P, T]):
     """A backend for a Command that uses a mock for testing."""
 
-    def __init__(self, initial_backend: CommandBackend[P, T], mock: LazyMock):
+    def __init__(self, initial_backend: CommandBackend[P, T], mock: DeviceMock):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: MockExecuteCallback[P, T] | None = None
