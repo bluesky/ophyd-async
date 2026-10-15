@@ -161,6 +161,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
 async def test_apply_panda_settings_sets_pulse_units_before_times(RE: RunEngine):
     panda = await get_mock_panda()
     pulse = panda.pulse[1]
+    assert pulse.delay_units is not None
     puts = []
     settings = Settings(
         panda,

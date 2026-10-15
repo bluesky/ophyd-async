@@ -77,12 +77,12 @@ class PulseBlock(Device):
 
     enable: SignalRW[PandaBitMux]
     delay: SignalRW[float]
-    delay_units: SignalRW[PandaTimeUnits]
+    delay_units: SignalRW[PandaTimeUnits] | None
     pulses: SignalRW[int]
     step: SignalRW[float]
-    step_units: SignalRW[PandaTimeUnits]
+    step_units: SignalRW[PandaTimeUnits] | None
     width: SignalRW[float]
-    width_units: SignalRW[PandaTimeUnits]
+    width_units: SignalRW[PandaTimeUnits] | None
 
 
 class PcompBlock(Device):
