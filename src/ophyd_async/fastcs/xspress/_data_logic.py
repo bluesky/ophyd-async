@@ -58,7 +58,7 @@ class XspressOdinDataLogic(DetectorDataLogic):
                 dtype_numpy=np.dtype("uint32").str,
                 parameters={"dataset": f"/{ds}"},
             )
-            for ds in range(datasets)
+            for ds in datasets
         ]
 
         return StreamResourceDataProvider(

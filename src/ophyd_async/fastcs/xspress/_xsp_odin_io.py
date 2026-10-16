@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from ophyd_async.core import (
     Device,
     SignalR,
@@ -11,7 +13,7 @@ class XspressFrameProcessorVectorIO(FrameProcessorVectorIO):
 
     chunks: SignalRW[int]
     total_frames_written: SignalR[int]
-    dataset_table: SignalR[str]
+    dataset_table: SignalR[Sequence[str]]
 
 
 class XspressOdinIO(Device):
