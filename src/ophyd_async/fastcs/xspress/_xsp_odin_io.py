@@ -11,6 +11,7 @@ class XspressFrameProcessorVectorIO(FrameProcessorVectorIO):
 
     chunks: SignalRW[int]
     total_frames_written: SignalR[int]
+    dataset_table: SignalR[int]
 
 
 class XspressOdinIO(Device):

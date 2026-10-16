@@ -48,16 +48,22 @@ class XspressOdinDataLogic(DetectorDataLogic):
         data_shape = await asyncio.gather(
             self.odin.fp.data_dims_0.get_value(), self.odin.fp.data_dims_1.get_value()
         )
-        resource = StreamResourceInfo(
-            data_key=datakey_name,
-            shape=data_shape,
-            chunk_shape=(1, *data_shape),
-            dtype_numpy=np.dtype("uint32").str,
-            parameters={"dataset": "/data"},
-        )
+
+        datasets = await self.odin.fp.dataset_table.get_value()
+        resource = [
+            StreamResourceInfo(
+                data_key=f"{ds}",
+                shape=data_shape,
+                chunk_shape=(1, *data_shape),
+                dtype_numpy=np.dtype("uint32").str,
+                parameters={"dataset": f"/{ds}"},
+            )
+            for ds in range(datasets)
+        ]
+
         return StreamResourceDataProvider(
             uri=f"{path_info.directory_uri}{filename}",
-            resources=[resource],
+            resources=resource,
             mimetype="application/x-hdf5",
             collections_written_signal=self.odin.fp.total_frames_written,
         )
