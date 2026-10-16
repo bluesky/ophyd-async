@@ -17,10 +17,10 @@ from ._fly_logic import (
     PcompInfo,
     PosOutScaleOffset,
     ScanSpecInfo,
-    ScanSpecSeqTableTriggerLogic,
+    ScanSpecSeqTableFlyableLogic,
     SeqTableInfo,
-    StaticPcompTriggerLogic,
-    StaticSeqTableTriggerLogic,
+    StaticPcompFlyableLogic,
+    StaticSeqTableFlyableLogic,
 )
 from ._plan_stubs import apply_panda_settings
 from ._table import (
@@ -50,10 +50,10 @@ __all__ = [
     "SeqTrigger",
     "PcompInfo",
     "SeqTableInfo",
-    "StaticPcompTriggerLogic",
-    "StaticSeqTableTriggerLogic",
+    "StaticPcompFlyableLogic",
+    "StaticSeqTableFlyableLogic",
     "ScanSpecInfo",
-    "ScanSpecSeqTableTriggerLogic",
+    "ScanSpecSeqTableFlyableLogic",
     "PosOutScaleOffset",
     "apply_panda_settings",
 ]

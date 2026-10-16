@@ -31,6 +31,8 @@ Out[1]: 'stage-x'
 
 But if we try to call any of the other methods like `read()` we will see that it doesn't return the value, but a [coroutine](inv:python:std:label#coroutine):
 
+If coroutines and `await` are new to you, first read [](#asyncio-primer).
+
 ```python
 In [2]: stage.x.read()
 Out[2]: <coroutine object StandardReadable.read at 0x7f9c5c105220>

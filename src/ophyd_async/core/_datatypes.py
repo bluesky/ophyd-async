@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, TypeAlias, TypeVar
 
 import numpy as np
 from pydantic import ConfigDict, Field, model_validator
@@ -13,10 +13,7 @@ DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
 
 
-# To be a 1D array shape should really be tuple[int], but np.array()
-# currently produces tuple[int, ...] even when it has 1D input args
-# https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
-Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
+Array1D: TypeAlias = np.ndarray[tuple[int], np.dtype[DTypeScalar_co]]
 """A type alias for a 1D numpy array with a specific scalar data type.
 
 E.g. `Array1D[np.float64]` is a 1D numpy array of 64-bit floats."""

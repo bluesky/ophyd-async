@@ -1,4 +1,13 @@
 from ._base_device import TangoDevice, TangoDeviceConnector, TangoPolling
+from ._converters import (
+    TangoConverter,
+    TangoDevStateArrayConverter,
+    TangoDevStateConverter,
+    TangoDoubleStringTableConverter,
+    TangoEnumArrayConverter,
+    TangoEnumConverter,
+    TangoLongStringTableConverter,
+)
 from ._signal import (
     infer_python_type,
     infer_signal_type,
@@ -8,40 +17,43 @@ from ._signal import (
     tango_signal_w,
     tango_signal_x,
 )
+from ._tango_command_backend import (
+    TangoCommandBackend,
+    tango_command,
+    tango_triggerable_command,
+)
 from ._tango_transport import (
-    AttributeInfoEx,
     AttributeProxy,
-    CommandInfo,
     CommandProxy,
-    CommandProxyReadCharacter,
-    TangoDoubleStringTable,
-    TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
-    get_command_character,
     get_dtype_extended,
     get_python_type,
     get_source_metadata,
     get_tango_trl,
+    make_converter,
     parse_precision,
 )
 from ._utils import (
+    AttributeConfig,
+    CommandConfig,
     DevStateEnum,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
     get_device_trl_and_attr,
     get_full_attr_trl,
+    sig_from_types,
     try_to_cast_as_float,
 )
 
 __all__ = [
-    "AttributeInfoEx",
     "AttributeProxy",
-    "CommandInfo",
+    "AttributeConfig",
     "CommandProxy",
-    "CommandProxyReadCharacter",
+    "CommandConfig",
     "DevStateEnum",
     "ensure_proper_executor",
     "TangoSignalBackend",
-    "get_command_character",
     "get_python_type",
     "get_dtype_extended",
     "get_source_metadata",
@@ -58,8 +70,20 @@ __all__ = [
     "TangoPolling",
     "TangoDeviceConnector",
     "TangoLongStringTable",
+    "TangoLongStringTableConverter",
     "TangoDoubleStringTable",
+    "TangoDoubleStringTableConverter",
+    "TangoConverter",
+    "TangoEnumConverter",
+    "TangoEnumArrayConverter",
+    "TangoDevStateConverter",
+    "TangoDevStateArrayConverter",
     "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",
+    "TangoCommandBackend",
+    "tango_command",
+    "tango_triggerable_command",
+    "sig_from_types",
+    "make_converter",
 ]

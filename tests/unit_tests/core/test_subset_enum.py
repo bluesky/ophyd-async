@@ -5,7 +5,11 @@ from p4p.nt import NTEnum
 from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.core import epics_signal_rw
 
-# Allow these imports from private modules for tests
+# make_converter (CA/PVA) picks the internal wire-(de)serialization
+# converter for a given datatype - epics_signal_rw chooses one
+# automatically from the datatype/PV prefix, a caller never selects or
+# constructs a converter directly - checked, nothing here looks missing
+# from the public interface.
 from ophyd_async.epics.core._aioca import (  # noqa: PLC2701
     make_converter as ca_make_converter,
 )
@@ -82,3 +86,16 @@ async def test_runtime_enum_signal():
     # Though type checking should compain
     await signal_rw_pva.set("C1")  # type: ignore
     await signal_rw_ca.set("C2")  # type: ignore
+
+
+def test_subset_enum_known_value_is_member():
+    # Known values must be returned as the enum member itself
+    assert AB("A") is AB.A
+    assert AB(AB.A) is AB.A
+
+
+def test_subset_enum_unknown_value_is_str():
+    # Values the backend has but the enum doesn't still pass through
+    value = AB("C")
+    assert value == "C"
+    assert not isinstance(value, AB)

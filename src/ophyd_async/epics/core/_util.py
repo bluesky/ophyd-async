@@ -6,6 +6,8 @@ import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    NO_ARG_VOID_SIGNATURE,
+    CommandBackend,
     SignalBackend,
     SignalDatatypeT,
     SignalR,
@@ -101,6 +103,25 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         self.write_pv = write_pv
         self.options = options or EpicsOptions()
         super().__init__(datatype)
+
+
+class EpicsCommandBackend(CommandBackend[[], None]):
+    """Base class for EPICS command backends over CA or PVA.
+
+    Holds the mutable `write_pv` attribute set by
+    `fill_command_with_prefix()` after construction, and the
+    `execute_value` written to the PV on trigger.
+
+    :param write_pv: The PV to write to. Set after construction by
+        `fill_command_with_prefix()`.
+    :param execute_value: The integer value written to the PV on trigger
+        (default: 1).
+    """
+
+    def __init__(self, write_pv: str = "", execute_value: int = 1):
+        self.write_pv = write_pv
+        self._execute_value = execute_value
+        super().__init__(signature=NO_ARG_VOID_SIGNATURE)
 
 
 async def stop_busy_record(

@@ -19,8 +19,10 @@ async def test_admerlin(
     static_path_provider: StaticPathProvider,
 ) -> admerlin.MerlinDetector:
     async with init_devices(mock=True):
-        detector = admerlin.MerlinDetector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
+        detector = admerlin.MerlinDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
@@ -39,6 +41,22 @@ async def test_deadtime(
     trigger_modes, deadtime = await test_admerlin.get_trigger_deadtime()
     assert trigger_modes == {DetectorTrigger.INTERNAL, DetectorTrigger.EXTERNAL_EDGE}
     assert deadtime == 0.002
+
+
+@pytest.mark.parametrize(
+    "counter_depth,expected_data_type",
+    [
+        (admerlin.MerlinCounterDepth.BIT_12, adcore.ADBaseDataType.UINT16),
+        (admerlin.MerlinCounterDepth.BIT_24, adcore.ADBaseDataType.UINT32),
+    ],
+)
+async def test_data_type_inferred_from_counter_depth(
+    test_admerlin: admerlin.MerlinDetector,
+    counter_depth: admerlin.MerlinCounterDepth,
+    expected_data_type: adcore.ADBaseDataType,
+):
+    set_mock_value(test_admerlin.driver.counter_depth, counter_depth)
+    assert await test_admerlin.driver.data_type.get_value() == expected_data_type
 
 
 async def test_prepare_external_edge(
@@ -72,7 +90,7 @@ async def test_trigger_uses_num_images(
 ):
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     detector = test_admerlin
-    writer = detector.get_plugin("writer", adcore.NDFileHDF5IO)
+    writer = detector.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(detector.driver.num_images, num_images)
     await detector.stage()
     callback_on_mock_put(

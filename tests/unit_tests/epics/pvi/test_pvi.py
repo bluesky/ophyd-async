@@ -6,22 +6,23 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
+    DeviceMap,
     DeviceVector,
     SignalR,
     SignalRW,
     SignalW,
-    SignalX,
     StandardReadable,
+    TriggerableCommand,
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.epics.core import PviDeviceConnector, SignalDetails
+from ophyd_async.epics.core import PviDeviceConnector, PviTree, SignalDetails
 
 
 class Block1(Device, HasHints):
-    device_vector_signal_x: DeviceVector[SignalX]
+    device_vector_signal_x: DeviceVector[TriggerableCommand]
     device_vector_signal_rw: DeviceVector[SignalRW[float]]
-    signal_x: SignalX
+    signal_x: TriggerableCommand
     signal_rw: SignalRW[int]
 
     @property
@@ -32,7 +33,7 @@ class Block1(Device, HasHints):
 class Block2(Device):
     device_vector: DeviceVector[Block1]
     device: Block1
-    signal_x: SignalX
+    signal_x: TriggerableCommand
     signal_rw: SignalRW[int]
 
 
@@ -40,14 +41,14 @@ class Block3(Device):
     device_vector: DeviceVector[Block2]
     device: Block2
     signal_device: Block1
-    signal_x: SignalX
+    signal_x: TriggerableCommand
     signal_rw: SignalRW[int]
 
 
 class Block4(StandardReadable):
     device_vector: DeviceVector[Block1]
     device: A[Block1, Format.CHILD]
-    signal_x: SignalX
+    signal_x: TriggerableCommand
     signal_rw: SignalRW[int]
 
 
@@ -182,7 +183,11 @@ class NoSignalTypeInVector(Device):
     a: DeviceVector[SignalRW]
 
 
-@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
+class NoSignalTypeInMap(Device):
+    a: DeviceMap[SignalRW]
+
+
+@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector, NoSignalTypeInMap])
 async def test_no_type_annotation_blocks(cls):
     with pytest.raises(TypeError) as exc:
         with_pvi_connector(cls, "PREFIX:")
@@ -199,7 +204,7 @@ async def test_no_type_annotation_blocks(cls):
         ({"r": "read_pv", "w": "write_pv"}, SignalRW),
         ({"rw": "read_and_write_pv"}, SignalRW),
         ({"w": "write_pv"}, SignalW),
-        ({"x": "triggerable_pv"}, SignalX),
+        ({"x": "triggerable_pv"}, None),  # "x" entries are commands, not signals
         ({"invalid": "invalid_pv"}, None),
     ],
 )
@@ -213,3 +218,47 @@ async def test_correctly_setting_signal_type_from_signal_details(
     else:
         details = SignalDetails.from_entry(mock_entry)
         assert details.signal_type == expected_signal_type
+
+
+async def test_pvi_x_entry_creates_triggerable_command():
+    """PVI 'x' entries should appear as TriggerableCommand in the PviTree.commands."""
+    tree = PviTree(
+        commands={"do_thing": "PREFIX:DoThing"},
+        signals={},
+    )
+    assert tree.commands == {"do_thing": "PREFIX:DoThing"}
+
+    # Verify that connecting a device with a TriggerableCommand annotation
+    # using a PVI tree with an 'x' entry fills it correctly
+    class CommandDevice(Device):
+        do_thing: TriggerableCommand
+
+    connector = PviDeviceConnector("PREFIX:")
+    device = CommandDevice(connector=connector, name="cmd_device")
+    connector.create_children_from_annotations(device)
+
+    assert isinstance(device.do_thing, TriggerableCommand)
+
+    connector.pvi_tree = tree
+    connector.pvi_pv = "PREFIX:PVI"
+    await device.connect(mock=True)
+    # In mock mode the backend is a MockCommandBackend, not PvaCommandBackend
+    assert isinstance(device.do_thing, TriggerableCommand)
+
+
+class MapDeviceFromAnnotations(Device):
+    device_map: DeviceMap[SignalR[float]]
+
+
+async def test_device_map_is_empty_in_mock_mode():
+    # A DeviceMap is created from its annotation but, unlike a DeviceVector, has
+    # no fabricated mock children: its entries come from the served PVI tree, so
+    # in mock mode (no tree) it connects empty. Its real, annotation-driven fill
+    # is covered end-to-end against a live IOC in
+    # tests/system_tests/epics/core/test_pvi_nested.py.
+    async with init_devices(mock=True):
+        test_device = with_pvi_connector(MapDeviceFromAnnotations, "PREFIX:")
+
+    assert isinstance(test_device.device_map, DeviceMap)
+    assert test_device.device_map.name == "test_device-device_map"
+    assert len(test_device.device_map) == 0

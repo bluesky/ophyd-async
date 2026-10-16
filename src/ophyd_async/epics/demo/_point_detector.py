@@ -8,8 +8,8 @@ from ophyd_async.core import (
     DeviceVector,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
+    TriggerableCommand,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
@@ -21,9 +21,9 @@ class DemoPointDetector(StandardReadable, EpicsDevice, Triggerable):
     """A demo detector that produces a point values based on X and Y motors."""
 
     acquire_time: A[SignalRW[float], PvSuffix("AcquireTime"), Format.CONFIG_SIGNAL]
-    start: A[SignalX, PvSuffix("Start.PROC")]
+    start: A[TriggerableCommand, PvSuffix("Start.PROC")]
     acquiring: A[SignalR[bool], PvSuffix("Acquiring")]
-    reset: A[SignalX, PvSuffix("Reset.PROC")]
+    reset: A[TriggerableCommand, PvSuffix("Reset.PROC")]
 
     def __init__(self, prefix: str, num_channels: int = 3, name: str = "") -> None:
         with self.add_children_as_readables():

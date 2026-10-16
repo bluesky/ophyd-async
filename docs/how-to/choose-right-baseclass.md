@@ -11,8 +11,9 @@ When writing a new Device there are several base classes to choose from that wil
 There are some utility baseclasses that allow you to create a Device pre-populated with the right verbs to work in bluesky plans:
 
 - [](#StandardReadable) allows you to compose the values of child Signals and Devices together so that you can `read()` the Device during a step scan.
-- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. Instances of [](#DetectorTriggerLogic), [](#DetectorArmLogic), and [](#DetectorDataLogic) are composed together to provide this functionality. This separation of concerns makes it easy to mix and match different trigger modes, arming strategies, and data outputs.
-- [](#StandardFlyer) allows actuators (like a motor controller) to be used within a fly scan. Implementing a [](#FlyerController) is required to provide this functionality.
+- [](#StandardMovable) allows devices that move to a target value and wait for a readback to confirm arrival (motors, temperature controllers, piezo stages, and similar) to be implemented by composing a [](#MovableLogic) instance, rather than directly implementing the `Locatable`, `Stoppable`, and `Subscribable` protocols. See [](../explanations/when-to-extend-movable.md) for more details.
+- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. Instances of [](#DetectorTriggerLogic), [](#DetectorAcquireLogic), and [](#DetectorDataLogic) are composed together to provide this functionality. This separation of concerns makes it easy to mix and match different trigger modes, acquisition strategies, and data outputs.
+- [](#StandardFlyable) allows actuators (like a motor controller) to be used within a fly scan, by composing a [](#FlyableLogic) instance rather than directly implementing the `Preparable`, `Flyable`, and `Stageable` protocols. Use it as a mix-in on a Device, or call [](#FlyableLogic.with_device) to wrap a bare logic object in an ephemeral flyer within a plan.
 
 ## Adding verbs via protocols
 

@@ -1,11 +1,43 @@
+import asyncio
+import inspect
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
+from typing import Any, TypeVar
 from unittest.mock import AsyncMock, Mock
 
+from ._command import Command, CommandConnector, MockCommandBackend, MockExecuteCallback
 from ._device import Device, DeviceMock
 from ._mock_signal_backend import MockPutCallback, MockSignalBackend
 from ._signal import Signal, SignalConnector, SignalR
 from ._signal_backend import SignalDatatypeT
+
+MockT = TypeVar("MockT")
+
+
+def set_mock_attr(device: Device, attr: str, mock: MockT) -> MockT:
+    """Override a Device attribute in a test, bypassing the reserved-name check.
+
+    `Device` raises `NameError` if you assign to an attribute whose name collides
+    with a bluesky protocol method (`set`, `read`, `trigger`, ...), to stop a
+    Signal accidentally shadowing a verb. That guard gets in the way of the common
+    test pattern of mocking out a verb, so use this to do it explicitly.
+
+    Returns the `mock` it just set, so the override and the assertion can be a
+    single expression.
+
+    :param device: The Device to set the attribute on.
+    :param attr: The attribute name to override, e.g. `"set"`.
+    :param mock: The value to set it to, usually a mock. Returned unchanged.
+
+    :example:
+    ```python
+    mock_set = set_mock_attr(motor, "set", MagicMock())
+    await motor.kickoff()
+    mock_set.assert_called_once_with(-3.0)
+    ```
+    """
+    object.__setattr__(device, attr, mock)
+    return mock
 
 
 def get_mock(device: Device | Signal) -> Mock:
@@ -29,10 +61,33 @@ def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
     return connector.backend
 
 
-def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
-    """Set the value of a signal that is in mock mode."""
+def set_mock_value(
+    signal: Signal[SignalDatatypeT],
+    value: SignalDatatypeT,
+    timestamp: float | None = None,
+    alarm_severity: int = 0,
+):
+    """Set the value of a signal that is in mock mode.
+
+    :param signal: A signal connected in mock mode.
+    :param value: The new value.
+    :param timestamp: The reading timestamp, `None` means now.
+    :param alarm_severity: The alarm severity, 0 means ok.
+    """
     backend = _get_mock_signal_backend(signal)
-    backend.set_value(value)
+    backend.set_value(value, timestamp, alarm_severity)
+
+
+def set_mock_units(signal: Signal, units: str):
+    """Set the units to be read back from a signal in mock mode."""
+    backend = _get_mock_signal_backend(signal)
+    backend.set_units(units)
+
+
+def set_mock_precision(signal: Signal, precision: int):
+    """Set the precision to be read back from a signal in mock mode."""
+    backend = _get_mock_signal_backend(signal)
+    backend.set_precision(precision)
 
 
 class _SetValuesIterator(Iterator[SignalDatatypeT]):
@@ -108,28 +163,92 @@ def set_mock_values(
     )
 
 
-@contextmanager
-def _unset_side_effect_cm(backend: MockSignalBackend):
-    yield
-    backend.set_mock_put_callback(None)
+class MockPutHandle:
+    """The callback set by `callback_on_mock_put`, which can cancel running puts.
+
+    Use it as a context manager to unset the callback on exit.
+    """
+
+    def __init__(self, backend: MockSignalBackend, callback: MockPutCallback):
+        self._backend = backend
+        self._callback = callback
+        self._running: set[asyncio.Future] = set()
+        self._cancelled: set[asyncio.Future] = set()
+        backend.set_mock_put_callback(self._call)
+
+    async def _call(self, value: Any) -> Any:
+        result = self._callback(value)
+        if not inspect.isawaitable(result):
+            return result
+        running = asyncio.ensure_future(result)
+        self._running.add(running)
+        try:
+            return await running
+        except asyncio.CancelledError:
+            # Only swallow a cancel that came from cancel()
+            if running in self._cancelled:
+                return None
+            raise
+        finally:
+            self._running.discard(running)
+            self._cancelled.discard(running)
+
+    def cancel(self):
+        """Cancel the async callbacks that are still running.
+
+        There is more than one if the signal was put to again before an earlier
+        put completed. Each put they belong to completes without error, as if its
+        callback had returned None. This mimics a stop PV ending a put callback in
+        progress.
+        """
+        for running in self._running:
+            self._cancelled.add(running)
+            running.cancel()
+
+    def __enter__(self) -> "MockPutHandle":
+        return self
+
+    def __exit__(self, *exc_info):
+        self._backend.set_mock_put_callback(None)
 
 
-def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallback):
+def callback_on_mock_put(
+    signal: Signal[SignalDatatypeT], callback: MockPutCallback
+) -> MockPutHandle:
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being unset on exit, or
-    as an ordinary function.
+    as an ordinary function. Either way it returns a `MockPutHandle` whose
+    `cancel()` interrupts a running async callback, completing its put.
 
     The value that the callback returns (if not None) will be set to the signal
     readback. If None is returned then the readback will be set to the setpoint.
 
     :param signal: A signal with a `MockSignalBackend` backend.
-    :param callback: The callback to call when the backend is put to during the
-        context.
+    :param callback:
+        The callback to call when the backend is put to during the context. It
+        takes the value being put, and may be either a sync function or an
+        `async def` coroutine function; an async callback is awaited before the
+        put completes, so it can `await` other Signals.
+
+    :example:
+    ```python
+    # Sync: mirror the setpoint into the readback
+    def mirror(value: float) -> None:
+        set_mock_value(motor.readback, value)
+
+    with callback_on_mock_put(motor.setpoint, mirror):
+        await motor.setpoint.set(10.0)
+
+    # Async: await something else before the put completes
+    async def on_put(value: float) -> None:
+        await other_signal.set(value * 2)
+
+    with callback_on_mock_put(motor.setpoint, on_put):
+        await motor.setpoint.set(10.0)
+    ```
     """
-    backend = _get_mock_signal_backend(signal)
-    backend.set_mock_put_callback(callback)
-    return _unset_side_effect_cm(backend)
+    return MockPutHandle(_get_mock_signal_backend(signal), callback)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):
@@ -155,3 +274,63 @@ def mock_puts_blocked(*signals: Signal):
 def get_mock_put(signal: Signal) -> AsyncMock:
     """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
+
+
+def _get_mock_command_backend(command: Command) -> MockCommandBackend:
+    connector = command._connector  # noqa: SLF001
+    if not isinstance(connector, CommandConnector):
+        raise TypeError(f"Expected Command, got {command}")
+    if not isinstance(connector.backend, MockCommandBackend):
+        raise RuntimeError(f"Command {command} not connected in mock mode")
+    return connector.backend
+
+
+def get_mock_execute(command: Command) -> AsyncMock:
+    """Get the mock associated with the execute call on a command.
+
+    The command must have been connected in mock mode.
+    """
+    return _get_mock_command_backend(command).execute_mock
+
+
+@contextmanager
+def _unset_execute_callback_cm(backend: MockCommandBackend):
+    yield
+    backend.set_mock_execute_callback(None)
+
+
+def callback_on_mock_execute(command: Command, callback: MockExecuteCallback):
+    """Set a callback to be called whenever a Command is executed in mock mode.
+
+    Can either be used as a context manager, with the callback cleared on exit,
+    or as a plain function call for a persistent override.
+
+    When the initial backend is a `SoftCommandBackend` the original Python
+    function is used by default; set a callback here to suppress it and return
+    something else instead.
+
+    :param command: A command connected in mock mode.
+    :param callback:
+        The callback to call when the command is executed. It takes the same
+        arguments as the command, and may be either a sync function or an
+        `async def` coroutine function; an async callback is awaited before
+        `execute()` returns. Its return value becomes the command's result.
+
+    :example:
+    ```python
+    # Sync
+    with callback_on_mock_execute(det.arm, lambda: 3):
+        assert await det.arm.execute() == 3
+
+    # Async
+    async def slow_arm() -> int:
+        await asyncio.sleep(0.1)
+        return 3
+
+    with callback_on_mock_execute(det.arm, slow_arm):
+        assert await det.arm.execute() == 3
+    ```
+    """
+    backend = _get_mock_command_backend(command)
+    backend.set_mock_execute_callback(callback)
+    return _unset_execute_callback_cm(backend)

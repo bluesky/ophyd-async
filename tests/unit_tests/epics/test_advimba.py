@@ -20,8 +20,10 @@ async def test_advimba(
     static_path_provider: StaticPathProvider,
 ) -> advimba.VimbaDetector:
     async with init_devices(mock=True):
-        detector = advimba.VimbaDetector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
+        detector = advimba.VimbaDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
+    writer = detector.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
@@ -124,7 +126,7 @@ async def test_trigger_uses_num_images(
 ):
     monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     detector = test_advimba
-    writer = detector.get_plugin("writer", adcore.NDFileHDF5IO)
+    writer = detector.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(detector.driver.num_images, num_images)
     await detector.stage()
     callback_on_mock_put(

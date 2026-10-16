@@ -1,5 +1,15 @@
 """The building blocks for making devices."""
 
+from ._command import (
+    NO_ARG_VOID_SIGNATURE,
+    Command,
+    CommandBackend,
+    CommandConnector,
+    MockCommandBackend,
+    SoftCommandBackend,
+    TriggerableCommand,
+    soft_command,
+)
 from ._data_providers import (
     ReadableDataProvider,
     SignalDataProvider,
@@ -16,7 +26,7 @@ from ._derived_signal import (
 )
 from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
@@ -26,7 +36,9 @@ from ._detector import (
 from ._device import (
     Device,
     DeviceConnector,
+    DeviceMap,
     DeviceMock,
+    DeviceProcessor,
     DeviceVector,
     LazyMock,
     default_mock_class,
@@ -40,17 +52,29 @@ from ._enums import (
     OnOff,
     YesNo,
 )
-from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
-from ._log import config_ophyd_async_logging
+from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
+from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    MockPutHandle,
+    callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
+    get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_attr,
+    set_mock_precision,
     set_mock_put_proceeds,
+    set_mock_units,
     set_mock_value,
     set_mock_values,
+)
+from ._movable import (
+    InstantMovableMock,
+    MovableLogic,
+    StandardMovable,
+    TimeoutCalculator,
 )
 from ._path_providers import (
     AutoIncrementFilenameProvider,
@@ -63,6 +87,8 @@ from ._path_providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+    generate_directory_uri,
+    normalize_path,
 )
 from ._protocol import (
     AsyncConfigurable,
@@ -110,7 +136,12 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._status import (
+    AsyncStatus,
+    WatchableAsyncStatus,
+    completed_status,
+    forward_watcher_updates,
+)
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -131,6 +162,7 @@ from ._utils import (
     get_unique,
     in_micros,
     non_zero,
+    simulate_move,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -161,8 +193,15 @@ __all__ = [
     "DeviceConnector",
     "DeviceFiller",
     "DeviceAnnotation",
+    "DeviceMap",
     "DeviceVector",
+    "DeviceProcessor",
     "init_devices",
+    # Movable
+    "MovableLogic",
+    "StandardMovable",
+    "InstantMovableMock",
+    "TimeoutCalculator",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
@@ -176,6 +215,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "WatcherUpdate",
     "completed_status",
+    "forward_watcher_updates",
     # Signal
     "Signal",
     "SignalR",
@@ -207,12 +247,18 @@ __all__ = [
     "default_mock_class",
     # Mocking utilities
     "get_mock",
+    "set_mock_attr",
     "set_mock_value",
     "set_mock_values",
     "get_mock_put",
+    "get_mock_execute",
     "callback_on_mock_put",
+    "MockPutHandle",
+    "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
+    "set_mock_units",
+    "set_mock_precision",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
@@ -231,7 +277,7 @@ __all__ = [
     "DetectorTrigger",
     "TriggerInfo",
     "DetectorTriggerLogic",
-    "DetectorArmLogic",
+    "DetectorAcquireLogic",
     "DetectorDataLogic",
     "StandardDetector",
     # Path
@@ -252,15 +298,17 @@ __all__ = [
     "StreamResourceInfo",
     "StreamResourceDataProvider",
     # Flyer
-    "StandardFlyer",
+    "StandardFlyable",
     "FlyMotorInfo",
-    "FlyerController",
+    "FlyableLogic",
     # Settings
     "Settings",
     "SettingsProvider",
     "YamlSettingsProvider",
     # Utils
     "config_ophyd_async_logging",
+    "logger",
+    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
@@ -278,6 +326,7 @@ __all__ = [
     "wait_for_connection",
     "Ignore",
     "non_zero",
+    "simulate_move",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
@@ -295,4 +344,15 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    # Commands
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "MockCommandBackend",
+    "NO_ARG_VOID_SIGNATURE",
+    "SoftCommandBackend",
+    "soft_command",
+    "TriggerableCommand",
+    "generate_directory_uri",
+    "normalize_path",
 ]

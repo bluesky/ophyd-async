@@ -13,6 +13,7 @@ from ophyd_async.epics import (
     adaravis,  # noqa
     adcore,
     adkinetix,  # noqa
+    admerlin,  # noqa
     adpilatus,  # noqa
     adsimdetector,  # noqa
     advimba,  # noqa
@@ -34,6 +35,9 @@ async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
 
 def check_name(name: str, device: Device):
     if isinstance(device, Signal):
+        # Derived signals have no PV name to check against
+        if device.source.startswith("derived://"):
+            return
         pv = extract_last_pv_part(device.source)
         # remove trailing underscore from name,
         # used to resolve clashes with Bluesky terms
@@ -54,7 +58,7 @@ def extract_last_pv_part(raw_pv):
     """
     pattern = re.compile(
         r"""
-        ca://           # Literal prefix "ca://"
+        (?:ca|pva)://   # Literal prefix "ca://" or "pva://"
         (?:.*:)?        # Optional prefix ending with a colon (non-capturing)
         ([^:_]+)        # Capturing group: base name without colon or underscore
         (?:_RBV)?       # Optional "_RBV" suffix (non-capturing)

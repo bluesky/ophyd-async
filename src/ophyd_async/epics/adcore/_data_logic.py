@@ -1,9 +1,8 @@
 import asyncio
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import PureWindowsPath
-from typing import Any
+from typing import Any, Generic
 from xml.etree import ElementTree as ET
 
 import numpy as np
@@ -31,6 +30,7 @@ from ._io import (
     NDFileHDF5IO,
     NDPluginBaseIO,
     NDPluginFileIO,
+    NDPluginFileIOT,
 )
 from ._ndattribute import NDAttributeDataType, NDAttributePvDbrType
 
@@ -53,28 +53,38 @@ class PluginSignalDataLogic(DetectorDataLogic):
 
 @dataclass
 class NDArrayDescription:
+    """Signals that describe the shape and data type of an NDArray frame.
+
+    :param shape_signals: Signals providing the frame dimensions (e.g.
+        ``size_y``, ``size_x``).  Zero-valued entries are filtered out, so it
+        is safe to include ``array_size_z`` for 2-D detectors.
+    :param data_type_signal: Signal providing the pixel data type.
+    :param color_mode_signal: Signal providing the colour mode (MONO or RGB1).
+    """
+
     shape_signals: Sequence[SignalR[int]]
     data_type_signal: SignalR[ADBaseDataType]
     color_mode_signal: SignalR[ADBaseColorMode]
 
 
 async def get_ndarray_resource_info(
-    description: NDArrayDescription,
+    array_description: NDArrayDescription,
     data_key: str,
     parameters: dict[str, Any],
     frames_per_chunk: int = 1,
 ) -> StreamResourceInfo:
     # Grab the dimensions and datatype of the NDArray
     shape, datatype, color_mode = await asyncio.gather(
-        asyncio.gather(*[sig.get_value() for sig in description.shape_signals]),
-        description.data_type_signal.get_value(),
-        description.color_mode_signal.get_value(),
+        asyncio.gather(*[sig.get_value() for sig in array_description.shape_signals]),
+        array_description.data_type_signal.get_value(),
+        array_description.color_mode_signal.get_value(),
     )
     # Remove entries in shape that are zero
     shape = [x for x in shape if x > 0]
     if datatype is ADBaseDataType.UNDEFINED:
         raise ValueError(
-            f"{description.data_type_signal.source} is blank, this is not supported"
+            f"{array_description.data_type_signal.source} is blank, "
+            "this is not supported"
         )
     if color_mode == ADBaseColorMode.RGB1:
         shape = [3, *shape]
@@ -155,21 +165,22 @@ async def prepare_file_paths(
 class ADHDFDataLogic(DetectorDataLogic):
     """Data logic for AreaDetector HDF5 writer plugin.
 
-    :param shape_signals: Signals that provide the shape of the NDArray.
-    :param data_type_signal: Signal that provides the data type of the NDArray.
+    :param array_description: Signals describing the NDArray shape and data type.
     :param path_provider: Callable that provides path information for file writing.
-    :param driver: The AreaDetector driver instance.
     :param writer: The NDFileHDFIO plugin instance.
+    :param driver: The AreaDetector driver instance to extract NDAttributes from.
     :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.
     :param datakey_suffix: Suffix to append to the data key for the main dataset
+    :param hinted: Include the image in hints. Set False for BestEffortCallback.
     """
 
-    description: NDArrayDescription
+    array_description: NDArrayDescription
     path_provider: PathProvider
-    driver: ADBaseIO
     writer: NDFileHDF5IO
+    driver: NDArrayBaseIO | None = None
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
+    hinted: bool = True
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
@@ -199,13 +210,13 @@ class ADHDFDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            description=self.description,
+            array_description=self.array_description,
             data_key=datakey_name,
             parameters={"dataset": "/entry/data/data"},
             frames_per_chunk=frames_per_chunk,
         )
         ndattribute_dtype_sources = await get_ndattribute_dtype_source(
-            (self.driver, *self.plugins)
+            (self.driver, *self.plugins) if self.driver else (*self.plugins,)
         )
         ndattribute_datasets = [
             StreamResourceInfo(
@@ -232,39 +243,42 @@ class ADHDFDataLogic(DetectorDataLogic):
         await stop_busy_record(self.writer.capture)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        # The main NDArray dataset is always hinted
-        return [datakey_name]
+        return [datakey_name] if self.hinted else []
 
 
 @dataclass
 class ADMultipartDataLogic(DetectorDataLogic):
     """Data logic for multipart AreaDetector file writers (e.g. JPEG, TIFF).
 
-    :param shape_signals: Signals that provide the shape of the NDArray.
-    :param data_type_signal: Signal that provides the data type of the NDArray.
+    :param array_description: Signals describing the NDArray shape and data type.
     :param path_provider: Callable that provides path information for file writing.
     :param writer: The NDFilePluginIO instance.
     :param extension: File extension for the written files (e.g. ".jpg", ".tiff").
     :param mimetype:
         Mimetype for the written files (e.g. "multipart/related;type=image/jpeg").
     :param datakey_suffix: Suffix to append to the data key for the main dataset
+    :param hinted: Include the image in hints. Set False for BestEffortCallback.
     """
 
-    description: NDArrayDescription
+    array_description: NDArrayDescription
     path_provider: PathProvider
     writer: NDPluginFileIO
     extension: str
     mimetype: str
     datakey_suffix: str = ""
+    hinted: bool = True
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Setup the file writer
-        await prepare_file_paths(
-            path_info=path_info,
-            file_template="%s%s_%6.6d" + self.extension,
-            writer=self.writer,
+        await asyncio.gather(
+            self.writer.lazy_open.set(True),
+            prepare_file_paths(
+                path_info=path_info,
+                file_template="%s%s_%6.6d" + self.extension,
+                writer=self.writer,
+            ),
         )
         # Start capturing
         await set_and_wait_for_value(
@@ -272,7 +286,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            description=self.description,
+            array_description=self.array_description,
             data_key=datakey_name,
             parameters={"template": path_info.filename + "_{:06d}" + self.extension},
         )
@@ -289,58 +303,213 @@ class ADMultipartDataLogic(DetectorDataLogic):
         await stop_busy_record(self.writer.capture)
 
     def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
-        # The main NDArray dataset is always hinted
-        return [datakey_name]
+        return [datakey_name] if self.hinted else []
 
 
-class ADWriterType(Enum):
-    HDF = "HDF"
-    JPEG = "JPEG"
-    TIFF = "TIFF"
+@dataclass
+class ADWriterFactory(Generic[NDPluginFileIOT]):
+    """Factory that creates a file-writer plugin and its matching data logic.
 
+    Construct using the classmethods `hdf`, `jpeg`, or `tiff`, then pass one
+    or more instances to `AreaDetector` as positional `*writer_factories`
+    arguments.  When the detector is initialised `__call__` is invoked with
+    the detector's PV `prefix`, its `driver`, and the flat list of extra
+    `plugins`; it returns the writer device and the corresponding
+    `DetectorDataLogic`.
 
-def make_writer_data_logic(
-    prefix: str,
-    path_provider: PathProvider,
-    writer_suffix: str | None,
-    driver: ADBaseIO,
-    writer_type: ADWriterType,
-    plugins: Mapping[str, NDPluginBaseIO] | None = None,
-) -> tuple[NDPluginFileIO, DetectorDataLogic]:
-    plugins = plugins or {}
-    description = NDArrayDescription(
-        shape_signals=[driver.array_size_z, driver.array_size_y, driver.array_size_x],
-        data_type_signal=driver.data_type,
-        color_mode_signal=driver.color_mode,
+    :param writer_cls: Concrete `NDPluginFileIO` subclass to instantiate.
+    :param writer_suffix: PV suffix appended to *prefix* to form the writer's PV prefix.
+    :param writer_name:
+        Attribute name under which the writer device is stored on the
+        `AreaDetector` instance.  Each static method defaults to its own name
+        (``"hdf"``, ``"jpeg"``, ``"tiff"``); override when passing multiple
+        factories so each writer gets a distinct name.
+    :param datakey_suffix: Suffix appended to the datakey name in stream resources.
+    :param array_description:
+        Override the array shape/type description built from the driver.
+        May be an `NDArrayDescription` instance or a callable
+        ``(driver) → NDArrayDescription``; use a callable when the description
+        depends on signals that are only available once the driver has been
+        constructed (e.g. inside a detector subclass that creates its own driver).
+    :param data_logic_factory:
+        Callable ``(writer, array_description, driver, plugins) → DetectorDataLogic``
+        that builds the data logic given the already-constructed writer.
+    """
+
+    writer_cls: type[NDPluginFileIOT]
+    writer_suffix: str
+    writer_name: str
+    datakey_suffix: str
+    array_description: (
+        NDArrayDescription | Callable[[ADBaseIO], NDArrayDescription] | None
     )
-    match writer_type:
-        case ADWriterType.HDF:
-            writer = NDFileHDF5IO(f"{prefix}{writer_suffix or 'HDF1:'}")
-            data_logic = ADHDFDataLogic(
-                description=description,
+    data_logic_factory: Callable[
+        [NDPluginFileIOT, NDArrayDescription, ADBaseIO, Sequence[NDPluginBaseIO]],
+        DetectorDataLogic,
+    ]
+
+    def __call__(
+        self,
+        prefix: str,
+        driver: ADBaseIO,
+        plugins: Sequence[NDPluginBaseIO],
+    ) -> tuple[NDPluginFileIOT, DetectorDataLogic]:
+        """Instantiate the writer plugin and build the data logic.
+
+        :param prefix: EPICS PV prefix for the detector (same as `AreaDetector.prefix`).
+        :param driver: The detector driver, used to read array shape/type metadata.
+        :param plugins: Additional plugins whose NDAttribute XML files should be
+            included in HDF5 metadata.
+        :return: ``(writer, data_logic)`` tuple ready to attach to the detector.
+        """
+        writer = self.writer_cls(prefix + self.writer_suffix)
+        if callable(self.array_description):
+            array_description = self.array_description(driver)
+        elif self.array_description is not None:
+            array_description = self.array_description
+        else:
+            array_description = NDArrayDescription(
+                shape_signals=[
+                    driver.array_size_z,
+                    driver.array_size_y,
+                    driver.array_size_x,
+                ],
+                data_type_signal=driver.data_type,
+                color_mode_signal=driver.color_mode,
+            )
+        data_logic = self.data_logic_factory(writer, array_description, driver, plugins)
+        return writer, data_logic
+
+    @staticmethod
+    def hdf(
+        path_provider: PathProvider,
+        writer_suffix: str = "HDF1:",
+        writer_name: str = "hdf",
+        datakey_suffix: str = "",
+        array_description: NDArrayDescription
+        | Callable[[ADBaseIO], NDArrayDescription]
+        | None = None,
+        hinted: bool = True,
+    ) -> "ADWriterFactory[NDFileHDF5IO]":
+        """Create a factory for an HDF5 file writer.
+
+        :param path_provider: Provides file path information for each acquisition.
+        :param writer_suffix: PV suffix for the NDFileHDF5 plugin, defaults to
+            ``HDF1:``.
+        :param writer_name:
+            Attribute name for the writer on the detector, defaults to
+            ``"hdf"``.
+        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.
+        :param array_description:
+            Override the array shape/type description built from the driver.
+            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
+            when the shape/type comes from a plugin rather than the main driver
+            (e.g. an ROI plugin).
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
+        """
+        return ADWriterFactory(
+            writer_cls=NDFileHDF5IO,
+            writer_suffix=writer_suffix,
+            writer_name=writer_name,
+            datakey_suffix=datakey_suffix,
+            array_description=array_description,
+            data_logic_factory=lambda writer, desc, driver, plugins: ADHDFDataLogic(
+                array_description=desc,
                 path_provider=path_provider,
+                writer=writer,
                 driver=driver,
-                writer=writer,
-                plugins=list(plugins.values()),
-            )
-        case ADWriterType.JPEG:
-            writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
-            data_logic = ADMultipartDataLogic(
-                description=description,
-                path_provider=path_provider,
-                writer=writer,
-                extension=".jpg",
-                mimetype="multipart/related;type=image/jpeg",
-            )
-        case ADWriterType.TIFF:
-            writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
-            data_logic = ADMultipartDataLogic(
-                description=description,
-                path_provider=path_provider,
-                writer=writer,
-                extension=".tiff",
-                mimetype="multipart/related;type=image/tiff",
-            )
-        case _:
-            raise RuntimeError("Not implemented")
-    return writer, data_logic
+                plugins=list(plugins),
+                datakey_suffix=datakey_suffix,
+                hinted=hinted,
+            ),
+        )
+
+    @staticmethod
+    def jpeg(
+        path_provider: PathProvider,
+        writer_suffix: str = "JPEG1:",
+        writer_name: str = "jpeg",
+        datakey_suffix: str = "",
+        array_description: NDArrayDescription
+        | Callable[[ADBaseIO], NDArrayDescription]
+        | None = None,
+        hinted: bool = True,
+    ) -> "ADWriterFactory[NDPluginFileIO]":
+        """Create a factory for a JPEG file writer.
+
+        :param path_provider: Provides file path information for each acquisition.
+        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to
+            ``JPEG1:``.
+        :param writer_name:
+            Attribute name for the writer on the detector, defaults to
+            ``"jpeg"``.
+        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.
+        :param array_description:
+            Override the array shape/type description built from the driver.
+            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
+            when the shape/type comes from a plugin.
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
+        """
+        return ADWriterFactory(
+            writer_cls=NDPluginFileIO,
+            writer_suffix=writer_suffix,
+            writer_name=writer_name,
+            datakey_suffix=datakey_suffix,
+            array_description=array_description,
+            data_logic_factory=lambda writer, desc, driver, plugins: (
+                ADMultipartDataLogic(
+                    array_description=desc,
+                    path_provider=path_provider,
+                    writer=writer,
+                    extension=".jpg",
+                    mimetype="multipart/related;type=image/jpeg",
+                    datakey_suffix=datakey_suffix,
+                    hinted=hinted,
+                )
+            ),
+        )
+
+    @staticmethod
+    def tiff(
+        path_provider: PathProvider,
+        writer_suffix: str = "TIFF1:",
+        writer_name: str = "tiff",
+        datakey_suffix: str = "",
+        array_description: NDArrayDescription
+        | Callable[[ADBaseIO], NDArrayDescription]
+        | None = None,
+        hinted: bool = True,
+    ) -> "ADWriterFactory[NDPluginFileIO]":
+        """Create a factory for a TIFF file writer.
+
+        :param path_provider: Provides file path information for each acquisition.
+        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to
+            ``TIFF1:``.
+        :param writer_name:
+            Attribute name for the writer on the detector, defaults to
+            ``"tiff"``.
+        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.
+        :param array_description:
+            Override the array shape/type description built from the driver.
+            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``
+            when the shape/type comes from a plugin.
+        :param hinted: Include the image in hints. Set False for BestEffortCallback.
+        """
+        return ADWriterFactory(
+            writer_cls=NDPluginFileIO,
+            writer_suffix=writer_suffix,
+            writer_name=writer_name,
+            datakey_suffix=datakey_suffix,
+            array_description=array_description,
+            data_logic_factory=lambda writer, desc, driver, plugins: (
+                ADMultipartDataLogic(
+                    array_description=desc,
+                    path_provider=path_provider,
+                    writer=writer,
+                    extension=".tiff",
+                    mimetype="multipart/related;type=image/tiff",
+                    datakey_suffix=datakey_suffix,
+                    hinted=hinted,
+                )
+            ),
+        )

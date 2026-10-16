@@ -176,7 +176,7 @@ Now we'll have a look at the code to see how we implement one of these detectors
 
 It derives from [](#StandardDetector) which is a utility baseclass that implements the protocols we have mentioned so far in this tutorial. It uses three types of logic classes to provide behavior for each protocol verb:
 - [](#DetectorTriggerLogic) to setup the exposure and trigger mode of the detector
-- [](#DetectorArmLogic) to arm it and wait for it to complete
+- [](#DetectorAcquireLogic) to start and stop acquisition and wait for it to complete
 - [](#DetectorDataLogic) to tell the detector to open a file, describe the datasets it will write, and emit StreamAsset documents as frames are written
 
 In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and pass them to [](#StandardDetector.add_detector_logics).
@@ -203,18 +203,19 @@ We could also implement:
 - `config_sigs()` to return signals that should appear in read_configuration()
 - `default_trigger_info()` to return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (governed by [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE)).
 
-### `BlobArmLogic`
+### `BlobAcquireLogic`
 
-Next we have `BlobArmLogic`, a [](#DetectorArmLogic) subclass:
+Next we have `BlobAcquireLogic`, a [](#DetectorAcquireLogic) subclass:
 
-```{literalinclude} ../../src/ophyd_async/sim/_blob_arm_logic.py
+```{literalinclude} ../../src/ophyd_async/sim/_blob_acquire_logic.py
 :language: python
 ```
 
 Its job is to control the acquisition process on the detector, starting and stopping the collection of data:
-- `arm()` starts the acquisition process that has been prepared. In this case we create a background task that will write our simulation images to file.
+- `ensure_ready()` (inherited default) delegates to `ensure_stopped`, putting the detector into a known state at the start of each scan.
+- `start_acquiring()` starts the acquisition process that has been prepared. In this case we create a background task that will write our simulation images to file.
 - `wait_for_idle()` waits for that acquisition process to be complete.
-- `disarm(on_unstage)` interrupts the acquisition process, and then waits for it to complete. The `on_unstage` flag is `True` when called at the end of a scan (from `unstage()`) and `False` when called at the start (from `stage()`). Implementations can use this to perform teardown that should only happen once per scan — for example, closing a shutter that must remain open between exposures but should always be closed when the scan ends.
+- `ensure_stopped()` interrupts the acquisition process and waits for it to complete. Called from `unstage()` at the end of a scan.
 
 ### `BlobDataLogic`
 
@@ -236,7 +237,7 @@ The [](#StreamableDataProvider) returned from `prepare_unbounded()` contains:
 
 ## Conclusion
 
-We have seen how to make a [](#StandardDetector) and how the [](#DetectorTriggerLogic), [](#DetectorArmLogic), and [](#DetectorDataLogic) classes allow us to customise its behavior through composition. This separation of concerns makes it easy to:
+We have seen how to make a [](#StandardDetector) and how the [](#DetectorTriggerLogic), [](#DetectorAcquireLogic), and [](#DetectorDataLogic) classes allow us to customise its behavior through composition. This separation of concerns makes it easy to:
 - Mix and match different trigger modes, arming strategies, and data outputs
 - Add multiple data streams (e.g., multiple HDF writers for different ROIs)
 - Combine file writing with signal reading (e.g., add stats plugin outputs)

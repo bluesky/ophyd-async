@@ -163,9 +163,24 @@ class NDROIIO(NDPluginBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
     """
 
-    size_x: A[SignalR[int], PvSuffix.rbv("SizeX")]
-    size_y: A[SignalR[int], PvSuffix.rbv("SizeY")]
-    size_z: A[SignalR[int], PvSuffix.rbv("SizeZ")]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    size_z: A[SignalRW[int], PvSuffix.rbv("SizeZ")]
+
+    bin_x: A[SignalRW[int], PvSuffix.rbv("BinX")]
+    bin_y: A[SignalRW[int], PvSuffix.rbv("BinY")]
+    bin_z: A[SignalRW[int], PvSuffix.rbv("BinZ")]
+
+
+class NDProcessIO(NDPluginBaseIO):
+    """Plugin for performing processing on an NDArrray.
+
+    This mirrors the interface provided by ADCore/db/NDProcess.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html
+    """
+
+    enable_offset_scale: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableOffsetScale")]
+    scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
 
 
 class NDStatsIO(NDPluginBaseIO):
@@ -178,14 +193,14 @@ class NDStatsIO(NDPluginBaseIO):
     # Basic statistics
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
     bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
-    total: A[SignalR[float], PvSuffix.rbv("Total")]
+    total: A[SignalR[float], PvSuffix("Total_RBV")]
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
     # X and Y Profiles
     compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
-    profile_size_x: A[SignalR[int], PvSuffix.rbv("ProfileSizeX")]
-    profile_size_y: A[SignalR[int], PvSuffix.rbv("ProfileSizeY")]
+    profile_size_x: A[SignalR[int], PvSuffix("ProfileSizeX_RBV")]
+    profile_size_y: A[SignalR[int], PvSuffix("ProfileSizeY_RBV")]
     cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX")]
     cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY")]
     # Array Histogram
@@ -262,7 +277,7 @@ class NDCircularBuffIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
+    trigger_: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture"), EpicsOptions(wait=non_zero)]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")
@@ -299,6 +314,7 @@ class NDFileIO(NDArrayBaseIO):
     array_size0: A[SignalR[int], PvSuffix("ArraySize0")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1")]
     create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
+    lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
 
 NDPluginFileIOT = TypeVar("NDPluginFileIOT", bound="NDPluginFileIO")
@@ -341,4 +357,3 @@ class NDFileHDF5IO(NDPluginFileIO):
     xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
     num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
     chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
-    lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]

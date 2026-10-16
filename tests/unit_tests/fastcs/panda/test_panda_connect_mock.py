@@ -125,3 +125,69 @@ async def test_panda_unable_to_connect_to_pvi(panda_t):
         await panda.connect(timeout=0.01)
 
     assert exc.value._errors == "pva://NON-EXISTENT:PVI"
+
+
+async def test_panda_gets_types_from_common_class(panda_t):
+    """Fold-forward of the deleted ``tests/system_tests/fastcs/panda/
+    test_panda_connect.py::test_panda_gets_types_from_common_class`` (issue
+    #1321, item 7 -- PandA system-test cleanup, unblocked by item 2's generic
+    PVI-protocol coverage in ``tests/system_tests/epics/core/
+    test_pvi_nested.py``).
+
+    Kept, because these are all resolvable purely from ``PcapBlock``/
+    ``SeqBlock``/``PulseBlock``'s own class annotations, needing at most
+    ``connect(mock=True)`` and no live PVI tree at all (see
+    ``PviDeviceConnector.create_children_from_annotations``, which runs at
+    ``Device.__init__`` time from the annotations alone, vs. ``connect_real``,
+    which is the only thing that ever talks to a network):
+
+    - sub-block type resolution (``panda.pcap`` is a ``PcapBlock``,
+      ``panda.seq[1]`` is a ``SeqBlock``, ``panda.pulse[1]`` is a
+      ``PulseBlock``) -- verified this holds even before any ``connect()``
+      for non-vector blocks, and right after ``connect(mock=True)`` for
+      vector ones (``DeviceVector`` entries are only populated at connect
+      time, mock or real).
+    - the pre-initialised ``pcap`` block is the same object after
+      ``connect()``, i.e. connecting doesn't replace annotation-created
+      children.
+    - predefined-signal datatype resolution (``pcap.active``'s backend
+      datatype is ``bool``).
+    - custom-datatype resolution (``seq[1].table``'s backend datatype is
+      ``SeqTable``).
+
+    Dropped, with no unit-test equivalent (confirmed by direct experiment:
+    ``connect(mock=True)`` raises ``AttributeError`` for both, since mock
+    connect has no live PVI tree to walk):
+
+    - ``panda.pcap.newsignal`` and its ``NO_ARG_VOID_SIGNATURE`` signature
+      check -- ``newsignal`` is not declared anywhere in ``PcapBlock``; it
+      only ever appears by walking a live PVI tree in
+      ``PviDeviceConnector.connect_real`` (gated behind the
+      ``INCLUDE_EXTRA_SIGNAL`` macro in the old system test's IOC database).
+    - ``panda.extra`` and its ``isinstance(..., DeviceVector)`` check --
+      same story, ``extra`` is a block gated behind ``INCLUDE_EXTRA_BLOCK``
+      in the old IOC database and only discoverable live.
+
+    Both are specific (PandA-flavoured) instances of "a Device that never
+    predeclares a signal/sub-device still gets one from a live PVI tree",
+    which issue #1321 item 2 already covers generically, independent of
+    PandA, in ``tests/system_tests/epics/core/test_pvi_nested.py`` -- so
+    dropping them here is not a unique coverage loss.
+    """
+    panda = panda_t("PANDAQSRV:")
+    pcap = panda.pcap
+    await panda.connect(mock=True)
+
+    # The pre-initialized blocks are not replaced by connect()
+    assert pcap is panda.pcap
+
+    # sub devices have the correct types
+    assert isinstance(panda.pcap, PcapBlock)
+    assert isinstance(panda.seq[1], SeqBlock)
+    assert isinstance(panda.pulse[1], PulseBlock)
+
+    # predefined signals get set up with the correct datatype
+    assert panda.pcap.active._connector.backend.datatype is bool
+
+    # works with custom datatypes
+    assert panda.seq[1].table._connector.backend.datatype is SeqTable

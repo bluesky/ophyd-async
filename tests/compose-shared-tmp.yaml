@@ -1,0 +1,33 @@
+# Give the cam IOC a directory that resolves to the same absolute path both in
+# the pytest process and inside the container.
+#
+# IOCs are started via docker compose against the *host's* container engine, so
+# every path in a compose file resolves on the host. A path handed to the IOC
+# over Channel Access (see StaticPathProvider) is opened by the IOC in its own
+# filesystem, so pytest and the IOC must agree on what that path means. They do
+# not by default: the devcontainer's /tmp is not the host's /tmp, and the IOC
+# mounts the repo at /workspaces while the devcontainer mounts its *parent*
+# there.
+#
+# $OPHYD_ASYNC_SHARED_TMP_SOURCE is a volume name or a host path;
+# $OPHYD_ASYNC_SHARED_TMP_DIR is the absolute path both sides use. In a
+# devcontainer the source is the shared
+# cache *volume*, which the container engine resolves identically no matter who
+# launched the container. On a bare host (CI) pytest and the engine already
+# share a filesystem, so source and target are the same path and this is a
+# plain bind.
+#
+# Merged as a second `-f` so the pinned example-services submodule stays
+# untouched; compose appends to the service's existing volume list.
+
+services:
+  bl01t-di-cam-01:
+    volumes:
+      - ${OPHYD_ASYNC_SHARED_TMP_SOURCE}:${OPHYD_ASYNC_SHARED_TMP_DIR}
+
+volumes:
+  # Only referenced when OPHYD_ASYNC_SHARED_TMP_SOURCE names this volume;
+  # compose does not check external volumes it does not use, so the bind case
+  # is unaffected.
+  devcontainer-shared-cache:
+    external: true

@@ -55,12 +55,13 @@ For example, for ADAravis:
 :pyobject: AravisTriggerLogic
 ```
 
-## Use ADArmLogic or create custom Arm Logic
+## Use ADAcquireLogic or create custom Acquire Logic
 
-Most areaDetectors can use the standard [](#adcore.ADArmLogic) which handles arming and disarming via the driver's `acquire` signal. If your detector requires custom arming behavior (e.g., waiting for a specific ready signal), create a [](#DetectorArmLogic) subclass with:
-- `arm()` - Start acquisition
+Most areaDetectors can use the standard [](#adcore.ADAcquireLogic) which handles starting and stopping acquisition via the driver's `acquire` signal. If your detector requires custom acquisition behaviour (e.g., waiting for a specific ready signal), create a [](#DetectorAcquireLogic) subclass with:
+- `start_acquiring()` - Start acquisition
 - `wait_for_idle()` - Wait until acquisition is complete
-- `disarm()` - Stop acquisition
+- `ensure_stopped()` - Stop acquisition
+- `ensure_ready()` - (optional) Override if stage-time reset differs from `ensure_stopped`
 
 ## Add a Detector that puts it all together
 
@@ -71,10 +72,8 @@ Now you need to make an [](#adcore.AreaDetector) subclass that uses your IO and 
 
 The constructor parameters should include:
 - `prefix`: The PV prefix for the driver and plugins
-- `path_provider`: A [](#PathProvider) that tells the detector where to write data (optional if `writer_type=None`)
+- `*writer_factories`: Zero or more [](#adcore.ADWriterFactory) instances (e.g. `ADWriterFactory.hdf(path_provider)`); omit entirely to skip file writing
 - `driver_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
-- `writer_type`: An [](#adcore.ADWriterType) enum value (HDF, TIFF, JPEG) or None to skip file writing
-- `writer_suffix`: An optional PV suffix for the file writer plugin
 - `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBaseIO)} for additional plugins
 - `config_sigs`: Additional signals to report in configuration (beyond the standard acquire_time and acquire_period)
 - `name`: An optional name for the device
@@ -89,7 +88,7 @@ For example, for ADAravis:
 The `AreaDetector` baseclass will:
 - Store the driver as `self.driver`
 - Call `add_detector_logics()` to register your trigger and arm logic
-- Create and register a data logic for file writing if `writer_type` is not None
+- Create and register a data logic for file writing for each factory in `writer_factories`
 - Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
 - Store any plugins as attributes on the detector
 
@@ -123,14 +122,41 @@ det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total
 
 ### Multiple HDF writers for different ROIs
 ```python
-# Don't create default writer
-det = adaravis.AravisDetector(prefix, writer_type=None)  
-# Add separate writers for each ROI
-det.add_detector_logics(
-    adcore.ADHDFDataLogic(path_provider, det.driver, det.roi1_plugin, datakey_suffix="-roi1"),
-    adcore.ADHDFDataLogic(path_provider, det.driver, det.roi2_plugin, datakey_suffix="-roi2"),
+roi1 = adcore.NDROIIO("PREFIX:ROI1:")
+roi2 = adcore.NDROIIO("PREFIX:ROI2:")
+det = adaravis.AravisDetector(
+    "PREFIX:",
+    adcore.ADWriterFactory.hdf(
+        path_provider,
+        writer_suffix="HDF1:",
+        writer_name="hdf1",
+        datakey_suffix="-roi1",
+        array_description=lambda driver: adcore.NDArrayDescription(
+            shape_signals=(roi1.size_y, roi1.size_x),
+            data_type_signal=driver.data_type,
+            color_mode_signal=driver.color_mode,
+        ),
+    ),
+    adcore.ADWriterFactory.hdf(
+        path_provider,
+        writer_suffix="HDF2:",
+        writer_name="hdf2",
+        datakey_suffix="-roi2",
+        array_description=lambda driver: adcore.NDArrayDescription(
+            shape_signals=(roi2.size_y, roi2.size_x),
+            data_type_signal=driver.data_type,
+            color_mode_signal=driver.color_mode,
+        ),
+    ),
+    plugins={"roi1": roi1, "roi2": roi2},
 )
 ```
+
+The `array_description` callable receives the fully-constructed driver at detector
+initialisation time, which is the earliest point at which `driver.data_type` and
+`driver.color_mode` are available.  This also lets plugins that override
+`data_type` or `color_mode` (e.g. a processing plugin) pass their own signals
+instead of the driver's.
 
 ## Continuously acquiring detector
 
@@ -147,7 +173,7 @@ driver = adcore.ADBaseIO("PREFIX:DRV:")
 cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
 det = adcore.AreaDetector(
     driver=driver,
-    arm_logic=adcore.ADContAcqArmLogic(driver, cb_plugin),
+    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin),
     trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
     path_provider=path_provider,
     plugins={"cb1": cb_plugin},
