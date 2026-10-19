@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import logging
@@ -79,8 +81,8 @@ R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[P, "CoroutineType[Any, Any, R]"],
-) -> Callable[P, "CoroutineType[Any, Any, R]"]:
+    func: Callable[P, CoroutineType[Any, Any, R]],
+) -> Callable[P, CoroutineType[Any, Any, R]]:
     """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
@@ -282,7 +284,7 @@ class TangoProxy:
     ):
         """Set polling parameters."""
 
-    def set_converter(self, converter: "TangoConverter"):
+    def set_converter(self, converter: TangoConverter):
         self._converter = converter
 
 
