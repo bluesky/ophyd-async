@@ -3,7 +3,8 @@ import functools
 import logging
 import re
 from abc import abstractmethod
-from collections.abc import Callable, Coroutine, Sequence
+from collections.abc import Callable, Sequence
+from types import CoroutineType
 from typing import (
     Any,
     ParamSpec,
@@ -21,7 +22,7 @@ from event_model.documents.event_descriptor import RdsRange
 from tango import (
     AttrDataFormat,
     CmdArgType,
-    DevFailed,  # type: ignore
+    DevFailed,
     DeviceProxy,
     DevState,
     EventType,
@@ -78,18 +79,18 @@ R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[P, Coroutine[Any, Any, R]],
-) -> Callable[P, Coroutine[Any, Any, R]]:
+    func: Callable[P, "CoroutineType[Any, Any, R]"],
+) -> Callable[P, "CoroutineType[Any, Any, R]"]:
     """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
     async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
-        if not current_executor.in_executor_context():  # type: ignore
+        current_executor: AsyncioExecutor = get_global_executor()
+        if not current_executor.in_executor_context():
             set_global_executor(AsyncioExecutor())
         return await func(*args, **kwargs)
 
-    return wrapper  # type: ignore[return-value]
+    return wrapper
 
 
 # Base mapping for Tango types to Python types
@@ -327,17 +328,17 @@ class AttributeProxy(TangoProxy):
         self.support_events = True
 
     @ensure_proper_executor
-    async def get(self) -> object:  # type: ignore
+    async def get(self) -> object:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         return self._converter.value(attr.value)
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:  # type: ignore
+    async def get_w_value(self) -> object:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         return self._converter.value(attr.w_value)
 
     @ensure_proper_executor
-    async def put(  # type: ignore
+    async def put(
         self, value: object | None, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
@@ -357,11 +358,11 @@ class AttributeProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeConfig:  # type: ignore
+    async def get_config(self) -> AttributeConfig:
         return await self._proxy.get_attribute_config(self._name)  # type: ignore
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:  # type: ignore
+    async def get_reading(self) -> Reading:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         reading = Reading(
             value=self._converter.value(attr.value),
@@ -598,7 +599,7 @@ class CommandProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandConfig:  # type: ignore
+    async def get_config(self) -> CommandConfig:
         return await self._proxy.get_command_config(self._name)  # type: ignore
 
     def set_polling(
