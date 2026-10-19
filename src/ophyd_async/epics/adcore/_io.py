@@ -319,11 +319,16 @@ class NDProcessIO(NDPluginBaseIO):
     offset: A[SignalRW[float], PvSuffix.rbv("Offset")]
     scale: A[SignalRW[float], PvSuffix.rbv("Scale")]
     enable_low_clip: A[SignalRW[bool], PvSuffix.rbv("EnableLowClip")]
+    enable_high_clip: A[SignalRW[bool], PvSuffix.rbv("EnableHighClip")]
+
+    # The below signals were renamed in ADCore 3-13. Since
+    # This is a relatively recent release, we are omitting them from the
+    # IO class for now.
     # low_clip_thresh: A[SignalRW[float], PvSuffix.rbv("LowClipThresh")]
     # low_clip_value: A[SignalRW[float], PvSuffix.rbv("LowClipValue")]
-    enable_high_clip: A[SignalRW[bool], PvSuffix.rbv("EnableHighClip")]
     # high_clip_thresh: A[SignalRW[float], PvSuffix.rbv("HighClipThresh")]
     # high_clip_value: A[SignalRW[float], PvSuffix.rbv("HighClipValue")]
+
     enable_filter: A[SignalRW[bool], PvSuffix.rbv("EnableFilter")]
     reset_filter: A[TriggerableCommand, PvSuffix.rbv("ResetFilter")]
     auto_reset_filter: A[SignalRW[bool], PvSuffix.rbv("AutoResetFilter")]

@@ -87,6 +87,7 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
 
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
+    :param driver_cls: IO class for the driver, defaults to ADBaseIO
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
     :param cb_suffix: Suffix for the circular buffer plugin PV, defaults to "CB1:"
     :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None
@@ -101,7 +102,7 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
         *writer_factories: ADWriterFactory,
         driver_cls: type[ADBaseIOT] = ADBaseIO,
         driver_suffix: str = "cam1:",
-        cb_suffix="CB1:",
+        cb_suffix: str = "CB1:",
         proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
