@@ -97,6 +97,8 @@ async def trigger_info_from_driver(
 
     if process_plugin is not None and await process_plugin.enable_filter.get_value():
         exposures_per_collection = await process_plugin.num_filter.get_value()
+        if exposures_per_collection < 1:
+            raise ValueError(f"{process_plugin.name}: filter enabled with num_filter={exposures_per_collection}, set it to 1 or more")
 
     return TriggerInfo(
         collections_per_event=max(1, num_images // exposures_per_collection),

@@ -59,7 +59,7 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
     driver: AravisDriverIO
-    process_plugin: NDProcessIO | None = None
+    process_plugin: NDProcessIO | None
     override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
