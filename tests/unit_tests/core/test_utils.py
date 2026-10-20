@@ -510,7 +510,8 @@ async def test_simulate_move_ends_at_target(acceleration_time: float):
         ("Invalid:ColonAdded", "invalid_colon_added"),
         ("temp(°C)", "temp_c_"),
         ("3LeadingDigit", "_3_leading_digit"),
-        ("class", "class_"),  # reserved keyword
+        # keywords are left for DeviceFiller to suffix with "_"
+        ("class", "class"),
         ("", "_"),
         ("!!!", "_"),
     ],

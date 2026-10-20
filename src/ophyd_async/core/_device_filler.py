@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import keyword
 import logging
 import types
 from abc import abstractmethod
@@ -29,7 +30,14 @@ from ._device import (
 )
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
-from ._utils import T, V, cached_get_origin, cached_get_type_hints, get_origin_class
+from ._utils import (
+    T,
+    V,
+    cached_get_origin,
+    cached_get_type_hints,
+    get_origin_class,
+    to_snake_case,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -158,10 +166,24 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self._filled_command_backends: dict[
             LogicalName, tuple[CommandBackendT, type[Command]]
         ] = {}
+        # The control system name each filled LogicalName came from
+        self._source_names: dict[LogicalName, str] = {}
         self._scan_for_annotations()
 
     def _raise(self, name: str, error: str) -> NoReturn:
         raise TypeError(f"{type(self._device).__name__}.{name}: {error}")
+
+    def _logical_from_source(self, name: str) -> LogicalName:
+        """Convert a control system name to the LogicalName of its child.
+
+        Raise if a different control system name was already converted to the
+        same LogicalName, as both would otherwise fill the same child.
+        """
+        logical_name = cast(LogicalName, to_snake_case(name))
+        source_name = self._source_names.setdefault(logical_name, name)
+        if source_name != name:
+            self._raise(logical_name, f"is served as both {source_name!r} and {name!r}")
+        return logical_name
 
     def _validate_signal_datatype(
         self, name: UniqueName, annotation: Any
@@ -479,7 +501,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         :param map_key: If the child is in a `DeviceVector`/`DeviceMap`, its key
         :return: The SignalBackend for the filled Signal.
         """
-        name = cast(LogicalName, name)
+        name = self._logical_from_source(name)
         if name in self._unfilled_backends:
             # We made it above
             backend, expected_signal_type = self._unfilled_backends.pop(name)
@@ -507,6 +529,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 logger.info(
                     f"Signal `{name}` is used in one of the bluesky protocols. "
                     f"Using `{name}_` instead."
+                )
+                name = f"{name}_"
+            elif keyword.iskeyword(name):
+                logger.info(
+                    f"Signal `{name}` is a Python keyword. Using `{name}_` instead."
                 )
                 name = f"{name}_"
             setattr(self._device, name, signal_type(backend))
@@ -537,7 +564,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         :param map_key: If the child is in a `DeviceVector`/`DeviceMap`, its key
         :return: The DeviceConnector for the filled Device.
         """
-        name = cast(LogicalName, name)
+        name = self._logical_from_source(name)
         if name in self._unfilled_connectors:
             # We made it above
             connector = self._unfilled_connectors.pop(name)
@@ -589,7 +616,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 "no command_backend_factory was provided to DeviceFiller"
             )
 
-        logical_name = cast(LogicalName, name)
+        logical_name = self._logical_from_source(name)
         # First check unfilled command backends
         if logical_name in self._unfilled_command_backends:
             backend, expected_command_type = self._unfilled_command_backends.pop(
@@ -615,14 +642,14 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             self._set_dict_child(map_key, expected_command_type(backend))
 
         # Shadowing check
-        elif child := getattr(self._device, name, None):
+        elif child := getattr(self._device, logical_name, None):
             self._raise(name, f"Cannot make child as it would shadow {child}")
 
         # Create new command
         else:
             backend = self._command_backend_factory(None)
             expected_command_type = command_type
-            setattr(self._device, name, command_type(backend))
+            setattr(self._device, logical_name, command_type(backend))
 
         # Compare origin classes, as `expected_command_type` may be a
         # parameterized generic alias (e.g. `Command[[], int]` from a

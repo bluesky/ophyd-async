@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import keyword
 import logging
 import re
 import time
@@ -53,19 +52,18 @@ def to_snake_case(name: str) -> str:
 
     snake_case names are returned unchanged. Any other name is sanitized into a
     valid Python identifier: each run of characters that can't appear in one is
-    replaced by `_`, a leading digit gets a `_` prefix, and a Python keyword gets
-    a `_` suffix.
+    replaced by `_`, and a leading digit gets a `_` prefix. The result may still be
+    a Python keyword such as `class`; `DeviceFiller` handles those when it makes
+    the attribute.
 
     :param name: The name to convert, e.g. a PVI entry name.
-    :return: A valid, non-keyword Python identifier in snake_case.
+    :return: A valid Python identifier in snake_case.
     """
     name = _INVALID_IDENTIFIER_CHARS.sub("_", name)
     name = _ACRONYM_BOUNDARY.sub(r"\1_\2", name)
     name = _WORD_BOUNDARY.sub(r"\1_\2", name).lower()
     if not name or name[0].isdigit():
         name = f"_{name}"
-    if keyword.iskeyword(name):
-        name = f"{name}_"
     return name
 
 
