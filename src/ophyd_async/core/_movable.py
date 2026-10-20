@@ -1,6 +1,6 @@
 import asyncio
 import time
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
@@ -48,7 +48,7 @@ TimeoutCalculator = Callable[[], float | None]
 
 
 @dataclass
-class MovableLogic(Generic[SignalDatatypeT]):
+class MovableLogic(ABC, Generic[SignalDatatypeT]):
     """Minimum logic needed for controlling a `StandardMovable`.
 
     Can be inherited to add specialised logic for stop, checking if a move is valid,
