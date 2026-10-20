@@ -1,18 +1,19 @@
+import asyncio
 import re
-from unittest.mock import call
+from unittest.mock import patch
 
 import pytest
 
 from ophyd_async.core import (
     DetectorTrigger,
-    EnableDisable,
+    StaticPathProvider,
     TriggerInfo,
     callback_on_mock_put,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore
-from ophyd_async.testing import assert_has_calls
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
@@ -80,74 +81,136 @@ async def test_cont_acq_controller_invalid_exposure_time(
         await cont_acq_detector.prepare(TriggerInfo(livetime=1.0))
 
 
-@pytest.fixture
-async def cont_acq_detector_with_proc() -> adcore.AreaDetector[adcore.ADBaseIO]:
+@pytest.mark.parametrize(
+    "num_frames_to_skip, dirty_deltas",
+    [(0, ()), (1, (1,)), (2, (1, 2)), (2, (4,))],
+)
+@pytest.mark.parametrize(
+    "exposures_per_collection, proc_suffix", [(1, None), (5, "PROC:")]
+)
+async def test_cont_acq_skips_dirty_frames(
+    num_frames_to_skip: int,
+    dirty_deltas: tuple[int, ...],
+    exposures_per_collection: int,
+    proc_suffix: str | None,
+    static_path_provider: StaticPathProvider,
+):
     async with init_devices(mock=True):
         det = adcore.ContAcqDetector(
-            prefix="PREFIX:",
-            proc_suffix="PROC:",
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider),
+            proc_suffix=proc_suffix,
+            num_frames_to_skip=num_frames_to_skip,
         )
-
-    set_mock_value(
-        det.driver.image_mode,
-        adcore.ADImageMode.CONTINUOUS,
-    )
+    cb = det.get_plugin("cb", adcore.NDCircularBuffIO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
+    set_mock_value(det.driver.image_mode, adcore.ADImageMode.CONTINUOUS)
+    set_mock_value(det.driver.acquire, True)
     set_mock_value(det.driver.acquire_time, 0.8)
     set_mock_value(det.driver.acquire_period, 1.0)
-    set_mock_value(det.driver.acquire, True)
-    # The CB plugin Trigger is a busy record that resets itself to False once the
-    # requested frames are buffered; simulate that immediate completion.
-    callback_on_mock_put(det.cb.trigger_, lambda value: False)
-    return det
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(cb.capture, True)
+    set_mock_value(cb.pre_count, 2)
+
+    async def set_pre_count(value: int) -> int:
+        # ADCore refuses PreCount changes while capture is active.
+        return await cb.pre_count.get_value() if await cb.capture.get_value() else value
+
+    callback_on_mock_put(cb.pre_count, set_pre_count)
+    await det.stage()
+    assert not await cb.capture.get_value()
+    assert await det.driver.acquire.get_value()
+    await det.prepare(TriggerInfo(exposures_per_collection=exposures_per_collection))
+
+    forwarded: list[int] = []
+
+    async def receive_frame(counter: int) -> None:
+        # The CB processes the frame before publishing its counter readback.
+        if await cb.trigger_.get_value():
+            forwarded.append(counter)
+            if len(forwarded) == await cb.post_count.get_value():
+                set_mock_value(
+                    writer.num_captured, await writer.num_captured.get_value() + 1
+                )
+                set_mock_value(cb.trigger_, False)
+        set_mock_value(cb.array_counter, counter)
+        await wait_for_pending_wakeups(max_yields=100)
+
+    for collection, initial_count in enumerate((100, 200), start=1):
+        # Frames arriving between triggers must not count towards the next skip.
+        set_mock_value(cb.array_counter, initial_count)
+        forwarded.clear()
+
+        status = det.trigger()
+        await wait_for_pending_wakeups(max_yields=100)
+        assert await cb.capture.get_value()
+        assert await cb.pre_count.get_value() == 0
+        assert await cb.trigger_.get_value() == (num_frames_to_skip == 0)
+        assert not status.done
+
+        if num_frames_to_skip:
+            # Driver progress and repeated CB monitor values are not new CB frames.
+            set_mock_value(det.driver.array_counter, initial_count + 10)
+            set_mock_value(cb.array_counter, initial_count)
+            await wait_for_pending_wakeups(max_yields=100)
+            assert not await cb.trigger_.get_value()
+
+        for delta in dirty_deltas:
+            await receive_frame(initial_count + delta)
+            assert await cb.trigger_.get_value() == (delta >= num_frames_to_skip)
+            assert forwarded == []
+            assert await det.get_index() == collection - 1
+
+        last_dirty_count = initial_count + (dirty_deltas[-1] if dirty_deltas else 0)
+        clean_frames = list(
+            range(last_dirty_count + 1, last_dirty_count + exposures_per_collection + 1)
+        )
+        for counter in clean_frames:
+            await receive_frame(counter)
+        assert status.done
+        await status
+        assert forwarded == clean_frames
+        assert await det.get_index() == collection
+
+    await det.unstage()
+    assert not await cb.capture.get_value()
+    assert await det.driver.acquire.get_value()
 
 
-async def test_cont_acq_controller_success(
-    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
-):
-    await cont_acq_detector.stage()
-    await cont_acq_detector.trigger()
-    assert_has_calls(
-        cont_acq_detector,
-        [
-            call.cb.capture.put(True),
-            call.cb.enable_callbacks.put(EnableDisable.ENABLE),
-            call.cb.pre_count.put(0),
-            call.cb.post_count.put(1),
-            call.cb.preset_trigger_count.put(0),
-            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-            call.cb.trigger_.put(True),
-        ],
-    )
-
-
-@pytest.mark.parametrize("exposures_per_collection", [1, 5])
-async def test_cont_acq_controller_success_with_process_plugin(
-    cont_acq_detector_with_proc: adcore.AreaDetector[adcore.ADBaseIO],
-    exposures_per_collection,
-):
-    await cont_acq_detector_with_proc.stage()
-    await cont_acq_detector_with_proc.prepare(
-        TriggerInfo(exposures_per_collection=exposures_per_collection)
-    )
-    await cont_acq_detector_with_proc.trigger()
-    assert_has_calls(
-        cont_acq_detector_with_proc,
-        [
-            call.cb.capture.put(True),
-            call.proc.reset_filter.execute(),
-            call.proc.num_filter.put(exposures_per_collection),
-            call.proc.enable_filter.put(True),
-            call.proc.auto_reset_filter.put(True),
-            call.proc.data_type_out.put(adcore.ADBaseDataType.AUTOMATIC),
-            call.proc.filter_callbacks.put(
-                adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY
+@pytest.mark.parametrize("cancel", [False, True])
+async def test_cont_acq_interrupted_frame_wait_keeps_gate_closed(cancel: bool):
+    driver = adcore.ADBaseIO("PREFIX:DRV:")
+    cb = adcore.NDCircularBuffIO("PREFIX:CB:")
+    async with init_devices(mock=True):
+        det = adcore.AreaDetector(
+            driver,
+            acquire_logic=adcore.ADContAcqAcquireLogic(
+                driver, cb, num_frames_to_skip=2
             ),
-            call.proc.enable_callbacks.put(EnableDisable.ENABLE),
-            call.cb.enable_callbacks.put(EnableDisable.ENABLE),
-            call.cb.pre_count.put(0),
-            call.cb.post_count.put(exposures_per_collection),
-            call.cb.preset_trigger_count.put(0),
-            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-            call.cb.trigger_.put(True),
-        ],
-    )
+            trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb, None),
+            plugins={"cb": cb},
+        )
+    set_mock_value(driver.image_mode, adcore.ADImageMode.CONTINUOUS)
+    set_mock_value(driver.acquire, True)
+    set_mock_value(driver.acquire_period, 0.01)
+    set_mock_value(cb.array_counter, 100)
+    await det.stage()
+    await det.prepare(TriggerInfo())
+
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.01):
+        if cancel:
+            status = det.trigger()
+            await wait_for_pending_wakeups(max_yields=100)
+            status.task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await status
+        else:
+            with pytest.raises(TimeoutError):
+                await det.trigger()
+
+    set_mock_value(cb.array_counter, 102)
+    await wait_for_pending_wakeups(max_yields=100)
+    assert not await cb.trigger_.get_value()
+    assert await driver.acquire.get_value()
+    await det.unstage()
+    assert not await cb.capture.get_value()

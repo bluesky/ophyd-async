@@ -2,10 +2,12 @@ import asyncio
 from dataclasses import dataclass
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     DetectorTrigger,
     EnableDisable,
     SignalR,
     TriggerInfo,
+    set_and_wait_for_value,
 )
 from ophyd_async.core import (
     DetectorTriggerLogic as _DetectorTriggerLogic,
@@ -140,6 +142,7 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await self._ensure_driver_acquiring(livetime)
+        # Stage-time ensure_ready has stopped capture so PreCount can be configured.
         # Setup the CB plugin with the current parameters
         await asyncio.gather(
             self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
@@ -149,6 +152,12 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
             # until explicitly stopped.
             self.cb_plugin.preset_trigger_count.set(0),
             self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+        )
+        await set_and_wait_for_value(
+            self.cb_plugin.capture,
+            True,
+            wait_for_set_completion=False,
+            timeout=DEFAULT_TIMEOUT,
         )
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):

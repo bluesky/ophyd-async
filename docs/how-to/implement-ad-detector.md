@@ -175,18 +175,28 @@ Example implementation:
 driver = adcore.ADBaseIO("PREFIX:DRV:")
 cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
 det = adcore.AreaDetector(
-    driver=driver,
-    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin),
-    trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
-    path_provider=path_provider,
+    driver,
+    "PREFIX:",
+    adcore.ADWriterFactory.hdf(path_provider),
+    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin, num_frames_to_skip=1),
+    trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin, None),
     plugins={"cb1": cb_plugin},
 )
 ```
 
 The [](#adcore.ADContAcqTriggerLogic) will:
-- Validate that exposure time matches the detector's current acquisition period
-- Configure the circular buffer plugin to capture the requested number of frames
-- Use the circular buffer's trigger signal instead of the driver's acquire signal
+- Validate that a requested exposure time matches the driver's current exposure time
+- Configure zero pre-trigger frames and the requested number of post-trigger frames, then arm circular buffer capture
+
+The [](#adcore.ADContAcqAcquireLogic) opens the circular buffer gate instead of starting the driver. Unstaging stops CB capture but leaves the driver acquiring continuously.
+
+### Skip dirty frames
+
+A frame already exposing when `trigger()` is called may include motion from the preceding scan step. Set `num_frames_to_skip` on [](#adcore.ADContAcqAcquireLogic) to wait for incoming frames to pass before opening the gate. Use `0` for no wait (the default), `1` to discard the next frame, or `2` if the detector pipeline can deliver two dirty frames.
+
+Each `trigger()` or internally triggered `kickoff()` takes a fresh CB `ArrayCounter_RBV` baseline immediately before opening the gate would otherwise occur. The gate stays closed until the counter has advanced by at least `num_frames_to_skip`; frames arriving during `stage()` or `prepare()` do not count. Counter jumps are allowed because EPICS monitors may combine updates. Skipped frames are not included in the requested collection or the process plugin's exposure count.
+
+The wait timeout is `num_frames_to_skip * AcquirePeriod_RBV + DEFAULT_TIMEOUT`. If the counter stalls or the operation is cancelled, the gate is not opened. Keep the counter increasing without resetting it during the wait. The number of frames needed depends on the detector's exposure/readout pipeline.
 
 
 ## Write tests
