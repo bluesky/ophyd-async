@@ -35,7 +35,7 @@
 
 ### API
 
-````{py:class} AravisDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, driver_suffix='cam1:', override_deadtime: float | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} AravisDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, driver_suffix: str = 'cam1:', proc_suffix: str | None = None, override_deadtime: float | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adaravis.AravisDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adaravis.AravisDriverIO`\]
@@ -96,6 +96,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ````
 
+````{py:attribute} process_plugin
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.process_plugin
+:type: ~ophyd_async.epics.adcore.NDProcessIO | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.process_plugin
+```
+
+````
+
 ````{py:attribute} override_deadtime
 :canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.override_deadtime
 :type: float | None
@@ -137,6 +148,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_edge
+```
+
+````
+
+````{py:method} prepare_exposures_per_collection(exposures_per_collection: int)
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_exposures_per_collection
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_exposures_per_collection
 ```
 
 ````

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.advimba &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>ophyd_async.epics.advimba &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../../../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -925,8 +925,10 @@ window.runMermaid = runMermaid;</script>
     <span class="n">ADWriterFactory</span><span class="p">,</span>
     <span class="n">AreaDetector</span><span class="p">,</span>
     <span class="n">NDPluginBaseIO</span><span class="p">,</span>
+    <span class="n">NDProcessIO</span><span class="p">,</span>
     <span class="n">prepare_exposures</span><span class="p">,</span>
-    <span class="n">trigger_info_from_num_images</span><span class="p">,</span>
+    <span class="n">prepare_filter</span><span class="p">,</span>
+    <span class="n">trigger_info_from_driver</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.adgenicam</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_camera_deadtime</span>
 
@@ -1011,6 +1013,7 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for ADVimba detectors.&quot;&quot;&quot;</span>
 
     <span class="n">driver</span><span class="p">:</span> <span class="n">VimbaDriverIO</span>
+    <span class="n">process_plugin</span><span class="p">:</span> <span class="n">NDProcessIO</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="VimbaTriggerLogic.config_sigs">
@@ -1061,10 +1064,18 @@ window.runMermaid = runMermaid;</script>
         <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="VimbaTriggerLogic.prepare_exposures_per_collection">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_exposures_per_collection">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_exposures_per_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">prepare_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="VimbaTriggerLogic.default_trigger_info">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerLogic.default_trigger_info">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">default_trigger_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_num_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_driver</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span>
+        <span class="p">)</span></div>
 </div>
 
 
@@ -1080,6 +1091,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param override_deadtime:</span>
 <span class="sd">        If provided, this value is used for deadtime instead of looking up</span>
 <span class="sd">        based on camera model.</span>
+<span class="sd">    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix</span>
 <span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
 <span class="sd">    :param name: Name for the detector device</span>
@@ -1091,18 +1103,20 @@ window.runMermaid = runMermaid;</script>
         <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
         <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
         <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">proc_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">VimbaDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
+        <span class="n">proc_plugin</span> <span class="o">=</span> <span class="n">NDProcessIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">proc_suffix</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_suffix</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">driver</span><span class="p">,</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">VimbaTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">VimbaTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc_plugin</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span> <span class="o">|</span> <span class="p">({</span><span class="s2">&quot;proc&quot;</span><span class="p">:</span> <span class="n">proc_plugin</span><span class="p">}</span> <span class="k">if</span> <span class="n">proc_plugin</span> <span class="k">else</span> <span class="p">{}),</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span></div>

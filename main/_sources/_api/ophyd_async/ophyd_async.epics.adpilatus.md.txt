@@ -43,7 +43,7 @@
 
 ### API
 
-````{py:class} PilatusDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, readout_time: ~ophyd_async.epics.adpilatus.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, edge_trigger_mode: ~ophyd_async.epics.adpilatus.PilatusTriggerMode = PilatusTriggerMode.EXT_TRIGGER, driver_suffix='cam1:', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} PilatusDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, readout_time: ~ophyd_async.epics.adpilatus.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, edge_trigger_mode: ~ophyd_async.epics.adpilatus.PilatusTriggerMode = PilatusTriggerMode.EXT_TRIGGER, driver_suffix='cam1:', proc_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adpilatus.PilatusDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus.PilatusDriverIO`\]
@@ -231,6 +231,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ````
 
+````{py:attribute} process_plugin
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.process_plugin
+:type: ~ophyd_async.epics.adcore.NDProcessIO | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.process_plugin
+```
+
+````
+
 ````{py:attribute} edge_trigger_mode
 :canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.edge_trigger_mode
 :type: ~ophyd_async.epics.adpilatus.PilatusTriggerMode
@@ -273,6 +284,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_level
+```
+
+````
+
+````{py:method} prepare_exposures_per_collection(exposures_per_collection: int)
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_exposures_per_collection
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_exposures_per_collection
 ```
 
 ````

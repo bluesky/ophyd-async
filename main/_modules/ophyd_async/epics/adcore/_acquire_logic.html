@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../../../../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -898,13 +898,16 @@ window.runMermaid = runMermaid;</script>
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.adcore._acquire_logic</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DetectorAcquireLogic</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">set_and_wait_for_other_value</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
+    <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">stop_busy_record</span><span class="p">,</span> <span class="n">wait_for_good_state</span>
 
@@ -965,10 +968,10 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span> <span class="o">=</span> <span class="n">cb_plugin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="ADContAcqAcquireLogic.start_acquiring">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.start_acquiring">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
+<div class="viewcode-block" id="ADContAcqAcquireLogic.ensure_ready">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.ensure_ready">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span>
             <span class="kc">True</span><span class="p">,</span>
             <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -976,11 +979,25 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="ADContAcqAcquireLogic.start_acquiring">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.start_acquiring">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">trigger_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ADContAcqAcquireLogic.wait_for_idle">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.wait_for_idle">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span></div>
+        <span class="n">num_images</span><span class="p">,</span> <span class="n">acquire_time</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">trigger_</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">num_images</span> <span class="o">*</span> <span class="n">acquire_time</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ADContAcqAcquireLogic.ensure_stopped">

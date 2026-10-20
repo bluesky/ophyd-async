@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._trigger_logic &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>ophyd_async.epics.adcore._trigger_logic &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../../../../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -902,14 +902,25 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DetectorTriggerLogic</span> <span class="k">as</span> <span class="n">_DetectorTriggerLogic</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectorTrigger</span><span class="p">,</span>
     <span class="n">EnableDisable</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">TriggerInfo</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectorTriggerLogic</span> <span class="k">as</span> <span class="n">_DetectorTriggerLogic</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADImageMode</span><span class="p">,</span> <span class="n">NDCBFlushOnSoftTrgMode</span><span class="p">,</span> <span class="n">NDCircularBuffIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ADBaseDataType</span><span class="p">,</span>
+    <span class="n">ADBaseIO</span><span class="p">,</span>
+    <span class="n">ADImageMode</span><span class="p">,</span>
+    <span class="n">NDCBFlushOnSoftTrgMode</span><span class="p">,</span>
+    <span class="n">NDCircularBuffIO</span><span class="p">,</span>
+    <span class="n">NDProcessFilterCallbacks</span><span class="p">,</span>
+    <span class="n">NDProcessFilterType</span><span class="p">,</span>
+    <span class="n">NDProcessIO</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="prepare_exposures">
@@ -919,7 +930,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare the driver for a given num exposures with specified livetime, deadtime.</span>
+
+<span class="sd">    :param driver: The ADBaseIO driver instance</span>
+<span class="sd">    :param num: Number of exposures to prepare</span>
+<span class="sd">    :param livetime: Exposure time for each image (default: 0.0)</span>
+<span class="sd">    :param deadtime: Deadtime between exposures (default: 0.0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">image_mode</span> <span class="o">=</span> <span class="n">ADImageMode</span><span class="o">.</span><span class="n">CONTINUOUS</span> <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">ADImageMode</span><span class="o">.</span><span class="n">MULTIPLE</span>
     <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">driver</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">image_mode</span><span class="p">),</span>
@@ -933,12 +951,71 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="trigger_info_from_num_images">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.trigger_info_from_num_images">[docs]</a>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger_info_from_num_images</span><span class="p">(</span><span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriggerInfo</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default TriggerInfo for AD detectors, reading num_images from the driver.&quot;&quot;&quot;</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="k">await</span> <span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">TriggerInfo</span><span class="p">(</span><span class="n">collections_per_event</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">))</span></div>
+<div class="viewcode-block" id="prepare_filter">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.prepare_filter">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_filter</span><span class="p">(</span>
+    <span class="n">process_plugin</span><span class="p">:</span> <span class="n">NDProcessIO</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">num_filter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">filter_type</span><span class="p">:</span> <span class="n">NDProcessFilterType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare the AD process plugin for a given number of images to filter.</span>
+
+<span class="sd">    :param process_plugin: The NDProcessIO plugin instance (optional)</span>
+<span class="sd">    :param num_filter: Number of images to filter (default: 1)</span>
+<span class="sd">    :param filter_type: Type of filter to apply (optional)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">process_plugin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># prepare() always calls this, so a single exposure needs no plugin</span>
+        <span class="k">if</span> <span class="n">num_filter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Process plugin must be provided to setup filtering!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Clear any already ingested frames</span>
+    <span class="k">await</span> <span class="n">process_plugin</span><span class="o">.</span><span class="n">reset_filter</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+
+    <span class="c1"># By default, use whichever filter is configured in the IOC.</span>
+    <span class="k">if</span> <span class="n">filter_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">process_plugin</span><span class="o">.</span><span class="n">filter_type</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">filter_type</span><span class="p">)</span>
+
+    <span class="c1"># Setup the plugin to perform filtering for the specified number of images</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">num_filter</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num_filter</span><span class="p">),</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">enable_filter</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">auto_reset_filter</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">data_type_out</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">AUTOMATIC</span><span class="p">),</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">filter_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">NDProcessFilterCallbacks</span><span class="o">.</span><span class="n">ARRAY_N_ONLY</span><span class="p">),</span>
+        <span class="n">process_plugin</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EnableDisable</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="trigger_info_from_driver">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.trigger_info_from_driver">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger_info_from_driver</span><span class="p">(</span>
+    <span class="n">num_images_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">process_plugin</span><span class="p">:</span> <span class="n">NDProcessIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriggerInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default TriggerInfo for AD detectors, reading num_images from the driver.</span>
+
+<span class="sd">    :param num_images_signal: SignalR for the number of images to acquire</span>
+<span class="sd">    :param process_plugin: Optional NDProcessIO plugin for exposures per collection</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_images</span> <span class="o">=</span> <span class="k">await</span> <span class="n">num_images_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+    <span class="n">exposures_per_collection</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">process_plugin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="k">await</span> <span class="n">process_plugin</span><span class="o">.</span><span class="n">enable_filter</span><span class="o">.</span><span class="n">get_value</span><span class="p">():</span>
+        <span class="n">exposures_per_collection</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process_plugin</span><span class="o">.</span><span class="n">num_filter</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">exposures_per_collection</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">process_plugin</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: filter enabled with &quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;num_filter=</span><span class="si">{</span><span class="n">exposures_per_collection</span><span class="si">}</span><span class="s2">, set it to 1 or more&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TriggerInfo</span><span class="p">(</span>
+        <span class="n">collections_per_event</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_images</span> <span class="o">//</span> <span class="n">exposures_per_collection</span><span class="p">),</span>
+        <span class="n">exposures_per_collection</span><span class="o">=</span><span class="n">exposures_per_collection</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -948,6 +1025,7 @@ window.runMermaid = runMermaid;</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">_DetectorTriggerLogic</span><span class="p">):</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span>
     <span class="n">cb_plugin</span><span class="p">:</span> <span class="n">NDCircularBuffIO</span>
+    <span class="n">process_plugin</span><span class="p">:</span> <span class="n">NDProcessIO</span> <span class="o">|</span> <span class="kc">None</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_driver_acquiring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="c1"># Check the current state of the system</span>
@@ -980,9 +1058,17 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EnableDisable</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">pre_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">preset_trigger_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="c1"># Set preset trigger count to 0 to allow triggering to continue indefinitely</span>
+            <span class="c1"># until explicitly stopped.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">preset_trigger_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">flush_on_soft_trg</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">NDCBFlushOnSoftTrgMode</span><span class="o">.</span><span class="n">ON_NEW_IMAGE</span><span class="p">),</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADContAcqTriggerLogic.prepare_exposures_per_collection">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqTriggerLogic.prepare_exposures_per_collection">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_exposures_per_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">prepare_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ADContAcqTriggerLogic.default_trigger_info">
@@ -991,8 +1077,9 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Read post_count (not driver.num_images) because the CB plugin&#39;s</span>
         <span class="c1"># post_count is what governs how many frames are buffered per trigger</span>
         <span class="c1"># in continuous-acquisition mode, not the driver&#39;s num_images.</span>
-        <span class="n">num</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">TriggerInfo</span><span class="p">(</span><span class="n">collections_per_event</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_driver</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span>
+        <span class="p">)</span></div>
 </div>
 
 </pre></div>

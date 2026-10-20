@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>Index &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="_static/documentation_options.js?v=b92159f9"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -1086,7 +1086,13 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO">ADBaseIO (class in ophyd_async.epics.adcore)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression">ADCompression (class in ophyd_async.epics.adcore)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor">ADBloscCompressor (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscShuffle">ADBloscShuffle (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressMode">ADCompressMode (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor">ADCompressor (class in ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic">ADContAcqAcquireLogic (class in ophyd_async.epics.adcore)</a>
 </li>
@@ -1106,10 +1112,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFDataLogic">ADHDFDataLogic (class in ophyd_async.epics.adcore)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADImageMode">ADImageMode (class in ophyd_async.epics.adcore)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADMultipartDataLogic">ADMultipartDataLogic (class in ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState">ADState (class in ophyd_async.epics.adcore)</a>
@@ -1178,6 +1184,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory.array_description">(ophyd_async.epics.adcore.ADWriterFactory attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterCallbacks.ARRAY_N_ONLY">ARRAY_N_ONLY (ophyd_async.epics.adcore.NDProcessFilterCallbacks attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO.array_size0">array_size0 (ophyd_async.epics.adcore.NDArrayBaseIO attribute)</a>
 
       <ul>
@@ -1232,11 +1240,19 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileIO.auto_increment">auto_increment (ophyd_async.epics.adcore.NDFileIO attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.auto_offset_scale">auto_offset_scale (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.auto_reset_filter">auto_reset_filter (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AutoIncrementFilenameProvider">AutoIncrementFilenameProvider (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AutoIncrementingPathProvider">AutoIncrementingPathProvider (class in ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseDataType.AUTOMATIC">AUTOMATIC (ophyd_async.epics.adcore.ADBaseDataType attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AutoMaxIncrementingPathProvider">AutoMaxIncrementingPathProvider (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.AVERAGE">AVERAGE (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1276,8 +1292,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIIO.bin_z">bin_z (ophyd_async.epics.adcore.NDROIIO attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscShuffle.BIT">BIT (ophyd_async.epics.adcore.ADBloscShuffle attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_12">BIT_12 (ophyd_async.epics.admerlin.MerlinCounterDepth attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinCounterDepth.BIT_24">BIT_24 (ophyd_async.epics.admerlin.MerlinCounterDepth attribute)</a>
@@ -1286,6 +1302,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.eiger.html#ophyd_async.fastcs.eiger.EigerDetectorIO.bit_depth_image">bit_depth_image (ophyd_async.fastcs.eiger.EigerDetectorIO attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqTrigger.BITA_0">BITA_0 (ophyd_async.fastcs.panda.SeqTrigger attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqTrigger.BITA_1">BITA_1 (ophyd_async.fastcs.panda.SeqTrigger attribute)</a>
@@ -1300,13 +1318,39 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinIO.block_size">block_size (ophyd_async.fastcs.odin.OdinIO attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.BLOSC">BLOSC (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.BLOSC">BLOSC (ophyd_async.epics.adcore.ADCompressor attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.BLOSC">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.blosc_c_level">blosc_c_level (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.blosc_compressor">blosc_compressor (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.blosc_compressor">(ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.blosc_level">blosc_level (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.blosc_num_threads">blosc_num_threads (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.blosc_shuffle">blosc_shuffle (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.BLOSCLZ">BLOSCLZ (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.bool_unnamed">bool_unnamed (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.BSLZ4">BSLZ4 (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.BSLZ4">BSLZ4 (ophyd_async.epics.adcore.ADCompressor attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.BSLZ4">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviTree.build_device_tree">build_device_tree() (ophyd_async.epics.core.PviTree class method)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscShuffle.BYTE">BYTE (ophyd_async.epics.adcore.ADBloscShuffle attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1400,6 +1444,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.PatternGenerator.close_file">close_file() (ophyd_async.sim.PatternGenerator method)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.codec_error">codec_error (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.codec_status">codec_status (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.collect_asset_docs">collect_asset_docs() (ophyd_async.core.StandardDetector method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo.collections_per_event">collections_per_event (ophyd_async.core.TriggerInfo attribute)</a>
@@ -1426,6 +1474,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.CommonPandaBlocks">CommonPandaBlocks (class in ophyd_async.fastcs.panda)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.comp_factor">comp_factor (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.complete">complete() (ophyd_async.core.StandardDetector method)</a>
 
       <ul>
@@ -1436,12 +1486,16 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.completed_status">completed_status() (in module ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.compression">compression (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressMode.COMPRESS">COMPRESS (ophyd_async.epics.adcore.ADCompressMode attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.compute_centroid">compute_centroid (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.compression">compression (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.compressor">compressor (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.compute_centroid">compute_centroid (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.compute_histogram">compute_histogram (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.compute_profiles">compute_profiles (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
@@ -1525,6 +1579,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADImageMode.CONTINUOUS">CONTINUOUS (ophyd_async.epics.adcore.ADImageMode attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format">convert_pixel_format (ophyd_async.epics.advimba.VimbaDriverIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.COPY_TO_FILTER">COPY_TO_FILTER (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState.CORRECT">CORRECT (ophyd_async.epics.adcore.ADState attribute)</a>
 </li>
@@ -1610,6 +1666,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeConfig.data_type">(ophyd_async.tango.core.AttributeConfig attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.data_type_out">data_type_out (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayDescription.data_type_signal">data_type_signal (ophyd_async.epics.adcore.NDArrayDescription attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.DataBlock">DataBlock (class in ophyd_async.fastcs.panda)</a>
@@ -1660,6 +1718,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecInfo.deadtime">(ophyd_async.fastcs.panda.ScanSpecInfo attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressMode.DECOMPRESS">DECOMPRESS (ophyd_async.epics.adcore.ADCompressMode attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.default_mock_class">default_mock_class() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DEFAULT_TIMEOUT">DEFAULT_TIMEOUT (in module ophyd_async.core)</a>
@@ -1730,10 +1790,10 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory.derived_signal_w">(ophyd_async.core.DerivedSignalFactory method)</a>
 </li>
       </ul></li>
-      <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.TwoJackTransform.derived_to_raw">derived_to_raw() (ophyd_async.sim.TwoJackTransform method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.TwoJackTransform.derived_to_raw">derived_to_raw() (ophyd_async.sim.TwoJackTransform method)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory">DerivedSignalFactory (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncReadable.describe">describe() (ophyd_async.core.AsyncReadable method)</a>
@@ -1813,6 +1873,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceVector">DeviceVector (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.DevStateEnum">DevStateEnum (class in ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.DIFFERENCE">DIFFERENCE (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcompBlock.dir">dir (ophyd_async.fastcs.panda.PcompBlock attribute)</a>
 </li>
@@ -1916,7 +1978,19 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqBlock.enable">(ophyd_async.fastcs.panda.SeqBlock attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_background">enable_background (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO.enable_callbacks">enable_callbacks (ophyd_async.epics.adcore.NDPluginBaseIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_filter">enable_filter (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_flat_field">enable_flat_field (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_high_clip">enable_high_clip (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_low_clip">enable_low_clip (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.enable_offset_scale">enable_offset_scale (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.EnabledDisabled.ENABLED">ENABLED (ophyd_async.core.EnabledDisabled attribute)</a>
 </li>
@@ -1939,7 +2013,11 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.ensure_proper_executor">ensure_proper_executor() (in module ophyd_async.tango.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.ensure_ready">ensure_ready() (ophyd_async.core.DetectorAcquireLogic method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.ensure_ready">(ophyd_async.epics.adcore.ADContAcqAcquireLogic method)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.ensure_stopped">ensure_stopped() (ophyd_async.core.DetectorAcquireLogic method)</a>
 
       <ul>
@@ -1976,12 +2054,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDeviceConnector">EpicsDeviceConnector (class in ophyd_async.epics.core)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsOptions">EpicsOptions (class in ophyd_async.epics.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice">EpicsTestCaDevice (class in ophyd_async.epics.testing)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestEnum">EpicsTestEnum (class in ophyd_async.epics.testing)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPvaDevice">EpicsTestPvaDevice (class in ophyd_async.epics.testing)</a>
@@ -2013,12 +2091,16 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState.ERROR">ERROR (ophyd_async.epics.adcore.ADState attribute)</a>
 
       <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecStatus.ERROR">(ophyd_async.epics.adcore.NDCodecStatus attribute)</a>
+</li>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.jungfrau.html#ophyd_async.fastcs.jungfrau.DetectorStatus.ERROR">(ophyd_async.fastcs.jungfrau.DetectorStatus attribute)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.error_if_none">error_if_none() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.events_to_kickoff">events_to_kickoff() (ophyd_async.core.StandardDetector method)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterCallbacks.EVERY_ARRAY">EVERY_ARRAY (ophyd_async.epics.adcore.NDProcessFilterCallbacks attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.ExampleEnum">ExampleEnum (class in ophyd_async.testing)</a>
 </li>
@@ -2084,6 +2166,10 @@ window.runMermaid = runMermaid;</script>
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.f_offset">f_offset (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.f_scale">f_scale (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain.FAST_LOW">FAST_LOW (ophyd_async.epics.adpilatus.PilatusGain attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.core.html#ophyd_async.fastcs.core.fastcs_connector">fastcs_connector() (in module ophyd_async.fastcs.core)</a>
@@ -2126,6 +2212,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.fill_child_signal">fill_child_signal() (ophyd_async.core.DeviceFiller method)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.filter_callbacks">filter_callbacks (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.filter_type">filter_type (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.find_free_port">find_free_port() (in module ophyd_async.testing)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO.firmware_version">firmware_version (ophyd_async.epics.adcore.ADBaseIO attribute)</a>
@@ -2146,12 +2236,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseDataType.FLOAT64">FLOAT64 (ophyd_async.epics.adcore.ADBaseDataType attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoTestDevice.float64">float64 (ophyd_async.tango.testing.TangoTestDevice attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoTestDevice.float64_image">float64_image (ophyd_async.tango.testing.TangoTestDevice attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.float64a">float64a (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaHdf5DatasetType.FLOAT_64">FLOAT_64 (ophyd_async.fastcs.panda.PandaHdf5DatasetType attribute)</a>
@@ -2552,12 +2642,22 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.TwoJackRaw.jack2">jack2 (ophyd_async.sim.TwoJackRaw attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.JPEG">JPEG (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.JPEG">JPEG (ophyd_async.epics.adcore.ADCompressor attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.JPEG">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory.jpeg">jpeg() (ophyd_async.epics.adcore.ADWriterFactory static method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.jpeg_quality">jpeg_quality (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.jpeg_quality">(ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.jungfrau.html#ophyd_async.fastcs.jungfrau.JUNGFRAU_DEADTIME_S">JUNGFRAU_DEADTIME_S (in module ophyd_async.fastcs.jungfrau)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.jungfrau.html#ophyd_async.fastcs.jungfrau.JungfrauDetector">JungfrauDetector (class in ophyd_async.fastcs.jungfrau)</a>
@@ -2626,12 +2726,12 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.locate">(ophyd_async.core.StandardMovable method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.log">log() (ophyd_async.core.Device method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.logger">logger (in module ophyd_async.core)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoLongStringTable.long">long (ophyd_async.tango.core.TangoLongStringTable attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.longstr">longstr (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
@@ -2652,7 +2752,19 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_START_RISING">LVDS_TRIG_START_RISING (ophyd_async.epics.admerlin.MerlinTriggerMode attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.LZ4">LZ4 (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.LZ4">LZ4 (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.LZ4">(ophyd_async.epics.adcore.ADCompressor attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.LZ4">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.lz4_hdf5_block_size">lz4_hdf5_block_size (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.LZ4HC">LZ4HC (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.LZ4HDF5">LZ4HDF5 (ophyd_async.epics.adcore.ADCompressor attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2707,7 +2819,11 @@ window.runMermaid = runMermaid;</script>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIStatNIO.mean_value">mean_value (ophyd_async.epics.adcore.NDROIStatNIO attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.mean_value">(ophyd_async.epics.adcore.NDStatsIO attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain.MEDIUM_MEDIUM">MEDIUM_MEDIUM (ophyd_async.epics.adpilatus.PilatusGain attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinCounterDepth">MerlinCounterDepth (class in ophyd_async.epics.admerlin)</a>
@@ -2750,9 +2866,11 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend">MockSignalBackend (class in ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoPointDetectorChannel.mode">mode (ophyd_async.epics.demo.DemoPointDetectorChannel attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.mode">mode (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
 
       <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoPointDetectorChannel.mode">(ophyd_async.epics.demo.DemoPointDetectorChannel attribute)</a>
+</li>
         <li><a href="_api/ophyd_async/ophyd_async.tango.demo.html#ophyd_async.tango.demo.DemoPointDetectorChannel.mode">(ophyd_async.tango.demo.DemoPointDetectorChannel attribute)</a>
 </li>
       </ul></li>
@@ -2905,7 +3023,7 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIStatNIO.name_">name_ (ophyd_async.epics.adcore.NDROIStatNIO attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.NBIT">NBIT (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.NBIT">NBIT (ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO.nd_array_address">nd_array_address (ophyd_async.epics.adcore.NDPluginBaseIO attribute)</a>
 </li>
@@ -2931,6 +3049,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCircularBuffIO">NDCircularBuffIO (class in ophyd_async.epics.adcore)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO">NDCodecIO (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecStatus">NDCodecStatus (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression">NDFileHDF5Compression (class in ophyd_async.epics.adcore)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO">NDFileHDF5IO (class in ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileIO">NDFileIO (class in ophyd_async.epics.adcore)</a>
@@ -2938,6 +3062,12 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO">NDPluginBaseIO (class in ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginFileIO">NDPluginFileIO (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterCallbacks">NDProcessFilterCallbacks (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType">NDProcessFilterType (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO">NDProcessIO (class in ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIIO">NDROIIO (class in ophyd_async.epics.adcore)</a>
 </li>
@@ -2961,9 +3091,13 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.non_zero">non_zero() (in module ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.NONE">NONE (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscShuffle.NONE">NONE (ophyd_async.epics.adcore.ADBloscShuffle attribute)</a>
 
       <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.NONE">(ophyd_async.epics.adcore.ADCompressor attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.NONE">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
+</li>
         <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaConvertFormat.NONE">(ophyd_async.epics.advimba.VimbaConvertFormat attribute)</a>
 </li>
       </ul></li>
@@ -2993,7 +3127,15 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.num_extra_dims">num_extra_dims (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.num_filter">num_filter (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.num_filter_recip">num_filter_recip (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.num_filtered">num_filtered (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.num_frames_chunks">num_frames_chunks (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.num_frames_flush">num_frames_flush (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO.num_images">num_images (ophyd_async.epics.adcore.ADBaseIO attribute)</a>
 </li>
@@ -3015,6 +3157,10 @@ window.runMermaid = runMermaid;</script>
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.o_offset">o_offset (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.o_scale">o_scale (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_signals_value">observe_signals_value() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_value">observe_value() (in module ophyd_async.core)</a>
@@ -3035,8 +3181,12 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.DevStateEnum.OFF">(ophyd_async.tango.core.DevStateEnum attribute)</a>
 </li>
       </ul></li>
-      <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PosOutScaleOffset.offset">offset (ophyd_async.fastcs.panda.PosOutScaleOffset attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.offset">offset (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PosOutScaleOffset.offset">(ophyd_async.fastcs.panda.PosOutScaleOffset attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.OffsetMode">OffsetMode (class in ophyd_async.epics.motor)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.eiger.html#ophyd_async.fastcs.eiger.EigerDetectorIO.omega_increment">omega_increment (ophyd_async.fastcs.eiger.EigerDetectorIO attribute)</a>
@@ -3177,6 +3327,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#module-ophyd_async.epics.adpilatus">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ophyd_async.epics.adsimdetector
 
@@ -3184,8 +3336,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.epics.adsimdetector.html#module-ophyd_async.epics.adsimdetector">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ophyd_async.epics.advimba
 
@@ -3508,8 +3658,6 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCircularBuffIO.post_count">post_count (ophyd_async.epics.adcore.NDCircularBuffIO attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCircularBuffIO.pre_count">pre_count (ophyd_async.epics.adcore.NDCircularBuffIO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalMetadata.precision">precision (ophyd_async.core.SignalMetadata attribute)</a>
@@ -3542,9 +3690,31 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_edge">(ophyd_async.epics.advimba.VimbaTriggerLogic method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.prepare_exposures">prepare_exposures() (in module ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_exposures_per_collection">prepare_exposures_per_collection() (ophyd_async.core.DetectorTriggerLogic method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adandor.Andor2TriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adaravis.AravisTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adcore.ADContAcqTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adkinetix.html#ophyd_async.epics.adkinetix.KinetixTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adkinetix.KinetixTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.admerlin.MerlinTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adpilatus.PilatusTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adsimdetector.html#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_exposures_per_collection">(ophyd_async.epics.advimba.VimbaTriggerLogic method)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.prepare_filter">prepare_filter() (in module ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_internal">prepare_internal() (ophyd_async.core.DetectorTriggerLogic method)</a>
 
@@ -3606,6 +3776,24 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorVectorIO.process_frames_per_block">process_frames_per_block (ophyd_async.fastcs.odin.FrameProcessorVectorIO attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.process_plugin">process_plugin (ophyd_async.epics.adandor.Andor2TriggerLogic attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisTriggerLogic.process_plugin">(ophyd_async.epics.adaravis.AravisTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqTriggerLogic.process_plugin">(ophyd_async.epics.adcore.ADContAcqTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adkinetix.html#ophyd_async.epics.adkinetix.KinetixTriggerLogic.process_plugin">(ophyd_async.epics.adkinetix.KinetixTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic.process_plugin">(ophyd_async.epics.admerlin.MerlinTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.process_plugin">(ophyd_async.epics.adpilatus.PilatusTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adsimdetector.html#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.process_plugin">(ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerLogic.process_plugin">(ophyd_async.epics.advimba.VimbaTriggerLogic attribute)</a>
+</li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.profile_size_x">profile_size_x (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO.profile_size_y">profile_size_y (ophyd_async.epics.adcore.NDStatsIO attribute)</a>
@@ -3668,6 +3856,8 @@ window.runMermaid = runMermaid;</script>
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.r_offset">r_offset (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.FlyMotorInfo.ramp_down_end_pos">ramp_down_end_pos() (ophyd_async.core.FlyMotorInfo method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacScanInfo.ramp_time">ramp_time (ophyd_async.epics.pmac.PmacScanInfo attribute)</a>
@@ -3718,8 +3908,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.readout_time">readout_time (ophyd_async.epics.adpilatus.PilatusTriggerLogic attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.RECURSIVE_AVG">RECURSIVE_AVG (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.RECURSIVE_AVG_DIFFERENCE">RECURSIVE_AVG_DIFFERENCE (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Reference">Reference (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoPolling.rel_change">rel_change (ophyd_async.tango.core.TangoPolling attribute)</a>
@@ -3738,6 +3932,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.tango.demo.html#ophyd_async.tango.demo.DemoPointDetector.reset">(ophyd_async.tango.demo.DemoPointDetector attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.reset_filter">reset_filter (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncPausable.resume">resume() (ophyd_async.core.AsyncPausable method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SettingsProvider.retrieve">retrieve() (ophyd_async.core.SettingsProvider method)</a>
@@ -3782,9 +3978,21 @@ window.runMermaid = runMermaid;</script>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaTimeUnits.S">S (ophyd_async.fastcs.panda.PandaTimeUnits attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.s_zip_num_pixels">s_zip_num_pixels (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.save_background">save_background (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.save_flat_field">save_flat_field (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState.SAVING">SAVING (ophyd_async.epics.adcore.ADState attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PosOutScaleOffset.scale">scale (ophyd_async.fastcs.panda.PosOutScaleOffset attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.scale">scale (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PosOutScaleOffset.scale">(ophyd_async.fastcs.panda.PosOutScaleOffset attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.scale_flat_field">scale_flat_field (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.ScanSpecInfo">ScanSpecInfo (class in ophyd_async.fastcs.panda)</a>
 </li>
@@ -4020,13 +4228,15 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIIO.size_z">size_z (ophyd_async.epics.adcore.NDROIIO attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain.SLOW_HIGH">SLOW_HIGH (ophyd_async.epics.adpilatus.PilatusGain attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain.SLOW_HIGH">SLOW_HIGH (ophyd_async.epics.adpilatus.PilatusGain attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusGain.SLOW_ULTRAHIGH">SLOW_ULTRAHIGH (ophyd_async.epics.adpilatus.PilatusGain attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.slowseq">slowseq (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.SNAPPY">SNAPPY (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_command">soft_command() (in module ophyd_async.core)</a>
 </li>
@@ -4262,13 +4472,17 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SubsetEnum">SubsetEnum (class in ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecStatus.SUCCESS">SUCCESS (ophyd_async.epics.adcore.NDCodecStatus attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType.SUM">SUM (ophyd_async.epics.adcore.NDProcessFilterType attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.superset_enum">superset_enum (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SupersetEnum">SupersetEnum (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.swmr_mode">swmr_mode (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.SZIP">SZIP (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.SZIP">SZIP (ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -4400,7 +4614,7 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_ENABLE">TRIGGER_ENABLE (ophyd_async.epics.admerlin.MerlinTriggerMode attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.trigger_info_from_num_images">trigger_info_from_num_images() (in module ophyd_async.epics.adcore)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.trigger_info_from_driver">trigger_info_from_driver() (in module ophyd_async.epics.adcore)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode">trigger_mode (ophyd_async.epics.adandor.Andor2DriverIO attribute)</a>
 
@@ -4528,6 +4742,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.InencBlock.val_scale">val_scale (ophyd_async.fastcs.panda.InencBlock attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.valid_background">valid_background (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO.valid_flat_field">valid_flat_field (ophyd_async.epics.adcore.NDProcessIO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo.validate_directory_path">validate_directory_path() (ophyd_async.core.PathInfo class method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo.validate_directory_uri">validate_directory_uri() (ophyd_async.core.PathInfo class method)</a>
@@ -4627,6 +4845,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">walk_rw_signals() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_signal_sources">walk_signal_sources() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecStatus.WARNING">WARNING (ophyd_async.epics.adcore.NDCodecStatus attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus.watch">watch() (ophyd_async.core.WatchableAsyncStatus method)</a>
 </li>
@@ -4744,15 +4964,27 @@ window.runMermaid = runMermaid;</script>
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5IO.z_level">z_level (ophyd_async.epics.adcore.NDFileHDF5IO attribute)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaBitMux.ZERO">ZERO (ophyd_async.fastcs.panda.PandaBitMux attribute)</a>
 
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaPosMux.ZERO">(ophyd_async.fastcs.panda.PandaPosMux attribute)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.ZLIB">ZLIB (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor.ZLIB">(ophyd_async.epics.adcore.ADCompressor attribute)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression.ZLIB">(ophyd_async.epics.adcore.NDFileHDF5Compression attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression.ZLIB">ZLIB (ophyd_async.epics.adcore.ADCompression attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO.zlib_c_level">zlib_c_level (ophyd_async.epics.adcore.NDCodecIO attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor.ZSTD">ZSTD (ophyd_async.epics.adcore.ADBloscCompressor attribute)</a>
 </li>
   </ul></td>
 </tr></table>

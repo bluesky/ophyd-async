@@ -35,7 +35,7 @@
 
 ### API
 
-````{py:class} AndorDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, driver_suffix='cam1:', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} AndorDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore.ADWriterFactory, driver_suffix='cam1:', proc_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adandor.AndorDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adandor.Andor2DriverIO`\]
@@ -96,6 +96,17 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ````
 
+````{py:attribute} process_plugin
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.process_plugin
+:type: ~ophyd_async.epics.adcore.NDProcessIO | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.process_plugin
+```
+
+````
+
 ````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
 :canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime
 
@@ -118,6 +129,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge
+```
+
+````
+
+````{py:method} prepare_exposures_per_collection(exposures_per_collection: int)
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_exposures_per_collection
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_exposures_per_collection
 ```
 
 ````

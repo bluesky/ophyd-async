@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -512,7 +512,7 @@
 <section id="add-an-io-class-for-the-pv-interface">
 <h2>Add an IO class for the PV interface<a class="headerlink" href="#add-an-io-class-for-the-pv-interface" title="Link to this heading">#</a></h2>
 <p>Now you need an IO class that subclasses <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADBaseIO</span></code></a>. This should add the PVs that are detector driver specific that are required to setup triggering.</p>
-<p>For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings.</p>
+<p>For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings. For reference, see the <a class="reference external" href="https://areadetector.github.io/areaDetector/ADAravis/ADAravis.html">ADAravis driver documentation</a>.</p>
 </section>
 <section id="add-trigger-logic-for-detector-specific-triggering">
 <h2>Add Trigger Logic for detector-specific triggering<a class="headerlink" href="#add-trigger-logic-for-detector-specific-triggering" title="Link to this heading">#</a></h2>
@@ -521,9 +521,10 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">prepare_internal(num,</span> <span class="pre">livetime,</span> <span class="pre">deadtime)</span></code> - Setup for internal triggering (detector generates its own triggers)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">prepare_edge(num,</span> <span class="pre">livetime)</span></code> - Setup for external edge triggering (rising edge starts an internally-timed exposure)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">prepare_level(num)</span></code> - Setup for external level/gate triggering (high level duration determines exposure time)
-Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_level(num)</span></code> - Setup for external level/gate triggering (high level duration determines exposure time)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_exposures_per_collection(exposures_per_collection)</span></code> - If your detector should produce multiple exposures per individual frame written to disk, implement this method to configure the detector to produce the requested number of exposures per collection. For AD detectors, this is typically done with an optional process plugin that will perform a filter over a predefined number of exposures (i.e. an average or sum).</p></li>
 </ul>
+<p>Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.</p>
 <p>If the detector has configuration values that should be captured in the scan then implement:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">config_sigs()</span></code> - Return the set of signals that should appear in read_configuration()</p></li>
@@ -537,8 +538,9 @@ Only implement the prepare methods for trigger modes your detector actually supp
 without a preceding <code class="docutils literal notranslate"><span class="pre">prepare()</span></code>, implement:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">default_trigger_info()</span></code> - Return the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a> to use for the implicit
-prepare. For AD detectors call <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">trigger_info_from_num_images(self.driver)</span></code> to
-read back the current <code class="docutils literal notranslate"><span class="pre">num_images</span></code> from the driver rather than resetting it to 1.</p></li>
+prepare. For AD detectors call <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">trigger_info_from_driver(self.driver.num_images)</span></code> to
+read back the current <code class="docutils literal notranslate"><span class="pre">num_images</span></code> from the driver rather than resetting it to 1. You should also pass a process
+plugin to <code class="docutils literal notranslate"><span class="pre">trigger_info_from_driver()</span></code> if your detector uses one to produce multiple exposures per collection.</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -554,6 +556,7 @@ for rationale.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for Aravis GigE and USB3 cameras.&quot;&quot;&quot;</span>
 
     <span class="n">driver</span><span class="p">:</span> <span class="n">AravisDriverIO</span>
+    <span class="n">process_plugin</span><span class="p">:</span> <span class="n">NDProcessIO</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]:</span>
@@ -579,8 +582,13 @@ for rationale.</p>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">AravisTriggerSource</span><span class="o">.</span><span class="n">LINE1</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_exposures_per_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">prepare_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">)</span>
+
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">default_trigger_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_num_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_driver</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_plugin</span>
+        <span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -619,6 +627,7 @@ for rationale.</p>
 <span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
 <span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
 <span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to &quot;cam1:&quot;</span>
+<span class="sd">    :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None</span>
 <span class="sd">    :param override_deadtime:</span>
 <span class="sd">        If provided, this value is used for deadtime instead of looking up</span>
 <span class="sd">        based on camera model.</span>
@@ -631,20 +640,22 @@ for rationale.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
-        <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">driver_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">proc_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">AravisDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
+        <span class="n">proc_plugin</span> <span class="o">=</span> <span class="n">NDProcessIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">proc_suffix</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_suffix</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">driver</span><span class="p">,</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">AravisTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">AravisTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc_plugin</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span> <span class="o">|</span> <span class="p">({</span><span class="s2">&quot;proc&quot;</span><span class="p">:</span> <span class="n">proc_plugin</span><span class="p">}</span> <span class="k">if</span> <span class="n">proc_plugin</span> <span class="k">else</span> <span class="p">{}),</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span>

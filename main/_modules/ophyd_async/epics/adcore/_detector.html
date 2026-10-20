@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._detector &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>ophyd_async.epics.adcore._detector &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../../../../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -910,7 +910,14 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._acquire_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADContAcqAcquireLogic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._data_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADWriterFactory</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADBaseIOT</span><span class="p">,</span> <span class="n">NDCircularBuffIO</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">,</span> <span class="n">NDPluginBaseIOT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ADBaseIO</span><span class="p">,</span>
+    <span class="n">ADBaseIOT</span><span class="p">,</span>
+    <span class="n">NDCircularBuffIO</span><span class="p">,</span>
+    <span class="n">NDPluginBaseIO</span><span class="p">,</span>
+    <span class="n">NDPluginBaseIOT</span><span class="p">,</span>
+    <span class="n">NDProcessIO</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._trigger_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADContAcqTriggerLogic</span>
 
 
@@ -960,6 +967,14 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_plugin</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">plugin_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">NDPluginBaseIOT</span><span class="p">]</span> <span class="o">=</span> <span class="n">NDPluginBaseIO</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDPluginBaseIOT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a plugin by name and type.</span>
+
+<span class="sd">        :param name: Name of the plugin attribute</span>
+<span class="sd">        :param plugin_type: Expected type of the plugin</span>
+<span class="sd">        :return: The plugin instance</span>
+<span class="sd">        :raises AttributeError: If the plugin does not exist</span>
+<span class="sd">        :raises TypeError: If the plugin is not of the expected type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">plugin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">plugin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has no plugin named &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
@@ -975,12 +990,15 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="ContAcqDetector">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ContAcqDetector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ContAcqDetector</span><span class="p">(</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">ADBaseIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADSimDetector AreaDetector instance.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContAcqDetector</span><span class="p">(</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">ADBaseIOT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an continuously acquiring AreaDetector instance.</span>
 
 <span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
 <span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
+<span class="sd">    :param driver_cls: IO class for the driver, defaults to ADBaseIO</span>
 <span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to &quot;cam1:&quot;</span>
+<span class="sd">    :param cb_suffix: Suffix for the circular buffer plugin PV, defaults to &quot;CB1:&quot;</span>
+<span class="sd">    :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None</span>
 <span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
 <span class="sd">    :param name: Name for the detector device</span>
@@ -990,21 +1008,26 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
-        <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
-        <span class="n">cb_suffix</span><span class="o">=</span><span class="s2">&quot;CB1:&quot;</span><span class="p">,</span>
+        <span class="n">driver_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">ADBaseIOT</span><span class="p">]</span> <span class="o">=</span> <span class="n">ADBaseIO</span><span class="p">,</span>
+        <span class="n">driver_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">cb_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;CB1:&quot;</span><span class="p">,</span>
+        <span class="n">proc_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">driver</span> <span class="o">=</span> <span class="n">ADBaseIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">driver_cls</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
         <span class="n">cb_plugin</span> <span class="o">=</span> <span class="n">NDCircularBuffIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">cb_suffix</span><span class="p">)</span>
+        <span class="n">proc_plugin</span> <span class="o">=</span> <span class="n">NDProcessIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">proc_suffix</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_suffix</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">driver</span><span class="p">,</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADContAcqAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;cb&quot;</span><span class="p">:</span> <span class="n">cb_plugin</span><span class="p">},</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">,</span> <span class="n">proc_plugin</span><span class="p">),</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span>
+            <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;cb&quot;</span><span class="p">:</span> <span class="n">cb_plugin</span><span class="p">}</span>
+            <span class="o">|</span> <span class="p">({</span><span class="s2">&quot;proc&quot;</span><span class="p">:</span> <span class="n">proc_plugin</span><span class="p">}</span> <span class="k">if</span> <span class="n">proc_plugin</span> <span class="k">else</span> <span class="p">{}),</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span></div>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.4.dev13+g4f88c2eae documentation</title>
+    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.21.4.dev14+g872c9a28d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=f06bd51d"></script>
+    <script src="../../../../_static/documentation_options.js?v=b92159f9"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev13+g4f88c2eae documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev14+g872c9a28d documentation - Home"/>
   
   
 </a></div>
@@ -909,9 +909,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">StrictEnum</span><span class="p">,</span>
     <span class="n">SubsetEnum</span><span class="p">,</span>
     <span class="n">SupersetEnum</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
     <span class="n">non_zero</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">EpicsOptions</span><span class="p">,</span> <span class="n">PvSuffix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EpicsDevice</span><span class="p">,</span>
+    <span class="n">EpicsOptions</span><span class="p">,</span>
+    <span class="n">PvSuffix</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Common classes for drivers and plugins</span>
 
@@ -931,7 +936,11 @@ window.runMermaid = runMermaid;</script>
     <span class="n">FLOAT64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span>
     <span class="c1"># Driver database override will blank the enum string if it doesn&#39;t</span>
     <span class="c1"># support a datatype</span>
-    <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+    <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="c1"># The NDProcess plugin adds an automatic datatype option,</span>
+    <span class="c1"># which will set the data type to whatever is necessary to hold the data</span>
+    <span class="c1"># after processing.</span>
+    <span class="n">AUTOMATIC</span> <span class="o">=</span> <span class="s2">&quot;Automatic&quot;</span></div>
 
 
 
@@ -1096,17 +1105,6 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">NDProcessIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for performing processing on an NDArrray.</span>
-
-<span class="sd">    This mirrors the interface provided by ADCore/db/NDProcess.template.</span>
-<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">enable_offset_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnableDisable</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableOffsetScale&quot;</span><span class="p">)]</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Scale&quot;</span><span class="p">)]</span>
-
-
 <div class="viewcode-block" id="NDStatsIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDStatsIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDStatsIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
@@ -1120,6 +1118,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">compute_statistics</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ComputeStatistics&quot;</span><span class="p">)]</span>
     <span class="n">bgd_width</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BgdWidth&quot;</span><span class="p">)]</span>
     <span class="n">total</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Total_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">mean_value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;MeanValue_RBV&quot;</span><span class="p">)]</span>
     <span class="c1"># Centroid statistics</span>
     <span class="n">compute_centroid</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ComputeCentroid&quot;</span><span class="p">)]</span>
     <span class="n">centroid_threshold</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;CentroidThreshold&quot;</span><span class="p">)]</span>
@@ -1215,11 +1214,164 @@ window.runMermaid = runMermaid;</script>
     <span class="n">pre_count</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;PreCount&quot;</span><span class="p">)]</span>
     <span class="n">post_count</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;PostCount&quot;</span><span class="p">)]</span>
     <span class="n">preset_trigger_count</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;PresetTriggerCount&quot;</span><span class="p">)]</span>
-    <span class="n">trigger_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Trigger&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">non_zero</span><span class="p">)]</span>
+    <span class="c1"># Disable put completion for trigger, since the busy record reset is broken</span>
+    <span class="c1"># upstream. See https://github.com/areaDetector/ADCore/issues/604</span>
+    <span class="n">trigger_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Trigger&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
     <span class="n">capture</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Capture&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">non_zero</span><span class="p">)]</span>
     <span class="n">flush_on_soft_trg</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span>
         <span class="n">SignalRW</span><span class="p">[</span><span class="n">NDCBFlushOnSoftTrgMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FlushOnSoftTrg&quot;</span><span class="p">)</span>
     <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="NDProcessFilterCallbacks">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterCallbacks">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDProcessFilterCallbacks</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">EVERY_ARRAY</span> <span class="o">=</span> <span class="s2">&quot;Every array&quot;</span>
+    <span class="n">ARRAY_N_ONLY</span> <span class="o">=</span> <span class="s2">&quot;Array N only&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NDProcessFilterType">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessFilterType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDProcessFilterType</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">RECURSIVE_AVG</span> <span class="o">=</span> <span class="s2">&quot;RecursiveAve&quot;</span>
+    <span class="n">AVERAGE</span> <span class="o">=</span> <span class="s2">&quot;Average&quot;</span>
+    <span class="n">SUM</span> <span class="o">=</span> <span class="s2">&quot;Sum&quot;</span>
+    <span class="n">DIFFERENCE</span> <span class="o">=</span> <span class="s2">&quot;Difference&quot;</span>
+    <span class="n">RECURSIVE_AVG_DIFFERENCE</span> <span class="o">=</span> <span class="s2">&quot;RecursiveAveDiff&quot;</span>
+    <span class="n">COPY_TO_FILTER</span> <span class="o">=</span> <span class="s2">&quot;CopyToFilter&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NDProcessIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDProcessIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDProcessIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for processing NDArray data.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDProcess.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginProcess.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data_type_out</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADBaseDataType</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;DataTypeOut&quot;</span><span class="p">)]</span>
+    <span class="n">save_background</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SaveBackground&quot;</span><span class="p">)]</span>
+    <span class="n">enable_background</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableBackground&quot;</span><span class="p">)]</span>
+    <span class="n">valid_background</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ValidBackground_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">save_flat_field</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SaveFlatField&quot;</span><span class="p">)]</span>
+    <span class="n">enable_flat_field</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableFlatField&quot;</span><span class="p">)]</span>
+    <span class="n">valid_flat_field</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ValidFlatField_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">scale_flat_field</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ScaleFlatField&quot;</span><span class="p">)]</span>
+    <span class="n">enable_offset_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableOffsetScale&quot;</span><span class="p">)]</span>
+    <span class="n">auto_offset_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AutoOffsetScale&quot;</span><span class="p">)]</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Offset&quot;</span><span class="p">)]</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Scale&quot;</span><span class="p">)]</span>
+    <span class="n">enable_low_clip</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableLowClip&quot;</span><span class="p">)]</span>
+    <span class="n">enable_high_clip</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableHighClip&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># The below signals were renamed in ADCore 3-13. Since</span>
+    <span class="c1"># This is a relatively recent release, we are omitting them from the</span>
+    <span class="c1"># IO class for now.</span>
+    <span class="c1"># low_clip_thresh: A[SignalRW[float], PvSuffix.rbv(&quot;LowClipThresh&quot;)]</span>
+    <span class="c1"># low_clip_value: A[SignalRW[float], PvSuffix.rbv(&quot;LowClipValue&quot;)]</span>
+    <span class="c1"># high_clip_thresh: A[SignalRW[float], PvSuffix.rbv(&quot;HighClipThresh&quot;)]</span>
+    <span class="c1"># high_clip_value: A[SignalRW[float], PvSuffix.rbv(&quot;HighClipValue&quot;)]</span>
+
+    <span class="n">enable_filter</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableFilter&quot;</span><span class="p">)]</span>
+    <span class="n">reset_filter</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ResetFilter&quot;</span><span class="p">)]</span>
+    <span class="n">auto_reset_filter</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;AutoResetFilter&quot;</span><span class="p">)]</span>
+    <span class="n">filter_type</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">NDProcessFilterType</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FilterType&quot;</span><span class="p">)]</span>
+    <span class="n">filter_callbacks</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span>
+        <span class="n">SignalRW</span><span class="p">[</span><span class="n">NDProcessFilterCallbacks</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FilterCallbacks&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">num_filter</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumFilter&quot;</span><span class="p">)]</span>
+    <span class="n">num_filter_recip</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;NumFilterRecip&quot;</span><span class="p">)]</span>
+    <span class="n">num_filtered</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;NumFiltered_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">o_offset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;OOffset&quot;</span><span class="p">)]</span>
+    <span class="n">o_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;OScale&quot;</span><span class="p">)]</span>
+    <span class="n">f_offset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FOffset&quot;</span><span class="p">)]</span>
+    <span class="n">f_scale</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FScale&quot;</span><span class="p">)]</span>
+    <span class="n">r_offset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ROffset&quot;</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Codec/compression classes</span>
+
+
+<div class="viewcode-block" id="ADBloscCompressor">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscCompressor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADBloscCompressor</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">BLOSCLZ</span> <span class="o">=</span> <span class="s2">&quot;BloscLZ&quot;</span>
+    <span class="n">LZ4</span> <span class="o">=</span> <span class="s2">&quot;LZ4&quot;</span>
+    <span class="n">LZ4HC</span> <span class="o">=</span> <span class="s2">&quot;LZ4HC&quot;</span>
+    <span class="n">SNAPPY</span> <span class="o">=</span> <span class="s2">&quot;SNAPPY&quot;</span>
+    <span class="n">ZLIB</span> <span class="o">=</span> <span class="s2">&quot;ZLIB&quot;</span>
+    <span class="n">ZSTD</span> <span class="o">=</span> <span class="s2">&quot;ZSTD&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ADBloscShuffle">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBloscShuffle">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADBloscShuffle</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="n">BYTE</span> <span class="o">=</span> <span class="s2">&quot;Byte&quot;</span>
+    <span class="n">BIT</span> <span class="o">=</span> <span class="s2">&quot;Bit&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ADCompressMode">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressMode">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADCompressMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">COMPRESS</span> <span class="o">=</span> <span class="s2">&quot;Compress&quot;</span>
+    <span class="n">DECOMPRESS</span> <span class="o">=</span> <span class="s2">&quot;Decompress&quot;</span></div>
+
+
+
+<span class="c1"># Compressor is superset enum, because LZ4HDF5 and ZLIB were added only in ADCore R3-15</span>
+<div class="viewcode-block" id="ADCompressor">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompressor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADCompressor</span><span class="p">(</span><span class="n">SupersetEnum</span><span class="p">):</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="n">JPEG</span> <span class="o">=</span> <span class="s2">&quot;JPEG&quot;</span>
+    <span class="n">ZLIB</span> <span class="o">=</span> <span class="s2">&quot;ZLIB&quot;</span>
+    <span class="n">BLOSC</span> <span class="o">=</span> <span class="s2">&quot;Blosc&quot;</span>
+    <span class="n">LZ4</span> <span class="o">=</span> <span class="s2">&quot;LZ4&quot;</span>
+    <span class="n">LZ4HDF5</span> <span class="o">=</span> <span class="s2">&quot;LZ4HDF5&quot;</span>
+    <span class="n">BSLZ4</span> <span class="o">=</span> <span class="s2">&quot;BSLZ4&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NDCodecStatus">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDCodecStatus</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="s2">&quot;Success&quot;</span>
+    <span class="n">WARNING</span> <span class="o">=</span> <span class="s2">&quot;Warning&quot;</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="s2">&quot;Error&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NDCodecIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDCodecIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDCodecIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for compressing and decompressing NDArray data.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDCodec.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCodec.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">compressor</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADCompressor</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Compressor&quot;</span><span class="p">)]</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADCompressMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">)]</span>
+    <span class="n">comp_factor</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;CompFactor_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">jpeg_quality</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;JPEGQuality&quot;</span><span class="p">)]</span>
+    <span class="n">zlib_c_level</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ZlibCLevel&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_compressor</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADBloscCompressor</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscCompressor&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_c_level</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscCLevel&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_num_threads</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscNumThreads&quot;</span><span class="p">)]</span>
+    <span class="n">lz4_hdf5_block_size</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;LZ4HDF5BlockSize&quot;</span><span class="p">)]</span>
+    <span class="n">codec_status</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">NDCodecStatus</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;CodecStatus&quot;</span><span class="p">)]</span>
+    <span class="n">codec_error</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;CodecError&quot;</span><span class="p">)]</span></div>
 
 
 
@@ -1279,9 +1431,9 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="ADCompression">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADCompression">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ADCompression</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<div class="viewcode-block" id="NDFileHDF5Compression">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDF5Compression">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDFileHDF5Compression</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
     <span class="n">NBIT</span> <span class="o">=</span> <span class="s2">&quot;N-bit&quot;</span>
     <span class="n">SZIP</span> <span class="o">=</span> <span class="s2">&quot;szip&quot;</span>
@@ -1303,13 +1455,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">position_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;PositionMode&quot;</span><span class="p">)]</span>
-    <span class="n">compression</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADCompression</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Compression&quot;</span><span class="p">)]</span>
+    <span class="n">compression</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">NDFileHDF5Compression</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Compression&quot;</span><span class="p">)]</span>
     <span class="n">num_extra_dims</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumExtraDims&quot;</span><span class="p">)]</span>
     <span class="n">swmr_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SWMRMode&quot;</span><span class="p">)]</span>
     <span class="n">flush_now</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FlushNow&quot;</span><span class="p">)]</span>
+    <span class="n">num_frames_flush</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumFramesFlush&quot;</span><span class="p">)]</span>
     <span class="n">xml_file_name</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;XMLFileName&quot;</span><span class="p">)]</span>
     <span class="n">num_frames_chunks</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumFramesChunks&quot;</span><span class="p">)]</span>
-    <span class="n">chunk_size_auto</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ChunkSizeAuto&quot;</span><span class="p">)]</span></div>
+    <span class="n">chunk_size_auto</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ChunkSizeAuto&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># Compression options</span>
+    <span class="n">s_zip_num_pixels</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SZipNumPixels&quot;</span><span class="p">)]</span>
+    <span class="n">z_level</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ZLevel&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_shuffle</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADBloscShuffle</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscShuffle&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_compressor</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADBloscCompressor</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscCompressor&quot;</span><span class="p">)]</span>
+    <span class="n">blosc_level</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;BloscLevel&quot;</span><span class="p">)]</span>
+    <span class="n">jpeg_quality</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;JPEGQuality&quot;</span><span class="p">)]</span></div>
 
 </pre></div>
 
