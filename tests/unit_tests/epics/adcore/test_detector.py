@@ -120,6 +120,22 @@ def test_get_plugin_wrong_type_raises_type_error():
         det.get_plugin("stats", adcore.NDPluginFileIO)
 
 
+@pytest.fixture
+async def ad_with_stats_and_roi():
+    async with init_devices(mock=True):
+        stats = adcore.NDStatsIO("PREFIX:STAT:")
+        roi = adcore.NDROIIO("PREFIX:ROI:")
+        det = adcore.AreaDetector(
+            adcore.ADBaseIO("PREFIX:DRV:"),
+            plugins={
+                "stats": stats,
+                "roi": roi,
+            },
+            name="det",
+        )
+    return det, stats, roi
+
+
 # ---------------------------------------------------------------------------
 # get_ndarray_resource_info error paths
 # ---------------------------------------------------------------------------
