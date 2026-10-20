@@ -1,10 +1,12 @@
 import pytest
 
 from ophyd_async.core import (
+    Device,
     StaticPathProvider,
     TriggerInfo,
     init_devices,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.epics import adcore
 
@@ -177,3 +179,26 @@ async def test_get_ndarray_resource_info_unsupported_color_mode(
         match=r"^Unsupported ColorMode Bayer! Only Mono and RGB1 are supported\.$",
     ):
         await det.prepare(TriggerInfo())
+
+
+class Rig(Device):
+    def __init__(self, name: str = "") -> None:
+        self.det = adcore.AreaDetector(
+            adcore.ADBaseIO("PREFIX:DRV:"),
+            plugins={"stats": adcore.NDStatsIO("PREFIX:STAT:")},
+        )
+        self.flag = soft_signal_rw(int)
+        super().__init__(name)
+
+
+async def test_init_devices_mock_by_area_detector_type():
+    async with init_devices(mock={adcore.AreaDetector: True}):
+        rig = Rig()
+
+    # The whole detector is mocked, plugins and driver signals included
+    set_mock_value(rig.det.driver.acquire_time, 0.5)
+    set_mock_value(rig.det.get_plugin("stats", adcore.NDStatsIO).total, 3.0)
+    assert await rig.det.driver.acquire_time.get_value() == 0.5
+    # The rest of the rig was connected for real
+    with pytest.raises(RuntimeError, match="not connected in mock mode"):
+        set_mock_value(rig.flag, 1)
