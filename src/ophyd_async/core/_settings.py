@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterator, MutableMapping
 from typing import Any, Generic
 
@@ -101,7 +101,7 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
         return where_true, where_false
 
 
-class SettingsProvider:
+class SettingsProvider(ABC):
     """Base class for providing settings."""
 
     @abstractmethod

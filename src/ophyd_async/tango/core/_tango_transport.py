@@ -2,7 +2,7 @@ import asyncio
 import functools
 import logging
 import re
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
 from typing import (
     Any,
@@ -221,7 +221,7 @@ def _create_enum_type(
     return cast(type[StrictEnum], StrictEnum("TangoEnum", enum_dict))
 
 
-class TangoProxy:
+class TangoProxy(ABC):
     support_events: bool = True
     _proxy: DeviceProxy
     _name: str
@@ -231,7 +231,7 @@ class TangoProxy:
         self._proxy = device_proxy
         self._name = name
 
-    async def connect(self) -> None:
+    async def connect(self) -> None:  # noqa: B027
         """Perform actions after proxy is connected.
 
         e.g. check if signal can be subscribed.
@@ -571,6 +571,15 @@ class CommandProxy(TangoProxy):
 
     def unsubscribe_callback(self) -> None:
         raise NotImplementedError("Cannot unsubscribe from commands")
+
+    async def get(self) -> object:
+        raise NotImplementedError("Cannot get the value of a command")
+
+    async def get_reading(self) -> Reading:
+        raise NotImplementedError("Cannot get a reading from a command")
+
+    def has_subscription(self) -> bool:
+        return False
 
     async def get_w_value(self) -> object:
         return self._last_w_value

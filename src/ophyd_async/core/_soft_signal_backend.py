@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import time
 import typing
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
@@ -30,7 +30,7 @@ from ._signal_backend import (
 from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
 
 
-class SoftConverter(Generic[SignalDatatypeT]):
+class SoftConverter(ABC, Generic[SignalDatatypeT]):
     # This is Any -> SignalDatatypeT because we support coercing
     @abstractmethod
     def write_value(self, value: Any) -> SignalDatatypeT: ...
