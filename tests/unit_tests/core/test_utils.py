@@ -20,6 +20,7 @@ from ophyd_async.core import (
     set_mock_value,
     simulate_move,
     soft_signal_rw,
+    to_snake_case,
 )
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.motor import Motor
@@ -484,3 +485,37 @@ async def test_simulate_move_ends_at_target(acceleration_time: float):
     positions = [p async for p in simulate_move(0, 1.5, 10, acceleration_time)]
     assert positions[-1] == 1.5
     assert positions == sorted(positions)
+
+
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        # snake_case is unchanged
+        ("snake_case", "snake_case"),
+        ("snake_case0", "snake_case0"),
+        ("_snake_case", "_snake_case"),
+        ("snake_case_", "snake_case_"),
+        # PascalCase, including acronyms and trailing digits
+        ("PascalCase", "pascal_case"),
+        ("NDPascalCase", "nd_pascal_case"),
+        ("ABCDPascalCase", "abcd_pascal_case"),
+        ("PascalCase0", "pascal_case0"),
+        ("AB12PascalCase", "ab12_pascal_case"),
+        # camelCase
+        ("camelCase", "camel_case"),
+        ("doubleCamelCase", "double_camel_case"),
+        # anything else is sanitized into a valid identifier
+        ("ALL_CAPITAL", "all_capital"),
+        ("White Space", "white_space"),
+        ("Invalid:ColonAdded", "invalid_colon_added"),
+        ("temp(°C)", "temp_c_"),
+        ("3LeadingDigit", "_3_leading_digit"),
+        ("class", "class_"),  # reserved keyword
+        ("", "_"),
+        ("!!!", "_"),
+    ],
+)
+def test_to_snake_case(name: str, expected: str):
+    assert to_snake_case(name) == expected
+    # The result is already snake_case, so converting it again is a no-op
+    assert to_snake_case(expected) == expected
