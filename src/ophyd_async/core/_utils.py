@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import keyword
 import logging
+import re
 import time
 from collections.abc import (
     AsyncIterator,
@@ -37,6 +39,34 @@ Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
 
 logger = logging.getLogger("ophyd_async")
+
+# Anything that can't appear in a Python identifier (ASCII only)
+_INVALID_IDENTIFIER_CHARS = re.compile(r"[^0-9a-zA-Z_]+")
+# An acronym followed by a capitalised word: "NDArray" -> "ND_Array"
+_ACRONYM_BOUNDARY = re.compile(r"([A-Z]+)([A-Z][a-z])")
+# A lower case letter or digit followed by a capital: "acquireTime" -> "acquire_Time"
+_WORD_BOUNDARY = re.compile(r"([a-z\d])([A-Z])")
+
+
+def to_snake_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case name to snake_case.
+
+    snake_case names are returned unchanged. Any other name is sanitized into a
+    valid Python identifier: each run of characters that can't appear in one is
+    replaced by `_`, a leading digit gets a `_` prefix, and a Python keyword gets
+    a `_` suffix.
+
+    :param name: The name to convert, e.g. a PVI entry name.
+    :return: A valid, non-keyword Python identifier in snake_case.
+    """
+    name = _INVALID_IDENTIFIER_CHARS.sub("_", name)
+    name = _ACRONYM_BOUNDARY.sub(r"\1_\2", name)
+    name = _WORD_BOUNDARY.sub(r"\1_\2", name).lower()
+    if not name or name[0].isdigit():
+        name = f"_{name}"
+    if keyword.iskeyword(name):
+        name = f"{name}_"
+    return name
 
 
 class UppercaseNameEnumMeta(EnumMeta):
