@@ -43,12 +43,12 @@ async def test_prepare_internal_calls_correct_parameters(
         detector,
         [
             call.od.fp.chunks.put(10),
+            call.od.fp.frames.put(100),
             call.xspress.trigger_mode.put(2),
             call.xspress.num_images.put(100),
             call.xspress.exposure_time.put(0.1),
             call.od.fp.data_datatype.put("uint32"),
             call.od.fp.data_compression.put("blosc"),
-            call.od.fp.frames.put(0),
             call.od.fp.process_frames_per_block.put(1000),
             call.od.file_path.put(str(tmp_path)),
             call.od.file_prefix.put("filename"),

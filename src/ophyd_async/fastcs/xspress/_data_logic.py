@@ -12,7 +12,6 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._io import XspressDetectorIO
 from ._xsp_odin_io import XspressOdinIO
 
 
@@ -21,11 +20,9 @@ class XspressOdinDataLogic(DetectorDataLogic):
         self,
         path_provider: PathProvider,
         odin: XspressOdinIO,
-        xspress: XspressDetectorIO,
     ):
         self.path_provider = path_provider
         self.odin = odin
-        self.xspress = xspress
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         print(f"calling prepare_unbounded on {self.__class__}")
@@ -33,11 +30,9 @@ class XspressOdinDataLogic(DetectorDataLogic):
         path_info = self.path_provider(datakey_name)
         # Setup the HDF writer
         filename = f"{path_info.filename}"
-        num_frames = await self.xspress.num_images.get_value()
         await asyncio.gather(
             self.odin.fp.data_datatype.set("uint32"),
             self.odin.fp.data_compression.set("blosc"),
-            self.odin.fp.frames.set(num_frames),
             self.odin.fp.process_frames_per_block.set(1000),
             self.odin.file_path.set(str(path_info.directory_path)),
             self.odin.file_prefix.set(filename),

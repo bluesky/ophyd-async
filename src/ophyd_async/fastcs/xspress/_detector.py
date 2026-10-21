@@ -32,9 +32,7 @@ class XspressDetector(StandardDetector):
         self.add_detector_logics(
             XspressTriggerLogic(self.xspress),
             XspressAcquireLogic(self.xspress),
-            XspressOdinDataLogic(
-                path_provider=path_provider, odin=self.od, xspress=self.xspress
-            ),
+            XspressOdinDataLogic(path_provider=path_provider, odin=self.od),
         )
         super().__init__(name=name, connector=connector)
 
@@ -44,6 +42,7 @@ class XspressDetector(StandardDetector):
         if chunk > 4096:
             chunk = 4096
         await self.od.fp.chunks.set(chunk)
+        await self.od.fp.frames.set(value.number_of_events)
         # Wait for all the datasets to have changed their chunk sizes
         await wait_for_value(self.od.fp.data_chunks_0, chunk, timeout=DEFAULT_TIMEOUT)
         await super().prepare(value)
