@@ -127,7 +127,7 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
             # doesn't carry over to the device holding it.
             for key, value in new_hint.hints.items():
                 if key in ("fields", "dimensions"):
-                    if not isinstance(value, Sequence):
+                    if isinstance(value, str) or not isinstance(value, Sequence):
                         raise RuntimeError(
                             f"{new_hint.name}: '{key}' key must be a Sequence, "
                             f"received {type(value)}"

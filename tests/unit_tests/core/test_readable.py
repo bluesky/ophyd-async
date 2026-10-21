@@ -69,6 +69,31 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         sr.hints  # noqa: B018
 
 
+@pytest.mark.parametrize(
+    ["sub_hints", "error"],
+    [
+        ({"fields": "1"}, "'fields' key must be a Sequence, received <class 'str'>"),
+        ({"fields": 1}, "'fields' key must be a Sequence, received <class 'int'>"),
+        (
+            {"dimensions": "1"},
+            "'dimensions' key must be a Sequence, received <class 'str'>",
+        ),
+        (
+            {"dimensions": 1},
+            "'dimensions' key must be a Sequence, received <class 'int'>",
+        ),
+    ],
+)
+def test_incorrect_fields_and_dimensions_in_hints(sub_hints: dict, error: str):
+    sr = StandardReadable()
+    has_hints = MagicMock(spec=HasHints)
+    has_hints.hints = sub_hints
+    sr._has_hints = (has_hints,)
+
+    with pytest.raises(RuntimeError, match=error):
+        sr.hints  # noqa: B018
+
+
 def test_standard_readable_arbitrary_hints():
     counter = count()
 
