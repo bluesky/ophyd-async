@@ -33,8 +33,7 @@ class XspressDetector(StandardDetector):
             XspressTriggerLogic(self.xspress),
             XspressAcquireLogic(self.xspress),
             XspressOdinDataLogic(
-                path_provider=path_provider,
-                odin=self.od,
+                path_provider=path_provider, odin=self.od, xspress=self.xspress
             ),
         )
         super().__init__(name=name, connector=connector)
