@@ -196,7 +196,7 @@ A frame already exposing when `trigger()` is called may include motion from the 
 
 Each `trigger()` or internally triggered `kickoff()` takes a fresh CB `ArrayCounter_RBV` baseline immediately before opening the gate would otherwise occur. The gate stays closed until the counter has advanced by at least `num_frames_to_skip`; frames arriving during `stage()` or `prepare()` do not count. Counter jumps are allowed because EPICS monitors may combine updates. Skipped frames are not included in the requested collection or the process plugin's exposure count.
 
-The wait timeout is `num_frames_to_skip * AcquirePeriod_RBV + DEFAULT_TIMEOUT`. If the counter stalls or the operation is cancelled, the gate is not opened. Keep the counter increasing without resetting it during the wait. The number of frames needed depends on the detector's exposure/readout pipeline.
+The wait timeout is `num_frames_to_skip * AcquirePeriod_RBV + DEFAULT_TIMEOUT`. If the counter stalls or the operation is cancelled, the gate is not opened. The number of frames needed depends on the detector's exposure/readout pipeline.
 
 
 ## Write tests

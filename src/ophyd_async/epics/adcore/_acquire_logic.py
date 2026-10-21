@@ -48,7 +48,7 @@ class ADAcquireLogic(DetectorAcquireLogic):
 
 
 class ADContAcqAcquireLogic(DetectorAcquireLogic):
-    """Gate continuous acquisition after skipping potentially dirty frames.
+    """Gate continuous acquisition using the circular buffer (CB) plugin.
 
     :param driver: The continuously acquiring detector driver
     :param cb_plugin: The circular buffer plugin gating downstream plugins

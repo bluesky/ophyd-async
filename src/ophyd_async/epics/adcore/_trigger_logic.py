@@ -142,7 +142,7 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await self._ensure_driver_acquiring(livetime)
-        # Stage-time ensure_ready has stopped capture so PreCount can be configured.
+        # Assumes CB plugin capture has stopped capture so PreCount can be configured.
         # Setup the CB plugin with the current parameters
         await asyncio.gather(
             self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
