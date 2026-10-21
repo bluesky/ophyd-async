@@ -1,4 +1,3 @@
-from itertools import count
 from unittest.mock import MagicMock
 
 import pytest
@@ -95,45 +94,35 @@ def test_incorrect_fields_and_dimensions_in_hints(sub_hints: dict, error: str):
 
 
 def test_standard_readable_arbitrary_hints():
-    counter = count()
+    sr = StandardReadable()
 
-    class Device(StandardReadable):
-        def __init__(self, name: str = "") -> None:
-            super().__init__(name)
-            with self.add_children_as_readables(Format.HINTED_SIGNAL):
-                self.signal = soft_signal_rw(float)
-            if next(counter) < 3:
-                with self.add_children_as_readables(Format.CHILD):
-                    self.sub_device_1 = Device()
-                    self.sub_device_2 = Device()
-
-        @property
-        def hints(self):
-            hints = StandardReadable.hints.__get__(self)
-            hints.update(
-                {
-                    f"dict: {self.name}": {self.name: self.name},
-                    f"list: {self.name}": [self.name],
-                    f"str: {self.name}": self.name,
-                }  # type: ignore
-            )
-            return hints
-
-    hints = Device(name="device").hints
-    assert set(hints.pop("fields")) == {
-        "device-signal",
-        "device-sub_device_1-signal",
-        "device-sub_device_1-sub_device_1-signal",
-        "device-sub_device_1-sub_device_1-sub_device_1-signal",
-        "device-sub_device_1-sub_device_1-sub_device_2-signal",
-        "device-sub_device_1-sub_device_2-signal",
-        "device-sub_device_2-signal",
+    hint1 = MagicMock(spec=HasHints)
+    hint1.hints = {
+        "fields": ["field1"],
+        "common-key": 1,
+        "hint1-key": None,
+        "dimensions": [(["f1", "f2"], "s1")],
+        "gridding": "rectilinear_nonsequential",
     }
-    assert hints == {
-        "dict: device": {"device": "device"},
-        "list: device": ["device"],
-        "str: device": "device",
+
+    hint2 = MagicMock(spec=HasHints)
+    hint2.hints = {
+        "fields": ["field2"],
+        "common-key": 2,
+        "hint2-key": None,
+        "dimensions": [(["f3", "f4"], "s1")],
+        "gridding": "rectilinear_nonsequential",
     }
+
+    sr._has_hints = (
+        hint1,
+        hint2,
+    )
+    assert sr.hints == {
+        "gridding": "rectilinear_nonsequential",
+        "fields": ["field1", "field2"],
+        "dimensions": [(["f1", "f2"], "s1"), (["f3", "f4"], "s1")],
+    }  # Arbitrary keys left out.
 
 
 def test_standard_readable_hints_raises_when_overriding_sequence():
