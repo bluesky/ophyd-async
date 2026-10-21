@@ -34,4 +34,4 @@ class XspressTriggerLogic(DetectorTriggerLogic):
         await _prepare_detector(self.detector, 2, num, livetime)
 
     async def prepare_edge(self, num: int, livetime: float):
-        await _prepare_detector(self.detector, 1, num, livetime)
+        await _prepare_detector(self.detector, 3, num, livetime)
