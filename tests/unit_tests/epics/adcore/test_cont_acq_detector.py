@@ -95,6 +95,33 @@ async def test_cont_acq_skips_dirty_frames(
     proc_suffix: str | None,
     static_path_provider: StaticPathProvider,
 ):
+    """Check frame skipping before collecting data from a free-running detector.
+
+    The driver keeps exposing between scan steps, so the next arriving frame
+    may have started exposing while the sample was moving. The circular buffer
+    (CB) gate prevents those potentially dirty frames from reaching downstream
+    plugins until the configured number of arrivals has passed.
+
+    The two parameterizations cover independent aspects of this behavior:
+
+    - `num_frames_to_skip, dirty_deltas`: skip 0, 1, or 2 incoming frames.
+      `dirty_deltas` contains CB counter offsets from the current trigger's
+      starting value. `(1, 2)` represents consecutive arrivals; `(4,)` models
+      a monitor update that combines several arrivals, jumping past the
+      two-frame threshold. An empty tuple means the gate opens immediately.
+    - `exposures_per_collection, proc_suffix`: `(1, None)` uses one raw exposure
+      per saved output image (a collection), without a process plugin.
+      `(5, "PROC:")` configures a process plugin to combine five raw exposures
+      into one collection, for example by averaging. The mock simulates the
+      resulting writer count, not the plugin's filtering calculation. Skipped
+      frames must not contribute to those five exposures.
+
+    Each combination is triggered twice with starting CB counts of 100 and 200
+    to check that every trigger uses a fresh baseline. Duplicate CB values and
+    driver counter changes must not advance the skip. After the gate opens,
+    only subsequent frames are forwarded, and completion requires enough
+    exposures for one collection, advancing the saved collection index by one.
+    """
     async with init_devices(mock=True):
         det = adcore.ContAcqDetector(
             "PREFIX:",
