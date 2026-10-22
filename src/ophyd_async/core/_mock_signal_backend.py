@@ -15,7 +15,7 @@ from ._soft_signal_backend import SoftSignalBackend
 from ._utils import Callback
 
 if TYPE_CHECKING:
-    from ._device import LazyMock
+    from ._device import DeviceMock
 
 MockPutCallback = (
     Callable[[SignalDatatypeT], SignalDatatypeT | None]
@@ -29,7 +29,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         initial_backend: SignalBackend[SignalDatatypeT],
-        mock: LazyMock,
+        mock: DeviceMock,
     ) -> None:
         if isinstance(initial_backend, MockSignalBackend):
             raise ValueError("Cannot make a MockSignalBackend for a MockSignalBackend")

@@ -30,8 +30,10 @@ All the above methods are concrete, but `connect()` calls out to a [](#DeviceCon
 
 A `DeviceConnector` provides the ability to:
 - [](#DeviceConnector.create_children_from_annotations) that is called during `__init__` to turn annotations into concrete child Devices
-- [](#DeviceConnector.connect_mock) that is called if `connect(mock=True)` is called, and should connect the child Devices in mock mode for testing without a control system
-- [](#DeviceConnector.connect_real) that is called if `connect(mock=False)` is called, and should connect the child Devices to the control system in parallel
+- [](#DeviceConnector.connect_mock) that is called if the Device is mocked, and should connect the child Devices in mock mode for testing without a control system. Each child is mocked or not according to the `mock_types` of the `DeviceMock` it is given, which is how a mapping passed to `init_devices` reaches the whole Device tree
+- [](#DeviceConnector.connect_real) that is called if the Device is not mocked, and should connect the child Devices in parallel, to the control system or in mock mode as the `mock_types` it is given say
+
+Re-connecting a Device, in either mode, may drop subscriptions made before the re-connect, so subscribe again afterwards. A mock re-connect also drops staging, so `get_value(cached=True)` raises until the Signal is staged again. Calling `child.connect(mock=True)` directly on a child after its parent has connected rebuilds the child's mock as a root, detached from the parent's mock tree and without its `mock_types`, so re-connect from the parent instead.
 
 The base `DeviceConnector` provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in [declarative Devices](./declarative-vs-procedural.md).
 

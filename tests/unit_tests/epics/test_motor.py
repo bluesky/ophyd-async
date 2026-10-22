@@ -11,12 +11,14 @@ from ophyd_async.core import (
     FlyMotorInfo,
     callback_on_mock_put,
     default_mock_class,
+    get_mock,
     get_mock_put,
     init_devices,
     set_mock_precision,
     set_mock_put_proceeds,
     set_mock_units,
     set_mock_value,
+    soft_signal_rw,
     wait_for_value,
 )
 from ophyd_async.epics.motor import (
@@ -644,3 +646,33 @@ async def test_velo_and_accl_respecting_motor_mock_interrupted_move(
     # the target means the move ended early rather than finishing
     assert await motor.motor_done_move.get_value() == 1
     assert await motor.user_readback.get_value() < 10.0
+
+
+class Stage(Device):
+    def __init__(self, name: str = "") -> None:
+        self.mtr = Motor("PREFIX:MTR")
+        self.flag = soft_signal_rw(int)
+        super().__init__(name)
+
+
+@pytest.mark.parametrize(
+    "mock, expected_velocity",
+    [
+        # Real except motors, which are mocked with their default
+        ({Motor: True}, 1000),
+        # Real except motors, which are mocked with a given class
+        ({Motor: VeloAndAcclRespectingMotorMock}, 10),
+    ],
+)
+async def test_init_devices_mock_by_motor_type(mock, expected_velocity):
+    async with init_devices(mock=mock):
+        stage = Stage()
+
+    assert await stage.mtr.velocity.get_value() == expected_velocity
+    await stage.mtr.set(1.0)
+    assert await stage.mtr.user_readback.get_value() == pytest.approx(1.0)
+    # The Stage and its flag were connected for real
+    with pytest.raises(RuntimeError, match="not connected in mock mode"):
+        set_mock_value(stage.flag, 1)
+    with pytest.raises(RuntimeError, match="not connected in mock mode"):
+        get_mock(stage)
