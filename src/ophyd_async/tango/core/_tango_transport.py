@@ -972,7 +972,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         return Location(
             setpoint=cast(SignalDatatypeT, w_value),
-            readback=cast(SignalDatatypeT, value),
+            readback=value,
         )
 
     def set_callback(self, callback: Callback | None) -> None:
