@@ -240,6 +240,25 @@ def cached_get_origin(tp: Any) -> Any:
     return origin
 
 
+def get_dtype_scalar(datatype: Any) -> Any:
+    """Get the scalar type from a numpy ndarray type annotation..
+
+    ```python
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_dtype_scalar(Array1D[np.int8])
+    <class 'numpy.int8'>
+
+    ```
+    """
+    if not cached_get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    args = get_args(datatype)
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] has args
+    # (shape, dtype[float64]); NumPy 2.5's NDArray[numpy.float64] has (float64,)
+    return args[0] if len(args) == 1 else get_args(args[1])[0]
+
+
 def get_dtype(datatype: Any) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation.
 
@@ -251,12 +270,7 @@ def get_dtype(datatype: Any) -> np.dtype:
 
     ```
     """
-    if not cached_get_origin(datatype) == np.ndarray:
-        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-    args = get_args(datatype)
-    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] has args
-    # (shape, dtype[float64]); NumPy 2.5's NDArray[numpy.float64] has (float64,)
-    return np.dtype(args[0] if len(args) == 1 else get_args(args[1])[0])
+    return np.dtype(get_dtype_scalar(datatype))
 
 
 def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
