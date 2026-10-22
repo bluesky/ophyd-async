@@ -320,40 +320,57 @@ async def test_status_of_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
-    async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.2)
+    # Puts are held at these gates, rather than for a fixed delay: the match
+    # signal is set when `gate` is open, and the put finishes when `finish` is
+    gate = asyncio.Event()
+    gate.set()
+    finish = asyncio.Event()
+    finish.set()
+
+    async def set_match_signal_when_gate_opens(value: Any, **kwargs):
+        await gate.wait()
         await match_signal.set(value / 2)
-        await asyncio.sleep(0.001)
+        await finish.wait()
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_when_gate_opens)  # type: ignore
     before = asyncio.all_tasks()
 
     status = await set_and_wait_for_value(set_signal, 2)
     assert status.done
 
+    gate.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_value(set_signal, 4, timeout=0.05)
+    gate.set()
+    await wait_for_sets_left_running(before)
 
+    gate.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_value(
             set_signal, 8, timeout=0.05, wait_for_set_completion=False
         )
+    gate.set()
+    await wait_for_sets_left_running(before)
 
     status = await set_and_wait_for_other_value(set_signal, 32, match_signal, 16)
     assert status.done
 
+    finish.clear()
     status = await set_and_wait_for_other_value(
         set_signal, 30, match_signal, 15, wait_for_set_completion=False
     )
     assert not status.done
+    finish.set()
     await status
 
+    gate.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
             set_signal, 30, match_signal, -1, timeout=0.05
         )
+    gate.set()
 
     # The timeouts above each leave their set running; a starved loop is what
     # made one of them outlive the test on the 3.14 runners.
@@ -370,9 +387,10 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
     put_finished = asyncio.Event()
+    release_put = asyncio.Event()
 
     async def set_slower_than_the_match_timeout(value: Any, **kwargs):
-        await asyncio.sleep(0.3)
+        await release_put.wait()
         put_finished.set()
 
     await set_signal.connect(mock=True)
@@ -388,6 +406,7 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
     # The set is still in flight, and completes on its own afterwards rather
     # than being abandoned part way through.
     assert not put_finished.is_set()
+    release_put.set()
     await wait_for_sets_left_running(before)
     assert put_finished.is_set()
 
@@ -397,13 +416,17 @@ async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
-    async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.2)
+    # Puts are held until the gate is opened, rather than for a fixed delay
+    gate = asyncio.Event()
+    gate.set()
+
+    async def set_match_signal_when_gate_opens(value: Any, **kwargs):
+        await gate.wait()
         await match_signal.set(value / 2)
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_when_gate_opens)  # type: ignore
     before = asyncio.all_tasks()
 
     def _equals_x(value, x):
@@ -419,10 +442,12 @@ async def test_callable_match_value_set_and_wait_for_value():
     )
     assert status.done
 
+    gate.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
             set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.05
         )
+    gate.set()
 
     # The timed-out set is left running, as in the test above.
     await wait_for_sets_left_running(before)
