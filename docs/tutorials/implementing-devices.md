@@ -34,7 +34,7 @@ Tango is typically deployed with a central database, which provides a nameserver
 :::{tab-item} FastCS
 :sync: fastcs
 
-[FastCS](https://diamondlightsource.github.io/FastCS) is a control system agnostic framework for building Device support in Python that will work for both EPICS and Tango without depending on either. It allows Device support to be written once in a declarative way, then at runtime the control system can be selected. It also adds support for multi-device introspection to both EPICS and Tango, which allows the same ophyd-async Device and the same FastCS Device to use either EPICS or Tango as a transport layer.
+[FastCS](https://diamondlightsource.github.io/fastcs/) is a control system agnostic framework for building Device support in Python that will work for both EPICS and Tango without depending on either. It allows Device support to be written once in a declarative way, then at runtime the control system can be selected. It also adds support for multi-device introspection to both EPICS and Tango, which allows the same ophyd-async Device and the same FastCS Device to use either EPICS or Tango as a transport layer.
 
 FastCS is currently in an early phase of development, being used for [PandA](https://github.com/PandABlocks/fastcs-PandABlocks) and [Odin](https://github.com/DiamondLightSource/fastcs-odin) Devices within ophyd-async.
 :::
