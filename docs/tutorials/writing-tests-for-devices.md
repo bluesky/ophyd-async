@@ -211,8 +211,6 @@ There are a few other things we may wish to do in tests:
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal (sync or async callback)
 - [](#callback_on_mock_execute) to override the function called when a Command is executed (sync or async callback)
 - [](#set_callback_filter) to modify or drop values before they reach subscribers of a Signal
-- [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
-- [](#callback_on_mock_execute) to override the function called when a Command is executed
 - [](#get_mock_put) to get the `AsyncMock` tracking `put()` calls on a Signal
 - [](#get_mock_execute) to get the `AsyncMock` tracking `execute()` calls on a Command
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing
