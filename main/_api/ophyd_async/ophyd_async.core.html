@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.21.4.dev17+gddcd0ab5f documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.21.4.dev18+gde097ace3 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=8a0040d3"></script>
+    <script src="../../_static/documentation_options.js?v=ac0baf89"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev17+gddcd0ab5f documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev17+gddcd0ab5f documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
   
   
 </a></div>
@@ -1032,7 +1032,7 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <dl class="py property">
 <dt class="sig sig-object py" id="ophyd_async.core.Device.name">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#ophyd_async.core.Device.name" title="Link to this definition">#</a></dt>
-<dd><p>Return the name of the Device.</p>
+<dd><p>The name of the Device.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1049,7 +1049,7 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Device.log">
 <span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter" title="(in Python v3.15)"><span class="pre">LoggerAdapter</span></a></span></span><a class="headerlink" href="#ophyd_async.core.Device.log" title="Link to this definition">#</a></dt>
-<dd><p>Return a logger configured with the device name.</p>
+<dd><p>A logger configured with the device name.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1966,14 +1966,14 @@ unchanged, in the order they arrive.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ophyd_async.core.Signal.source">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">source</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#ophyd_async.core.Signal.source" title="Link to this definition">#</a></dt>
-<dd><p>Returns the source of the signal.</p>
+<dd><p>The source of the signal.</p>
 <p>E.g. “ca://PV_PREFIX:SIGNAL”, or “” if not available until connection.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ophyd_async.core.Signal.datatype">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">datatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#ophyd_async.core.Signal.datatype" title="Link to this definition">#</a></dt>
-<dd><p>Returns the datatype of the signal.</p>
+<dd><p>The datatype of the signal.</p>
 <p>This will return what was passed at construction time. None means the
 backend will calculate it from the control system on connection.</p>
 </dd></dl>
@@ -2585,7 +2585,7 @@ to the mock device so it behaves more like the real device.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.put_mock">
 <span class="sig-name descname"><span class="pre">put_mock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.15)"><span class="pre">AsyncMock</span></a></span></span><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.put_mock" title="Link to this definition">#</a></dt>
-<dd><p>Return the mock that will track calls to <code class="docutils literal notranslate"><span class="pre">put()</span></code>.</p>
+<dd><p>The mock that will track calls to <code class="docutils literal notranslate"><span class="pre">put()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2636,7 +2636,7 @@ to the mock device so it behaves more like the real device.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.put_proceeds">
 <span class="sig-name descname"><span class="pre">put_proceeds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event" title="(in Python v3.15)"><span class="pre">Event</span></a></span></span><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.put_proceeds" title="Link to this definition">#</a></dt>
-<dd><p>Return an Event that will block <code class="docutils literal notranslate"><span class="pre">put()</span></code> until set.</p>
+<dd><p>An Event that will block <code class="docutils literal notranslate"><span class="pre">put()</span></code> until set.</p>
 <p>The Event is initially set, but can be unset to block <code class="docutils literal notranslate"><span class="pre">put()</span></code>.</p>
 </dd></dl>
 
@@ -4982,7 +4982,7 @@ via <code class="docutils literal notranslate"><span class="pre">status.value</s
 <dl class="py property">
 <dt class="sig sig-object py" id="ophyd_async.core.Command.source">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">source</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#ophyd_async.core.Command.source" title="Link to this definition">#</a></dt>
-<dd><p>Returns the source of the command.</p>
+<dd><p>The source of the command.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -5074,7 +5074,7 @@ pass <code class="docutils literal notranslate"><span class="pre">NO_ARG_VOID_SI
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MockCommandBackend.execute_mock">
 <span class="sig-name descname"><span class="pre">execute_mock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.15)"><span class="pre">AsyncMock</span></a></span></span><a class="headerlink" href="#ophyd_async.core.MockCommandBackend.execute_mock" title="Link to this definition">#</a></dt>
-<dd><p>Return the mock that will track calls to the command execution.</p>
+<dd><p>The mock that will track calls to the command execution.</p>
 </dd></dl>
 
 <dl class="py method">

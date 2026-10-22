@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.21.4.dev17+gddcd0ab5f documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.21.4.dev18+gde097ace3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=8a0040d3"></script>
+    <script src="../../../_static/documentation_options.js?v=ac0baf89"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev17+gddcd0ab5f documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev17+gddcd0ab5f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
   
   
 </a></div>
@@ -1033,38 +1033,40 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+        <span class="c1"># fields and dimensions keys from sub devices are flattened</span>
+        <span class="c1"># into the hints.</span>
+        <span class="n">flattened_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">flattened_dimensions</span> <span class="o">=</span> <span class="p">[]</span>
+
         <span class="n">hints</span><span class="p">:</span> <span class="n">Hints</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">new_hint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span><span class="p">:</span>
-            <span class="c1"># Merge the existing and new hints, based on the type of the value.</span>
-            <span class="c1"># This avoids default dict merge behavior that overrides the values;</span>
-            <span class="c1"># we want to combine them when they are Sequences, and ensure they are</span>
-            <span class="c1"># identical when string values.</span>
+            <span class="c1"># If a hints key in a subdevice isn&#39;t given in bluesky protocols, then it</span>
+            <span class="c1"># doesn&#39;t carry over to the device holding it.</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_hint</span><span class="o">.</span><span class="n">hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># fail early for unkwon types</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
-                            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hints key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> value may not be overridden&quot;</span>
-                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
-                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
-                        <span class="k">for</span> <span class="n">new_val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">new_val</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
-                                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hint </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_val</span><span class="si">}</span><span class="s2"> overrides existing hint&quot;</span>
-                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>  <span class="c1"># type: ignore[literal-required]</span>
-                            <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;fields&quot;</span><span class="p">,</span> <span class="s2">&quot;dimensions&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_hint</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; key must be a Sequence, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_hint</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: Unknown type for value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot; for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="n">already_parsed</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">flattened_fields</span> <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;fields&quot;</span> <span class="k">else</span> <span class="n">flattened_dimensions</span>
                     <span class="p">)</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">common</span> <span class="o">:=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">already_parsed</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Hint &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">common</span><span class="p">)</span><span class="si">}</span><span class="s2"> override existing hint.&quot;</span>
+                        <span class="p">)</span>
+
+                    <span class="n">already_parsed</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;gridding&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">already_set</span> <span class="o">:=</span> <span class="n">hints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">and</span> <span class="n">already_set</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Hint key &#39;gridding&#39; may not be overridden.&quot;</span><span class="p">)</span>
+                    <span class="n">hints</span><span class="p">[</span><span class="s2">&quot;gridding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">if</span> <span class="n">flattened_fields</span><span class="p">:</span>
+            <span class="n">hints</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flattened_fields</span>
+        <span class="k">if</span> <span class="n">flattened_dimensions</span><span class="p">:</span>
+            <span class="n">hints</span><span class="p">[</span><span class="s2">&quot;dimensions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flattened_dimensions</span>
 
         <span class="k">return</span> <span class="n">hints</span>
 
