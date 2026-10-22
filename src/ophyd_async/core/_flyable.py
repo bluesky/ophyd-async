@@ -1,5 +1,5 @@
 import asyncio
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from enum import Enum
 from functools import cached_property
@@ -27,7 +27,7 @@ PrepareT = TypeVar("PrepareT")
 CtxT = TypeVar("CtxT")
 
 
-class FlyableLogic(Generic[PrepareT, CtxT]):
+class FlyableLogic(ABC, Generic[PrepareT, CtxT]):
     """Minimum logic needed for controlling a `StandardFlyable`.
 
     Inherit and fill in the hooks for a particular flyable (e.g. a motion or

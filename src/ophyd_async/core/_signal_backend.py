@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Generic, TypedDict, TypeVar
 
@@ -60,7 +60,7 @@ EnumT = TypeVar("EnumT", bound=EnumTypes)
 TableT = TypeVar("TableT", bound=Table)
 
 
-class SignalBackend(Generic[SignalDatatypeT]):
+class SignalBackend(ABC, Generic[SignalDatatypeT]):
     """A read/write/monitor backend for a Signals."""
 
     def __init__(self, datatype: type[SignalDatatypeT] | None):
