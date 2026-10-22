@@ -2,8 +2,6 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar, get_args, get_origin
 
-import numpy as np
-
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     NO_ARG_VOID_SIGNATURE,
@@ -80,10 +78,11 @@ def get_supported_values(
 
 
 def format_datatype(datatype: Any) -> str:
-    if get_origin(datatype) is np.ndarray and get_args(datatype):
-        dtype = get_dtype(datatype)
-        return f"Array1D[np.{dtype.name}]"
-    elif get_origin(datatype) is Sequence:
+    try:
+        return f"Array1D[np.{get_dtype(datatype).name}]"
+    except TypeError:
+        pass
+    if get_origin(datatype) is Sequence:
         return f"Sequence[{get_args(datatype)[0].__name__}]"
     elif isinstance(datatype, type):
         return datatype.__name__
