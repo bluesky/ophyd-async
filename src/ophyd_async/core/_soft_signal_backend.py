@@ -235,8 +235,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         return self.reading["value"]
 
     async def get_location(self) -> Location[SignalDatatypeT]:
-        await self._update_value_from_getter()
-        return Location(setpoint=self._setpoint, readback=self.reading["value"])
+        return Location(setpoint=self._setpoint, readback=await self.get_value())
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.callback:
