@@ -44,7 +44,9 @@ from ophyd_async.core import (
     SignalDatatypeT,
     SignalMetadata,
     StrictEnum,
+    cached_get_origin,
     get_dtype,
+    get_dtype_scalar,
     make_datakey,
     wait_for_connection,
 )
@@ -625,7 +627,7 @@ def get_dtype_extended(datatype) -> object | None:
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        if datatype.__args__[1].__args__[0] in [DevStateEnum, DevState]:
+        if get_dtype_scalar(datatype) in [DevStateEnum, DevState]:
             dtype = CmdArgType.DevState
     return dtype
 
@@ -853,7 +855,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             self._type_match_scalar(sig_elem_type, tr_elem_type, tango_resource)
             return
         elif (
-            get_origin(signal_type) is np.ndarray and get_origin(tr_dtype) is np.ndarray
+            cached_get_origin(signal_type) is np.ndarray
+            and cached_get_origin(tr_dtype) is np.ndarray
         ):
             if signal_type is None:
                 raise TypeError(
@@ -901,7 +904,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
                 raise RuntimeError(
                     "Commands with different in and out dtypes are not supported"
                 )
-            if get_origin(tr_dtype) in [Sequence, np.ndarray]:
+            if cached_get_origin(tr_dtype) in [Sequence, np.ndarray]:
                 self._type_match_array(signal_type, tr_dtype, tango_resource)
             else:
                 self._type_match_scalar(signal_type, tr_dtype, tango_resource)

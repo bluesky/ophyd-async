@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 import time
+import typing
 from collections.abc import (
     AsyncIterator,
     Awaitable,
@@ -230,10 +232,34 @@ def cached_get_type_hints(cls: type, include_extras: bool = False) -> dict[str, 
 @lru_cache(maxsize=512)
 def cached_get_origin(tp: Any) -> Any:
     """Get the origin of a type with caching."""
-    return get_origin(tp)
+    origin = get_origin(tp)
+    if sys.version_info >= (3, 12) and isinstance(origin, typing.TypeAliasType):
+        # NumPy 2.5 makes `npt.NDArray` a `type` alias, so `NDArray[np.float64]`
+        # has the alias as its origin: use the origin of what it stands for
+        return get_origin(origin.__value__)
+    return origin
 
 
-def get_dtype(datatype: type) -> np.dtype:
+def get_dtype_scalar(datatype: Any) -> Any:
+    """Get the scalar type from a numpy ndarray type annotation..
+
+    ```python
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_dtype_scalar(Array1D[np.int8])
+    <class 'numpy.int8'>
+
+    ```
+    """
+    if not cached_get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    args = get_args(datatype)
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] has args
+    # (shape, dtype[float64]); NumPy 2.5's NDArray[numpy.float64] has (float64,)
+    return args[0] if len(args) == 1 else get_args(args[1])[0]
+
+
+def get_dtype(datatype: Any) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation.
 
     ```python
@@ -244,11 +270,7 @@ def get_dtype(datatype: type) -> np.dtype:
 
     ```
     """
-    if not cached_get_origin(datatype) == np.ndarray:
-        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
-    # so extract numpy.float64 from it
-    return np.dtype(get_args(get_args(datatype)[1])[0])
+    return np.dtype(get_dtype_scalar(datatype))
 
 
 def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:

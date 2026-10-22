@@ -15,6 +15,7 @@ from ophyd_async.core import (
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
+    cached_get_origin,
     get_dtype,
     get_enum_cls,
     observe_value,
@@ -80,7 +81,7 @@ def get_supported_values(
 
 
 def format_datatype(datatype: Any) -> str:
-    if get_origin(datatype) is np.ndarray and get_args(datatype):
+    if cached_get_origin(datatype) is np.ndarray and get_args(datatype):
         dtype = get_dtype(datatype)
         return f"Array1D[np.{dtype.name}]"
     elif get_origin(datatype) is Sequence:

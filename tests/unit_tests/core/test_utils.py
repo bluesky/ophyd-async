@@ -3,12 +3,15 @@ import re
 import sys
 from asyncio import CancelledError
 
+import numpy as np
+import numpy.typing as npt
 import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     gather_dict,
+    get_dtype,
     init_devices,
     SoftSignalBackend,
     NotConnectedError,
@@ -484,3 +487,8 @@ async def test_simulate_move_ends_at_target(acceleration_time: float):
     positions = [p async for p in simulate_move(0, 1.5, 10, acceleration_time)]
     assert positions[-1] == 1.5
     assert positions == sorted(positions)
+
+
+def test_get_dtype_of_numpy_typing_ndarray():
+    # From NumPy 2.5 on Python 3.12+ this is a `type` alias, not an `np.ndarray`
+    assert get_dtype(npt.NDArray[np.float64]) == np.dtype(np.float64)
