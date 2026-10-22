@@ -127,7 +127,7 @@ class StreamResourceDataProvider(StreamableDataProvider):
                 source=resource.source or self.uri,
                 shape=[collections_per_event, *resource.shape],
                 dtype="array"
-                if collections_per_event > 1 or len(resource.shape) > 1
+                if collections_per_event > 1 or len(resource.shape) > 0
                 else "number",
                 dtype_numpy=resource.dtype_numpy,
                 external="STREAM:",

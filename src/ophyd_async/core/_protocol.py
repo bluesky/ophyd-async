@@ -16,7 +16,7 @@ from event_model import DataKey
 from ._utils import T
 
 if TYPE_CHECKING:
-    from ._status import AsyncStatus
+    from ._status import AsyncStatusBase
 
 
 @runtime_checkable
@@ -84,25 +84,25 @@ class AsyncStageable(Protocol):
     """Async implementation of the sync [](#bluesky.protocols.Stageable)."""
 
     @abstractmethod
-    def stage(self) -> AsyncStatus:
+    def stage(self) -> AsyncStatusBase:
         """Set up the device for acquisition.
 
-        :return: An `AsyncStatus` that is marked done when the device is done staging.
+        :return: A `Status` that is marked done when the device is done staging.
         """
 
     @abstractmethod
-    def unstage(self) -> AsyncStatus:
+    def unstage(self) -> AsyncStatusBase:
         """Clean up the device after acquisition.
 
-        :return: An `AsyncStatus` that is marked done when the device is done unstaging.
+        :return: A `Status` that is marked done when the device is done unstaging.
         """
 
 
 @runtime_checkable
 class AsyncMovable(Protocol[T_co]):
     @abstractmethod
-    def set(self, value: T_co) -> AsyncStatus:
-        """Return a ``Status`` that is marked done when the device is done moving."""
+    def set(self, value: T_co) -> AsyncStatusBase:
+        """Return a `Status` that is marked done when the device is done moving."""
 
 
 @runtime_checkable

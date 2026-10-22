@@ -78,7 +78,7 @@ async def test_sim_blob_detector_fly(RE: RunEngine, blob_detector: SimBlobDetect
         yield from bps.declare_stream(blob_detector, name="primary")
         yield from bps.kickoff(blob_detector, wait=True)
         yield from bps.collect_while_completing(
-            flyers=[blob_detector], dets=[blob_detector], flush_period=0.1
+            flyers=[blob_detector], dets=[blob_detector], flush_period=0.05
         )
 
     docs = defaultdict(list)
@@ -91,7 +91,7 @@ async def test_sim_blob_detector_fly(RE: RunEngine, blob_detector: SimBlobDetect
         blob_detector.pattern_generator.set_x(x)
         if x == pytest.approx(1.5):
             # pause here so we emit the data in 2 stream_datums
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
 
     blob_detector.pattern_generator.sleep = set_next_x
 

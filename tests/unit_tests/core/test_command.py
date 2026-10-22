@@ -93,8 +93,7 @@ async def test_soft_command_execution(datatype, value):
         assert res == value
 
 
-@pytest.mark.parametrize("datatype, value", TEST_PARAMS)
-def test_soft_command_init_validation(datatype, value):
+def test_soft_command_init_validation():
     def missing_param_annotation(v):
         return v
 

@@ -74,6 +74,23 @@ async def test_set_mock_value():
     assert await mock_signal._connector.backend.get_value() == 10
 
 
+async def test_set_mock_value_timestamp_and_alarm_severity():
+    signal = soft_signal_rw(int)
+    await signal.connect(mock=True)
+    reading = (await signal.read())[signal.name]
+    assert reading["alarm_severity"] == 0
+    set_mock_value(signal, 5, timestamp=123.0, alarm_severity=2)
+    reading = (await signal.read())[signal.name]
+    assert reading["value"] == 5
+    assert reading["timestamp"] == 123.0
+    assert reading["alarm_severity"] == 2
+    # Defaults mean now and ok
+    set_mock_value(signal, 6)
+    reading = (await signal.read())[signal.name]
+    assert reading["timestamp"] > 123.0
+    assert reading["alarm_severity"] == 0
+
+
 async def test_set_mock_put_proceeds():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)
@@ -238,6 +255,44 @@ async def test_async_callback_on_mock_put(mock_signals):
 
     signal1_callbacks.assert_awaited_once_with("second_value")
     signal2_callbacks.assert_awaited_once_with("second_value")
+
+
+@pytest.mark.parametrize(
+    "cancelled_by, expected_error",
+    [
+        # Like a stop PV ending a put callback: the put completes
+        ("handle", None),
+        # A set() timeout still fails the put
+        ("set_timeout", asyncio.TimeoutError),
+        # Someone else cancelling the callback is not mistaken for a handle cancel
+        ("other", asyncio.CancelledError),
+    ],
+)
+async def test_mock_put_handle_cancel(cancelled_by: str, expected_error):
+    mock_signal = SignalRW(SoftSignalBackend(float))
+    await mock_signal.connect(mock=True)
+    started = asyncio.Event()
+
+    async def slow_put(value: float):
+        started.set()
+        await asyncio.sleep(10)
+
+    handle = callback_on_mock_put(mock_signal, slow_put)
+    status = mock_signal.set(1.0, timeout=0.1 if cancelled_by == "set_timeout" else 5)
+    await started.wait()
+    if cancelled_by == "handle":
+        handle.cancel()
+    elif cancelled_by == "other":
+        (callback_task,) = (
+            t for t in asyncio.all_tasks() if t.get_coro().__name__ == "slow_put"
+        )
+        callback_task.cancel()
+    if expected_error:
+        with pytest.raises(expected_error):
+            await status
+    else:
+        await status
+        assert await mock_signal.get_value() == 1.0
 
 
 async def test_callback_on_mock_put_fails_if_args_are_not_correct():

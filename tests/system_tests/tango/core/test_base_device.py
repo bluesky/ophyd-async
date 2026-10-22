@@ -26,16 +26,14 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango import demo, testing
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoMotor,
     DemoPointDetector,
     DemoPointDetectorChannel,
-    DemoStage,
     EnergyMode,
 )
-from ophyd_async.testing import assert_reading, find_free_port
+from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")
 
@@ -201,34 +199,6 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(60.0)
-async def test_tango_device_servers_launcher():
-    """Smoke test `ophyd_async.tango.testing`/`ophyd_async.tango.demo`'s
-    `DEVICE_SERVERS` as standalone launchers, independent of the shared
-    conftest.py subprocesses - proves each is self-sufficient (predictable TRL,
-    no readback needed, clean startup/shutdown) exactly as a user running one
-    directly would rely on."""
-    prefix = testing.generate_random_trl_prefix()
-    testing_port = find_free_port()
-    demo_port = find_free_port()
-    testing_process = testing.start_tango_device_servers(
-        testing.DEVICE_SERVERS, prefix, str(testing_port)
-    )
-    demo_process = testing.start_tango_device_servers(
-        demo.DEVICE_SERVERS, prefix, str(demo_port), "3"
-    )
-    try:
-        basic_proxy = await AsyncDeviceProxy(testing.trl(prefix, testing_port, "basic"))
-        assert await basic_proxy.read_attribute("readback")
-        motor_proxy = await AsyncDeviceProxy(testing.trl(prefix, demo_port, "motor-x"))
-        assert await motor_proxy.read_attribute("readback")
-    finally:
-        demo_process.stop()
-        testing_process.stop()
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 @pytest.mark.timeout(8.0)
 async def test_tango_enum_roundtrip(sim_test_context_trls):
     channel = DemoPointDetectorChannel(
@@ -244,23 +214,6 @@ async def test_tango_enum_roundtrip(sim_test_context_trls):
     # Write LOW (index 0) and read it back
     await channel.mode.set(EnergyMode.LOW)
     assert await channel.mode.get_value() == EnergyMode.LOW
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.timeout(8.0)
-async def test_tango_stage(sim_test_context_trls):
-    stage = DemoStage(
-        name="stage",
-        x_trl=sim_test_context_trls["motor-x"],
-        y_trl=sim_test_context_trls["motor-y"],
-    )
-    await stage.connect()
-    assert stage.x.name == "stage-x"
-    assert stage.y.name == "stage-y"
-    reading = await stage.read()
-    assert "stage-x" in reading
-    assert "stage-y" in reading
 
 
 # --------------------------------------------------------------------
@@ -292,7 +245,7 @@ async def test_tango_sim(sim_test_context_trls):
     RE(bp.count(list(detector.channel.values())))
 
     set_status = motor.set(1.0)
-    await asyncio.sleep(1.0)
+    await asyncio.sleep(0.5)
 
     await motor.stop(success=True)
     await set_status

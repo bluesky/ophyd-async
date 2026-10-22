@@ -87,6 +87,24 @@ still there; only the update stream is affected. This means:
   uses the cache when one is live, so it returns filtered values — and blocks
   indefinitely if the filter has vetoed everything.
 
+### Choosing a different mock behaviour
+
+`InstantMotorMock` moves the readback to the setpoint instantly, which is ideal for
+tests that only care about the end position. When a test needs the move to take a
+realistic amount of time — for example to check progress-bar updates or fly-scan
+timing — the [](#Motor) module also ships `VeloAndAcclRespectingMotorMock`, which
+drives the readback towards the setpoint over time while respecting the motor's
+velocity and acceleration.
+
+To use it, pass an instance directly to `connect()` instead of relying on the default:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_motor.py
+:language: python
+:pyobject: velo_and_accl_respecting_motor
+```
+
+The same pattern works for any [](#DeviceMock) subclass: instantiate it and pass it as
+the `mock=` argument to `connect()` to override the class default for that Device.
 
 ### pytest-asyncio setup
 
@@ -166,6 +184,14 @@ with callback_on_mock_put(motor.setpoint, on_put):
 ```
 
 Either way, the value the callback returns (if not `None`) becomes the readback; returning `None` leaves the readback as the value that was put.
+
+`callback_on_mock_put` returns a [](#MockPutHandle). Its `cancel()` interrupts any async callback still running, and the put completes as if the callback had returned `None`. Use it to mimic a stop PV that ends a put callback in progress, as the motor mock does:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: STOP ends the move
+:end-at: moves.cancel()
+```
 
 For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else. Like [](#callback_on_mock_put), it takes a sync or async callback, and its return value becomes the result of `execute()`.
 

@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey
 
 from ._derived_signal_backend import DerivedSignalBackend
@@ -74,9 +74,19 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the value of the signal."""
-        self.soft_backend.set_value(value)
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the value, timestamp and alarm severity of the signal.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
+        self.soft_backend.set_value(value, timestamp, alarm_severity)
 
     def set_units(self, units: str):
         self.soft_backend.metadata["units"] = units
@@ -113,8 +123,8 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_value(self) -> SignalDatatypeT:
         return await self.soft_backend.get_value()
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        return await self.soft_backend.get_setpoint()
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        return await self.soft_backend.get_location()
 
     async def get_datakey(self, source: str) -> DataKey:
         return await self.soft_backend.get_datakey(source)

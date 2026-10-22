@@ -8,6 +8,7 @@ from ophyd_async.core import (
     DetectorDataLogic,
     PathProvider,
     SignalR,
+    SignalRW,
     StreamableDataProvider,
     StreamResourceDataProvider,
     StreamResourceInfo,
@@ -23,10 +24,12 @@ class OdinDataLogic(DetectorDataLogic):
         path_provider: PathProvider,
         odin: OdinIO,
         detector_bit_depth: SignalR[int],
+        pixel_mask: SignalRW[str] | None = None,
     ):
         self.path_provider = path_provider
         self.odin = odin
         self.detector_bit_depth = detector_bit_depth
+        self.pixel_mask = pixel_mask
 
     async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
@@ -46,6 +49,13 @@ class OdinDataLogic(DetectorDataLogic):
                 100000  # Needed temporarily, see https://github.com/bluesky/ophyd-async/issues/1272
             ),
         )
+
+        # Needed temporarily, see https://github.com/DiamondLightSource/fastcs-odin/issues/115
+        if self.pixel_mask:
+            await self.pixel_mask.set(
+                str(path_info.directory_path / filename) + "_meta.h5//mask"
+            )
+
         # Start writing
         await self.odin.fp.start_writing.trigger()
         await wait_for_value(self.odin.writing, True, timeout=DEFAULT_TIMEOUT)

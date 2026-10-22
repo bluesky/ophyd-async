@@ -1,14 +1,67 @@
 import asyncio
 import sys
-from unittest.mock import call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 from bluesky.plans import spiral_square
+from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import FlyMotorInfo
+from ophyd_async.core import (
+    Device,
+    FlyMotorInfo,
+    WatchableAsyncStatus,
+    forward_watcher_updates,
+)
 from ophyd_async.sim import SimMotor
 from ophyd_async.testing import StatusWatcher
+
+
+class TwoMotorStage(Device):
+    def __init__(self, combine: bool, name: str = ""):
+        self.x = SimMotor(instant=False)
+        self.y = SimMotor(instant=False)
+        self._combine = combine
+        super().__init__(name=name)
+
+    @WatchableAsyncStatus.wrap
+    async def set(self, value: tuple[float, float]):
+        statuses = [self.x.set(value[0]), self.y.set(value[1])]
+        async for update in forward_watcher_updates(
+            statuses, self.name, combine=self._combine
+        ):
+            yield update
+
+
+@pytest.mark.parametrize("combine", [True, False])
+async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
+    stage = TwoMotorStage(combine, name="stage")
+    for motor in (stage.x, stage.y):
+        await asyncio.gather(motor.velocity.set(10.0), motor.acceleration_time.set(0.1))
+    watcher = Mock()
+    status = stage.set((1.0, 2.0))
+    status.watch(watcher)
+    await status
+
+    x, y = await asyncio.gather(
+        stage.x.user_readback.get_value(), stage.y.user_readback.get_value()
+    )
+    assert x == 1.0
+    assert y == 2.0
+    updates = [c.kwargs for c in watcher.call_args_list]
+    if combine:
+        assert {u["name"] for u in updates} == {"stage"}
+        currents = [u["current"] for u in updates]
+        assert currents == sorted(currents)
+        assert 0.0 < currents[len(currents) // 2] < 1.0
+        assert updates[-1]["current"] == pytest.approx(1.0)
+        assert updates[-1]["fraction"] == pytest.approx(0.0)
+    else:
+        for name, target in (("stage-x", 1.0), ("stage-y", 2.0)):
+            currents = [u["current"] for u in updates if u["name"] == name]
+            assert len(currents) > 2
+            assert currents == sorted(currents)
+            assert currents[-1] == target
 
 
 async def test_move_sim_in_plan():
@@ -34,35 +87,6 @@ def m1(
 @pytest.fixture
 def m2() -> SimMotor:
     return SimMotor("M2", instant=False)
-
-
-@pytest.mark.xfail(reason="Flaky test")
-@pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
-@pytest.mark.parametrize(
-    "setpoint,expected",
-    [
-        (-0.19, [0.0, -0.05, -0.1495, -0.19]),
-        (0.26, [0.0, 0.05, 0.15, 0.242, 0.26]),
-        (0.005, [0.0, 0.005]),
-        (-0.025, [0.0, -0.025]),
-    ],
-)
-async def test_move_profiles(setpoint, expected, m1: SimMotor):
-    await m1.acceleration_time.set(0.1)
-    status = m1.set(setpoint)
-    watcher = StatusWatcher(status)
-    for i, v in enumerate(expected):
-        await watcher.wait_for_call(
-            current=pytest.approx(v),
-            initial=0.0,
-            name="M1",
-            target=setpoint,
-            time_elapsed=pytest.approx(i * 0.1, abs=0.1),
-            unit="mm",
-        )
-    await status
-    watcher.mock.assert_not_called()
-    assert await m1.user_readback.get_value() == setpoint
 
 
 async def test_short_move_is_exactly_move_time(m2: SimMotor):
@@ -114,3 +138,86 @@ async def test_fly(m1: SimMotor):
 
 async def test_sim_motor_can_be_set_to_its_current_position(m1: SimMotor):
     await m1.set(0)
+
+
+async def test_sim_motor_initial_readback_matches_initial_value():
+    initial_value = 600
+    motor = SimMotor(initial_value=initial_value, instant=False)
+    readback, setpoint = await asyncio.gather(
+        motor.user_readback.get_value(), motor.user_setpoint.get_value()
+    )
+    assert readback == setpoint == initial_value
+
+
+@pytest.mark.parametrize(
+    ("target", "direction"),
+    [
+        (600.5, 1),  # low -> high
+        (599.5, -1),  # high -> low
+    ],
+)
+async def test_sim_motor_move(target: float, direction: int):
+    initial_value = 600.0
+
+    motor = SimMotor(initial_value=initial_value, instant=False, name="motor")
+    await motor.connect()
+    # Fast enough to keep the test short, slow enough for several 10Hz updates
+    await motor.velocity.set(5.0)
+    await motor.acceleration_time.set(0.1)
+
+    readbacks: list[float] = []
+
+    def on_readback(value: dict[str, Reading[float]]) -> None:
+        readbacks.append(value[motor.user_readback.name]["value"])
+
+    motor.user_readback.subscribe(on_readback)
+
+    await motor.set(target)
+    readback, setpoint = await asyncio.gather(
+        motor.user_setpoint.get_value(), motor.user_readback.get_value()
+    )
+    assert readback == setpoint == target
+    assert len(readbacks) > 2
+    assert readbacks[-1] == pytest.approx(target)
+
+    # Motion must be monotonic.
+    assert all(
+        (current - previous) * direction >= 0
+        for previous, current in zip(readbacks, readbacks[1:], strict=False)
+    )
+    # No overshoot.
+    lower = min(initial_value, target)
+    upper = max(initial_value, target)
+
+    assert all(lower <= value <= upper for value in readbacks)
+
+
+@pytest.mark.parametrize("instant", [True, False])
+async def test_sim_motor_move_mode(instant: bool):
+    motor = SimMotor(initial_value=600.0, instant=instant, name="motor")
+    await motor.connect()
+
+    readbacks: list[float] = []
+
+    def on_readback(value: dict[str, Reading[float]]) -> None:
+        readbacks.append(value[motor.user_readback.name]["value"])
+
+    motor.user_readback.subscribe(on_readback)
+
+    await motor.set(600.05)
+
+    assert readbacks[-1] == pytest.approx(600.05)
+
+    if instant:
+        # The motor should move directly to the target.
+        assert readbacks == [600, 600.05]
+    else:
+        # The motor should have produced intermediate positions.
+        assert len(readbacks) > 2
+        assert any(600.0 < value < 600.05 for value in readbacks)
+
+        # Motion should be monotonic.
+        assert all(
+            previous <= current
+            for previous, current in zip(readbacks, readbacks[1:], strict=False)
+        )

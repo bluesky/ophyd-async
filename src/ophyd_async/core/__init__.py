@@ -56,6 +56,7 @@ from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
 from ._log import config_ophyd_async_logging, logger, set_handler
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    MockPutHandle,
     callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
@@ -87,6 +88,8 @@ from ._path_providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+    generate_directory_uri,
+    normalize_path,
 )
 from ._protocol import (
     AsyncConfigurable,
@@ -134,7 +137,12 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._status import (
+    AsyncStatus,
+    WatchableAsyncStatus,
+    completed_status,
+    forward_watcher_updates,
+)
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -155,6 +163,7 @@ from ._utils import (
     get_unique,
     in_micros,
     non_zero,
+    simulate_move,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -207,6 +216,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "WatcherUpdate",
     "completed_status",
+    "forward_watcher_updates",
     # Signal
     "Signal",
     "SignalR",
@@ -244,6 +254,7 @@ __all__ = [
     "get_mock_put",
     "get_mock_execute",
     "callback_on_mock_put",
+    "MockPutHandle",
     "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
@@ -317,6 +328,7 @@ __all__ = [
     "wait_for_connection",
     "Ignore",
     "non_zero",
+    "simulate_move",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
@@ -343,4 +355,6 @@ __all__ = [
     "SoftCommandBackend",
     "soft_command",
     "TriggerableCommand",
+    "generate_directory_uri",
+    "normalize_path",
 ]
