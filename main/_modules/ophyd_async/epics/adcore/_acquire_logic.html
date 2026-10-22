@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev15+g768ffa592 documentation</title>
+    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev16+g6a91b706a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=614b232c"></script>
+    <script src="../../../../_static/documentation_options.js?v=ed580456"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
   
   
 </a></div>
@@ -918,13 +918,17 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADAcquireLogic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADAcquireLogic</span><span class="p">(</span><span class="n">DetectorAcquireLogic</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">driver_armed_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
+        <span class="n">driver_armed_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
         <span class="k">if</span> <span class="n">driver_armed_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver_armed_signal</span> <span class="o">=</span> <span class="n">driver_armed_signal</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver_armed_signal</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">acquire</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="ADAcquireLogic.start_acquiring">
@@ -936,7 +940,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">match_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">driver_armed_signal</span><span class="p">,</span>
             <span class="n">match_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -948,7 +952,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">await</span> <span class="n">wait_for_good_state</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">detector_state</span><span class="p">,</span>
             <span class="p">{</span><span class="n">ADState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">,</span> <span class="n">ADState</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">},</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 

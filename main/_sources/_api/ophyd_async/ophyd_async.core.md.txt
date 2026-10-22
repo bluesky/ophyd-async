@@ -415,6 +415,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
     :summary:
     ```
+* - {py:obj}`set_callback_filter <ophyd_async.core._mock_signal_utils.set_callback_filter>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_callback_filter
+    :summary:
+    ```
 * - {py:obj}`set_mock_units <ophyd_async.core._mock_signal_utils.set_mock_units>`
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_units
     :summary:
@@ -2003,6 +2007,14 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
+````{py:method} set_mock_callback_filter(filter: ~ophyd_async.core._mock_signal_backend.MockCallbackFilter | None)
+:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_mock_callback_filter
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_mock_callback_filter
+```
+
+````
+
 ````{py:method} put_mock() -> ~unittest.mock.AsyncMock
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put_mock
 
@@ -2205,6 +2217,13 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+```
+````
+
+````{py:function} set_callback_filter(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], filter: ~ophyd_async.core._mock_signal_backend.MockCallbackFilter)
+:canonical: ophyd_async.core._mock_signal_utils.set_callback_filter
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_callback_filter
 ```
 ````
 

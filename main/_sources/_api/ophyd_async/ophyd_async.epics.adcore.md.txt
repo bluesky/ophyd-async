@@ -2823,7 +2823,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 ```
 ````
 
-`````{py:class} ADAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, driver_armed_signal: ~ophyd_async.core.SignalR[bool] | None = None)
+`````{py:class} ADAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, driver_armed_signal: ~ophyd_async.core.SignalR[bool] | None = None, timeout: float = DEFAULT_TIMEOUT)
 :canonical: ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorAcquireLogic`

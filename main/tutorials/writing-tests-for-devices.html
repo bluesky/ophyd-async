@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev15+g768ffa592 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev16+g6a91b706a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=614b232c"></script>
+    <script src="../_static/documentation_options.js?v=ed580456"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
   
   
 </a></div>
@@ -567,6 +567,34 @@ automatically use <code class="docutils literal notranslate"><span class="pre">I
 the automatic mock for specific tests by passing an explicit <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> instance
 or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">LazyMock</span></code></a> directly to <code class="docutils literal notranslate"><span class="pre">connect()</span></code>, as the <code class="docutils literal notranslate"><span class="pre">mock_motor</span></code> fixture above does.</p>
 </section>
+</section>
+<section id="simulating-a-signal-that-stops-updating">
+<h2>Simulating a signal that stops updating<a class="headerlink" href="#simulating-a-signal-that-stops-updating" title="Link to this heading">#</a></h2>
+<p>Some tests need a signal whose monitor never delivers — a disconnected IOC, or a
+detector that stops reporting state. Use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_callback_filter" title="ophyd_async.core.set_callback_filter"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_callback_filter</span></code></a> to modify or
+drop values on their way to subscribers:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Drop every monitor update</span>
+<span class="n">set_callback_filter</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">TimeoutError</span><span class="p">):</span>
+    <span class="c1"># Nothing reaches the subscriber, so this times out</span>
+    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Return a replacement value to substitute it, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to drop the update
+entirely. Dropping everything includes the initial value emitted when a
+subscription is first made, which is what makes waits time out rather than
+return immediately.</p>
+<p>The filter simulates a <strong>broken monitor, not a broken signal</strong>. The value is
+still there; only the update stream is affected. This means:</p>
+<ul class="simple">
+<li><p>Set the filter <em>before</em> anything subscribes. A live cache serves new
+subscribers from its stored reading without consulting the backend, so a
+filter set afterwards will not affect the first value they receive.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get_value(cached=False)</span></code> to read the real value. A plain <code class="docutils literal notranslate"><span class="pre">get_value()</span></code>
+uses the cache when one is live, so it returns filtered values — and blocks
+indefinitely if the filter has vetoed everything.</p></li>
+</ul>
 <section id="choosing-a-different-mock-behaviour">
 <h3>Choosing a different mock behaviour<a class="headerlink" href="#choosing-a-different-mock-behaviour" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">InstantMotorMock</span></code> moves the readback to the setpoint instantly, which is ideal for
@@ -785,6 +813,7 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_units" title="ophyd_async.core.set_mock_units"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_units</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_precision" title="ophyd_async.core.set_mock_precision"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_precision</span></code></a> to set units and precision metadata on a Signal without needing dedicated child signals</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to allow setting a Signal to have side effects, like setting another Signal (sync or async callback)</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_execute" title="ophyd_async.core.callback_on_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_execute</span></code></a> to override the function called when a Command is executed (sync or async callback)</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_callback_filter" title="ophyd_async.core.set_callback_filter"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_callback_filter</span></code></a> to modify or drop values before they reach subscribers of a Signal</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_put" title="ophyd_async.core.get_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_put</span></code></a> to get the <code class="docutils literal notranslate"><span class="pre">AsyncMock</span></code> tracking <code class="docutils literal notranslate"><span class="pre">put()</span></code> calls on a Signal</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_execute" title="ophyd_async.core.get_mock_execute"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_mock_execute</span></code></a> to get the <code class="docutils literal notranslate"><span class="pre">AsyncMock</span></code> tracking <code class="docutils literal notranslate"><span class="pre">execute()</span></code> calls on a Command</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds" title="ophyd_async.core.set_mock_put_proceeds"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_put_proceeds</span></code></a> to block or unblock <code class="docutils literal notranslate"><span class="pre">Signal.set()</span></code> from completing</p></li>
@@ -894,6 +923,9 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests-that-call-the-bluesky-verbs-directly">Tests that call the bluesky verbs directly</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-fixture-and-set-signal-values">Create a fixture and set signal values</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automatic-mock-behavior-injection">Automatic mock behavior injection</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulating-a-signal-that-stops-updating">Simulating a signal that stops updating</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-a-different-mock-behaviour">Choosing a different mock behaviour</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pytest-asyncio-setup">pytest-asyncio setup</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-output-of-verbs-in-tests">Checking the output of verbs in tests</a></li>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.21.4.dev15+g768ffa592 documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.21.4.dev16+g6a91b706a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=614b232c"></script>
+    <script src="../../../_static/documentation_options.js?v=ed580456"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev15+g768ffa592 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev16+g6a91b706a documentation - Home"/>
   
   
 </a></div>
@@ -907,7 +907,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._command</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span><span class="p">,</span> <span class="n">CommandConnector</span><span class="p">,</span> <span class="n">MockCommandBackend</span><span class="p">,</span> <span class="n">MockExecuteCallback</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceMock</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockPutCallback</span><span class="p">,</span> <span class="n">MockSignalBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockCallbackFilter</span><span class="p">,</span> <span class="n">MockPutCallback</span><span class="p">,</span> <span class="n">MockSignalBackend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">,</span> <span class="n">SignalR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalDatatypeT</span>
 
@@ -1175,6 +1175,43 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">MockPutHandle</span><span class="p">(</span><span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">callback</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_unset_callback_filter_cm</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">MockSignalBackend</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_callback_filter</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="set_callback_filter">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_callback_filter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_callback_filter</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">filter</span><span class="p">:</span> <span class="n">MockCallbackFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify or veto values on their way to subscribers of a mock signal.</span>
+
+<span class="sd">    Can either be used in a context, with the filter being unset on exit, or as</span>
+<span class="sd">    an ordinary function.</span>
+
+<span class="sd">    The filter is called with each value as it is about to be delivered to a</span>
+<span class="sd">    subscriber. Return a value to substitute it, or None to drop the update</span>
+<span class="sd">    entirely. Dropping every update includes the initial value emitted when a</span>
+<span class="sd">    subscription is made, so waits on the signal will time out as if the control</span>
+<span class="sd">    system had stopped sending monitor updates.</span>
+
+<span class="sd">    Set the filter before anything subscribes to the signal. A live</span>
+<span class="sd">    `_SignalCache` serves new subscribers from its stored reading without</span>
+<span class="sd">    consulting the backend, so a filter set afterwards will not affect the first</span>
+<span class="sd">    value they receive (though it will affect subsequent updates).</span>
+
+<span class="sd">    :param signal: A signal with a `MockSignalBackend` backend.</span>
+<span class="sd">    :param filter: Called with each value, returning a replacement or None to</span>
+<span class="sd">        drop it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">set_mock_callback_filter</span><span class="p">(</span><span class="nb">filter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_unset_callback_filter_cm</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span></div>
 
 
 
