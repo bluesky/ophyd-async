@@ -747,11 +747,11 @@ Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.Signa
 
 ````
 
-````{py:method} get_setpoint() -> ~ophyd_async.core.SignalDatatypeT
-:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_setpoint
+````{py:method} get_location() -> ~bluesky.protocols.Location[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_location
 :async:
 
-```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_setpoint
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_location
 ```
 
 ````

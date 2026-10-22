@@ -1617,12 +1617,12 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 
 ````
 
-````{py:method} get_setpoint() -> ~ophyd_async.core._signal_backend.SignalDatatypeT
-:canonical: ophyd_async.core._signal_backend.SignalBackend.get_setpoint
+````{py:method} get_location() -> ~bluesky.protocols.Location[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._signal_backend.SignalBackend.get_location
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_setpoint
+```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_location
 ```
 
 ````
@@ -1925,11 +1925,11 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} get_setpoint() -> ~ophyd_async.core._signal_backend.SignalDatatypeT
-:canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_setpoint
+````{py:method} get_location() -> ~bluesky.protocols.Location[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_location
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_setpoint
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_location
 ```
 
 ````
@@ -2087,11 +2087,11 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} get_setpoint() -> ~ophyd_async.core._signal_backend.SignalDatatypeT
-:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_setpoint
+````{py:method} get_location() -> ~bluesky.protocols.Location[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_location
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_setpoint
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_location
 ```
 
 ````
