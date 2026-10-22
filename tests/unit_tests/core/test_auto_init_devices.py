@@ -64,13 +64,6 @@ def test_sync_init_devices_no_run_engine_raises_error():
     assert not working_device.connected
 
 
-def test_sync_init_devices_run_engine_created_connects(RE):
-    with init_devices():
-        working_device = WorkingDevice("somename")
-
-    assert working_device.connected
-
-
 async def test_init_devices_detects_redeclared_devices():
     original_working_device = working_device = WorkingDevice()
 

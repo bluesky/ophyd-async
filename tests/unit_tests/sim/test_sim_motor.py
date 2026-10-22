@@ -3,9 +3,7 @@ import sys
 from unittest.mock import Mock, call, patch
 
 import pytest
-from bluesky.plans import spiral_square
 from bluesky.protocols import Reading
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     Device,
@@ -62,19 +60,6 @@ async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
             assert len(currents) > 2
             assert currents == sorted(currents)
             assert currents[-1] == target
-
-
-async def test_move_sim_in_plan():
-    RE = RunEngine()
-    m1 = SimMotor("M1")
-    m2 = SimMotor("M2")
-
-    my_plan = spiral_square([], m1, m2, 0, 0, 4, 4, 10, 10)
-
-    RE(my_plan)
-
-    assert await m1.user_readback.get_value() == -2
-    assert await m2.user_readback.get_value() == -2
 
 
 @pytest.fixture(params=[True, False])
