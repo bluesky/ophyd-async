@@ -8,6 +8,7 @@ import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Command,
     Device,
     DeviceFiller,
     DeviceMap,
@@ -434,6 +435,68 @@ def test_device_filler_appends_underscore_if_signal_shadows_protocol(
 
     # collect shadows bluesky protocol, so should have a trailing underscore
     assert hasattr(device, "collect_")
+
+
+def test_device_filler_fills_annotated_child_from_non_snake_case_name(
+    mock_device_and_filler,
+):
+    device, filler = mock_device_and_filler
+    list(filler.create_signals_from_annotations(filled=False))
+    annotated_signal = device.mandatory_signal
+
+    filler.fill_child_signal("MandatorySignal", SignalRW)
+    # Filling again from the same name, as on reconnect, is allowed
+    filler.fill_child_signal("MandatorySignal", SignalRW)
+    filler.check_filled("test_source")
+
+    assert device.mandatory_signal is annotated_signal
+    assert not hasattr(device, "MandatorySignal")
+
+
+@pytest.mark.parametrize(
+    "fill, child_type",
+    [
+        (DeviceFiller.fill_child_signal, SignalRW),
+        (DeviceFiller.fill_child_device, Device),
+        (DeviceFiller.fill_child_command, Command),
+    ],
+)
+@pytest.mark.parametrize(
+    "name",
+    ["some_child", "SomeChild", "someChild", "Some-Child"],
+)
+def test_device_filler_converts_new_child_names_to_snake_case(
+    mock_device_and_filler, fill, child_type, name
+):
+    device, filler = mock_device_and_filler
+
+    fill(filler, name, child_type)
+
+    assert isinstance(device.some_child, child_type)
+
+
+def test_device_filler_appends_underscore_if_signal_is_a_keyword(
+    mock_device_and_filler,
+):
+    device, filler = mock_device_and_filler
+
+    filler.fill_child_signal("class", SignalRW, None)
+
+    assert hasattr(device, "class_")
+
+
+def test_device_filler_raises_if_two_names_convert_to_the_same_child(
+    mock_device_and_filler,
+):
+    _, filler = mock_device_and_filler
+    filler.fill_child_signal("DuplicateSignal", SignalRW)
+
+    with pytest.raises(
+        TypeError,
+        match="duplicate_signal: "
+        "is served as both 'DuplicateSignal' and 'duplicate_signal'",
+    ):
+        filler.fill_child_signal("duplicate_signal", SignalRW)
 
 
 class DummyDisconnectDevice(Device):
