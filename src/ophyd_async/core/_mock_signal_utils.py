@@ -196,8 +196,10 @@ def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallb
 
 @contextmanager
 def _unset_callback_filter_cm(backend: MockSignalBackend):
-    yield
-    backend.set_mock_callback_filter(None)
+    try:
+        yield
+    finally:
+        backend.set_mock_callback_filter(None)
 
 
 def set_callback_filter(signal: Signal[SignalDatatypeT], filter: MockCallbackFilter):
