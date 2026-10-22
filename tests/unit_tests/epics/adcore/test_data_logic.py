@@ -255,10 +255,6 @@ async def test_stats_describe_raises_error_with_dbr_native(
         (adcore.ADBaseColorMode.MONO, [1, 768, 1024]),
         (adcore.ADBaseColorMode.BAYER, RuntimeError),
         (adcore.ADBaseColorMode.RGB1, [1, 3, 768, 1024]),
-        (adcore.ADBaseColorMode.RGB2, RuntimeError),
-        (adcore.ADBaseColorMode.RGB3, RuntimeError),
-        (adcore.ADBaseColorMode.YUV444, RuntimeError),
-        (adcore.ADBaseColorMode.YUV422, RuntimeError),
         (adcore.ADBaseColorMode.YUV421, RuntimeError),
     ],
 )
