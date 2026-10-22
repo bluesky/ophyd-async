@@ -4,11 +4,14 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 import pytest
+from bluesky import RunEngine
+from bluesky.plan_stubs import rd
 from bluesky.protocols import Reading, Subscribable
 
 from ophyd_async.core import (
     Array1D,
     Callback,
+    Device,
     Signal,
     SignalBackend,
     SignalDatatype,
@@ -16,9 +19,12 @@ from ophyd_async.core import (
     derived_signal_rw,
     derived_signal_w,
     get_mock,
+    init_devices,
+    set_mock_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.testing import (
     BeamstopPosition,
     Exploder,
@@ -324,3 +330,69 @@ async def test_datakey_shape():
         match="Can't make shape for 0.0 with SignalDataType: <class 'numpy.float64'>",
     ):
         await intensity.describe()
+
+
+class DerivedSignalWithSignalRW(Device):
+    def __init__(self, name: str = ""):
+        # Must use epics signals for valid test. Using soft_signal_r_and_setter
+        # doesn't reproduce the same issue.
+        self.sig1 = epics_signal_rw(float, "")
+        self.sig2 = epics_signal_rw(float, "")
+        self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
+        super().__init__(name)
+
+    async def _set(self, value: float):
+        pass
+
+    def _get(self, v1: float, v2: float) -> float:
+        return v1 + v2
+
+
+class DerivedSignalWithSignalR(Device):
+    def __init__(self, name: str = ""):
+        # Must use epics signals for valid test. Using soft_signal_r_and_setter
+        # doesn't reproduce the same issue.
+        self.sig1 = epics_signal_r(float, "")
+        self.sig2 = epics_signal_r(float, "")
+        self.sig3 = derived_signal_rw(self._get, self._set, v1=self.sig1, v2=self.sig2)
+        super().__init__(name)
+
+    async def _set(self, value: float):
+        pass
+
+    def _get(self, v1: float, v2: float) -> float:
+        return v1 + v2
+
+
+@pytest.fixture
+def derived_signal_rw_example() -> DerivedSignalWithSignalRW:
+    with init_devices(mock=True):
+        derived_signal_rw_example = DerivedSignalWithSignalRW()
+    return derived_signal_rw_example
+
+
+@pytest.fixture
+def derived_signal_r_example() -> DerivedSignalWithSignalR:
+    with init_devices(mock=True):
+        derived_signal_r_example = DerivedSignalWithSignalR()
+    return derived_signal_r_example
+
+
+@pytest.mark.parametrize(
+    "fixture_name", ["derived_signal_rw_example", "derived_signal_r_example"]
+)
+async def test_derived_signal_with_bluesky_rd_plan(
+    RE: RunEngine,
+    request: pytest.FixtureRequest,
+    fixture_name: str,
+) -> None:
+    example = request.getfixturevalue(fixture_name)
+    set_mock_value(example.sig1, 2)
+    set_mock_value(example.sig2, 5)
+
+    def test_rd(dev):
+        pos = yield from rd(dev.sig3)
+        assert pos == 7
+
+    assert await example.sig3.get_value() == 7
+    RE(test_rd(example))
