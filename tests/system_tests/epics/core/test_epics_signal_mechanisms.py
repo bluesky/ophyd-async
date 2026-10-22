@@ -567,7 +567,7 @@ def test_signal_module_emits_deprecation_warning():
 async def test_observe_ticking_signal_with_busy_loop(
     ioc_devices: MechanismIocAndDevices, protocol: Protocol
 ):
-    sig = epics_signal_rw(int, ioc_devices.get_pv("ca", "ticking"))
+    sig = epics_signal_rw(int, ioc_devices.get_pv(protocol, "ticking"))
     await sig.connect()
 
     recv = []
