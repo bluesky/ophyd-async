@@ -17,6 +17,7 @@ from ophyd_async.core import (
     SupersetEnum,
     get_dtype,
     get_enum_cls,
+    get_ndim,
     observe_value,
     wait_for_value,
 )
@@ -82,7 +83,12 @@ def get_supported_values(
 def format_datatype(datatype: Any) -> str:
     if get_origin(datatype) is np.ndarray and get_args(datatype):
         dtype = get_dtype(datatype)
-        return f"Array1D[np.{dtype.name}]"
+        ndim = get_ndim(datatype)
+        if ndim == 1:
+            return f"Array1D[np.{dtype.name}]"
+        elif ndim is None:
+            return f"npt.NDArray[np.{dtype.name}]"
+        return f"np.ndarray[{get_args(datatype)[0]}, np.dtype[np.{dtype.name}]]"
     elif get_origin(datatype) is Sequence:
         return f"Sequence[{get_args(datatype)[0].__name__}]"
     elif isinstance(datatype, type):
@@ -99,6 +105,17 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         write_pv: str = "",
         options: EpicsOptions | None = None,
     ):
+        if (
+            datatype is not None
+            and get_origin(datatype) is np.ndarray
+            and get_ndim(datatype) != 1
+        ):
+            # EPICS always knows the rank of an array: waveforms and NTScalarArrays
+            # are 1D, and only an NTNDArray varies, which is spelt np.ndarray
+            raise TypeError(
+                f"Expected Array1D[dtype] or np.ndarray, "
+                f"got {format_datatype(datatype)}"
+            )
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.options = options or EpicsOptions()
