@@ -52,6 +52,32 @@ async def test_init_devices_handles_top_level_errors(caplog):
     assert device_log[0].levelname == "ERROR"
 
 
+async def test_init_devices_calls_connect_hook():
+    calls: list[tuple[str, Device, Exception | None]] = []
+
+    async with init_devices(
+        on_connect_hook=lambda name, dev, err: calls.append((name, dev, err))
+    ):
+        good = WorkingDevice()
+        bad = FailingDevice()
+
+    assert calls[0] == ("good", good, None)
+    assert calls[1][:2] == ("bad", bad)
+    assert isinstance(calls[1][2], AttributeError)
+
+
+@pytest.mark.parametrize(
+    "verbose, expected",
+    [(True, "\nbad: AttributeError\n"), (False, " Failed to connect: bad\n")],
+)
+async def test_init_devices_verbose_controls_error_message(verbose, expected):
+    with pytest.raises(NotConnectedError) as exc:
+        async with init_devices(verbose=verbose):
+            good = WorkingDevice()  # noqa: F841
+            bad = FailingDevice()  # noqa: F841
+    assert str(exc.value) == expected
+
+
 def test_sync_init_devices_no_run_engine_raises_error():
     with pytest.raises(NotConnectedError) as exc:
         with init_devices():
