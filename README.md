@@ -27,7 +27,7 @@ It was written with the aim of implementing fly scanning in a generic and extens
 Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one.
 
 [Bluesky Run Engine]: http://blueskyproject.io/bluesky
-[EPICS]: http://www.aps.anl.gov/epics/
+[EPICS]: https://epics-controls.org/
 [Tango]: https://www.tango-controls.org/
 
 <!-- README only content. Anything below this line won't be included in index.md -->

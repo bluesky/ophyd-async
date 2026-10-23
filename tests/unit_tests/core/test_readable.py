@@ -53,7 +53,6 @@ def test_standard_readable_hints():
 
 def test_standard_readable_hints_raises_when_overriding_string_literal():
     sr = StandardReadable()
-
     hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"gridding": "rectilinear_nonsequential"}
 
@@ -65,8 +64,65 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hints key .* value may not be overridden"):
+    with pytest.raises(RuntimeError, match=r"Hint key .* may not be overridden"):
         sr.hints  # noqa: B018
+
+
+@pytest.mark.parametrize(
+    ["sub_hints", "error"],
+    [
+        ({"fields": "1"}, "'fields' key must be a Sequence, received <class 'str'>"),
+        ({"fields": 1}, "'fields' key must be a Sequence, received <class 'int'>"),
+        (
+            {"dimensions": "1"},
+            "'dimensions' key must be a Sequence, received <class 'str'>",
+        ),
+        (
+            {"dimensions": 1},
+            "'dimensions' key must be a Sequence, received <class 'int'>",
+        ),
+    ],
+)
+def test_incorrect_fields_and_dimensions_in_hints(sub_hints: dict, error: str):
+    sr = StandardReadable()
+    has_hints = MagicMock(spec=HasHints)
+    has_hints.hints = sub_hints
+    sr._has_hints = (has_hints,)
+
+    with pytest.raises(RuntimeError, match=error):
+        sr.hints  # noqa: B018
+
+
+def test_standard_readable_arbitrary_hints():
+    sr = StandardReadable()
+
+    hint1 = MagicMock(spec=HasHints)
+    hint1.hints = {
+        "fields": ["field1"],
+        "common-key": 1,
+        "hint1-key": None,
+        "dimensions": [(["f1", "f2"], "s1")],
+        "gridding": "rectilinear_nonsequential",
+    }
+
+    hint2 = MagicMock(spec=HasHints)
+    hint2.hints = {
+        "fields": ["field2"],
+        "common-key": 2,
+        "hint2-key": None,
+        "dimensions": [(["f3", "f4"], "s1")],
+        "gridding": "rectilinear_nonsequential",
+    }
+
+    sr._has_hints = (
+        hint1,
+        hint2,
+    )
+    assert sr.hints == {
+        "gridding": "rectilinear_nonsequential",
+        "fields": ["field1", "field2"],
+        "dimensions": [(["f1", "f2"], "s1"), (["f3", "f4"], "s1")],
+    }  # Arbitrary keys left out.
 
 
 def test_standard_readable_hints_raises_when_overriding_sequence():
@@ -83,20 +139,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hint fields .* overrides existing hint"):
-        sr.hints  # noqa: B018
-
-
-@pytest.mark.parametrize("invalid_type", [1, 1.0, {"abc": "def"}, {1, 2, 3}])
-def test_standard_readable_hints_invalid_types(invalid_type):
-    sr = StandardReadable()
-
-    hint1 = MagicMock(spec=HasHints)
-    hint1.hints = {"test": invalid_type}
-
-    sr._has_hints = (hint1,)
-
-    with pytest.raises(TypeError, match=r"Unknown type for value .* for key .*"):
+    with pytest.raises(RuntimeError, match=r"Hint 'fields' .* override existing hint"):
         sr.hints  # noqa: B018
 
 

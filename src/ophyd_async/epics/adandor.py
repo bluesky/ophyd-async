@@ -20,8 +20,10 @@ from ophyd_async.epics.adcore import (
     ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
+    NDProcessIO,
     prepare_exposures,
-    trigger_info_from_num_images,
+    prepare_filter,
+    trigger_info_from_driver,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -66,6 +68,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Andor2DriverIO."""
 
     driver: Andor2DriverIO
+    process_plugin: NDProcessIO | None
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME
@@ -78,8 +81,13 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(Andor2TriggerMode.EXT_TRIGGER)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        await prepare_filter(self.process_plugin, exposures_per_collection)
+
     async def default_trigger_info(self):
-        return await trigger_info_from_num_images(self.driver)
+        return await trigger_info_from_driver(
+            self.driver.num_images, self.process_plugin
+        )
 
 
 class AndorDetector(AreaDetector[Andor2DriverIO]):
@@ -88,6 +96,7 @@ class AndorDetector(AreaDetector[Andor2DriverIO]):
     :param prefix: EPICS PV prefix for the detector
     :param writer_factories: Factories for file writer plugins and their data logics
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -98,18 +107,20 @@ class AndorDetector(AreaDetector[Andor2DriverIO]):
         prefix: str,
         *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
+        proc_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = Andor2DriverIO(prefix + driver_suffix)
+        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=Andor2TriggerLogic(driver),
-            plugins=plugins,
+            trigger_logic=Andor2TriggerLogic(driver, proc_plugin),
+            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
             config_sigs=config_sigs,
             name=name,
         )

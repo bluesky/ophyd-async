@@ -10,7 +10,7 @@ from functools import lru_cache
 from typing import Any, Generic, get_args
 
 import numpy as np
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from bluesky.utils import maybe_await
 from event_model import DataKey
 
@@ -197,14 +197,24 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
             except Exception:
                 continue
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the current value, alarm and timestamp."""
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the current value, timestamp and alarm severity.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
         # setp = self.converter.write_value(value)
         # self._setpoint = setp
         self.reading = Reading(
             value=self.converter.write_value(value),
-            timestamp=time.time(),
-            alarm_severity=0,
+            timestamp=time.time() if timestamp is None else timestamp,
+            alarm_severity=alarm_severity,
         )
         if self.callback:
             self.callback(self.reading)
@@ -243,8 +253,8 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         await self._update_value_from_getter()
         return self.reading["value"]
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        return self._setpoint
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        return Location(setpoint=self._setpoint, readback=await self.get_value())
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.callback:

@@ -14,7 +14,7 @@ The first stage is to make a module in the `ophyd-async` repository to put the c
 
 Now you need an IO class that subclasses [](#adcore.ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
 
-For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings.
+For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings. For reference, see the [ADAravis driver documentation](https://areadetector.github.io/areaDetector/ADAravis/ADAravis.html).
 
 ## Add Trigger Logic for detector-specific triggering
 
@@ -24,6 +24,8 @@ Implement methods for each trigger mode your detector supports:
 - `prepare_internal(num, livetime, deadtime)` - Setup for internal triggering (detector generates its own triggers)
 - `prepare_edge(num, livetime)` - Setup for external edge triggering (rising edge starts an internally-timed exposure)
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
+- `prepare_exposures_per_collection(exposures_per_collection)` - If your detector should produce multiple exposures per individual frame written to disk, implement this method to configure the detector to produce the requested number of exposures per collection. For AD detectors, this is typically done with an optional process plugin that will perform a filter over a predefined number of exposures (i.e. an average or sum).
+
 Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 
 If the detector has configuration values that should be captured in the scan then implement:
@@ -36,8 +38,9 @@ To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
 without a preceding `prepare()`, implement:
 - `default_trigger_info()` - Return the [](#TriggerInfo) to use for the implicit
-  prepare. For AD detectors call `await trigger_info_from_num_images(self.driver)` to
-  read back the current `num_images` from the driver rather than resetting it to 1.
+  prepare. For AD detectors call `await trigger_info_from_driver(self.driver.num_images)` to
+  read back the current `num_images` from the driver rather than resetting it to 1. You should also pass a process 
+  plugin to `trigger_info_from_driver()` if your detector uses one to produce multiple exposures per collection.
 
 
 

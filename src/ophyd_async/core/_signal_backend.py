@@ -4,7 +4,7 @@ from typing import Generic, TypedDict, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._datatypes import Array1D, Table
@@ -111,8 +111,8 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """Return the current value."""
 
     @abstractmethod
-    async def get_setpoint(self) -> SignalDatatypeT:
-        """Return the point that a signal was requested to move to."""
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        """Return the setpoint and readback in a single fetch."""
 
     @abstractmethod
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
