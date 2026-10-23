@@ -9,6 +9,7 @@ from ophyd_async.core import (
     Device,
     NotConnectedError,
     init_devices,
+    print_connection_status,
     set_mock_value,
 )
 from ophyd_async.epics import motor
@@ -50,6 +51,31 @@ async def test_init_devices_handles_top_level_errors(caplog):
 
     assert len(device_log) == 1
     assert device_log[0].levelname == "ERROR"
+
+
+async def test_init_devices_calls_connect_hook():
+    calls: list[tuple[str, Device, Exception | None]] = []
+
+    async with init_devices(
+        on_connect_hook=lambda name, dev, err: calls.append((name, dev, err))
+    ):
+        good = WorkingDevice()
+        bad = FailingDevice()
+
+    assert calls[0] == ("good", good, None)
+    assert calls[1][:2] == ("bad", bad)
+    assert isinstance(calls[1][2], AttributeError)
+
+
+async def test_init_devices_print_connection_status(capsys):
+    async with init_devices(on_connect_hook=print_connection_status):
+        good = WorkingDevice()  # noqa: F841
+        bad = FailingDevice()  # noqa: F841
+
+    assert capsys.readouterr().out == (
+        f"  good {'.' * 36} [\033[1;32m   OK   \033[0m]\n"
+        f"  bad {'.' * 37} [\033[1;31m FAILED \033[0m]\n"
+    )
 
 
 def test_sync_init_devices_no_run_engine_raises_error():

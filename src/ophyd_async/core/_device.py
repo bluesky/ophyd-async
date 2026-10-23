@@ -559,6 +559,7 @@ def init_devices(
     connect: bool = True,
     mock: bool = False,
     timeout: float = 10.0,
+    on_connect_hook: Callable[[str, Device, Exception | None], None] | None = None,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.
 
@@ -571,8 +572,14 @@ def init_devices(
         created within the context manager.
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
+    :param on_connect_hook:
+        Called with `(variable_name, device, error)` for each Device after
+        connecting, where `error` is None if it succeeded. If given,
+        `NotConnectedError` is not raised, so the hook is responsible for
+        handling failures. See [](#print_connection_status) for an example.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
-    :raises NotConnectedError: If devices could not be connected.
+    :raises NotConnectedError:
+        If devices could not be connected and `on_connect_hook` is not given.
 
     For example, to connect and name 2 motors in parallel:
     ```python
@@ -593,9 +600,39 @@ def init_devices(
             coros = {
                 name: device.connect(mock, timeout) for name, device in devices.items()
             }
-            await wait_for_connection(**coros)
+            failures: Mapping[str, Exception] = {}
+            try:
+                await wait_for_connection(**coros)
+            except NotConnectedError as exc:
+                if on_connect_hook is None:
+                    raise
+                failures = exc.sub_errors
+            if on_connect_hook:
+                for name, device in devices.items():
+                    on_connect_hook(name, device, failures.get(name))
 
     return DeviceProcessor(process_devices)
+
+
+def print_connection_status(name: str, device: Device, error: Exception | None):
+    """Print a coloured OK/FAILED line for a Device, for use as `on_connect_hook`.
+
+    :param name: The variable name of the Device.
+    :param device: The Device that was connected.
+    :param error: The exception raised while connecting, or None if it succeeded.
+
+    For example:
+    ```python
+    [async] with init_devices(on_connect_hook=print_connection_status):
+        t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
+    ```
+    """
+    dots = "." * (40 - len(name))
+    if error is None:
+        status = "\033[1;32m   OK   \033[0m"
+    else:
+        status = "\033[1;31m FAILED \033[0m"
+    print(f"  {name} {dots} [{status}]")
 
 
 def default_mock_class(
