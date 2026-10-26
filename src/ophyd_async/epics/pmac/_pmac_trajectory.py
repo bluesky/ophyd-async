@@ -179,7 +179,7 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
                 if status == PmacStatus.SUCCESS:
                     return
         except TimeoutError as exc:
-            if status is None:
+            if status is not None:
                 message = await message_signal.get_value()
                 raise ValueError(
                     f"PMAC profile {status_signal.name} '{status}' "

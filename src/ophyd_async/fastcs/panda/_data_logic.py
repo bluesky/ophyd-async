@@ -33,7 +33,7 @@ class PandaHDFDataLogic(DetectorDataLogic):
         await self.data_block.create_directory.set(path_info.create_dir_depth)
         # Setup the HDF writer
         await asyncio.gather(
-            self.data_block.flush_period.set(0),
+            self.data_block.flush_period.set(0.5),
             self.data_block.hdf_directory.set(str(path_info.directory_path)),
             self.data_block.hdf_file_name.set(
                 f"{path_info.filename}.h5",

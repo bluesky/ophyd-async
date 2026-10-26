@@ -6,6 +6,7 @@ from ._block import (
     PandaCaptureMode,
     PandaPcompDirection,
     PandaPosMux,
+    PandaSeqWrite,
     PandaTimeUnits,
     PcapBlock,
     PcompBlock,
@@ -56,4 +57,5 @@ __all__ = [
     "ScanSpecSeqTableFlyableLogic",
     "PosOutScaleOffset",
     "apply_panda_settings",
+    "PandaSeqWrite",
 ]

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+from collections import deque
 from dataclasses import dataclass, field
+from math import ceil
 from typing import cast
 
 import numpy as np
@@ -33,9 +35,8 @@ from ._block import (
 )
 from ._table import SeqTable, SeqTrigger
 
-MAX_REPEATS = 2**16 - 1
-PANDA_SLICE_SIZE = 62500
-PANDA_QUEUE_THRESHOLD = 1000
+MAX_REPEATS = 2**16 - 1  # Maximum number of repeats for the PandA SeqTable row
+MAX_TABLE_ROWS = 62500  # Panda SeqTable maximum number of rows
 
 
 @dataclass
@@ -45,6 +46,9 @@ class PandaPrepareContext:
     scale: float
     offset: float
     has_pos_out: bool
+    points_per_write: int
+    # Get the lengths of the last two table written to set the refill treshold
+    last_table_lengths: deque[int] = field(default_factory=lambda: deque(maxlen=2))
 
 
 class SeqTableInfo(ConfinedModel):
@@ -109,14 +113,24 @@ class PosOutScaleOffset:
 class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContext]):
     seq: SeqBlock
     motor_pos_outs: dict[Motor, PosOutScaleOffset] = field(default_factory=dict)
-    _append_status: AsyncStatus | None = None  # Put in pandapreparecontext
+    _append_status: AsyncStatus | None = None
 
-    def _append_to_table(self, repeats: int):
+    def _split_repeats(self, repeats: int):
         filled_rows, remainder = divmod(repeats, MAX_REPEATS)
         repeats_list = [MAX_REPEATS] * filled_rows
         if remainder:
             repeats_list.append(remainder)
         return repeats_list
+
+    def _points_per_write(self, path: Path, has_pos_out: bool) -> int:
+        window_length = len(path.stack[-1])
+        rows_per_window = (
+            2  # BITA_0 and BITA_1
+            + (1 if has_pos_out else 0)
+            + ceil(window_length / MAX_REPEATS)
+        )
+        windows = max(1, MAX_TABLE_ROWS // rows_per_window)
+        return windows * window_length
 
     async def _get_pos_out_scale_offset(self, slice: Slice):
         fast_axis = slice.axes()[-1]
@@ -175,7 +189,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
 
             # Time based Triggers
             repeats = end - start
-            for repeat in self._append_to_table(repeats):
+            for repeat in self._split_repeats(repeats):
                 rows += SeqTable.row(
                     repeats=repeat,
                     trigger=SeqTrigger.IMMEDIATE,
@@ -187,60 +201,60 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
 
         return rows
 
-    async def _append_and_monitor(self):
-        ctx = error_if_none(PandaPrepareContext, "Missing prepare context")
+    async def _append_to_table(self, ctx: PandaPrepareContext) -> None:
         table_next_write = error_if_none(
             self.seq.table_next_write,
             "table_next_write signal is not available on this PandA",
         )
+        remaining_points = len(ctx.path)
+        if remaining_points < ctx.points_per_write:
+            path_slice = ctx.path.consume(remaining_points)
+        else:
+            path_slice = ctx.path.consume(ctx.points_per_write)
+        rows = self._build_rows(
+            path_slice,
+            ctx.deadtime,
+            ctx.scale,
+            ctx.offset,
+            ctx.has_pos_out,
+        )
+        if len(ctx.last_table_lengths) == 0:
+            next_write = PandaSeqWrite.APPEND
+        elif len(ctx.path) == 0:
+            await asyncio.sleep(5)
+            next_write = PandaSeqWrite.APPEND_LAST
+        else:
+            await asyncio.sleep(5)
+            next_write = PandaSeqWrite.APPEND
+            await asyncio.sleep(5)
+        await table_next_write.set(next_write)
+        await self.seq.table.set(rows)
+        ctx.last_table_lengths.append(len(rows))
 
-        table_queued_lines = error_if_none(
-            self.seq.table_queued_lines,
-            "table_queued_lines signal is not available on this PandA",
+    async def _append_and_monitor(self, ctx: PandaPrepareContext):
+
+        table_line = error_if_none(
+            self.seq.table_line,
+            "table_line signal is not available on this PandA",
         )
 
-        async for queued_lines in observe_value(table_queued_lines):
-            if len(ctx.path) == 0:
-                return
-            if queued_lines >= PANDA_QUEUE_THRESHOLD:
+        async for line in observe_value(table_line):
+            processed_lines = 0
+            processed_lines += ctx.last_table_lengths[-1]
+            if line <= processed_lines:
                 continue
-            next_slice = ctx.path.consume(PANDA_SLICE_SIZE)
-            next_rows = self._build_rows(
-                next_slice,
-                ctx.deadtime,
-                ctx.scale,
-                ctx.offset,
-                ctx.has_pos_out,
-            )
-
-            is_last = len(ctx.path) == 0
-            await table_next_write.set(
-                PandaSeqWrite.APPEND_LAST if is_last else PandaSeqWrite.APPEND
-            )
-            await self.seq.table.set(next_rows)
-
-            if is_last:
-                return
+            else:
+                await self._append_to_table(ctx)
 
     async def on_prepare(self, value: ScanSpecInfo) -> PandaPrepareContext:
         await self.seq.enable.set(PandaBitMux.ZERO)
         path = Path(value.spec.calculate())
-        first_slice = path.consume(PANDA_SLICE_SIZE)
-
         (
             has_pos_out,
             compare_pos_name,
             scale,
             offset,
-        ) = await self._get_pos_out_scale_offset(first_slice)
-
-        rows = self._build_rows(
-            first_slice,
-            deadtime=value.deadtime,
-            scale=scale,
-            offset=offset,
-            has_pos_out=has_pos_out,
-        )
+        ) = await self._get_pos_out_scale_offset(Path(path.stack, 0, 1).consume())
 
         ctx = PandaPrepareContext(
             path=path,
@@ -248,16 +262,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
             scale=scale,
             offset=offset,
             has_pos_out=has_pos_out,
-        )
-
-        if len(path) > 0:
-            error_if_none(
-                self.seq.table_next_write,
-                "table_next_write is unavailable on this PandA",
-            )
-        error_if_none(
-            self.seq.table_queued_lines,
-            "table_queued_lines is unavailable on this PandA",
+            points_per_write=self._points_per_write(path, has_pos_out),
         )
 
         # Need to do units before value for PandA, otherwise it scales the current value
@@ -266,8 +271,16 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
             self.seq.posa.set(compare_pos_name),
             self.seq.prescale.set(1.0),
             self.seq.repeats.set(1),
-            self.seq.table.set(rows),
         )
+        table_clear = error_if_none(
+            self.seq.table_clear,
+            "table_clear signal is not available on this PandA",
+        )
+        if table_clear is not None:
+            await table_clear.trigger()
+        await self._append_to_table(ctx)
+        if len(ctx.path) > 0:
+            await self._append_to_table(ctx)
         return ctx
 
     async def on_kickoff(self, ctx: PandaPrepareContext) -> PandaPrepareContext:
@@ -275,7 +288,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         await wait_for_value(self.seq.active, True, timeout=1)
 
         if len(ctx.path) > 0:
-            self._append_status = AsyncStatus(self._append_and_monitor())
+            self._append_status = AsyncStatus(self._append_and_monitor(ctx))
         return ctx
 
     async def on_complete(self, ctx: PandaPrepareContext) -> None:

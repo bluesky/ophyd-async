@@ -86,7 +86,7 @@ class SeqTable(Table):
         # Used to check max_length. Unfortunately trying the ``max_length`` arg in
         # the pydantic field doesn't work.
         first_length = len(self)
-        max_length = 4096
+        max_length = 62500
         if first_length > max_length:
             msg = f"Length {first_length} is too long"
             raise ValueError(msg)

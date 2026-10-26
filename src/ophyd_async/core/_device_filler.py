@@ -199,15 +199,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         hints = cached_get_type_hints(cls)
         # Get hints with Annotated for wrapping signals and backends
         extra_hints = cached_get_type_hints(cls, include_extras=True)
+
         for attr_name, annotation in hints.items():
             if annotation is Ignore:
                 self.ignored_signals.add(attr_name)
             name = UniqueName(attr_name)
             origin = get_origin_class(annotation)
             args = get_args(annotation)
-
             if (
-                cached_get_origin(annotation) is Union
+                cached_get_origin(annotation) in (Union, types.UnionType)
                 and types.NoneType in args
                 and len(args) == 2
             ):
