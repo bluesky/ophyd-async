@@ -166,7 +166,7 @@ instead of the driver's.
 For detectors that acquire continuously, use [](#adcore.ADContAcqTriggerLogic) instead of creating custom trigger logic. This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to capture frames while the detector runs continuously.
 
 Requirements:
-- Your AD IOC must have a circular buffer plugin configured
+- Your AD IOC must have a circular buffer plugin configured, reading directly from the driver. Otherwise, frames queued in an intermediate plugin would pass the gate long after they were exposed.
 - The plugin output should be fed to the file writer
 - The detector should already be acquiring continuously before use
 

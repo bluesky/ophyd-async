@@ -241,3 +241,16 @@ async def test_cont_acq_interrupted_frame_wait_keeps_gate_closed(cancel: bool):
     assert await driver.acquire.get_value()
     await det.unstage()
     assert not await cb.capture.get_value()
+
+
+async def test_cont_acq_requires_cb_fed_by_driver(
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
+):
+    cb = cont_acq_detector.get_plugin("cb", adcore.NDCircularBuffIO)
+    set_mock_value(cont_acq_detector.driver.port_name, "DRV1")
+    set_mock_value(cb.nd_array_port, "PROC1")
+    with pytest.raises(
+        RuntimeError,
+        match="CB plugin NDArrayPort is 'PROC1', but must be the driver port 'DRV1'",
+    ):
+        await cont_acq_detector.stage()

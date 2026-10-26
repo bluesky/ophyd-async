@@ -50,6 +50,9 @@ class ADAcquireLogic(DetectorAcquireLogic):
 class ADContAcqAcquireLogic(DetectorAcquireLogic):
     """Gate continuous acquisition using the circular buffer (CB) plugin.
 
+    The CB plugin must read directly from the driver, so `stage()` raises if its
+    `NDArrayPort` is not the driver's port.
+
     :param driver: The continuously acquiring detector driver
     :param cb_plugin: The circular buffer plugin gating downstream plugins
     :param num_frames_to_skip:
@@ -66,6 +69,20 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.num_frames_to_skip = num_frames_to_skip
+
+    async def ensure_ready(self):
+        cb_input_port, driver_port = await asyncio.gather(
+            self.cb_plugin.nd_array_port.get_value(),
+            self.driver.port_name.get_value(),
+        )
+        # Frames queued in plugins between the driver and CB would pass the gate
+        # long after they were exposed.
+        if cb_input_port != driver_port:
+            raise RuntimeError(
+                f"CB plugin NDArrayPort is {cb_input_port!r}, but must be the "
+                f"driver port {driver_port!r}"
+            )
+        await self.ensure_stopped()
 
     async def start_acquiring(self):
         num_frames_to_skip = self.num_frames_to_skip
