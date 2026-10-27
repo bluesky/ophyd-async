@@ -173,3 +173,11 @@ async def test_motor_set_with_instant_mock(
     await status
     assert status.success
     assert await movable.readback.get_value() == -50.0
+
+
+def test_movable_without_movable_logic_raises():
+    class NoLogicMovable(StandardMovable[float]):
+        pass
+
+    with pytest.raises(TypeError, match="movable_logic"):
+        NoLogicMovable()  # pyright: ignore[reportAbstractUsage]
