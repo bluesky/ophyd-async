@@ -116,6 +116,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
     _append_status: AsyncStatus | None = None
 
     def _split_repeats(self, repeats: int):
+        """Split the total number of repeats into chunks of MAX_REPEATS."""
         filled_rows, remainder = divmod(repeats, MAX_REPEATS)
         repeats_list = [MAX_REPEATS] * filled_rows
         if remainder:
@@ -123,6 +124,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         return repeats_list
 
     def _points_per_write(self, path: Path, has_pos_out: bool) -> int:
+        """Calculate the number of points that can be written per table write."""
         window_length = len(path.stack[-1])
         rows_per_window = (
             2  # BITA_0 and BITA_1
@@ -133,6 +135,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         return windows * window_length
 
     async def _get_pos_out_scale_offset(self, slice: Slice):
+        """Get the scale and offset for the fast axis motor."""
         fast_axis = slice.axes()[-1]
         pos_out = self.motor_pos_outs.get(fast_axis)
         # If we have a motor to compare against, get its scale and offset
@@ -158,6 +161,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         offset: float,
         has_pos_out: bool,
     ) -> SeqTable:
+        """Build the sequence table rows for the given slice."""
         # Start of window is where the is a gap to the previous point
         slice_duration = error_if_none(slice.duration, "Slice must have duration")
         window_start = np.nonzero(slice.gap)[0]
@@ -202,6 +206,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         return rows
 
     async def _append_to_table(self, ctx: PandaPrepareContext) -> None:
+        """Append the built rows to the PandA sequence table."""
         table_next_write = error_if_none(
             self.seq.table_next_write,
             "table_next_write signal is not available on this PandA",
@@ -232,7 +237,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         ctx.last_table_lengths.append(len(rows))
 
     async def _append_and_monitor(self, ctx: PandaPrepareContext):
-
+        """Continuously monitor the table line and append new rows as needed."""
         table_line = error_if_none(
             self.seq.table_line,
             "table_line signal is not available on this PandA",
@@ -247,6 +252,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
                 await self._append_to_table(ctx)
 
     async def on_prepare(self, value: ScanSpecInfo) -> PandaPrepareContext:
+        """Prepare the PandA bysetting up the sequence table and initial context."""
         await self.seq.enable.set(PandaBitMux.ZERO)
         path = Path(value.spec.calculate())
         (
@@ -284,6 +290,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         return ctx
 
     async def on_kickoff(self, ctx: PandaPrepareContext) -> PandaPrepareContext:
+        """Kick off the PandA sequence for fly scanning."""
         await self.seq.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
 
@@ -292,6 +299,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         return ctx
 
     async def on_complete(self, ctx: PandaPrepareContext) -> None:
+        """Wait for the PandA sequence to complete and clean up the append status."""
         if self._append_status is not None:
             await self._append_status
             self._append_status = None
@@ -299,6 +307,7 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, PandaPrepareContex
         await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
+        """Stop the PandA sequence and cancel any ongoing table appends."""
         if self._append_status is not None:
             self._append_status.task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
