@@ -15,10 +15,10 @@ from ophyd_async.core import (
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
-    cached_get_origin,
     get_dtype,
     get_enum_cls,
     get_ndim,
+    get_unaliased_origin,
     observe_value,
     wait_for_value,
 )
@@ -82,8 +82,12 @@ def get_supported_values(
 
 
 def format_datatype(datatype: Any) -> str:
-    if cached_get_origin(datatype) is np.ndarray and get_args(datatype):
-        dtype = get_dtype(datatype)
+    if get_unaliased_origin(datatype) is np.ndarray and get_args(datatype):
+        try:
+            dtype = get_dtype(datatype)
+        except TypeError:
+            # Only used in error messages, so don't replace them with this one
+            return str(datatype)
         ndim = get_ndim(datatype)
         if ndim == 1:
             return f"Array1D[np.{dtype.name}]"
@@ -108,7 +112,7 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
     ):
         if (
             datatype is not None
-            and get_origin(datatype) is np.ndarray
+            and get_unaliased_origin(datatype) is np.ndarray
             and get_ndim(datatype) != 1
         ):
             # EPICS always knows the rank of an array: waveforms and NTScalarArrays
