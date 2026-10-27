@@ -62,9 +62,11 @@ async def test_init_devices_calls_connect_hook():
         good = WorkingDevice()
         bad = FailingDevice()
 
-    assert calls[0] == ("good", good, None)
-    assert calls[1][:2] == ("bad", bad)
-    assert isinstance(calls[1][2], AttributeError)
+    by_name = {name: (dev, err) for name, dev, err in calls}
+    assert len(calls) == 2
+    assert by_name["good"] == (good, None)
+    assert by_name["bad"][0] is bad
+    assert isinstance(by_name["bad"][1], AttributeError)
 
 
 async def test_init_devices_print_connection_status(capsys):
@@ -72,10 +74,10 @@ async def test_init_devices_print_connection_status(capsys):
         good = WorkingDevice()  # noqa: F841
         bad = FailingDevice()  # noqa: F841
 
-    assert capsys.readouterr().out == (
-        f"  good {'.' * 36} [\033[1;32m   OK   \033[0m]\n"
-        f"  bad {'.' * 37} [\033[1;31m FAILED \033[0m]\n"
-    )
+    assert sorted(capsys.readouterr().out.splitlines()) == [
+        f"  bad {'.' * 37} [\033[1;31m FAILED \033[0m]",
+        f"  good {'.' * 36} [\033[1;32m   OK   \033[0m]",
+    ]
 
 
 def test_sync_init_devices_no_run_engine_raises_error():

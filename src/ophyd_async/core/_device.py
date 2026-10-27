@@ -573,8 +573,9 @@ def init_devices(
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
     :param on_connect_hook:
-        Called with `(variable_name, device, error)` for each Device after
-        connecting, where `error` is None if it succeeded. If given,
+        Called with `(variable_name, device, error)` for each Device as soon as
+        it finishes connecting (so in completion order, not declaration order),
+        where `error` is None if it succeeded. If given,
         `NotConnectedError` is not raised, so the hook is responsible for
         handling failures. See [](#print_connection_status) for an example.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
@@ -597,19 +598,27 @@ def init_devices(
                 if not device.name:
                     device.set_name(name, child_name_separator=child_name_separator)
         if connect:
-            coros = {
-                name: device.connect(mock, timeout) for name, device in devices.items()
-            }
-            failures: Mapping[str, Exception] = {}
+
+            async def _connect_and_report(name: str, device: Device):
+                try:
+                    await device.connect(mock, timeout)
+                except Exception as exc:
+                    if on_connect_hook:
+                        on_connect_hook(name, device, exc)
+                    raise
+                if on_connect_hook:
+                    on_connect_hook(name, device, None)
+
             try:
-                await wait_for_connection(**coros)
-            except NotConnectedError as exc:
+                await wait_for_connection(
+                    **{
+                        name: _connect_and_report(name, device)
+                        for name, device in devices.items()
+                    }
+                )
+            except NotConnectedError:
                 if on_connect_hook is None:
                     raise
-                failures = exc.sub_errors
-            if on_connect_hook:
-                for name, device in devices.items():
-                    on_connect_hook(name, device, failures.get(name))
 
     return DeviceProcessor(process_devices)
 
