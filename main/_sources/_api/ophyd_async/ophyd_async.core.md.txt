@@ -483,6 +483,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.get_enum_cls
     :summary:
     ```
+* - {py:obj}`get_ndim <ophyd_async.core._utils.get_ndim>`
+  - ```{autodoc2-docstring} ophyd_async.core._utils.get_ndim
+    :summary:
+    ```
 * - {py:obj}`get_unique <ophyd_async.core._utils.get_unique>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.get_unique
     :summary:
@@ -3745,6 +3749,13 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.get_enum_cls
 
 ```{autodoc2-docstring} ophyd_async.core._utils.get_enum_cls
+```
+````
+
+````{py:function} get_ndim(datatype: type) -> int | None
+:canonical: ophyd_async.core._utils.get_ndim
+
+```{autodoc2-docstring} ophyd_async.core._utils.get_ndim
 ```
 ````
 

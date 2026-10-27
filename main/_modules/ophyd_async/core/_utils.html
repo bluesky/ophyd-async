@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.21.4.dev18+gde097ace3 documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.21.4.dev19+g97cbb88dd documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=ac0baf89"></script>
+    <script src="../../../_static/documentation_options.js?v=e9947650"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
   
   
 </a></div>
@@ -1175,6 +1175,34 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]</span>
     <span class="c1"># so extract numpy.float64 from it</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="get_ndim">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_ndim">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_ndim</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the number of dimensions from a numpy ndarray type annotation.</span>
+
+<span class="sd">    Returns None if the annotation leaves the shape unconstrained, as in</span>
+<span class="sd">    `np.ndarray[Any, np.dtype[np.int8]]` or `npt.NDArray[np.int8]`.</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    &gt;&gt;&gt; from ophyd_async.core import Array1D</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; get_ndim(Array1D[np.int8])</span>
+<span class="sd">    1</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Array1D[dtype], got </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># datatype = numpy.ndarray[tuple[int], numpy.dtype[numpy.int8]]</span>
+    <span class="c1"># so the number of shape arguments is the number of dimensions, unless it is</span>
+    <span class="c1"># variadic (tuple[Any, ...]) or unparametrized (Any)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">shape</span> <span class="ow">or</span> <span class="bp">Ellipsis</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span></div>
 
 
 

@@ -185,7 +185,7 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.S
 
 ````{py:attribute} float64_image
 :canonical: ophyd_async.tango.testing._test_device.TangoTestDevice.float64_image
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float64]]], TangoPolling(0.1)]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~numpy.typing.NDArray[~numpy.float64]], TangoPolling(0.1)]
 :value: >
    None
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.21.4.dev18+gde097ace3 documentation</title>
+    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.21.4.dev19+g97cbb88dd documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=ac0baf89"></script>
+    <script src="../../../../_static/documentation_options.js?v=e9947650"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
   
   
 </a></div>
@@ -917,6 +917,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">SupersetEnum</span><span class="p">,</span>
     <span class="n">get_dtype</span><span class="p">,</span>
     <span class="n">get_enum_cls</span><span class="p">,</span>
+    <span class="n">get_ndim</span><span class="p">,</span>
     <span class="n">observe_value</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
@@ -985,7 +986,12 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">format_datatype</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="ow">and</span> <span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">):</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Array1D[np.</span><span class="si">{</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">get_ndim</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Array1D[np.</span><span class="si">{</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="k">elif</span> <span class="n">ndim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;npt.NDArray[np.</span><span class="si">{</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;np.ndarray[</span><span class="si">{</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, np.dtype[np.</span><span class="si">{</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]]&quot;</span>
     <span class="k">elif</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Sequence[</span><span class="si">{</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">]&quot;</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
@@ -1002,6 +1008,17 @@ window.runMermaid = runMermaid;</script>
         <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">EpicsOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">datatype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+            <span class="ow">and</span> <span class="n">get_ndim</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="c1"># EPICS always knows the rank of an array: waveforms and NTScalarArrays</span>
+            <span class="c1"># are 1D, and only an NTNDArray varies, which is spelt np.ndarray</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected Array1D[dtype] or np.ndarray, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">format_datatype</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">read_pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">write_pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span> <span class="ow">or</span> <span class="n">EpicsOptions</span><span class="p">()</span>

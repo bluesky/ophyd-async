@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.21.4.dev18+gde097ace3 documentation</title>
+    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.21.4.dev19+g97cbb88dd documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=ac0baf89"></script>
+    <script src="../../../_static/documentation_options.js?v=e9947650"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev18+gde097ace3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
   
   
 </a></div>
@@ -903,6 +903,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="n">TypeVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Location</span><span class="p">,</span> <span class="n">Reading</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Dtype</span><span class="p">,</span> <span class="n">Limits</span>
 
@@ -932,6 +933,17 @@ window.runMermaid = runMermaid;</script>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]</span>
@@ -944,10 +956,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">- A python primitive [](#bool), [](#int), [](#float), [](#str)</span>
 <span class="sd">- An [](#EnumTypes) subclass</span>
 <span class="sd">- A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float</span>
+<span class="sd">- A fixed datatype `npt.NDArray` of the same, which can change dimensions at runtime</span>
 <span class="sd">- A [](#numpy.ndarray) which can change dimensions and datatype at runtime</span>
 <span class="sd">- A sequence of [](#str)</span>
 <span class="sd">- A sequence of [](#EnumTypes) subclasses</span>
 <span class="sd">- A [](#Table) subclass</span>
+
+<span class="sd">See [](#choose-array-datatypes) for which of the array spellings each backend</span>
+<span class="sd">accepts.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="c1"># TODO: These typevars will not be needed when we drop python 3.11</span>
 <span class="c1"># as you can do MyConverter[SignalType: SignalTypeUnion]:</span>
