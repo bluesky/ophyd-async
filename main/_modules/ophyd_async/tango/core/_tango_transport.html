@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.21.4.dev19+g97cbb88dd documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.21.4.dev20+g02547df0e documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=e9947650"></script>
+    <script src="../../../../_static/documentation_options.js?v=7e9e4f55"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev19+g97cbb88dd documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev20+g02547df0e documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev20+g02547df0e documentation - Home"/>
   
   
 </a></div>
@@ -898,12 +898,15 @@ window.runMermaid = runMermaid;</script>
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.tango.core._tango_transport</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoroutineType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">ParamSpec</span><span class="p">,</span>
@@ -921,7 +924,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AttrDataFormat</span><span class="p">,</span>
     <span class="n">CmdArgType</span><span class="p">,</span>
-    <span class="n">DevFailed</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+    <span class="n">DevFailed</span><span class="p">,</span>
     <span class="n">DeviceProxy</span><span class="p">,</span>
     <span class="n">DevState</span><span class="p">,</span>
     <span class="n">EventType</span><span class="p">,</span>
@@ -980,18 +983,18 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="ensure_proper_executor">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.ensure_proper_executor">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_proper_executor</span><span class="p">(</span>
-    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]]:</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure decorated method has a proper asyncio executor.&quot;&quot;&quot;</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
-        <span class="n">current_executor</span><span class="p">:</span> <span class="n">AsyncioExecutor</span> <span class="o">=</span> <span class="n">get_global_executor</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_executor</span><span class="o">.</span><span class="n">in_executor_context</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+        <span class="n">current_executor</span><span class="p">:</span> <span class="n">AsyncioExecutor</span> <span class="o">=</span> <span class="n">get_global_executor</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_executor</span><span class="o">.</span><span class="n">in_executor_context</span><span class="p">():</span>
             <span class="n">set_global_executor</span><span class="p">(</span><span class="n">AsyncioExecutor</span><span class="p">())</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">wrapper</span>  <span class="c1"># type: ignore[return-value]</span></div>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
 
 
 
@@ -1187,7 +1190,7 @@ window.runMermaid = runMermaid;</script>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set polling parameters.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="s2">&quot;TangoConverter&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">TangoConverter</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span> <span class="o">=</span> <span class="n">converter</span>
 
 
@@ -1240,7 +1243,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.get">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
         <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
@@ -1248,7 +1251,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.get_w_value">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_w_value">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
         <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">w_value</span><span class="p">)</span></div>
 
@@ -1256,7 +1259,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.put">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.put">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># TODO: remove the timeout from this as it is handled at the signal level</span>
@@ -1279,14 +1282,14 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AttributeProxy.get_config">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeConfig</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeConfig</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="AttributeProxy.get_reading">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_reading">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
         <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
             <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
@@ -1559,7 +1562,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="CommandProxy.get_config">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandConfig</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandConfig</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 

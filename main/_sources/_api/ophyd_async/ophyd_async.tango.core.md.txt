@@ -662,7 +662,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-````{py:function} ensure_proper_executor(func: ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]) -> ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]
+````{py:function} ensure_proper_executor(func: ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~types.CoroutineType[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]) -> ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~types.CoroutineType[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]
 :canonical: ophyd_async.tango.core._tango_transport.ensure_proper_executor
 
 ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.ensure_proper_executor
