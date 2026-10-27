@@ -1,10 +1,8 @@
 import asyncio
 import time
-from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from functools import cached_property
 from typing import Generic
 
 from bluesky.protocols import (
@@ -26,6 +24,7 @@ from ._utils import (
     CalculatableTimeout,
     Callback,
     WatcherUpdate,
+    abstract_cached_property,
 )
 
 
@@ -48,7 +47,7 @@ TimeoutCalculator = Callable[[], float | None]
 
 
 @dataclass
-class MovableLogic(ABC, Generic[SignalDatatypeT]):
+class MovableLogic(Generic[SignalDatatypeT]):
     """Minimum logic needed for controlling a `StandardMovable`.
 
     Can be inherited to add specialised logic for stop, checking if a move is valid,
@@ -142,8 +141,7 @@ class StandardMovable(
     _stop_state: Enum = StopState.NONE
     _move_status: AsyncStatus | None = None
 
-    @cached_property
-    @abstractmethod
+    @abstract_cached_property
     def movable_logic(self) -> MovableLogic:
         """The logic object that describes how this device moves.
 
@@ -152,6 +150,7 @@ class StandardMovable(
         `readback` signals directly. Subclasses must implement this as a
         `@cached_property` that returns a `MovableLogic` instance.
         """
+        raise NotImplementedError
 
     async def check_value(self, value: SignalDatatypeT) -> None:
         """Check the move is valid before doing it."""
