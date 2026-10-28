@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
@@ -12,8 +13,8 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    DeviceMock,
     DeviceVector,
-    LazyMock,
     NotConnectedError,
     Signal,
 )
@@ -132,7 +133,7 @@ class TangoDeviceConnector(DeviceConnector):
 
             self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: DeviceMock):
         if isinstance(device, DeviceVector):
             # Make 2 entries for this DeviceVector
             self.filler.create_device_dict_entries_to_mock([1, 2])
@@ -140,7 +141,13 @@ class TangoDeviceConnector(DeviceConnector):
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
 
-    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
+    async def connect_real(
+        self,
+        device: Device,
+        timeout: float,
+        force_reconnect: bool,
+        mock_types: Mapping[type[Device], bool | type[DeviceMock]],
+    ):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
         try:
@@ -195,4 +202,4 @@ class TangoDeviceConnector(DeviceConnector):
 
         # Set the name of the device to name all children
         device.set_name(device.name)
-        return await super().connect_real(device, timeout, force_reconnect)
+        return await super().connect_real(device, timeout, force_reconnect, mock_types)
