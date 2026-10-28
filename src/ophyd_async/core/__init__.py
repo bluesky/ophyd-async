@@ -165,6 +165,7 @@ from ._utils import (
     in_micros,
     non_zero,
     simulate_move,
+    to_snake_case,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -331,6 +332,7 @@ __all__ = [
     "Ignore",
     "non_zero",
     "simulate_move",
+    "to_snake_case",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
