@@ -847,10 +847,8 @@ async def test_type_mismatch_array(tango_test_device):
     with pytest.raises(TypeError) as exc:
         await transport.connect(1)
     val = str(exc.value)
-    assert "has type numpy.ndarray" in val
-    assert "numpy.dtype" in val
-    assert "float" in val
-    assert "int" in val
+    assert f"has type {npt.NDArray[float]!r}" in val
+    assert f"expected {npt.NDArray[int]!r}" in val
 
 
 @pytest.mark.asyncio

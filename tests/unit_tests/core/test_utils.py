@@ -2,17 +2,24 @@ import asyncio
 import re
 import sys
 from asyncio import CancelledError
+from collections.abc import Sequence
 
+import numpy as np
+import numpy.typing as npt
 import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Array1D,
     Device,
     gather_dict,
+    get_dtype,
+    get_unaliased_origin,
     init_devices,
     SoftSignalBackend,
     NotConnectedError,
     SignalRW,
+    StrictEnum,
     AsyncStatus,
     callback_on_mock_put,
     get_mock_put,
@@ -23,6 +30,10 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.motor import Motor
+
+
+class MyEnum(StrictEnum):
+    A = "A"
 
 
 class ValueErrorBackend(SoftSignalBackend):
@@ -484,3 +495,38 @@ async def test_simulate_move_ends_at_target(acceleration_time: float):
     positions = [p async for p in simulate_move(0, 1.5, 10, acceleration_time)]
     assert positions[-1] == 1.5
     assert positions == sorted(positions)
+
+
+@pytest.mark.parametrize(
+    "datatype, dtype",
+    [
+        (Array1D[np.int8], np.dtype(np.int8)),
+        # From NumPy 2.5 on Python 3.12+ this is a `type` alias, not an `np.ndarray`
+        (npt.NDArray[np.float64], np.dtype(np.float64)),
+    ],
+)
+def test_get_dtype(datatype, dtype):
+    assert get_dtype(datatype) == dtype
+
+
+@pytest.mark.parametrize(
+    "datatype",
+    # Deliberately invalid, as Array1D and NDArray only accept numpy scalar types
+    [Array1D[MyEnum], npt.NDArray[MyEnum]],  # pyright: ignore[reportInvalidTypeForm]
+)
+def test_get_dtype_raises_for_element_type_without_numpy_dtype(datatype):
+    with pytest.raises(TypeError, match="has no numpy dtype"):
+        get_dtype(datatype)
+
+
+@pytest.mark.parametrize(
+    "annotation, origin",
+    [
+        (npt.NDArray[np.float64], np.ndarray),
+        (Array1D[np.float64], np.ndarray),
+        (Sequence[str], Sequence),
+        (int, None),
+    ],
+)
+def test_get_unaliased_origin(annotation, origin):
+    assert get_unaliased_origin(annotation) is origin

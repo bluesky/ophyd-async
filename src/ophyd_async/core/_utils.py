@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 import time
+import typing
 from collections.abc import (
     AsyncIterator,
     Awaitable,
@@ -233,8 +235,24 @@ def cached_get_origin(tp: Any) -> Any:
     return get_origin(tp)
 
 
-def get_dtype(datatype: type) -> np.dtype:
+def get_unaliased_origin(tp: Any) -> Any:
+    """Get the origin of a type, looking through a `type` alias to what it stands for.
+
+    NumPy 2.5 makes `npt.NDArray` a `type` alias, so `NDArray[np.float64]` has the
+    alias as its origin rather than `np.ndarray`. Use this instead of
+    `cached_get_origin` wherever the annotation might be an array type.
+    """
+    origin = cached_get_origin(tp)
+    if sys.version_info >= (3, 12) and isinstance(origin, typing.TypeAliasType):
+        return cached_get_origin(origin.__value__)
+    return origin
+
+
+def get_dtype(datatype: Any) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation.
+
+    Raises `TypeError` if the element type has no numpy dtype, rather than
+    silently returning the object dtype that numpy falls back to.
 
     ```python
     >>> from ophyd_async.core import Array1D
@@ -244,11 +262,16 @@ def get_dtype(datatype: type) -> np.dtype:
 
     ```
     """
-    if not cached_get_origin(datatype) == np.ndarray:
+    if not get_unaliased_origin(datatype) == np.ndarray:
         raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
-    # so extract numpy.float64 from it
-    return np.dtype(get_args(get_args(datatype)[1])[0])
+    args = get_args(datatype)
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] has args
+    # (shape, dtype[float64]); NumPy 2.5's NDArray[numpy.float64] has (float64,)
+    scalar = args[0] if len(args) == 1 else get_args(args[1])[0]
+    dtype = np.dtype(scalar)
+    if dtype == np.object_:
+        raise TypeError(f"{scalar} has no numpy dtype")
+    return dtype
 
 
 def get_ndim(datatype: type) -> int | None:
@@ -265,7 +288,7 @@ def get_ndim(datatype: type) -> int | None:
 
     ```
     """
-    if not cached_get_origin(datatype) == np.ndarray:
+    if not get_unaliased_origin(datatype) == np.ndarray:
         raise TypeError(f"Expected Array1D[dtype], got {datatype}")
     # datatype = numpy.ndarray[tuple[int], numpy.dtype[numpy.int8]]
     # so the number of shape arguments is the number of dimensions, unless it is
@@ -405,7 +428,7 @@ def in_micros(t: float) -> int:
 @lru_cache(maxsize=512)
 def get_origin_class(annotatation: Any) -> type | None:
     """Get the origin class of a type annotation with caching."""
-    origin = cached_get_origin(annotatation) or annotatation
+    origin = get_unaliased_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
     return None
