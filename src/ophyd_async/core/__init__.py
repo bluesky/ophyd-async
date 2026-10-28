@@ -43,6 +43,7 @@ from ._device import (
     LazyMock,
     default_mock_class,
     init_devices,
+    print_connection_status,
 )
 from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
@@ -199,6 +200,7 @@ __all__ = [
     "DeviceVector",
     "DeviceProcessor",
     "init_devices",
+    "print_connection_status",
     # Movable
     "MovableLogic",
     "StandardMovable",
