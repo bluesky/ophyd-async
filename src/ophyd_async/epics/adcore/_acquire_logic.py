@@ -6,7 +6,6 @@ from ophyd_async.core import (
     DetectorAcquireLogic,
     SignalR,
     set_and_wait_for_other_value,
-    set_and_wait_for_value,
     wait_for_value,
 )
 from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
@@ -53,32 +52,67 @@ class ADAcquireLogic(DetectorAcquireLogic):
 
 
 class ADContAcqAcquireLogic(DetectorAcquireLogic):
-    def __init__(self, driver: ADBaseIO, cb_plugin: NDCircularBuffIO):
+    """Gate continuous acquisition using the circular buffer (CB) plugin.
+
+    The CB plugin must read directly from the driver, so `stage()` raises if its
+    `NDArrayPort` is not the driver's port.
+
+    :param driver: The continuously acquiring detector driver
+    :param cb_plugin: The circular buffer plugin gating downstream plugins
+    :param num_frames_to_skip:
+        Non-negative number of incoming frames to skip before each gate opening.
+        Defaults to 0, which opens the gate immediately.
+    """
+
+    def __init__(
+        self,
+        driver: ADBaseIO,
+        cb_plugin: NDCircularBuffIO,
+        num_frames_to_skip: int = 0,
+    ):
         self.driver = driver
         self.cb_plugin = cb_plugin
-        self.acquire_status: AsyncStatus | None = None
+        self.num_frames_to_skip = num_frames_to_skip
 
     async def ensure_ready(self):
-        await set_and_wait_for_value(
-            self.cb_plugin.capture,
-            True,
-            wait_for_set_completion=False,
-            timeout=DEFAULT_TIMEOUT,
+        cb_input_port, driver_port = await asyncio.gather(
+            self.cb_plugin.nd_array_port.get_value(),
+            self.driver.port_name.get_value(),
         )
+        # Frames queued in plugins between the driver and CB would pass the gate
+        # long after they were exposed.
+        if cb_input_port != driver_port:
+            raise RuntimeError(
+                f"CB plugin NDArrayPort is {cb_input_port!r}, but must be the "
+                f"driver port {driver_port!r}"
+            )
+        await self.ensure_stopped()
 
     async def start_acquiring(self):
+        num_frames_to_skip = self.num_frames_to_skip
+        if num_frames_to_skip:
+            initial_count, acquire_period = await asyncio.gather(
+                self.cb_plugin.array_counter.get_value(cached=False),
+                self.driver.acquire_period.get_value(),
+            )
+            # Count arrivals at the gate, not driver frames or monitor callbacks.
+            await wait_for_value(
+                self.cb_plugin.array_counter,
+                lambda count: count >= initial_count + num_frames_to_skip,
+                timeout=num_frames_to_skip * acquire_period + DEFAULT_TIMEOUT,
+            )
         await self.cb_plugin.trigger_.set(True)
 
     async def wait_for_idle(self):
-        num_images, acquire_time = await asyncio.gather(
+        num_images, acquire_period = await asyncio.gather(
             self.cb_plugin.post_count.get_value(),
-            self.driver.acquire_time.get_value(),
+            self.driver.acquire_period.get_value(),
         )
 
         await wait_for_value(
             self.cb_plugin.trigger_,
             False,
-            timeout=num_images * acquire_time + DEFAULT_TIMEOUT,
+            timeout=num_images * acquire_period + DEFAULT_TIMEOUT,
         )
 
     async def ensure_stopped(self):
