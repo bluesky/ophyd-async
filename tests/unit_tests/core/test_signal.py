@@ -319,44 +319,60 @@ async def wait_for_sets_left_running(
 async def test_status_of_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
+    # The put only completes (and moves match_signal) once the test lets it, so
+    # the ordering is deterministic rather than a delay racing a timeout.
+    put_may_proceed = asyncio.Event()
+    put_may_finish = asyncio.Event()
+    put_may_finish.set()
 
-    async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.2)
+    async def set_match_signal_when_released(value: Any, **kwargs):
+        await put_may_proceed.wait()
         await match_signal.set(value / 2)
-        await asyncio.sleep(0.001)
+        await put_may_finish.wait()
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_when_released)  # type: ignore
     before = asyncio.all_tasks()
 
+    put_may_proceed.set()
     status = await set_and_wait_for_value(set_signal, 2)
     assert status.done
 
+    # The timeouts here are the behaviour under test, so a small one is kept;
+    # the put is held back so it can only elapse.
+    put_may_proceed.clear()
     with pytest.raises(asyncio.TimeoutError):
-        status = await set_and_wait_for_value(set_signal, 4, timeout=0.05)
+        status = await set_and_wait_for_value(set_signal, 4, timeout=0.01)
 
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_value(
-            set_signal, 8, timeout=0.05, wait_for_set_completion=False
+            set_signal, 8, timeout=0.01, wait_for_set_completion=False
         )
 
+    put_may_proceed.set()
     status = await set_and_wait_for_other_value(set_signal, 32, match_signal, 16)
     assert status.done
 
+    # The match arrives while the put is still in flight, so the status is
+    # not done until the test lets the put finish.
+    put_may_finish.clear()
     status = await set_and_wait_for_other_value(
         set_signal, 30, match_signal, 15, wait_for_set_completion=False
     )
     assert not status.done
+    put_may_finish.set()
     await status
 
+    put_may_proceed.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, -1, timeout=0.05
+            set_signal, 30, match_signal, -1, timeout=0.01
         )
 
-    # The timeouts above each leave their set running; a starved loop is what
-    # made one of them outlive the test on the 3.14 runners.
+    # The timeouts above each leave their set running; release them and let
+    # the loop finish them, so none outlives the test.
+    put_may_proceed.set()
     await wait_for_sets_left_running(before)
 
 
@@ -369,10 +385,11 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
     # task here would abandon the put with the detector still acquiring.
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
+    put_may_proceed = asyncio.Event()
     put_finished = asyncio.Event()
 
     async def set_slower_than_the_match_timeout(value: Any, **kwargs):
-        await asyncio.sleep(0.3)
+        await put_may_proceed.wait()
         put_finished.set()
 
     await set_signal.connect(mock=True)
@@ -382,12 +399,13 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
 
     with pytest.raises(asyncio.TimeoutError):
         await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, -1, timeout=0.05
+            set_signal, 30, match_signal, -1, timeout=0.01
         )
 
     # The set is still in flight, and completes on its own afterwards rather
     # than being abandoned part way through.
     assert not put_finished.is_set()
+    put_may_proceed.set()
     await wait_for_sets_left_running(before)
     assert put_finished.is_set()
 
@@ -397,13 +415,16 @@ async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
-    async def set_match_signal_after_delay(value: Any, **kwargs):
-        await asyncio.sleep(0.2)
+    put_may_proceed = asyncio.Event()
+    put_may_proceed.set()
+
+    async def set_match_signal_when_released(value: Any, **kwargs):
+        await put_may_proceed.wait()
         await match_signal.set(value / 2)
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_when_released)  # type: ignore
     before = asyncio.all_tasks()
 
     def _equals_x(value, x):
@@ -419,12 +440,14 @@ async def test_callable_match_value_set_and_wait_for_value():
     )
     assert status.done
 
+    put_may_proceed.clear()
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
-            set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.05
+            set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.01
         )
 
     # The timed-out set is left running, as in the test above.
+    put_may_proceed.set()
     await wait_for_sets_left_running(before)
 
 
@@ -506,9 +529,9 @@ async def test_wait_for_value_with_value():
 
     with pytest.raises(
         asyncio.TimeoutError,
-        match="signal didn't match 'something' in 0.1s, last value 'blah'",
+        match="signal didn't match 'something' in 0.01s, last value 'blah'",
     ):
-        await wait_for_value(signal, "something", timeout=0.1)
+        await wait_for_value(signal, "something", timeout=0.01)
     # Generous upper bound: the value already matches, so this returns
     # almost immediately - the bound only guards against a hang. A tight
     # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
@@ -516,14 +539,11 @@ async def test_wait_for_value_with_value():
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, "something else", timeout=2))
     )
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0)
     assert not t.done()
     set_mock_value(signal, "something else")
-    # Upper bound loosened generously: after the value is set, the wait
-    # should resolve quickly, but a slow/loaded runner can push this past a
-    # tight bound. The lower bound still guards that the wait genuinely
-    # waited through the 0.1s sleep.
-    assert 0.05 < await t < 1.9
+    # Generous upper bound, only guarding against a hang.
+    assert await t < 1.9
 
 
 async def test_wait_for_value_with_function():
@@ -536,20 +556,17 @@ async def test_wait_for_value_with_function():
 
     with pytest.raises(
         asyncio.TimeoutError,
-        match="signal didn't match less_than_42 in 0.1s, last value 45.8",
+        match="signal didn't match less_than_42 in 0.01s, last value 45.8",
     ):
-        await wait_for_value(signal, less_than_42, timeout=0.1)
+        await wait_for_value(signal, less_than_42, timeout=0.01)
     t = asyncio.create_task(
         time_taken_by(wait_for_value(signal, less_than_42, timeout=2))
     )
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0)
     assert not t.done()
     set_mock_value(signal, 41)
-    # Upper bound loosened generously: after the value is set, the wait
-    # should resolve quickly, but a slow/loaded runner can push this past a
-    # tight bound. The lower bound still guards that the wait genuinely
-    # waited through the 0.1s sleep.
-    assert 0.05 < await t < 1.9
+    # Generous upper bound, only guarding against a hang.
+    assert await t < 1.9
     # Generous upper bound: the value already matches, so this returns
     # almost immediately - the bound only guards against a hang. A tight
     # bound (e.g. 0.1s) can spuriously fail on a slow/loaded runner.
