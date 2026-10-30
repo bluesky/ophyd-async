@@ -1,4 +1,4 @@
-from ._detector import XspressDetector
+from ._detector import XspressDetector, XspressDetectorListMode
 from ._io import XspressDetectorIO, XspressTriggerMode
 from ._xsp_odin_io import (
     XspressFrameProcessorVectorIO,
@@ -10,5 +10,6 @@ __all__ = [
     "XspressTriggerMode",
     "XspressOdinIO",
     "XspressDetector",
+    "XspressDetectorListMode",
     "XspressFrameProcessorVectorIO",
 ]

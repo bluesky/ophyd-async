@@ -10,9 +10,7 @@ from ophyd_async.core import (
     init_devices,
     set_mock_value,
 )
-from ophyd_async.fastcs.xspress import (
-    XspressDetector,
-)
+from ophyd_async.fastcs.xspress import XspressDetector, XspressDetectorListMode
 from ophyd_async.testing import assert_has_calls
 
 
@@ -25,6 +23,17 @@ def detector(RE, tmp_path):
     # Enough to satisfy the odin writer
     set_mock_value(detector.od.writing, True)
     return detector
+
+
+@pytest.fixture
+def list_mode_detector(RE, tmp_path):
+    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
+    with init_devices(mock=True):
+        list_mode_detector = XspressDetectorListMode("XSP", path_provider)
+
+    # Enough to satisfy the odin writer
+    set_mock_value(list_mode_detector.od.writing, True)
+    return list_mode_detector
 
 
 async def test_prepare_internal_calls_correct_parameters(
@@ -53,6 +62,33 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.file_path.put(str(tmp_path)),
             call.od.file_prefix.put("filename"),
             call.od.fp.start_writing.execute(),
+        ],
+        reset_after=False,
+    )
+
+
+async def test_prepare_internal_calls_correct_parameters_list_mode(
+    list_mode_detector: XspressDetectorListMode, tmp_path
+):
+    # Need to mock this value as it's a summary of the datsets chunk_0
+    await list_mode_detector.prepare(
+        TriggerInfo(
+            number_of_events=100,
+            trigger=DetectorTrigger.EXTERNAL_EDGE,
+            livetime=0.1,
+        )
+    )
+    assert_has_calls(
+        list_mode_detector,
+        [
+            call.od.fp.time_frames.put(100),
+            call.xspress.trigger_mode.put(3),
+            call.xspress.num_images.put(100),
+            call.xspress.exposure_time.put(0.1),
+            call.od.file_path.put(str(tmp_path)),
+            call.od.file_prefix.put("filename"),
+            call.od.fp.start_writing.execute(),
+            call.xspress.start_acquisition.execute(),
         ],
         reset_after=False,
     )

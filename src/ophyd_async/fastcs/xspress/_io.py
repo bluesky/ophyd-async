@@ -17,6 +17,7 @@ class XspressDetectorIO(Device):
     """Driver for Xspress Detector subsystem."""
 
     state: SignalR[str]
+    frames_acquired: SignalR[int]
     num_images: SignalRW[int]
     exposure_time: SignalRW[float]
     trigger_mode: SignalRW[int]
