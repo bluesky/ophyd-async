@@ -1,3 +1,4 @@
+<READABLE_FORMATS>: {}
 _sig_rw: Top level private SignalRW
 child.a_bool: true
 child.a_enum: Bbb

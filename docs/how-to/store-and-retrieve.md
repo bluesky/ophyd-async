@@ -43,3 +43,20 @@ def load_panda(panda1: HDFPanda):
     settings = yield from retrieve_settings(provider, "yaml_file_name", panda1)
     yield from apply_settings_if_different(settings, apply_panda_settings)
 ```
+
+## Storing readable formats too
+
+[](#store_settings) also records how readable formats have changed since construction (see [](./change-readable-format.md)), and [](#apply_settings) restores them after the values. They go under the reserved [](#READABLE_FORMATS_KEY), keyed by the [](#StandardReadable) that owns the child (`<ROOT_DEVICE>` for the Device you stored), then by the child's path from that owner:
+
+```yaml
+energy: 7.0
+temperature: 20.0
+<READABLE_FORMATS>:
+  <ROOT_DEVICE>:
+    energy: HINTED_SIGNAL
+    temperature: null
+  mirror:
+    pitch: CONFIG_SIGNAL
+```
+
+A null drops the child. Applying first resets the tree to its class defaults, so `<READABLE_FORMATS>: {}` restores them. A file with no `<READABLE_FORMATS>` key changes no formats, and a file with only that key changes formats without writing any values.

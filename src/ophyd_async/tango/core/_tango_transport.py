@@ -771,6 +771,8 @@ def make_converter(info: AttributeConfig | CommandConfig, datatype) -> TangoConv
                     AttrDataFormat.IMAGE,
                 ]:
                     return TangoDevStateArrayConverter()
+            case _:
+                pass
     else:  # command info
         match info.in_type:
             case CmdArgType.DevState:
@@ -787,6 +789,8 @@ def make_converter(info: AttributeConfig | CommandConfig, datatype) -> TangoConv
                 return TangoLongStringTableConverter()
             case CmdArgType.DevVarDoubleStringArray:
                 return TangoDoubleStringTableConverter()
+            case _:
+                pass
     # default case return trivial converter
     return TangoConverter()
 

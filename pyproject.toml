@@ -92,6 +92,7 @@ version_file = "src/ophyd_async/_version.py"
 [tool.pyright]
 typeCheckingMode = "standard"
 reportMissingImports = false  # Ignore missing stubs in imported modules
+reportMatchNotExhaustive = true
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error

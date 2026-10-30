@@ -155,7 +155,7 @@ async def test_device_create_children_from_annotations_with_device_vectors():
     await device.connect(mock=True)
 
     block_1_device = device.device
-    assert block_1_device in device._has_hints
+    assert (block_1_device, Format.CHILD) in device.get_readable_formats()
     block_2_device_vector = device.device_vector
 
     assert device.device_vector[1].name == "test_device-device_vector-1"

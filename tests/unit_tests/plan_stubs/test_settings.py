@@ -6,7 +6,17 @@ import numpy as np
 import pytest
 import yaml
 
-from ophyd_async.core import Settings, YamlSettingsProvider, get_mock
+from ophyd_async.core import (
+    Device,
+    Settings,
+    StandardReadable,
+    YamlSettingsProvider,
+    apply_readable_formats,
+    get_mock,
+    soft_signal_rw,
+    walk_readable_formats,
+)
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.plan_stubs import (
     apply_settings,
     apply_settings_if_different,
@@ -177,5 +187,425 @@ async def test_ignored_settings(RE, parent_device: ParentOfEverythingDevice):
         )
         yield from apply_settings(settings)
         assert m.mock_calls == [call.sig_rw.put("foo")]
+
+    RE(my_plan())
+
+
+@pytest.fixture
+def technique_device() -> StandardReadable:
+    """A Device whose energy signal is config for one technique, hinted for another."""
+    device = StandardReadable(name="mono")
+    device.energy = soft_signal_rw(float, 7.0)
+    device.temperature = soft_signal_rw(float, 20.0)
+    device.set_name("mono")
+    device.set_readable_format(device.energy, Format.CONFIG_SIGNAL)
+    device.set_readable_format(device.temperature, Format.CONFIG_SIGNAL)
+    return device
+
+
+async def test_store_settings_writes_formats_under_reserved_key(
+    RE, technique_device, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+
+    def my_plan():
+        yield from store_settings(provider, "fixed_energy", technique_device)
+        with open(tmp_path / "fixed_energy.yaml") as f:
+            stored = yaml.safe_load(f)
+        # Values stay flat, formats live under a key that cannot be a path
+        assert stored == {
+            "energy": 7.0,
+            "temperature": 20.0,
+            "<READABLE_FORMATS>": {
+                "<ROOT_DEVICE>": {
+                    "energy": "CONFIG_SIGNAL",
+                    "temperature": "CONFIG_SIGNAL",
+                }
+            },
+        }
+
+    RE(my_plan())
+
+
+async def test_reserved_keys_need_no_quoting_in_yaml(RE, technique_device, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+
+    def my_plan():
+        yield from store_settings(provider, "fixed_energy", technique_device)
+        text = (tmp_path / "fixed_energy.yaml").read_text()
+        assert "<READABLE_FORMATS>:" in text
+        assert "<ROOT_DEVICE>:" in text
+        # An empty string root would make yaml fall back to "? ''" explicit keys
+        assert "?" not in text
+
+    RE(my_plan())
+
+
+async def test_settings_round_trip_switches_technique(RE, technique_device, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+    energy, temperature = technique_device.energy, technique_device.temperature
+
+    def my_plan():
+        yield from store_settings(provider, "fixed_energy", technique_device)
+
+        # Switch to a technique that scans energy and drops temperature entirely
+        technique_device.set_readable_format(energy, Format.HINTED_SIGNAL)
+        technique_device.set_readable_format(temperature, None)
+        yield from bps.abs_set(energy, 9.0, wait=True)
+        yield from store_settings(provider, "scan_energy", technique_device)
+
+        # Going back restores both the value and the formats in one apply
+        fixed = yield from retrieve_settings(provider, "fixed_energy", technique_device)
+        yield from apply_settings(fixed)
+        assert list(technique_device.get_readable_formats()) == [
+            (energy, Format.CONFIG_SIGNAL),
+            (temperature, Format.CONFIG_SIGNAL),
+        ]
+        assert (yield from bps.rd(energy)) == 7.0
+
+        # And forward again drops temperature rather than merging the two
+        scanning = yield from retrieve_settings(
+            provider, "scan_energy", technique_device
+        )
+        yield from apply_settings(scanning)
+        assert list(technique_device.get_readable_formats()) == [
+            (energy, Format.HINTED_SIGNAL)
+        ]
+        assert (yield from bps.rd(energy)) == 9.0
+
+    RE(my_plan())
+
+
+async def test_settings_file_without_formats_leaves_them_alone(
+    RE, technique_device, tmp_path
+):
+    """A file stored before formats existed must not clear them."""
+    provider = YamlSettingsProvider(tmp_path)
+    energy = technique_device.energy
+    (tmp_path / "old_style.yaml").write_text("energy: 3.0\ntemperature: 4.0\n")
+
+    def my_plan():
+        settings = yield from retrieve_settings(provider, "old_style", technique_device)
+        assert settings.readable_formats is None
+        yield from apply_settings(settings)
+        # Values applied, formats untouched
+        assert (yield from bps.rd(energy)) == 3.0
+        assert (energy, Format.CONFIG_SIGNAL) in technique_device.get_readable_formats()
+
+    RE(my_plan())
+
+
+async def test_formats_only_file_applies_without_touching_values(
+    RE, technique_device, tmp_path
+):
+    """A hand written formats only profile changes no hardware.
+
+    Also covers the explicit null, which is the only way to unregister a child,
+    since applying otherwise merges.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    energy = technique_device.energy
+    (tmp_path / "hinted.yaml").write_text(
+        "<READABLE_FORMATS>:\n"
+        "  <ROOT_DEVICE>:\n"
+        "    energy: HINTED_SIGNAL\n"
+        "    temperature: null\n"
+    )
+
+    def my_plan():
+        settings = yield from retrieve_settings(provider, "hinted", technique_device)
+        assert dict(settings) == {}
+        yield from apply_settings(settings)
+        # An explicit null drops temperature, where omitting it would have left
+        # it alone
+        assert list(technique_device.get_readable_formats()) == [
+            (energy, Format.HINTED_SIGNAL)
+        ]
+        assert (yield from bps.rd(energy)) == 7.0
+
+    RE(my_plan())
+
+
+class _Mono(StandardReadable):
+    def __init__(self, name=""):
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
+            self.energy = soft_signal_rw(float, 7.0)
+            self.temperature = soft_signal_rw(float, 20.0)
+        super().__init__(name=name)
+
+
+async def test_store_settings_writes_only_changes_from_class_defaults(RE, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+    mono = _Mono(name="mono")
+
+    def stored_formats(name: str):
+        with open(tmp_path / f"{name}.yaml") as f:
+            return yaml.safe_load(f)["<READABLE_FORMATS>"]
+
+    def my_plan():
+        yield from store_settings(provider, "defaults", mono)
+        mono.set_readable_format(mono.energy, Format.HINTED_SIGNAL)
+        mono.set_readable_format(mono.temperature, None)
+        yield from store_settings(provider, "scan", mono)
+        assert stored_formats("defaults") == {}
+        # A dropped default is written as a null
+        assert stored_formats("scan") == {
+            "<ROOT_DEVICE>": {"energy": "HINTED_SIGNAL", "temperature": None}
+        }
+        # The defaults file undoes changes it does not mention
+        defaults = yield from retrieve_settings(provider, "defaults", mono)
+        yield from apply_settings(defaults)
+        assert list(mono.get_readable_formats()) == [
+            (mono.energy, Format.CONFIG_SIGNAL),
+            (mono.temperature, Format.CONFIG_SIGNAL),
+        ]
+        scan = yield from retrieve_settings(provider, "scan", mono)
+        yield from apply_settings(scan)
+        assert list(mono.get_readable_formats()) == [
+            (mono.energy, Format.HINTED_SIGNAL)
+        ]
+
+    RE(my_plan())
+
+
+async def test_null_formats_key_resets_to_class_defaults(RE, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+    mono = _Mono(name="mono")
+    mono.set_readable_format(mono.energy, Format.HINTED_SIGNAL)
+    (tmp_path / "reset.yaml").write_text("<READABLE_FORMATS>:\n")
+
+    def my_plan():
+        settings = yield from retrieve_settings(provider, "reset", mono)
+        assert settings.readable_formats == {}
+        yield from apply_settings(settings)
+        assert (mono.energy, Format.CONFIG_SIGNAL) in mono.get_readable_formats()
+
+    RE(my_plan())
+
+
+async def test_retrieve_settings_rejects_unknown_signal_names(
+    RE, technique_device, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+    (tmp_path / "bad.yaml").write_text("energyy: 3.0\n")
+
+    def my_plan():
+        with pytest.raises(NameError, match=r"Unknown signal names \['energyy'\]"):
+            yield from retrieve_settings(provider, "bad", technique_device)
+
+    RE(my_plan())
+
+
+async def test_retrieve_settings_warns_and_drops_unknown_reserved_keys(
+    RE, technique_device, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+    (tmp_path / "newer.yaml").write_text(
+        "energy: 3.0\n<FROM_THE_FUTURE>:\n  a: 1\n<OTHER>: 1\n"
+    )
+
+    def my_plan():
+        with pytest.warns(UserWarning, match=r"\['<FROM_THE_FUTURE>', '<OTHER>'\]"):
+            settings = yield from retrieve_settings(provider, "newer", technique_device)
+        assert settings == {technique_device.energy: 3.0}
+        assert settings.readable_formats is None
+
+    RE(my_plan())
+
+
+async def test_store_settings_walks_nested_devices(RE, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+    inner = StandardReadable(name="inner")
+    inner.sig = soft_signal_rw(float, 1.0)
+    outer = StandardReadable(name="outer")
+    outer.inner = inner
+    outer.top = soft_signal_rw(float, 2.0)
+    outer.set_name("outer")
+    inner.set_readable_format(inner.sig, Format.HINTED_SIGNAL)
+    outer.set_readable_format(outer.top, Format.CONFIG_SIGNAL)
+    outer.set_readable_format(inner, Format.CHILD)
+    # The same signal registered on a second owner, from deeper in its tree
+    outer.set_readable_format(inner.sig, Format.CONFIG_SIGNAL)
+
+    def my_plan():
+        yield from store_settings(provider, "nested", outer)
+        with open(tmp_path / "nested.yaml") as f:
+            assert yaml.safe_load(f) == {
+                "top": 2.0,
+                "inner.sig": 1.0,
+                "<READABLE_FORMATS>": {
+                    "<ROOT_DEVICE>": {
+                        "top": "CONFIG_SIGNAL",
+                        "inner": "CHILD",
+                        "inner.sig": "CONFIG_SIGNAL",
+                    },
+                    # Child paths are relative to their owner
+                    "inner": {"sig": "HINTED_SIGNAL"},
+                },
+            }
+
+    RE(my_plan())
+
+
+def test_apply_readable_formats_rejects_unknown_path(technique_device):
+    with pytest.raises(KeyError, match="nope"):
+        apply_readable_formats(technique_device, {"nope": {}})
+
+
+def test_apply_readable_formats_rejects_non_readable(technique_device):
+    with pytest.raises(TypeError, match="is not a StandardReadable"):
+        apply_readable_formats(technique_device, {"energy": {}})
+
+
+def test_settings_or_merges_formats_per_child(technique_device):
+    # Values merge per signal and apply_readable_formats merges per child, so
+    # `other` must only replace the children it mentions: overriding a whole
+    # owner would drop children it has nothing to say about
+    base = Settings(
+        technique_device,
+        {technique_device.energy: 1.0},
+        {
+            "<ROOT_DEVICE>": {
+                "energy": Format.CONFIG_SIGNAL,
+                "temperature": Format.CHILD,
+            }
+        },
+    )
+    override = Settings(
+        technique_device,
+        {technique_device.temperature: 2.0},
+        {"<ROOT_DEVICE>": {"energy": Format.HINTED_SIGNAL}},
+    )
+    merged = base | override
+    assert merged.readable_formats == {
+        "<ROOT_DEVICE>": {
+            "energy": Format.HINTED_SIGNAL,  # overridden
+            "temperature": Format.CHILD,  # untouched, not dropped
+        }
+    }
+    assert dict(merged) == {
+        technique_device.energy: 1.0,
+        technique_device.temperature: 2.0,
+    }
+    # Neither operand is mutated
+    assert base.readable_formats["<ROOT_DEVICE>"]["energy"] is Format.CONFIG_SIGNAL
+    assert override.readable_formats["<ROOT_DEVICE>"] == {
+        "energy": Format.HINTED_SIGNAL
+    }
+
+
+def test_settings_or_keeps_owners_the_other_does_not_mention(technique_device):
+    base = Settings(technique_device, {}, {"a": {"x": Format.CONFIG_SIGNAL}})
+    override = Settings(technique_device, {}, {"b": {"y": Format.HINTED_SIGNAL}})
+    assert (base | override).readable_formats == {
+        "a": {"x": Format.CONFIG_SIGNAL},
+        "b": {"y": Format.HINTED_SIGNAL},
+    }
+
+
+def test_settings_or_rejects_formats_from_a_sub_device(technique_device):
+    # A sub-device's paths are relative to itself, so <ROOT_DEVICE> would silently come
+    # to mean the parent
+    parent = StandardReadable(name="parent")
+    parent.child = technique_device
+    parent.set_name("parent")
+    base = Settings(parent)
+    sub = Settings(
+        technique_device, {}, {"<ROOT_DEVICE>": {"energy": Format.HINTED_SIGNAL}}
+    )
+    with pytest.raises(ValueError, match="paths are relative to it"):
+        base | sub
+    # Without formats it is just a value merge, which is fine
+    assert (base | Settings(technique_device)).readable_formats is None
+
+
+def test_settings_partition_carries_formats_to_both_halves(technique_device):
+    # apply_panda_settings applies only the halves, never the original, so
+    # formats must survive on whichever half is applied
+    settings = Settings(
+        technique_device,
+        {technique_device.energy: 1.0, technique_device.temperature: 2.0},
+        {"<ROOT_DEVICE>": {"energy": Format.CONFIG_SIGNAL}},
+    )
+    a, b = settings.partition(lambda sig: "energy" in sig.name)
+    assert a.readable_formats == settings.readable_formats
+    assert b.readable_formats == settings.readable_formats
+
+
+async def test_store_settings_writes_empty_formats_for_an_unchanged_readable(
+    RE, tmp_path
+):
+    """The key is still written, as applying it resets runtime changes.
+
+    This is the shape of TangoTestDevice.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    device = StandardReadable(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+
+    def my_plan():
+        yield from store_settings(provider, "empty", device)
+        with open(tmp_path / "empty.yaml") as f:
+            assert yaml.safe_load(f) == {"sig": 1.0, "<READABLE_FORMATS>": {}}
+
+    RE(my_plan())
+
+
+async def test_store_settings_warns_and_skips_a_readable_outside_the_tree(RE, tmp_path):
+    """A child registered from outside the tree has no path to store it against.
+
+    Its value is not stored either, since store_settings only walks the tree, so
+    it cannot survive a round trip at all. See
+    https://github.com/bluesky/ophyd-async/issues/1402.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+    device = StandardReadable(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+    outsider = soft_signal_rw(float, 2.0, name="outsider")
+    device.set_readable_format(device.sig, Format.CONFIG_SIGNAL)
+    device.set_readable_format(outsider, Format.CONFIG_SIGNAL)
+
+    match = "dev: outsider is not within dev"
+    with pytest.warns(UserWarning, match=match):
+        assert walk_readable_formats(device) == {
+            "<ROOT_DEVICE>": {"sig": Format.CONFIG_SIGNAL}
+        }
+
+    def my_plan():
+        with pytest.warns(UserWarning, match=match):
+            yield from store_settings(provider, "outsider", device)
+        with open(tmp_path / "outsider.yaml") as f:
+            # Neither the outsider's format nor its value is stored
+            assert yaml.safe_load(f) == {
+                "sig": 1.0,
+                "<READABLE_FORMATS>": {"<ROOT_DEVICE>": {"sig": "CONFIG_SIGNAL"}},
+            }
+
+    RE(my_plan())
+
+
+async def test_store_settings_omits_the_key_for_a_device_with_no_readables(
+    RE, tmp_path
+):
+    """A Device with no StandardReadable in its tree has nothing to clear.
+
+    This is the shape of EpicsTestCaDevice, and is why the EPICS golden files
+    needed no regeneration.
+    """
+    provider = YamlSettingsProvider(tmp_path)
+
+    class Plain(Device):
+        pass
+
+    device = Plain(name="dev")
+    device.sig = soft_signal_rw(float, 1.0)
+    device.set_name("dev")
+
+    def my_plan():
+        yield from store_settings(provider, "plain", device)
+        with open(tmp_path / "plain.yaml") as f:
+            assert yaml.safe_load(f) == {"sig": 1.0}
 
     RE(my_plan())
