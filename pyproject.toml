@@ -85,6 +85,10 @@ GitHub = "https://github.com/bluesky/ophyd-async"
 email = "tom.cobb@diamond.ac.uk"
 name = "Tom Cobb"
 
+[tool.uv]
+# Minimum uv to fix eMudhra CA cert incident (see discuss.python.org/t/109576)
+required-version = ">=0.13.5"
+
 [tool.setuptools_scm]
 version_file = "src/ophyd_async/_version.py"
 
