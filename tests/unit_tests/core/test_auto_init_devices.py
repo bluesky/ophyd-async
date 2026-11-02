@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Awaitable
 
 import pytest
 from bluesky import plan_stubs as bps
@@ -9,6 +10,7 @@ from ophyd_async.core import (
     Device,
     NotConnectedError,
     init_devices,
+    print_connection_status,
     set_mock_value,
 )
 from ophyd_async.epics import motor
@@ -50,6 +52,46 @@ async def test_init_devices_handles_top_level_errors(caplog):
 
     assert len(device_log) == 1
     assert device_log[0].levelname == "ERROR"
+
+
+async def test_init_devices_connect_hook_can_suppress_errors():
+    errors: dict[str, Exception | None] = {}
+
+    async def hook(name: str, coro: Awaitable[None]):
+        try:
+            await coro
+        except Exception as exc:
+            errors[name] = exc
+        else:
+            errors[name] = None
+
+    async with init_devices(on_connect_hook=hook):
+        good = WorkingDevice()
+        bad = FailingDevice()  # noqa: F841
+
+    assert good.connected
+    assert errors["good"] is None
+    assert isinstance(errors["bad"], AttributeError)
+
+
+async def test_init_devices_connect_hook_that_does_not_catch_raises():
+    async def hook(name: str, coro: Awaitable[None]):
+        await coro
+
+    with pytest.raises(NotConnectedError):
+        async with init_devices(on_connect_hook=hook):
+            _ = FailingDevice()
+
+
+async def test_init_devices_print_connection_status(capsys):
+    async with init_devices(on_connect_hook=print_connection_status):
+        good = WorkingDevice()  # noqa: F841
+        bad = FailingDevice()  # noqa: F841
+
+    assert sorted(capsys.readouterr().out.splitlines()) == [
+        f"  bad {'.' * 37} [\033[1;31m    FAILED    \033[0m]",
+        f"  good {'.' * 36} [\033[1;32m      OK      \033[0m]",
+    ]
 
 
 def test_sync_init_devices_no_run_engine_raises_error():
