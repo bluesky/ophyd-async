@@ -559,7 +559,7 @@ def init_devices(
     connect: bool = True,
     mock: bool = False,
     timeout: float = 10.0,
-    on_connect_hook: Callable[[str, Device, Exception | None], None] | None = None,
+    on_connect_hook: Callable[[str, Awaitable[None]], Awaitable[None]] | None = None,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.
 
@@ -573,14 +573,13 @@ def init_devices(
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
     :param on_connect_hook:
-        Called with `(variable_name, device, error)` for each Device as soon as
-        it finishes connecting (so in completion order, not declaration order),
-        where `error` is None if it succeeded. If given,
-        `NotConnectedError` is not raised, so the hook is responsible for
-        handling failures. See [](#print_connection_status) for an example.
+        Async function called with `(variable_name, connect_coro)` for each
+        Device, which must await `connect_coro`. Any exception it lets escape
+        is raised from `init_devices` as a `NotConnectedError`, so it can
+        catch exceptions to suppress them. See [](#print_connection_status)
+        for an example.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
-    :raises NotConnectedError:
-        If devices could not be connected and `on_connect_hook` is not given.
+    :raises NotConnectedError: If devices could not be connected.
 
     For example, to connect and name 2 motors in parallel:
     ```python
@@ -598,37 +597,25 @@ def init_devices(
                 if not device.name:
                     device.set_name(name, child_name_separator=child_name_separator)
         if connect:
-
-            async def _connect_and_report(name: str, device: Device):
-                try:
-                    await device.connect(mock, timeout)
-                except Exception as exc:
-                    if on_connect_hook:
-                        on_connect_hook(name, device, exc)
-                    raise
-                if on_connect_hook:
-                    on_connect_hook(name, device, None)
-
-            try:
-                await wait_for_connection(
-                    **{
-                        name: _connect_and_report(name, device)
-                        for name, device in devices.items()
-                    }
-                )
-            except NotConnectedError:
-                if on_connect_hook is None:
-                    raise
+            coros: dict[str, Awaitable[None]] = {
+                name: device.connect(mock, timeout) for name, device in devices.items()
+            }
+            if on_connect_hook:
+                coros = {
+                    name: on_connect_hook(name, coro) for name, coro in coros.items()
+                }
+            await wait_for_connection(**coros)
 
     return DeviceProcessor(process_devices)
 
 
-def print_connection_status(name: str, device: Device, error: Exception | None):
-    """Print a coloured OK/FAILED line for a Device, for use as `on_connect_hook`.
+async def print_connection_status(name: str, coro: Awaitable[None]):
+    """Print a coloured connection status line, for use as `on_connect_hook`.
+
+    Exceptions are caught and reported rather than raised.
 
     :param name: The variable name of the Device.
-    :param device: The Device that was connected.
-    :param error: The exception raised while connecting, or None if it succeeded.
+    :param coro: The Device's connect coroutine.
 
     For example:
     ```python
@@ -636,11 +623,15 @@ def print_connection_status(name: str, device: Device, error: Exception | None):
         t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
     ```
     """
-    dots = "." * (40 - len(name))
-    if error is None:
-        status = "\033[1;32m   OK   \033[0m"
+    try:
+        await coro
+    except NotConnectedError:
+        status = "\033[1;31m DISCONNECTED \033[0m"
+    except Exception:
+        status = "\033[1;31m    FAILED    \033[0m"
     else:
-        status = "\033[1;31m FAILED \033[0m"
+        status = "\033[1;32m      OK      \033[0m"
+    dots = "." * (40 - len(name))
     print(f"  {name} {dots} [{status}]")
 
 

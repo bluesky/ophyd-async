@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Awaitable
 
 import pytest
 from bluesky import plan_stubs as bps
@@ -53,20 +54,33 @@ async def test_init_devices_handles_top_level_errors(caplog):
     assert device_log[0].levelname == "ERROR"
 
 
-async def test_init_devices_calls_connect_hook():
-    calls: list[tuple[str, Device, Exception | None]] = []
+async def test_init_devices_connect_hook_can_suppress_errors():
+    errors: dict[str, Exception | None] = {}
 
-    async with init_devices(
-        on_connect_hook=lambda name, dev, err: calls.append((name, dev, err))
-    ):
+    async def hook(name: str, coro: Awaitable[None]):
+        try:
+            await coro
+        except Exception as exc:
+            errors[name] = exc
+        else:
+            errors[name] = None
+
+    async with init_devices(on_connect_hook=hook):
         good = WorkingDevice()
-        bad = FailingDevice()
+        bad = FailingDevice()  # noqa: F841
 
-    by_name = {name: (dev, err) for name, dev, err in calls}
-    assert len(calls) == 2
-    assert by_name["good"] == (good, None)
-    assert by_name["bad"][0] is bad
-    assert isinstance(by_name["bad"][1], AttributeError)
+    assert good.connected
+    assert errors["good"] is None
+    assert isinstance(errors["bad"], AttributeError)
+
+
+async def test_init_devices_connect_hook_that_does_not_catch_raises():
+    async def hook(name: str, coro: Awaitable[None]):
+        await coro
+
+    with pytest.raises(NotConnectedError):
+        async with init_devices(on_connect_hook=hook):
+            _ = FailingDevice()
 
 
 async def test_init_devices_print_connection_status(capsys):
@@ -75,8 +89,8 @@ async def test_init_devices_print_connection_status(capsys):
         bad = FailingDevice()  # noqa: F841
 
     assert sorted(capsys.readouterr().out.splitlines()) == [
-        f"  bad {'.' * 37} [\033[1;31m FAILED \033[0m]",
-        f"  good {'.' * 36} [\033[1;32m   OK   \033[0m]",
+        f"  bad {'.' * 37} [\033[1;31m    FAILED    \033[0m]",
+        f"  good {'.' * 36} [\033[1;32m      OK      \033[0m]",
     ]
 
 
