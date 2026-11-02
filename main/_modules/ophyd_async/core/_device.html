@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.21.4.dev21+g0f8a029c5 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.21.4.dev22+g0c6e1e31f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=b6398578"></script>
+    <script src="../../../_static/documentation_options.js?v=ecbadf2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev21+g0f8a029c5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev21+g0f8a029c5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
   
   
 </a></div>
@@ -1506,6 +1506,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">on_connect_hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Auto initialize top level Device instances: to be used as a context manager.</span>
 
@@ -1518,6 +1519,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        created within the context manager.</span>
 <span class="sd">    :param mock: If True, connect Signals in mock mode.</span>
 <span class="sd">    :param timeout: How long to wait for connect before logging an exception.</span>
+<span class="sd">    :param on_connect_hook:</span>
+<span class="sd">        Async function called with `(variable_name, connect_coro)` for each</span>
+<span class="sd">        Device, which must await `connect_coro`. Any exception it lets escape</span>
+<span class="sd">        is raised from `init_devices` as a `NotConnectedError`, so it can</span>
+<span class="sd">        catch exceptions to suppress them. See [](#print_connection_status)</span>
+<span class="sd">        for an example.</span>
 <span class="sd">    :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.</span>
 <span class="sd">    :raises NotConnectedError: If devices could not be connected.</span>
 
@@ -1537,12 +1544,45 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
                     <span class="n">device</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">connect</span><span class="p">:</span>
-            <span class="n">coros</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">coros</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">name</span><span class="p">:</span> <span class="n">device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">}</span>
+            <span class="k">if</span> <span class="n">on_connect_hook</span><span class="p">:</span>
+                <span class="n">coros</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">name</span><span class="p">:</span> <span class="n">on_connect_hook</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">coro</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">coro</span> <span class="ow">in</span> <span class="n">coros</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
             <span class="k">await</span> <span class="n">wait_for_connection</span><span class="p">(</span><span class="o">**</span><span class="n">coros</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">DeviceProcessor</span><span class="p">(</span><span class="n">process_devices</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="print_connection_status">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.print_connection_status">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">print_connection_status</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print a coloured connection status line, for use as `on_connect_hook`.</span>
+
+<span class="sd">    Exceptions are caught and reported rather than raised.</span>
+
+<span class="sd">    :param name: The variable name of the Device.</span>
+<span class="sd">    :param coro: The Device&#39;s connect coroutine.</span>
+
+<span class="sd">    For example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    [async] with init_devices(on_connect_hook=print_connection_status):</span>
+<span class="sd">        t1x = motor.Motor(&quot;BLxxI-MO-TABLE-01:X&quot;)</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">coro</span>
+    <span class="k">except</span> <span class="n">NotConnectedError</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;31m DISCONNECTED </span><span class="se">\033</span><span class="s2">[0m&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;31m    FAILED    </span><span class="se">\033</span><span class="s2">[0m&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1;32m      OK      </span><span class="se">\033</span><span class="s2">[0m&quot;</span>
+    <span class="n">dots</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">40</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dots</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span></div>
 
 
 

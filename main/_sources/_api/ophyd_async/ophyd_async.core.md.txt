@@ -355,6 +355,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._device.init_devices
     :summary:
     ```
+* - {py:obj}`print_connection_status <ophyd_async.core._device.print_connection_status>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.print_connection_status
+    :summary:
+    ```
 * - {py:obj}`completed_status <ophyd_async.core._status.completed_status>`
   - ```{autodoc2-docstring} ophyd_async.core._status.completed_status
     :summary:
@@ -852,10 +856,18 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 
 ````
 
-````{py:function} init_devices(set_name: bool = True, child_name_separator: str = '-', connect: bool = True, mock: bool = False, timeout: float = 10.0)
+````{py:function} init_devices(set_name: bool = True, child_name_separator: str = '-', connect: bool = True, mock: bool = False, timeout: float = 10.0, on_connect_hook: ~collections.abc.Callable[[str, ~collections.abc.Awaitable[None]], ~collections.abc.Awaitable[None]] | None = None)
 :canonical: ophyd_async.core._device.init_devices
 
 ```{autodoc2-docstring} ophyd_async.core._device.init_devices
+```
+````
+
+````{py:function} print_connection_status(name: str, coro: ~collections.abc.Awaitable[None])
+:canonical: ophyd_async.core._device.print_connection_status
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._device.print_connection_status
 ```
 ````
 
