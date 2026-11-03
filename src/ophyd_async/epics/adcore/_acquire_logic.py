@@ -4,13 +4,15 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorAcquireLogic,
+    EnableDisable,
     SignalR,
     set_and_wait_for_other_value,
+    set_and_wait_for_value,
     wait_for_value,
 )
 from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
 
-from ._io import ADBaseIO, ADState, NDCircularBuffIO
+from ._io import ADBaseIO, ADState, NDCBFlushOnSoftTrgMode, NDCircularBuffIO
 
 
 class ADAcquireLogic(DetectorAcquireLogic):
@@ -83,6 +85,21 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
                 f"driver port {driver_port!r}"
             )
         await self.ensure_stopped()
+
+        await asyncio.gather(
+            self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
+            self.cb_plugin.pre_count.set(0),
+            # Set preset trigger count to 0 to allow triggering to continue indefinitely
+            # until explicitly stopped.
+            self.cb_plugin.preset_trigger_count.set(0),
+            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+        )
+        await set_and_wait_for_value(
+            self.cb_plugin.capture,
+            True,
+            wait_for_set_completion=False,
+            timeout=DEFAULT_TIMEOUT,
+        )
 
     async def start_acquiring(self):
         num_frames_to_skip = self.num_frames_to_skip

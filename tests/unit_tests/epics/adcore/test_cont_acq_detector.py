@@ -145,7 +145,7 @@ async def test_cont_acq_skips_dirty_frames(
 
     callback_on_mock_put(cb.pre_count, set_pre_count)
     await det.stage()
-    assert not await cb.capture.get_value()
+    assert await cb.capture.get_value()
     assert await det.driver.acquire.get_value()
     await det.prepare(TriggerInfo(exposures_per_collection=exposures_per_collection))
 

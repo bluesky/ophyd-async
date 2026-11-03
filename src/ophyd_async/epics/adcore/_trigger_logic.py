@@ -2,12 +2,10 @@ import asyncio
 from dataclasses import dataclass
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DetectorTrigger,
     EnableDisable,
     SignalR,
     TriggerInfo,
-    set_and_wait_for_value,
 )
 from ophyd_async.core import (
     DetectorTriggerLogic as _DetectorTriggerLogic,
@@ -17,7 +15,6 @@ from ._io import (
     ADBaseDataType,
     ADBaseIO,
     ADImageMode,
-    NDCBFlushOnSoftTrgMode,
     NDCircularBuffIO,
     NDProcessFilterCallbacks,
     NDProcessFilterType,
@@ -142,23 +139,8 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await self._ensure_driver_acquiring(livetime)
-        # Assumes CB plugin capture has stopped capture so PreCount can be configured.
-        # Setup the CB plugin with the current parameters
-        await asyncio.gather(
-            self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
-            self.cb_plugin.pre_count.set(0),
-            self.cb_plugin.post_count.set(num),
-            # Set preset trigger count to 0 to allow triggering to continue indefinitely
-            # until explicitly stopped.
-            self.cb_plugin.preset_trigger_count.set(0),
-            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-        )
-        await set_and_wait_for_value(
-            self.cb_plugin.capture,
-            True,
-            wait_for_set_completion=False,
-            timeout=DEFAULT_TIMEOUT,
-        )
+        # Setup the CB plugin to emit `num` images
+        await self.cb_plugin.post_count.set(num)
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
         await prepare_filter(self.process_plugin, exposures_per_collection)
