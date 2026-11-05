@@ -567,6 +567,14 @@ async def test_collect_asset_docs_uses_trigger_observed_event(
     assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
 
 
+async def test_trigger_times_out_on_collection_timeout(tmp_path):
+    det = StandardDetector(name="det")
+    det.add_detector_logics(JustInternalTriggerLogic(), StreamableOnlyDataLogic(tmp_path))
+    await det.prepare(TriggerInfo(exposure_timeout=100, collection_timeout=0.1))
+    with pytest.raises(TimeoutError):
+        await det.trigger()
+
+
 async def test_kickoff_respects_prepare_bounds(tmp_path):
     """Test that multiple kickoff() calls respect prepared bounds."""
     det = StandardDetector()
