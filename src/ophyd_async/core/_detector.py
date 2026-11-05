@@ -104,6 +104,12 @@ class TriggerInfo(ConfinedModel):
     )
     """What is the maximum timeout on waiting for an exposure"""
 
+    collection_timeout: float = Field(
+        default_factory=lambda d: d["exposure_timeout"] * d["exposures_per_collection"],
+        gt=0,
+    )
+    """What is the maximum timeout on waiting for a collection"""
+
     @computed_field
     @cached_property
     def number_of_collections(self) -> int:
@@ -536,7 +542,7 @@ class StandardDetector(
         if data_providers:
             async for sig, value in observe_signals_value(
                 *current_collections_written.keys(),
-                timeout=trigger_info.exposure_timeout,
+                timeout=trigger_info.collection_timeout,
             ):
                 current_collections_written[sig] = value
                 collections_written = min(current_collections_written.values())

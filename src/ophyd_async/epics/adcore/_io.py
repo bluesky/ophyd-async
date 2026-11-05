@@ -310,10 +310,14 @@ class NDProcessIO(NDPluginBaseIO):
     save_background: A[SignalRW[bool], PvSuffix.rbv("SaveBackground")]
     enable_background: A[SignalRW[bool], PvSuffix.rbv("EnableBackground")]
     valid_background: A[SignalR[bool], PvSuffix("ValidBackground_RBV")]
+    read_background_tiff_seq: A[TriggerableCommand, PvSuffix("ReadBackgroundTIFFSeq.PROC")]
+
     save_flat_field: A[SignalRW[bool], PvSuffix.rbv("SaveFlatField")]
     enable_flat_field: A[SignalRW[bool], PvSuffix.rbv("EnableFlatField")]
     valid_flat_field: A[SignalR[bool], PvSuffix("ValidFlatField_RBV")]
     scale_flat_field: A[SignalRW[float], PvSuffix.rbv("ScaleFlatField")]
+    read_flat_field_tiff_seq: A[TriggerableCommand, PvSuffix("ReadFlatFieldTIFFSeq.PROC")]
+
     enable_offset_scale: A[SignalRW[bool], PvSuffix.rbv("EnableOffsetScale")]
     auto_offset_scale: A[SignalRW[bool], PvSuffix("AutoOffsetScale")]
     offset: A[SignalRW[float], PvSuffix.rbv("Offset")]
@@ -345,7 +349,10 @@ class NDProcessIO(NDPluginBaseIO):
     f_scale: A[SignalRW[float], PvSuffix.rbv("FScale")]
     r_offset: A[SignalRW[float], PvSuffix.rbv("ROffset")]
 
-    def __init__(self, prefix: str, name: str = ""):
+
+    def __init__(self, prefix: str, tiff_suffix: str = "TIFF:", name: str = ""):
+        # Process Plugin has a tiff plugin for loading background and FF files
+        self.tiff = NDPluginFileIO(prefix + tiff_suffix)
         super().__init__(prefix, name=name)
 
 
