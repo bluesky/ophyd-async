@@ -569,7 +569,9 @@ async def test_collect_asset_docs_uses_trigger_observed_event(
 
 async def test_trigger_times_out_on_collection_timeout(tmp_path):
     det = StandardDetector(name="det")
-    det.add_detector_logics(JustInternalTriggerLogic(), StreamableOnlyDataLogic(tmp_path))
+    det.add_detector_logics(
+        JustInternalTriggerLogic(), StreamableOnlyDataLogic(tmp_path)
+    )
     await det.prepare(TriggerInfo(exposure_timeout=100, collection_timeout=0.1))
     with pytest.raises(TimeoutError):
         await det.trigger()

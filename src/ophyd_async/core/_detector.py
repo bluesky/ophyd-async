@@ -105,7 +105,10 @@ class TriggerInfo(ConfinedModel):
     """What is the maximum timeout on waiting for an exposure"""
 
     collection_timeout: float = Field(
-        default_factory=lambda d: (d["livetime"] + d["deadtime"]) * d["exposures_per_collection"] + DEFAULT_TIMEOUT,
+        default_factory=lambda d: (
+            (d["livetime"] + d["deadtime"]) * d["exposures_per_collection"]
+            + DEFAULT_TIMEOUT
+        ),
         gt=0,
     )
     """What is the maximum timeout on waiting for a collection"""
