@@ -353,7 +353,7 @@ class NDProcessIO(NDPluginBaseIO):
     f_scale: A[SignalRW[float], PvSuffix.rbv("FScale")]
     r_offset: A[SignalRW[float], PvSuffix.rbv("ROffset")]
 
-    def __init__(self, prefix: str, tiff_suffix: str | None = None, name: str = ""):
+    def __init__(self, prefix: str, name: str = "", tiff_suffix: str | None = None):
         # Process Plugin has a tiff plugin for loading background and FF files
         self.tiff = (
             NDPluginFileIO(prefix + tiff_suffix) if tiff_suffix is not None else None
