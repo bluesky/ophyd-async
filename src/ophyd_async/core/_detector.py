@@ -340,6 +340,8 @@ class _PrepareCtx:
     trigger_info: TriggerInfo
     readable_data_providers: Sequence[ReadableDataProvider]
     streamable_data_providers: Sequence[StreamableDataProvider]
+    # The data logics that produced a data provider, and so contribute datakeys
+    active_data_logics: Sequence[DetectorDataLogic]
     collections_written: int
 
 
@@ -476,6 +478,7 @@ class StandardDetector(
             # Reuse the existing data providers
             readable_data_providers = self._prepare_ctx.readable_data_providers
             streamable_data_providers = self._prepare_ctx.streamable_data_providers
+            active_data_logics = self._prepare_ctx.active_data_logics
         else:
             # Stop the existing providers if there is a context and make new ones
             if self._prepare_ctx:
@@ -484,16 +487,19 @@ class StandardDetector(
             # Setup the data logic for the right number of collections
             streamable_coros: list[Awaitable[StreamableDataProvider]] = []
             readable_coros: list[Awaitable[ReadableDataProvider]] = []
+            active_data_logics = []
             for dl in self._data_logics:
                 if _data_logic_supported(dl.prepare_unbounded):
                     streamable_coros.append(
                         dl.prepare_unbounded(self.name + dl.datakey_suffix)
                     )
+                    active_data_logics.append(dl)
                 elif _data_logic_supported(dl.prepare_single):
                     if trigger_info.number_of_collections == 1:
                         readable_coros.append(
                             dl.prepare_single(self.name + dl.datakey_suffix)
                         )
+                        active_data_logics.append(dl)
                     else:
                         logger.warning(
                             f"DataLogic {dl} only supports a single collection, but "
@@ -513,6 +519,7 @@ class StandardDetector(
             trigger_info=trigger_info,
             streamable_data_providers=streamable_data_providers,
             readable_data_providers=readable_data_providers,
+            active_data_logics=active_data_logics,
             collections_written=await _get_collections_written(
                 streamable_data_providers
             ),
@@ -750,7 +757,12 @@ class StandardDetector(
     @property
     def hints(self) -> Hints:
         fields: list[str] = []
-        for dl in self._data_logics:
+        data_logics = (
+            self._prepare_ctx.active_data_logics
+            if self._prepare_ctx
+            else self._data_logics
+        )
+        for dl in data_logics:
             fields.extend(dl.get_hinted_fields(self.name + dl.datakey_suffix))
         return Hints(fields=fields)
 
