@@ -60,6 +60,10 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
     :param num_frames_to_skip:
         Non-negative number of incoming frames to skip before each gate opening.
         Defaults to 0, which opens the gate immediately.
+    :param acquire_period_signal:
+        Time between frames, used to scale frame wait timeouts. Defaults to the
+        driver's `AcquirePeriod_RBV`; override it for drivers that cannot set
+        their acquire period, so it does not reflect the real frame period.
     """
 
     def __init__(
@@ -67,10 +71,15 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         driver: ADBaseIO,
         cb_plugin: NDCircularBuffIO,
         num_frames_to_skip: int = 0,
+        acquire_period_signal: SignalR[float] | None = None,
     ):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.num_frames_to_skip = num_frames_to_skip
+        if acquire_period_signal is not None:
+            self.acquire_period_signal = acquire_period_signal
+        else:
+            self.acquire_period_signal = driver.acquire_period
 
     async def ensure_ready(self):
         cb_input_port, driver_port = await asyncio.gather(
@@ -106,7 +115,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
         if num_frames_to_skip:
             initial_count, acquire_period = await asyncio.gather(
                 self.cb_plugin.array_counter.get_value(cached=False),
-                self.driver.acquire_period.get_value(),
+                self.acquire_period_signal.get_value(),
             )
             # Count arrivals at the gate, not driver frames or monitor callbacks.
             await wait_for_value(
@@ -119,7 +128,7 @@ class ADContAcqAcquireLogic(DetectorAcquireLogic):
     async def wait_for_idle(self):
         num_images, acquire_period = await asyncio.gather(
             self.cb_plugin.post_count.get_value(),
-            self.driver.acquire_period.get_value(),
+            self.acquire_period_signal.get_value(),
         )
 
         await wait_for_value(

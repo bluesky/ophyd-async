@@ -11,6 +11,7 @@ from ophyd_async.core import (
     callback_on_mock_put,
     init_devices,
     set_mock_value,
+    soft_signal_r_and_setter,
 )
 from ophyd_async.epics import adcore
 from ophyd_async.testing import wait_for_pending_wakeups
@@ -241,6 +242,39 @@ async def test_cont_acq_interrupted_frame_wait_keeps_gate_closed(cancel: bool):
     assert await driver.acquire.get_value()
     await det.unstage()
     assert not await cb.capture.get_value()
+
+
+async def test_cont_acq_frame_waits_use_acquire_period_signal():
+    """Drivers that cannot set AcquirePeriod report a period unrelated to frames."""
+    driver = adcore.ADBaseIO("PREFIX:DRV:")
+    cb = adcore.NDCircularBuffIO("PREFIX:CB:")
+    acquire_period, _ = soft_signal_r_and_setter(float, initial_value=1.0)
+    await acquire_period.connect()
+    async with init_devices(mock=True):
+        det = adcore.AreaDetector(
+            driver,
+            acquire_logic=adcore.ADContAcqAcquireLogic(
+                driver, cb, num_frames_to_skip=1, acquire_period_signal=acquire_period
+            ),
+            trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb, None),
+            plugins={"cb": cb},
+        )
+    set_mock_value(driver.image_mode, adcore.ADImageMode.CONTINUOUS)
+    set_mock_value(driver.acquire, True)
+    set_mock_value(cb.array_counter, 100)
+    await det.stage()
+    await det.prepare(TriggerInfo())
+
+    with patch("ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT", 0.01):
+        status = det.trigger()
+        # Outlast both frame waits as derived from the driver's AcquirePeriod_RBV=0.
+        await asyncio.sleep(0.1)
+        set_mock_value(cb.array_counter, 101)
+        await wait_for_pending_wakeups(max_yields=100)
+        assert await cb.trigger_.get_value()
+        await asyncio.sleep(0.1)
+        set_mock_value(cb.trigger_, False)
+        await status
 
 
 async def test_cont_acq_requires_cb_fed_by_driver(
