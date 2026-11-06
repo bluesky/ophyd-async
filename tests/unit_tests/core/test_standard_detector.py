@@ -626,19 +626,25 @@ async def test_hints_from_single_data_logic():
     }  # ReadableOnlyDataLogic uses foo-value
 
 
-async def test_hints_from_multiple_data_logics(tmp_path):
-    """Test that hints are aggregated from multiple data logics."""
+@pytest.mark.parametrize(
+    "number_of_events,expected_fields",
+    [(1, ["foo-value", "bar"]), (5, ["bar"])],
+)
+async def test_hints_from_multiple_data_logics(
+    tmp_path, number_of_events, expected_fields
+):
+    """Test hints only come from data logics that produce datakeys."""
     det = StandardDetector(name="bar")
     dl1 = ReadableOnlyDataLogic()
     dl2 = StreamableOnlyDataLogic(tmp_path)
     det.add_detector_logics(dl1, dl2)
 
-    await det.prepare(TriggerInfo())
+    await det.prepare(TriggerInfo(number_of_events=number_of_events))
 
-    # Should include hints from both logics
-    hints = det.hints
-    assert "fields" in hints
-    assert hints["fields"] == ["foo-value", "bar"]
+    assert det.hints == {"fields": expected_fields}
+    assert set(det.hints["fields"]) <= set(await det.describe_collect()) | set(
+        await det.describe()
+    )
 
 
 @pytest.mark.parametrize(
