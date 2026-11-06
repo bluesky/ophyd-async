@@ -4,8 +4,6 @@ from ._command import (
     NO_ARG_VOID_SIGNATURE,
     Command,
     CommandBackend,
-    CommandConnector,
-    MockCommandBackend,
     SoftCommandBackend,
     TriggerableCommand,
     soft_command,
@@ -54,7 +52,7 @@ from ._enums import (
     YesNo,
 )
 from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
-from ._log import config_ophyd_async_logging, logger, set_handler
+from ._log import config_ophyd_async_logging, logger
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     MockPutHandle,
@@ -89,8 +87,6 @@ from ._path_providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
-    generate_directory_uri,
-    normalize_path,
 )
 from ._protocol import (
     AsyncConfigurable,
@@ -111,7 +107,6 @@ from ._settings import Settings, SettingsProvider
 from ._signal import (
     Ignore,
     Signal,
-    SignalConnector,
     SignalDict,
     SignalR,
     SignalRW,
@@ -227,7 +222,6 @@ __all__ = [
     "SignalRW",
     "SignalX",
     "SignalBackend",
-    "SignalConnector",
     # Signal Types
     "SignalDatatype",
     "SignalDatatypeT",
@@ -313,7 +307,6 @@ __all__ = [
     # Utils
     "config_ophyd_async_logging",
     "logger",
-    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
@@ -353,12 +346,8 @@ __all__ = [
     # Commands
     "Command",
     "CommandBackend",
-    "CommandConnector",
-    "MockCommandBackend",
     "NO_ARG_VOID_SIGNATURE",
     "SoftCommandBackend",
     "soft_command",
     "TriggerableCommand",
-    "generate_directory_uri",
-    "normalize_path",
 ]
