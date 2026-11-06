@@ -16,6 +16,7 @@ from ophyd_async.core import (
     LazyMock,
     NotConnectedError,
     Signal,
+    to_snake_case,
 )
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
@@ -153,7 +154,9 @@ class TangoDeviceConnector(DeviceConnector):
         )  # type: ignore
 
         children = [
-            child for child in children if child not in self.filler.ignored_signals
+            child
+            for child in children
+            if to_snake_case(child) not in self.filler.ignored_signals
         ]
 
         not_filled = {unfilled for unfilled, _ in device.children()}
@@ -161,7 +164,7 @@ class TangoDeviceConnector(DeviceConnector):
         # If auto_fill_signals is True, fill all children inferred from the device
         # else fill only the children that are annotated
         for name in children:
-            if self._auto_fill_signals or name in not_filled:
+            if self._auto_fill_signals or to_snake_case(name) in not_filled:
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
                 signal_type = await infer_signal_type(full_trl, proxy)
