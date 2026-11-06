@@ -50,7 +50,7 @@ tox -p                  # all envs in parallel (CI equivalent)
 
 ## Code conventions
 
-- **No `ABC` base needed** — `@abstractmethod` without `ABC`/`ABCMeta` is intentional; pyright enforces implementation statically.
+- **Every class with an `@abstractmethod` has `ABCMeta` as its metaclass**: inherit `ABC` (first: `class X(ABC, Generic[T])`) unless a base already brings it (`Protocol`, pydantic `BaseModel`). `Generic` and `@dataclass` don't. Without it pyright's `reportAbstractUsage` and the runtime `TypeError` never fire, and a missing override silently runs the stub and returns `None`.
 - **A new `TypeVar` needs an entry in `docs/conf.py`.** Docs build with `nitpicky = True` and warnings-as-errors, and TypeVars never resolve as references, so every one is listed by qualified name (`ophyd_async.core._utils.T`, …) in the `nitpick_ignore` list near the end of `conf.py`. Miss it and `tox -e docs` fails on `reference target not found` while every other env stays green. Prefer declaring TypeVars in the `_utils.py` of their package, next to the existing ones, so the list stays in one place.
 
 ## Updating this guide

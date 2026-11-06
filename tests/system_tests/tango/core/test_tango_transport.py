@@ -579,6 +579,18 @@ async def test_command_get_config(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_command_proxy_cannot_be_read(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    cmd_proxy = CommandProxy(device_proxy, "clear")
+    with pytest.raises(NotImplementedError, match="value of a command"):
+        await cmd_proxy.get()
+    with pytest.raises(NotImplementedError, match="reading from a command"):
+        await cmd_proxy.get_reading()
+    assert not cmd_proxy.has_subscription()
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 async def test_command_set_polling(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "clear")
