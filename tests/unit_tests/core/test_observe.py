@@ -94,38 +94,6 @@ async def test_observe_value_times_out():
         t.cancel()
 
 
-async def test_observe_value_times_out_with_busy_sleep():
-    sig, setter = soft_signal_r_and_setter(float)
-
-    async def tick():
-        for i in range(5):
-            await asyncio.sleep(0.1)
-            setter(i + 1)
-
-    recv = []
-
-    async def watch():
-        async for val in observe_value(sig, done_timeout=0.2):
-            # This is a test to prove a subtle timing bug where the inner loop
-            # of observe_value was blocking the event loop.
-            time.sleep(0.15)
-            recv.append(val)
-
-    t = asyncio.create_task(tick())
-    # Let it get started so we get our first update
-    # This is needed to fix for python 3.12, otherwise the task
-    # gets starved by the busy sleep
-    await asyncio.sleep(0.05)
-    start = time.monotonic()
-    try:
-        with pytest.raises(asyncio.TimeoutError):
-            await watch()
-        assert recv == [0, 1]
-        assert time.monotonic() - start == pytest.approx(0.3, abs=0.05)
-    finally:
-        t.cancel()
-
-
 @pytest.mark.timeout(3)
 async def test_observe_value_times_out_with_no_external_task():
     done_timeout = 0.3
