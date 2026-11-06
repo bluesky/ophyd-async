@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.core import DetectorTrigger, TriggerInfo
+from ophyd_async.core import DEFAULT_TIMEOUT, DetectorTrigger, TriggerInfo
 
 
 @pytest.mark.parametrize(
@@ -52,6 +52,13 @@ from ophyd_async.core import DetectorTrigger, TriggerInfo
         ),
         (
             {
+                "collection_timeout": 0,
+            },
+            "collection_timeout\n  Input should be greater than 0 "
+            "[type=greater_than, input_value=0, input_type=int]",
+        ),
+        (
+            {
                 "number_of_events": -100,
             },
             "number_of_events\n  Input should be greater than or "
@@ -63,3 +70,20 @@ def test_malformed_trigger_info(kwargs, error_msg):
     with pytest.raises(ValidationError) as exc:
         TriggerInfo(**kwargs)
     assert error_msg in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    ["kwargs", "expected_collection_timeout"],
+    [
+        ({}, DEFAULT_TIMEOUT),
+        ({"livetime": 0.1, "deadtime": 0.05}, 0.15 + DEFAULT_TIMEOUT),
+        (
+            {"livetime": 0.1, "deadtime": 0.05, "exposures_per_collection": 4},
+            0.6 + DEFAULT_TIMEOUT,
+        ),
+        ({"livetime": 0.1, "exposures_per_collection": 4, "collection_timeout": 3}, 3),
+    ],
+)
+def test_collection_timeout(kwargs, expected_collection_timeout):
+    info = TriggerInfo(**kwargs)
+    assert info.collection_timeout == pytest.approx(expected_collection_timeout)
