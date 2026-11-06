@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev22+g0c6e1e31f documentation</title>
+    <title>ophyd_async.epics.adcore._acquire_logic &#8212; ophyd-async 0.21.4.dev23+g0511ab205 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=ecbadf2e"></script>
+    <script src="../../../../_static/documentation_options.js?v=3ba00da1"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
   
   
 </a></div>
@@ -904,6 +904,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DetectorAcquireLogic</span><span class="p">,</span>
+    <span class="n">EnableDisable</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">set_and_wait_for_other_value</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
@@ -911,7 +912,7 @@ window.runMermaid = runMermaid;</script>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">stop_busy_record</span><span class="p">,</span> <span class="n">wait_for_good_state</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADState</span><span class="p">,</span> <span class="n">NDCircularBuffIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADState</span><span class="p">,</span> <span class="n">NDCBFlushOnSoftTrgMode</span><span class="p">,</span> <span class="n">NDCircularBuffIO</span>
 
 
 <div class="viewcode-block" id="ADAcquireLogic">
@@ -967,14 +968,61 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="ADContAcqAcquireLogic">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADContAcqAcquireLogic</span><span class="p">(</span><span class="n">DetectorAcquireLogic</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">:</span> <span class="n">NDCircularBuffIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gate continuous acquisition using the circular buffer (CB) plugin.</span>
+
+<span class="sd">    The CB plugin must read directly from the driver, so `stage()` raises if its</span>
+<span class="sd">    `NDArrayPort` is not the driver&#39;s port.</span>
+
+<span class="sd">    :param driver: The continuously acquiring detector driver</span>
+<span class="sd">    :param cb_plugin: The circular buffer plugin gating downstream plugins</span>
+<span class="sd">    :param num_frames_to_skip:</span>
+<span class="sd">        Non-negative number of incoming frames to skip before each gate opening.</span>
+<span class="sd">        Defaults to 0, which opens the gate immediately.</span>
+<span class="sd">    :param acquire_period_signal:</span>
+<span class="sd">        Time between frames, used to scale frame wait timeouts. Defaults to the</span>
+<span class="sd">        driver&#39;s `AcquirePeriod_RBV`; override it for drivers that cannot set</span>
+<span class="sd">        their acquire period, so it does not reflect the real frame period.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
+        <span class="n">cb_plugin</span><span class="p">:</span> <span class="n">NDCircularBuffIO</span><span class="p">,</span>
+        <span class="n">num_frames_to_skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">acquire_period_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span> <span class="o">=</span> <span class="n">cb_plugin</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acquire_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_frames_to_skip</span> <span class="o">=</span> <span class="n">num_frames_to_skip</span>
+        <span class="k">if</span> <span class="n">acquire_period_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquire_period_signal</span> <span class="o">=</span> <span class="n">acquire_period_signal</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquire_period_signal</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">acquire_period</span>
 
 <div class="viewcode-block" id="ADContAcqAcquireLogic.ensure_ready">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.ensure_ready">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cb_input_port</span><span class="p">,</span> <span class="n">driver_port</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">nd_array_port</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">port_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="c1"># Frames queued in plugins between the driver and CB would pass the gate</span>
+        <span class="c1"># long after they were exposed.</span>
+        <span class="k">if</span> <span class="n">cb_input_port</span> <span class="o">!=</span> <span class="n">driver_port</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CB plugin NDArrayPort is </span><span class="si">{</span><span class="n">cb_input_port</span><span class="si">!r}</span><span class="s2">, but must be the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;driver port </span><span class="si">{</span><span class="n">driver_port</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_stopped</span><span class="p">()</span>
+
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EnableDisable</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">pre_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="c1"># Set preset trigger count to 0 to allow triggering to continue indefinitely</span>
+            <span class="c1"># until explicitly stopped.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">preset_trigger_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">flush_on_soft_trg</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">NDCBFlushOnSoftTrgMode</span><span class="o">.</span><span class="n">ON_NEW_IMAGE</span><span class="p">),</span>
+        <span class="p">)</span>
         <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span>
             <span class="kc">True</span><span class="p">,</span>
@@ -986,21 +1034,33 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="ADContAcqAcquireLogic.start_acquiring">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.start_acquiring">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_frames_to_skip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames_to_skip</span>
+        <span class="k">if</span> <span class="n">num_frames_to_skip</span><span class="p">:</span>
+            <span class="n">initial_count</span><span class="p">,</span> <span class="n">acquire_period</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">array_counter</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">cached</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">acquire_period_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="p">)</span>
+            <span class="c1"># Count arrivals at the gate, not driver frames or monitor callbacks.</span>
+            <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">array_counter</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">count</span><span class="p">:</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">initial_count</span> <span class="o">+</span> <span class="n">num_frames_to_skip</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">num_frames_to_skip</span> <span class="o">*</span> <span class="n">acquire_period</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">trigger_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ADContAcqAcquireLogic.wait_for_idle">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic.wait_for_idle">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">num_images</span><span class="p">,</span> <span class="n">acquire_time</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">num_images</span><span class="p">,</span> <span class="n">acquire_period</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquire_period_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">)</span>
 
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">trigger_</span><span class="p">,</span>
             <span class="kc">False</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">num_images</span> <span class="o">*</span> <span class="n">acquire_time</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">num_images</span> <span class="o">*</span> <span class="n">acquire_period</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 

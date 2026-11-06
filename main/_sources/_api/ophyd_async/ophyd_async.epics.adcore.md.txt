@@ -2860,7 +2860,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorAcquireLogic`
 
 `````
 
-`````{py:class} ADContAcqAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._io.NDCircularBuffIO)
+`````{py:class} ADContAcqAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._io.NDCircularBuffIO, num_frames_to_skip: int = 0, acquire_period_signal: ~ophyd_async.core.SignalR[float] | None = None)
 :canonical: ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorAcquireLogic`
@@ -3352,7 +3352,7 @@ Bases: {py:obj}`ophyd_async.core.StandardDetector`, {py:obj}`typing.Generic`\[{p
 
 `````
 
-````{py:class} ContAcqDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore._data_logic.ADWriterFactory, driver_cls: type[~ophyd_async.epics.adcore._io.ADBaseIOT] = ADBaseIO, driver_suffix: str = 'cam1:', cb_suffix: str = 'CB1:', proc_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} ContAcqDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore._data_logic.ADWriterFactory, driver_cls: type[~ophyd_async.epics.adcore._io.ADBaseIOT] = ADBaseIO, driver_suffix: str = 'cam1:', cb_suffix: str = 'CB1:', proc_suffix: str | None = None, num_frames_to_skip: int = 0, plugins: dict[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adcore._detector.ContAcqDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore._detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adcore._io.ADBaseIOT`\]

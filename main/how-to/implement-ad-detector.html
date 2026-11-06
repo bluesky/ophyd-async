@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.4.dev22+g0c6e1e31f documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.4.dev23+g0511ab205 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=ecbadf2e"></script>
+    <script src="../_static/documentation_options.js?v=3ba00da1"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev22+g0c6e1e31f documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
   
   
 </a></div>
@@ -747,7 +747,7 @@ instead of the driver’s.</p>
 <p>For detectors that acquire continuously, use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqTriggerLogic" title="ophyd_async.epics.adcore.ADContAcqTriggerLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADContAcqTriggerLogic</span></code></a> instead of creating custom trigger logic. This uses the builtin <code class="docutils literal notranslate"><span class="pre">areaDetector</span></code> <a class="reference external" href="https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html">circular buffer plugin</a> to capture frames while the detector runs continuously.</p>
 <p>Requirements:</p>
 <ul class="simple">
-<li><p>Your AD IOC must have a circular buffer plugin configured</p></li>
+<li><p>Your AD IOC must have a circular buffer plugin configured, reading directly from the driver. Otherwise, frames queued in an intermediate plugin would pass the gate long after they were exposed.</p></li>
 <li><p>The plugin output should be fed to the file writer</p></li>
 <li><p>The detector should already be acquiring continuously before use</p></li>
 </ul>
@@ -755,20 +755,27 @@ instead of the driver’s.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">(</span><span class="s2">&quot;PREFIX:DRV:&quot;</span><span class="p">)</span>
 <span class="n">cb_plugin</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDCircularBuffIO</span><span class="p">(</span><span class="s2">&quot;PREFIX:CB1:&quot;</span><span class="p">)</span>
 <span class="n">det</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">AreaDetector</span><span class="p">(</span>
-    <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
-    <span class="n">acquire_logic</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADContAcqAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
-    <span class="n">trigger_logic</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
-    <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
+    <span class="n">driver</span><span class="p">,</span>
+    <span class="s2">&quot;PREFIX:&quot;</span><span class="p">,</span>
+    <span class="n">adcore</span><span class="o">.</span><span class="n">ADWriterFactory</span><span class="o">.</span><span class="n">hdf</span><span class="p">(</span><span class="n">path_provider</span><span class="p">),</span>
+    <span class="n">acquire_logic</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADContAcqAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">,</span> <span class="n">num_frames_to_skip</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">trigger_logic</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
     <span class="n">plugins</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cb1&quot;</span><span class="p">:</span> <span class="n">cb_plugin</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqTriggerLogic" title="ophyd_async.epics.adcore.ADContAcqTriggerLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADContAcqTriggerLogic</span></code></a> will:</p>
 <ul class="simple">
-<li><p>Validate that exposure time matches the detector’s current acquisition period</p></li>
-<li><p>Configure the circular buffer plugin to capture the requested number of frames</p></li>
-<li><p>Use the circular buffer’s trigger signal instead of the driver’s acquire signal</p></li>
+<li><p>Validate that a requested exposure time matches the driver’s current exposure time</p></li>
+<li><p>Configure zero pre-trigger frames and the requested number of post-trigger frames, then arm circular buffer capture</p></li>
 </ul>
+<p>The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic" title="ophyd_async.epics.adcore.ADContAcqAcquireLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADContAcqAcquireLogic</span></code></a> opens the circular buffer gate instead of starting the driver. Unstaging stops CB capture but leaves the driver acquiring continuously.</p>
+<section id="skip-dirty-frames">
+<h3>Skip dirty frames<a class="headerlink" href="#skip-dirty-frames" title="Link to this heading">#</a></h3>
+<p>A frame already exposing when <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> is called may include motion from the preceding scan step. Set <code class="docutils literal notranslate"><span class="pre">num_frames_to_skip</span></code> on <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqAcquireLogic" title="ophyd_async.epics.adcore.ADContAcqAcquireLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADContAcqAcquireLogic</span></code></a> to wait for incoming frames to pass before opening the gate. Use <code class="docutils literal notranslate"><span class="pre">0</span></code> for no wait (the default), <code class="docutils literal notranslate"><span class="pre">1</span></code> to discard the next frame, or <code class="docutils literal notranslate"><span class="pre">2</span></code> if the detector pipeline can deliver two dirty frames.</p>
+<p>Each <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> or internally triggered <code class="docutils literal notranslate"><span class="pre">kickoff()</span></code> takes a fresh CB <code class="docutils literal notranslate"><span class="pre">ArrayCounter_RBV</span></code> baseline immediately before opening the gate would otherwise occur. The gate stays closed until the counter has advanced by at least <code class="docutils literal notranslate"><span class="pre">num_frames_to_skip</span></code>; frames arriving during <code class="docutils literal notranslate"><span class="pre">stage()</span></code> or <code class="docutils literal notranslate"><span class="pre">prepare()</span></code> do not count. Counter jumps are allowed because EPICS monitors may combine updates. Skipped frames are not included in the requested collection or the process plugin’s exposure count.</p>
+<p>The wait timeout is <code class="docutils literal notranslate"><span class="pre">num_frames_to_skip</span> <span class="pre">*</span> <span class="pre">AcquirePeriod_RBV</span> <span class="pre">+</span> <span class="pre">DEFAULT_TIMEOUT</span></code>. If the counter stalls or the operation is cancelled, the gate is not opened. The number of frames needed depends on the detector’s exposure/readout pipeline. If your driver cannot set its acquire period, so <code class="docutils literal notranslate"><span class="pre">AcquirePeriod_RBV</span></code> does not match the real frame period, pass a signal holding the real period as <code class="docutils literal notranslate"><span class="pre">acquire_period_signal</span></code>.</p>
+</section>
 </section>
 <section id="write-tests">
 <h2>Write tests<a class="headerlink" href="#write-tests" title="Link to this heading">#</a></h2>
@@ -947,7 +954,10 @@ instead of the driver’s.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-hdf-writers-for-different-rois">Multiple HDF writers for different ROIs</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#continuously-acquiring-detector">Continuously acquiring detector</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#continuously-acquiring-detector">Continuously acquiring detector</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#skip-dirty-frames">Skip dirty frames</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-tests">Write tests</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-fixture-setup">Test fixture setup</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-pv-correctness">Test PV correctness</a></li>
