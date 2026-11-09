@@ -91,6 +91,8 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
     :param cb_suffix: Suffix for the circular buffer plugin PV, defaults to "CB1:"
     :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None
+    :param num_frames_to_skip:
+        Incoming frames to skip before each CB gate opening, defaults to 0
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -104,6 +106,7 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
         driver_suffix: str = "cam1:",
         cb_suffix: str = "CB1:",
         proc_suffix: str | None = None,
+        num_frames_to_skip: int = 0,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
@@ -115,7 +118,7 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
             driver,
             prefix,
             *writer_factories,
-            acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
+            acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin, num_frames_to_skip),
             trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, proc_plugin),
             plugins=(plugins or {})
             | {"cb": cb_plugin}
