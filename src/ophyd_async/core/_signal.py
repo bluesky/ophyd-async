@@ -580,6 +580,43 @@ async def wait_for_value(
     await _ValueChecker(match).wait_for_value(signal, timeout)
 
 
+async def _do_action_and_wait_for_other_value(
+    action: Callable[[], AsyncStatus],
+    match_signal: SignalR[SignalDatatypeV],
+    match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
+    timeout: float | None = DEFAULT_TIMEOUT,
+    wait_for_set_completion: bool = True,
+) -> AsyncStatus:
+    checker = _ValueChecker(match_value)
+    wait_task = asyncio.create_task(
+        checker.wait_for_value(match_signal, timeout=timeout)
+    )
+
+    # Put this in a try/except to ensure wait_task is cancelled when we exit
+    try:
+        async with asyncio.timeout(timeout):
+            await checker.got_first_value.wait()
+
+        # Now we can start the action
+        status = action()
+
+        if not wait_for_set_completion:
+            # Just wait for the match_signal to be at value
+            await wait_task
+        else:
+            # Wait for both to complete, so if the set raises an exception it
+            # is surfaced early. Wait for the status task so if either errors
+            # the other is cancelled
+            await asyncio.gather(wait_task, status.task)
+        return status
+    except Exception:
+        # Make sure the wait is not left dangling if there was an error
+        wait_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await wait_task
+        raise
+
+
 async def set_and_wait_for_other_value(
     set_signal: SignalW[SignalDatatypeT],
     set_value: SignalDatatypeT,
@@ -614,35 +651,54 @@ async def set_and_wait_for_other_value(
     await set_and_wait_for_value(device.setpoint, 1, device.readback, 1)
     ```
     """
-    # Start monitoring before the set to avoid a race condition
-    checker = _ValueChecker(match_value)
-    wait_task = asyncio.create_task(
-        checker.wait_for_value(match_signal, timeout=timeout)
+    return await _do_action_and_wait_for_other_value(
+        functools.partial(set_signal.set, set_value, timeout=set_timeout),
+        match_signal,
+        match_value,
+        timeout=timeout,
+        wait_for_set_completion=wait_for_set_completion,
     )
 
-    # Put this in a try/except to ensure wait_task is cancelled when we exit
-    try:
-        async with asyncio.timeout(timeout):
-            await checker.got_first_value.wait()
 
-        # Now we can start the set
-        status = set_signal.set(set_value, timeout=set_timeout)
+async def trigger_and_wait_for_other_value(
+    trigger_signal: SignalX,
+    match_signal: SignalR[SignalDatatypeV],
+    match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
+    timeout: float | None = DEFAULT_TIMEOUT,
+    trigger_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
+) -> AsyncStatus:
+    """Set a signal and monitor another signal until it has the specified value.
 
-        if not wait_for_set_completion:
-            # Just wait for the match_signal to be at value
-            await wait_task
-        else:
-            # Wait for both to complete, so if the set raises an exception it
-            # is surfaced early. Wait for the status task so if either errors
-            # the other is cancelled
-            await asyncio.gather(wait_task, status.task)
-        return status
-    except Exception:
-        # Make sure the wait is not left dangling if there was an error
-        wait_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await wait_task
-        raise
+    This function triggers a trigger_signal and waits for a match_signal to have the
+    match_value.
+
+    :param trigger signal: The signal to trigger.
+    :param match_signal: The signal to monitor.
+    :param match_value:
+        The value (or callable that says if the value matches) to wait for.
+    :param timeout: How long to wait for the signal to have the value.
+    :param trigger_timeout: How long to wait for the trigger to complete.
+    :param wait_for_set_completion:
+        If False then return as soon as the match_signal matches match_value. If
+        True then also wait for the set operation to complete before returning.
+
+    :seealso:
+    [](#interact-with-signals)
+
+    :example:
+    To trigger and wait for the readback to match:
+    ```python
+    await trigger_and_wait_for_other_value(device.trigger_signal, device.readback, 1)
+    ```
+    """
+    return await _do_action_and_wait_for_other_value(
+        functools.partial(trigger_signal.trigger, timeout=trigger_timeout),
+        match_signal,
+        match_value,
+        timeout=timeout,
+        wait_for_set_completion=wait_for_set_completion,
+    )
 
 
 async def set_and_wait_for_value(
