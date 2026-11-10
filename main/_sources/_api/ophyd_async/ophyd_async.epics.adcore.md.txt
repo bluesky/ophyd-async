@@ -2102,7 +2102,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} NDProcessIO(prefix: str, name: str = '')
+`````{py:class} NDProcessIO(prefix: str, name: str = '', tiff_suffix: str | None = None)
 :canonical: ophyd_async.epics.adcore._io.NDProcessIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
@@ -2154,6 +2154,17 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````
 
+````{py:attribute} read_background_tiff_seq
+:canonical: ophyd_async.epics.adcore._io.NDProcessIO.read_background_tiff_seq
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('~ReadBackgroundTIFFSeq.PROC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDProcessIO.read_background_tiff_seq
+```
+
+````
+
 ````{py:attribute} save_flat_field
 :canonical: ophyd_async.epics.adcore._io.NDProcessIO.save_flat_field
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('SaveFlatField')]
@@ -2194,6 +2205,17 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDProcessIO.scale_flat_field
+```
+
+````
+
+````{py:attribute} read_flat_field_tiff_seq
+:canonical: ophyd_async.epics.adcore._io.NDProcessIO.read_flat_field_tiff_seq
+:type: ~typing.Annotated[~ophyd_async.core.TriggerableCommand, PvSuffix('~ReadFlatFieldTIFFSeq.PROC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDProcessIO.read_flat_field_tiff_seq
 ```
 
 ````

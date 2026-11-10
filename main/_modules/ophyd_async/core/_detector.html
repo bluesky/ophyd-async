@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.21.4.dev25+g066ed0671 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=559d51d9"></script>
+    <script src="../../../_static/documentation_options.js?v=3519df7d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev25+g066ed0671 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev25+g066ed0671 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
   
   
 </a></div>
@@ -1008,6 +1008,15 @@ window.runMermaid = runMermaid;</script>
         <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for an exposure&quot;&quot;&quot;</span>
+
+    <span class="n">collection_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;livetime&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;deadtime&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;exposures_per_collection&quot;</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
+        <span class="p">),</span>
+        <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for a collection&quot;&quot;&quot;</span>
 
     <span class="nd">@computed_field</span>
     <span class="nd">@cached_property</span>
@@ -1510,7 +1519,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">data_providers</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
                 <span class="o">*</span><span class="n">current_collections_written</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">exposure_timeout</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collection_timeout</span><span class="p">,</span>
             <span class="p">):</span>
                 <span class="n">current_collections_written</span><span class="p">[</span><span class="n">sig</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="n">collections_written</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_collections_written</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>

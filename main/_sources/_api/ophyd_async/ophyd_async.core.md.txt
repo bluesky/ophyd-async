@@ -2540,6 +2540,17 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ````
 
+````{py:attribute} collection_timeout
+:canonical: ophyd_async.core._detector.TriggerInfo.collection_timeout
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.collection_timeout
+```
+
+````
+
 ````{py:method} number_of_collections() -> int
 :canonical: ophyd_async.core._detector.TriggerInfo.number_of_collections
 
