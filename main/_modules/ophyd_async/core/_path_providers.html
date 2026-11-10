@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._path_providers &#8212; ophyd-async 0.21.4.dev23+g0511ab205 documentation</title>
+    <title>ophyd_async.core._path_providers &#8212; ophyd-async 0.21.4.dev24+g3203e00aa documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=3ba00da1"></script>
+    <script src="../../../_static/documentation_options.js?v=07633b9c"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
   
   
 </a></div>
@@ -912,8 +912,6 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfinedModel</span>
 
 
-<div class="viewcode-block" id="normalize_path">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.normalize_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">PurePath</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PurePath</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a string path into a PurePath with the appropriate flavour.</span>
 
@@ -930,12 +928,9 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">path</span>
     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z]:[</span><span class="se">\\</span><span class="s2">/]&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">PureWindowsPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="generate_directory_uri">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.generate_directory_uri">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_directory_uri</span><span class="p">(</span><span class="n">directory_path</span><span class="p">:</span> <span class="n">PurePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a directory URI from a given directory path.</span>
 
@@ -951,8 +946,7 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="PathInfo">

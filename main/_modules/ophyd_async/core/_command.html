@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._command &#8212; ophyd-async 0.21.4.dev23+g0511ab205 documentation</title>
+    <title>ophyd_async.core._command &#8212; ophyd-async 0.21.4.dev24+g3203e00aa documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=3ba00da1"></script>
+    <script src="../../../_static/documentation_options.js?v=07633b9c"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
   
   
 </a></div>
@@ -967,30 +967,21 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="CommandConnector">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.CommandConnector">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CommandConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A connector for a Command.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">CommandBackend</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="n">backend</span>
 
-<div class="viewcode-block" id="CommandConnector.connect_mock">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.CommandConnector.connect_mock">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect the backend in mock mode.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockCommandBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockCommandBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CommandConnector.connect_real">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.CommandConnector.connect_real">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect the backend to real hardware.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
         <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span></div>
-</div>
-
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Command">
@@ -1207,8 +1198,6 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="MockCommandBackend">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockCommandBackend">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MockCommandBackend</span><span class="p">(</span><span class="n">CommandBackend</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A backend for a Command that uses a mock for testing.&quot;&quot;&quot;</span>
 
@@ -1234,14 +1223,9 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">signature</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MockCommandBackend.source">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockCommandBackend.source">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;mock+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;mock+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
-
-<div class="viewcode-block" id="MockCommandBackend.set_mock_execute_callback">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockCommandBackend.set_mock_execute_callback">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_mock_execute_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">MockExecuteCallback</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a callback that will be called when the command is executed.</span>
 
@@ -1250,8 +1234,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mock_execute_callback</span> <span class="o">=</span> <span class="n">callback</span>
         <span class="k">if</span> <span class="s2">&quot;execute_mock&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">execute_mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_side_effect</span><span class="p">()</span></div>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_side_effect</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_make_side_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mock_execute_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1274,20 +1257,13 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span><span class="p">()</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="n">execute_mock</span><span class="p">,</span> <span class="s2">&quot;execute&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">execute_mock</span>
 
-<div class="viewcode-block" id="MockCommandBackend.execute">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockCommandBackend.execute">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the mock command converting arguments as SoftCommandBackend would.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_soft_backend</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_soft_backend</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="MockCommandBackend.connect">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockCommandBackend.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock backend does not support real connection.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="s2">&quot;It is not possible to connect a MockCommandBackend&quot;</span><span class="p">)</span></div>
-</div>
-
+        <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="s2">&quot;It is not possible to connect a MockCommandBackend&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="soft_command">

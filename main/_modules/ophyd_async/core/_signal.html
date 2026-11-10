@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.4.dev23+g0511ab205 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.4.dev24+g3203e00aa documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=3ba00da1"></script>
+    <script src="../../../_static/documentation_options.js?v=07633b9c"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev23+g0511ab205 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev24+g3203e00aa documentation - Home"/>
   
   
 </a></div>
@@ -945,28 +945,19 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">wrapper</span>
 
 
-<div class="viewcode-block" id="SignalConnector">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for connecting signals with a given backend.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="n">backend</span>
 
-<div class="viewcode-block" id="SignalConnector.connect_mock">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector.connect_mock">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="SignalConnector.connect_real">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector.connect_real">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
         <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span></div>
-</div>
-
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ChildrenNotAllowed</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]):</span>
