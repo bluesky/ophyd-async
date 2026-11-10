@@ -1,14 +1,17 @@
 import asyncio
-from unittest.mock import Mock
+import contextlib
+from unittest.mock import Mock, patch
 
 import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
+    DEFAULT_TIMEOUT,
     Device,
     DeviceMock,
     FlyMotorInfo,
+    StoppedError,
     callback_on_mock_put,
     default_mock_class,
     get_mock_put,
@@ -47,6 +50,11 @@ async def motor():
     set_mock_value(motor.high_limit_travel, 21)
     set_mock_value(motor.dial_low_limit_travel, -11)
     set_mock_value(motor.dial_high_limit_travel, 21)
+    # Not moving, and a STOP stops it
+    set_mock_value(motor.motor_done_move, 1)
+    callback_on_mock_put(
+        motor.motor_stop, lambda _: set_mock_value(motor.motor_done_move, 1)
+    )
     yield motor
 
 
@@ -157,6 +165,15 @@ async def test_motor_moving_stopped(motor: Motor):
     assert move_status.done
 
 
+async def test_stage_and_unstage_each_send_stop_even_when_not_moving(motor: Motor):
+    set_mock_value(motor.motor_done_move, 1)
+    await motor.stage()
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
+
+    await motor.unstage()
+    assert get_mock_put(motor.motor_stop).call_count == 2
+
+
 async def test_read_motor(motor: Motor):
     await motor.stage()
     assert (await motor.read())["motor"]["value"] == 0.0
@@ -244,6 +261,7 @@ async def test_set(motor: Motor, setpoint, velocity, timeout) -> None:
 
 
 async def test_prepare_velocity_limit_error(motor: Motor):
+    await motor.stage()
     set_mock_value(motor.max_velocity, 10)
     with pytest.raises(MotorLimitsError):
         fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
@@ -251,6 +269,7 @@ async def test_prepare_velocity_limit_error(motor: Motor):
 
 
 async def test_valid_prepare_velocity(motor: Motor):
+    await motor.stage()
     # Widen user limits to accommodate ramp distances (trajectory goes to -10.5)
     set_mock_value(motor.low_limit_travel, -11)
     set_mock_value(motor.high_limit_travel, 21)
@@ -279,6 +298,7 @@ async def test_prepare_motor_limits_error(
     upper_limit,
     lower_limit,
 ):
+    await motor.stage()
     set_mock_value(motor.acceleration_time, acceleration_time)
     set_mock_value(motor.low_limit_travel, lower_limit)
     set_mock_value(motor.high_limit_travel, upper_limit)
@@ -292,28 +312,33 @@ async def test_prepare_motor_limits_error(
         await motor.prepare(fly_info)
 
 
-async def test_prepare_valid_limits(motor: Motor):
+@pytest.mark.parametrize(
+    "start_position, end_position, expected_setpoint, expected_end",
+    [(0, 10, -5, 15), (12, 2, 17, -3)],
+)
+async def test_prepare_valid_limits(
+    motor: Motor,
+    start_position: float,
+    end_position: float,
+    expected_setpoint: float,
+    expected_end: float,
+):
+    await motor.stage()
     set_mock_value(motor.acceleration_time, 1)
     set_mock_value(motor.low_limit_travel, -10.01)
     set_mock_value(motor.high_limit_travel, 20.01)
     set_mock_value(motor.max_velocity, 10)
     fly_info = FlyMotorInfo(
-        start_position=0,
-        end_position=10,
+        start_position=start_position,
+        end_position=end_position,
         time_for_move=1,
     )
     await motor.prepare(fly_info)
-    assert await motor.user_setpoint.get_value() == -5
-
-    assert fly_info.ramp_down_end_pos(await motor.acceleration_time.get_value()) == 15
-    fly_info = FlyMotorInfo(
-        start_position=12,
-        end_position=2,
-        time_for_move=1,
+    assert await motor.user_setpoint.get_value() == expected_setpoint
+    assert (
+        fly_info.ramp_down_end_pos(await motor.acceleration_time.get_value())
+        == expected_end
     )
-    await motor.prepare(fly_info)
-    assert await motor.user_setpoint.get_value() == 17
-    assert fly_info.ramp_down_end_pos(await motor.acceleration_time.get_value()) == -3
 
 
 @pytest.mark.parametrize(
@@ -331,6 +356,7 @@ async def test_fly_scan(
     expected_end: float,
 ):
     """Happy-path prepare -> kickoff -> complete through the public interface."""
+    await motor.stage()
     # A small acceleration time keeps the up-to-speed wait in kickoff() negligible
     set_mock_value(motor.acceleration_time, 0.2)
     set_mock_value(motor.low_limit_travel, -15)
@@ -354,30 +380,53 @@ async def test_fly_scan(
     assert await motor.user_setpoint.get_value() == pytest.approx(expected_end)
 
 
-async def test_kickoff_before_prepare_raises(motor: Motor):
-    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
-        await motor.kickoff()
+async def test_stop_during_a_fly_halts_the_motor_but_does_not_end_complete(
+    velo_and_accl_respecting_motor: Motor,
+):
+    motor = velo_and_accl_respecting_motor
+    await motor.stage()
+    await motor.prepare(FlyMotorInfo(start_position=0, end_position=2, time_for_move=1))
+    await motor.kickoff()
+    status = motor.complete()
+    await asyncio.sleep(0.2)
+
+    await motor.stop()
+
+    # stop() halts the hardware, but only unstage() ends the fly
+    assert await motor.motor_done_move.get_value() == 1
+    await motor.unstage()
+    with contextlib.suppress(asyncio.CancelledError):
+        await status
 
 
-async def test_complete_before_kickoff_raises(motor: Motor):
-    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
-        await motor.complete()
+async def test_unstage_during_kickoff_run_up_cancels_the_move(motor: Motor):
+    await motor.stage()
+    get_mock_put(motor.motor_stop).reset_mock()
+    set_mock_value(motor.acceleration_time, 10)
+    set_mock_value(motor.max_velocity, 10)
+    await motor.prepare(FlyMotorInfo(start_position=0, end_position=1, time_for_move=1))
+    # The fly move never finishes, and the motor is moving
+    set_mock_put_proceeds(motor.user_setpoint, False)
+    kickoff = motor.kickoff()
+    await wait_for_pending_wakeups()
+    set_mock_value(motor.motor_done_move, 0)
+    assert not kickoff.done
+
+    await motor.unstage()
+    with pytest.raises(asyncio.CancelledError):
+        await kickoff
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
+    assert await motor.motor_done_move.get_value() == 1
 
 
-@pytest.mark.parametrize(
-    "done_move, expect_stop",
-    [
-        (0, True),  # moving -> stop is issued
-        (1, False),  # already stopped -> no redundant STOP write
-    ],
-)
-async def test_stop_only_when_moving(motor: Motor, done_move: int, expect_stop: bool):
+@pytest.mark.parametrize("done_move", [0, 1])
+async def test_stop_is_sent_whether_or_not_the_motor_looks_moving(
+    motor: Motor, done_move: int
+):
+    # DMOV can flicker at standstill on some motors, so it does not decide
     set_mock_value(motor.motor_done_move, done_move)
     await motor.stop()
-    if expect_stop:
-        get_mock_put(motor.motor_stop).assert_called_once_with(1)
-    else:
-        get_mock_put(motor.motor_stop).assert_not_called()
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
 
 
 def test_core_notconnected_emits_deprecation_warning():
@@ -617,6 +666,8 @@ async def test_velo_and_accl_respecting_motor_mock_behavior(
     [
         # RunEngine path: Motor.stop() puts to STOP, then cancels the set() status
         ("motor_stop", RuntimeError),
+        # RunEngine pause path: stop(success=True) lets the set() finish normally
+        ("motor_stop_success", None),
         # Someone else writes to STOP; the motor record finishes the move normally
         ("stop_signal", None),
         # set() timeout cancels the simulated move without any stop
@@ -629,9 +680,9 @@ async def test_velo_and_accl_respecting_motor_mock_interrupted_move(
     motor = velo_and_accl_respecting_motor
     # velocity 10 over 10 units, so the full move takes about 1.1s
     status = motor.set(10.0, timeout=0.3 if interrupt == "timeout" else 5)
-    if interrupt == "motor_stop":
+    if interrupt in ("motor_stop", "motor_stop_success"):
         await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
-        await motor.stop()
+        await motor.stop(success=interrupt == "motor_stop_success")
     elif interrupt == "stop_signal":
         await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
         await motor.motor_stop.set(1)
@@ -644,3 +695,80 @@ async def test_velo_and_accl_respecting_motor_mock_interrupted_move(
     # the target means the move ended early rather than finishing
     assert await motor.motor_done_move.get_value() == 1
     assert await motor.user_readback.get_value() < 10.0
+
+
+@pytest.mark.parametrize("moving", [False, True], ids=["before_motion", "moving"])
+async def test_a_set_stopped_before_or_during_motion_fails_and_stays_still(
+    velo_and_accl_respecting_motor: Motor, moving: bool
+):
+    motor = velo_and_accl_respecting_motor
+    await motor.stage()
+    status = motor.set(10.0)
+    if moving:
+        await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+
+    await motor.stop()
+
+    # stop() does not wait for the set to finish failing
+    with pytest.raises(StoppedError, match=f"Device {motor.name} was stopped"):
+        await status
+    assert await motor.motor_done_move.get_value() == 1
+    stopped_at = await motor.user_readback.get_value()
+    assert (0 < stopped_at < 10) if moving else stopped_at == 0
+    await asyncio.sleep(0.2)
+    assert await motor.user_readback.get_value() == stopped_at
+
+
+async def test_stage_stops_a_move_in_progress(
+    velo_and_accl_respecting_motor: Motor,
+):
+    motor = velo_and_accl_respecting_motor
+    status = motor.set(0.5)
+    await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+
+    await motor.stage()
+
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
+    stopped_at = await motor.user_readback.get_value()
+    assert 0 < stopped_at < 0.5
+    await status
+    assert await motor.user_readback.get_value() == stopped_at
+    await motor.unstage()
+
+
+# Stopping the motor during the run-up does not end prepare, which finishes short
+async def test_stop_during_prepare_run_up_halts_the_motor_and_prepare_finishes_short(
+    velo_and_accl_respecting_motor: Motor,
+):
+    motor = velo_and_accl_respecting_motor
+    await motor.stage()
+    preparing = motor.prepare(
+        FlyMotorInfo(start_position=100, end_position=200, time_for_move=1)
+    )
+    await wait_for_value(motor.user_readback, lambda v: v > 1, timeout=1)
+    await motor.stop()
+    await asyncio.wait_for(preparing, timeout=1)
+    assert await motor.user_readback.get_value() < 100
+    await motor.unstage()
+
+
+async def test_default_mock_motor_stop_finishes_a_move_in_progress():
+    async with init_devices(mock=True):
+        motor = Motor("BLxxI-MO-TABLE-01:X", name="motor")
+    # A test simulating a move that has not finished
+    set_mock_value(motor.motor_done_move, 0)
+
+    await asyncio.wait_for(motor.stop(), timeout=1)
+
+    get_mock_put(motor.motor_stop).assert_called_once_with(1)
+    assert await motor.motor_done_move.get_value() == 1
+
+
+async def test_motor_stop_allows_the_acceleration_time_to_decelerate(motor: Motor):
+    await motor.acceleration_time.set(30)
+    set_mock_value(motor.motor_done_move, 0)
+
+    with patch("ophyd_async.epics.motor.wait_for_value") as wait_for_value:
+        await motor.stop()
+
+    assert wait_for_value.call_args.kwargs["timeout"] == 30 + DEFAULT_TIMEOUT

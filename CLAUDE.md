@@ -51,7 +51,9 @@ tox -p                  # all envs in parallel (CI equivalent)
 ## Code conventions
 
 - **No `ABC` base needed** — `@abstractmethod` without `ABC`/`ABCMeta` is intentional; pyright enforces implementation statically.
-- **A new `TypeVar` needs an entry in `docs/conf.py`.** Docs build with `nitpicky = True` and warnings-as-errors, and TypeVars never resolve as references, so every one is listed by qualified name (`ophyd_async.core._utils.T`, …) in the `nitpick_ignore` list near the end of `conf.py`. Miss it and `tox -e docs` fails on `reference target not found` while every other env stays green. Prefer declaring TypeVars in the `_utils.py` of their package, next to the existing ones, so the list stays in one place.
+- **A new `TypeVar` needs an entry in `docs/conf.py`.** Docs build with `nitpicky = True` and warnings-as-errors, and TypeVars never resolve as references, so every one is listed by qualified name (`ophyd_async.core._utils.T`, …) in the `nitpick_ignore` list near the end of `conf.py`. Miss it and `tox -e docs` fails on `reference target not found` while every other env stays green. Generic TypeVars (`T`, `V`, …) live in the `_utils.py` of their package; a TypeVar specific to one class is declared in that class's module, next to it.
+- **Plain `Enum` members take their own name as their value** (`UNSTAGED = "UNSTAGED"`), never `auto()`. This is for enums that do not represent a control system value. `StrictEnum`, `SubsetEnum` and `SupersetEnum` are different: their values are the strings the control system uses (e.g. `ON = "On"`), so they keep those.
+- **A lone marker value is a `typing_extensions.Sentinel`** (`KICKED_OFF = Sentinel("KICKED_OFF")`, usable as its own type in hints), not a one-member `Enum`, unless it crosses a serialisation boundary or is compared `==` to plain values: `CALCULATE_TIMEOUT` stays a string because pydantic fields and YAML/JSON plan arguments carry it.
 
 ## Updating this guide
 

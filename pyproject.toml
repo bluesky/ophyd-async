@@ -24,6 +24,7 @@ dependencies = [
     "stamina>=23.1.0",
     "scanspec>=1.0.0",
     "velocity-profile",
+    "typing-extensions>=4.14",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -59,7 +60,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
-    "pyright",
+    "pyright>=1.1.410",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",

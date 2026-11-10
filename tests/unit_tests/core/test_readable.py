@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import MagicMock
 
 import pytest
@@ -15,6 +16,7 @@ from ophyd_async.core import (
     MockSignalBackend,
     SignalR,
     StandardReadable,
+    TransitionError,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -339,3 +341,50 @@ async def test_duplicate_readable_raises_exception():
 
     with pytest.raises(KeyError):
         DummyDerivedDevice("test_duplicates")
+
+
+async def test_standard_readable_stage_twice_raises():
+    sr = StandardReadable(name="sr")
+    await sr.stage()
+    # Like ophyd's RedundantStaging
+    with pytest.raises(TransitionError, match="cannot go to STAGING from STAGED"):
+        await sr.stage()
+    await sr.unstage()
+    await sr.stage()
+
+
+class SlowToStage(StandardReadable):
+    """Its stage hook runs until cancelled, as if staged beside a failing device."""
+
+    def __init__(self, name: str = "") -> None:
+        super().__init__(name=name)
+        self.calls: list[str] = []
+        self.staging = asyncio.Event()
+        # Registered as a mix-in would
+        self._stage_funcs += (self.__on_stage,)
+        self._unstage_funcs += (self.__on_unstage,)
+
+    async def __on_stage(self) -> None:
+        self.calls.append("stage")
+        self.staging.set()
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            self.calls.append("stage cancelled")
+            raise
+
+    async def __on_unstage(self) -> None:
+        self.calls.append("unstage")
+
+
+async def test_unstage_cancels_a_stage_still_running():
+    device = SlowToStage(name="device")
+    stage = device.stage()
+    await device.staging.wait()
+
+    await device.unstage()
+
+    # The stage is cancelled before the unstage hooks run
+    assert device.calls == ["stage", "stage cancelled", "unstage"]
+    with pytest.raises(asyncio.CancelledError):
+        await stage

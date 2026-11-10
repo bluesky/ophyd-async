@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 from typing import cast
 
@@ -10,6 +11,7 @@ from scanspec.core import Path
 from scanspec.specs import Spec
 
 from ophyd_async.core import (
+    KICKED_OFF,
     ConfinedModel,
     FlyableLogic,
     SignalRW,
@@ -44,12 +46,15 @@ class ScanSpecInfo(ConfinedModel):
 
 
 @dataclass
-class StaticSeqTableFlyableLogic(FlyableLogic[SeqTableInfo, None]):
+class StaticSeqTableFlyableLogic(FlyableLogic[SeqTableInfo]):
     """For controlling the PandA `SeqTable` when fly scanning."""
 
     seq: SeqBlock
 
-    async def on_prepare(self, value: SeqTableInfo):
+    async def prepare_to_fly(
+        self, name: str, value: SeqTableInfo, previous_ctx: None
+    ) -> AsyncGenerator[None, None]:
+        yield None
         await asyncio.gather(
             self.seq.prescale_units.set(PandaTimeUnits.US),
             self.seq.enable.set(PandaBitMux.ZERO),
@@ -60,14 +65,13 @@ class StaticSeqTableFlyableLogic(FlyableLogic[SeqTableInfo, None]):
             self.seq.table.set(value.sequence_table),
         )
 
-    async def on_kickoff(self, ctx: None) -> None:
+    async def fly(self, ctx: None) -> AsyncGenerator[KICKED_OFF, None]:
         await self.seq.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
-
-    async def on_complete(self, ctx: None) -> None:
+        yield KICKED_OFF
         await wait_for_value(self.seq.active, False, timeout=None)
 
-    async def stop(self):
+    async def ensure_stopped(self) -> None:
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
 
@@ -89,11 +93,14 @@ class PosOutScaleOffset:
 
 
 @dataclass
-class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
+class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo]):
     seq: SeqBlock
     motor_pos_outs: dict[Motor, PosOutScaleOffset] = field(default_factory=dict)
 
-    async def on_prepare(self, value: ScanSpecInfo):
+    async def prepare_to_fly(
+        self, name: str, value: ScanSpecInfo, previous_ctx: None
+    ) -> AsyncGenerator[None, None]:
+        yield None
         await self.seq.enable.set(PandaBitMux.ZERO)
         slice = Path(value.spec.calculate()).consume()
         slice_duration = error_if_none(slice.duration, "Slice must have duration")
@@ -155,14 +162,13 @@ class ScanSpecSeqTableFlyableLogic(FlyableLogic[ScanSpecInfo, None]):
             self.seq.table.set(rows),
         )
 
-    async def on_kickoff(self, ctx: None) -> None:
+    async def fly(self, ctx: None) -> AsyncGenerator[KICKED_OFF, None]:
         await self.seq.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
-
-    async def on_complete(self, ctx: None) -> None:
+        yield KICKED_OFF
         await wait_for_value(self.seq.active, False, timeout=None)
 
-    async def stop(self):
+    async def ensure_stopped(self) -> None:
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
 
@@ -192,12 +198,15 @@ class PcompInfo(ConfinedModel):
 
 
 @dataclass
-class StaticPcompFlyableLogic(FlyableLogic[PcompInfo, None]):
+class StaticPcompFlyableLogic(FlyableLogic[PcompInfo]):
     """For controlling the PandA `PcompBlock` when fly scanning."""
 
     pcomp: PcompBlock
 
-    async def on_prepare(self, value: PcompInfo):
+    async def prepare_to_fly(
+        self, name: str, value: PcompInfo, previous_ctx: None
+    ) -> AsyncGenerator[None, None]:
+        yield None
         await self.pcomp.enable.set(PandaBitMux.ZERO)
         await asyncio.gather(
             self.pcomp.start.set(value.start_position),
@@ -207,13 +216,12 @@ class StaticPcompFlyableLogic(FlyableLogic[PcompInfo, None]):
             self.pcomp.dir.set(value.direction),
         )
 
-    async def on_kickoff(self, ctx: None) -> None:
+    async def fly(self, ctx: None) -> AsyncGenerator[KICKED_OFF, None]:
         await self.pcomp.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.pcomp.active, True, timeout=1)
-
-    async def on_complete(self, ctx: None) -> None:
+        yield KICKED_OFF
         await wait_for_value(self.pcomp.active, False, timeout=None)
 
-    async def stop(self):
+    async def ensure_stopped(self) -> None:
         await self.pcomp.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.pcomp.active, False, timeout=1)

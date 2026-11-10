@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import time
-from asyncio import CancelledError
+from asyncio import FIRST_COMPLETED, CancelledError
 from collections.abc import (
     AsyncGenerator,
     Awaitable,
@@ -226,12 +226,21 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
     """
 
     def __init__(
-        self, iterator: AsyncGenerator[WatcherUpdate[T], None], name: str | None = None
+        self,
+        iterator: AsyncGenerator[WatcherUpdate[T], None],
+        name: str | None = None,
+        *,
+        stop: asyncio.Future[Exception | None] | None = None,
     ):
         self._watchers: list[Watcher[T]] = []
         self._start = time.monotonic()
         self._last_update: WatcherUpdate[T] | None = None
-        super().__init__(self._notify_watchers_from(iterator), name)
+        super().__init__(
+            self._notify_watchers_from(iterator)
+            if stop is None
+            else self._notify_until_stopped(iterator, stop),
+            name,
+        )
 
     async def _notify_watchers_from(
         self, iterator: AsyncGenerator[WatcherUpdate[T], None]
@@ -247,6 +256,37 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
                 )
                 for watcher in self._watchers:
                     self._update_watcher(watcher, self._last_update)
+
+    async def _notify_until_stopped(
+        self,
+        iterator: AsyncGenerator[WatcherUpdate[T], None],
+        stop: asyncio.Future[Exception | None],
+    ) -> None:
+        """Notify watchers until the iterator ends or `stop` resolves.
+
+        `stop` resolves with `None` to finish normally or with the error to raise.
+        """
+        # Stopped before we started, so leave the hardware alone
+        stopped = stop.done()
+        if not stopped:
+            # Run the iterator in a task of its own, so a stop can cancel it
+            # without cancelling this status
+            notify = asyncio.create_task(self._notify_watchers_from(iterator))
+            try:
+                await asyncio.wait({notify, stop}, return_when=FIRST_COMPLETED)
+            except asyncio.CancelledError:
+                # This status was cancelled from outside: cancel notify too
+                await cancel_and_wait(notify)
+                # Raise notify's CancelledError, as its message names the signal
+                # it was waiting on...
+                await notify
+                # ...or ours, if notify finished before the cancel reached it
+                raise
+            # If it finished, even in the same iteration as the stop, that end wins
+            stopped = not notify.done()
+            await cancel_and_wait(notify)
+        if stopped and (error := stop.result()) is not None:
+            raise error
 
     def _update_watcher(self, watcher: Watcher[T], update: WatcherUpdate[T]):
         vals = asdict(

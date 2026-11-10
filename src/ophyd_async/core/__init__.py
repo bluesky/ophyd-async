@@ -51,7 +51,7 @@ from ._enums import (
     OnOff,
     YesNo,
 )
-from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
+from ._flyable import KICKED_OFF, FlyableLogic, FlyMotorInfo, StandardFlyable
 from ._log import config_ophyd_async_logging, logger
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
@@ -75,6 +75,7 @@ from ._movable import (
     MovableLogic,
     StandardMovable,
     TimeoutCalculator,
+    watch_readback,
 )
 from ._path_providers import (
     AutoIncrementFilenameProvider,
@@ -133,6 +134,7 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
+from ._standard_base import Logic, StoppedError, TransitionError
 from ._status import (
     AsyncStatus,
     WatchableAsyncStatus,
@@ -200,9 +202,12 @@ __all__ = [
     "print_connection_status",
     # Movable
     "MovableLogic",
+    "StoppedError",
+    "Logic",
     "StandardMovable",
     "InstantMovableMock",
     "TimeoutCalculator",
+    "watch_readback",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
@@ -234,6 +239,7 @@ __all__ = [
     "SupersetEnum",
     "EnumTypes",
     "Table",
+    "TransitionError",
     "SignalMetadata",
     "Primitive",
     # Soft signal
@@ -302,6 +308,7 @@ __all__ = [
     "StandardFlyable",
     "FlyMotorInfo",
     "FlyableLogic",
+    "KICKED_OFF",
     # Settings
     "Settings",
     "SettingsProvider",

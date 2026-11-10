@@ -2077,6 +2077,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "scanspec" },
     { name = "stamina" },
+    { name = "typing-extensions" },
     { name = "velocity-profile" },
 ]
 
@@ -2151,6 +2152,7 @@ requires-dist = [
     { name = "pyyaml" },
     { name = "scanspec", specifier = ">=1.0.0" },
     { name = "stamina", specifier = ">=23.1.0" },
+    { name = "typing-extensions", specifier = ">=4.14" },
     { name = "velocity-profile" },
 ]
 provides-extras = ["sim", "ca", "pva", "tango", "demo"]
@@ -2172,7 +2174,7 @@ dev = [
     { name = "pre-commit" },
     { name = "pydata-sphinx-theme", specifier = ">=0.12" },
     { name = "pyepics", specifier = ">=3.4.2" },
-    { name = "pyright" },
+    { name = "pyright", specifier = ">=1.1.410" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
