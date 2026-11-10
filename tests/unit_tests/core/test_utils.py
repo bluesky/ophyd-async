@@ -359,7 +359,6 @@ async def test_gather_dict_awaits_values_and_infers_types():
     result = await gather_dict(
         {"a": _async_value(1), "b": _async_value(2), "c": _async_value(3)}
     )
-    # pyright fails on this line in CI if the awaited types are not inferred
     assert_type(result, dict[str, int])
     assert result == {"a": 1, "b": 2, "c": 3}
     assert list(result) == ["a", "b", "c"]
