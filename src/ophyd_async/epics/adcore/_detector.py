@@ -82,6 +82,29 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         return plugin
 
 
+def plugins_with_proc(
+    plugins: Mapping[str, NDPluginBaseIO] | None,
+    prefix: str,
+    proc_suffix: str | None,
+) -> tuple[dict[str, NDPluginBaseIO], NDProcessIO | None]:
+    """Add a process plugin made from proc_suffix to plugins.
+
+    :param plugins: The caller's plugins, which must not include "proc"
+    :param prefix: The detector's PV prefix
+    :param proc_suffix: The process plugin's PV suffix, if it has one
+    :returns: The plugins with "proc" added, and the process plugin
+    """
+    plugins = dict(plugins or {})
+    if "proc" in plugins:
+        msg = "Pass proc_suffix to add a process plugin, not plugins['proc']"
+        raise ValueError(msg)
+    proc = None
+    if proc_suffix:
+        proc = NDProcessIO(prefix + proc_suffix)
+        plugins["proc"] = proc
+    return plugins, proc
+
+
 class ContAcqDetector(AreaDetector[ADBaseIOT]):
     """Create an continuously acquiring AreaDetector instance.
 
@@ -93,7 +116,9 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
     :param proc_suffix: Suffix for the NDProcessIO plugin PV, if any, defaults to None
     :param num_frames_to_skip:
         Incoming frames to skip before each CB gate opening, defaults to 0
-    :param plugins: Additional areaDetector plugins to include
+    :param plugins:
+        Additional areaDetector plugins to include. "proc" is reserved: use
+        proc_suffix instead.
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
     """
@@ -113,16 +138,14 @@ class ContAcqDetector(AreaDetector[ADBaseIOT]):
     ) -> None:
         driver = driver_cls(prefix + driver_suffix)
         cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
-        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
+        plugins, proc = plugins_with_proc(plugins, prefix, proc_suffix)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin, num_frames_to_skip),
-            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, proc_plugin),
-            plugins=(plugins or {})
-            | {"cb": cb_plugin}
-            | ({"proc": proc_plugin} if proc_plugin else {}),
+            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin, proc),
+            plugins={**plugins, "cb": cb_plugin},
             config_sigs=config_sigs,
             name=name,
         )

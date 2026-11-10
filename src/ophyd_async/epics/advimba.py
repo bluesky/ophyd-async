@@ -26,6 +26,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
+    plugins_with_proc,
     prepare_exposures,
     prepare_filter,
     trigger_info_from_driver,
@@ -151,7 +152,9 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
         If provided, this value is used for deadtime instead of looking up
         based on camera model.
     :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
-    :param plugins: Additional areaDetector plugins to include
+    :param plugins:
+        Additional areaDetector plugins to include. "proc" is reserved: use
+        proc_suffix instead.
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
     """
@@ -168,14 +171,14 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
         name: str = "",
     ) -> None:
         driver = VimbaDriverIO(prefix + driver_suffix)
-        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
+        plugins, proc = plugins_with_proc(plugins, prefix, proc_suffix)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
-            trigger_logic=VimbaTriggerLogic(driver, proc_plugin, override_deadtime),
-            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
+            trigger_logic=VimbaTriggerLogic(driver, proc, override_deadtime),
+            plugins=plugins,
             config_sigs=config_sigs,
             name=name,
         )

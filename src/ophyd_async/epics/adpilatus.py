@@ -25,6 +25,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     NDProcessIO,
+    plugins_with_proc,
     prepare_exposures,
     prepare_filter,
     trigger_info_from_driver,
@@ -145,7 +146,9 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
         `PilatusTriggerMode.MULT_TRIGGER` for one image per trigger pulse.
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
     :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix
-    :param plugins: Additional areaDetector plugins to include
+    :param plugins:
+        Additional areaDetector plugins to include. "proc" is reserved: use
+        proc_suffix instead.
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
     """
@@ -163,16 +166,16 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
         name: str = "",
     ) -> None:
         driver = PilatusDriverIO(prefix + driver_suffix)
-        proc_plugin = NDProcessIO(prefix + proc_suffix) if proc_suffix else None
+        plugins, proc = plugins_with_proc(plugins, prefix, proc_suffix)
         super().__init__(
             driver,
             prefix,
             *writer_factories,
             acquire_logic=ADAcquireLogic(driver, driver_armed_signal=driver.armed),
             trigger_logic=PilatusTriggerLogic(
-                driver, readout_time, proc_plugin, edge_trigger_mode=edge_trigger_mode
+                driver, readout_time, proc, edge_trigger_mode=edge_trigger_mode
             ),
-            plugins=(plugins or {}) | ({"proc": proc_plugin} if proc_plugin else {}),
+            plugins=plugins,
             config_sigs=config_sigs,
             name=name,
         )
