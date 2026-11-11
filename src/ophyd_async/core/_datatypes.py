@@ -171,7 +171,7 @@ class Table(ConfinedModel):
                 # Convert to correct dtype, but only if we don't lose precision
                 # as a result
                 cast_value = np.array(data_value).astype(expected_dtype)
-                if not np.array_equal(data_value, cast_value):
+                if not np.array_equal(data_value, cast_value, equal_nan=True):
                     msg = (
                         f"{field_name}: Cannot cast {data_value} to {expected_dtype} "
                         "without losing precision"
