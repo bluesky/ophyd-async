@@ -116,7 +116,7 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(PilatusTriggerMode.INTERNAL)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime, deadtime)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         await self.driver.trigger_mode.set(self.edge_trigger_mode)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 

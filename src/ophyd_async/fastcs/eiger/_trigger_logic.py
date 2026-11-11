@@ -10,12 +10,13 @@ async def _prepare_detector(
     detector: EigerDetectorIO,
     trigger_mode: EigerTriggerMode,
     num: int,
+    images_per_exposure: int,
     livetime: float = 0.0,
 ):
     coros = [
         detector.trigger_mode.set(trigger_mode),
         detector.ntrigger.set(num),
-        detector.nimages.set(1),
+        detector.nimages.set(images_per_exposure),
     ]
     if livetime:
         coros += [
@@ -34,10 +35,14 @@ class EigerTriggerLogic(DetectorTriggerLogic):
         return 0.0001
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
-        await _prepare_detector(self.detector, EigerTriggerMode.INTERNAL, num, livetime)
+        await _prepare_detector(
+            self.detector, EigerTriggerMode.INTERNAL, 1, num, livetime
+        )
 
-    async def prepare_edge(self, num: int, livetime: float):
-        await _prepare_detector(self.detector, EigerTriggerMode.EDGE, num, livetime)
+    async def prepare_edge(self, num: int, images_per_exposure: int, livetime: float):
+        await _prepare_detector(
+            self.detector, EigerTriggerMode.EDGE, num, images_per_exposure, livetime
+        )
 
     async def prepare_level(self, num: int):
-        await _prepare_detector(self.detector, EigerTriggerMode.GATE, num)
+        await _prepare_detector(self.detector, EigerTriggerMode.GATE, 1, num)

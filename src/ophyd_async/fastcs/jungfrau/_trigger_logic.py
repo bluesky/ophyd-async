@@ -104,7 +104,7 @@ class JungfrauTriggerLogic(DetectorTriggerLogic):
                 self.detector, JungfrauTriggerMode.INTERNAL, num, livetime, deadtime
             )
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         acquisition_type = await get_and_reset_acquisition_type(self.acquisition_type)
         if acquisition_type == AcquisitionType.PEDESTAL:
             raise ValueError(

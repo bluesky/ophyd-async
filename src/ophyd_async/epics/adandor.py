@@ -77,7 +77,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(Andor2TriggerMode.INTERNAL)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime, deadtime)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         await self.driver.trigger_mode.set(Andor2TriggerMode.EXT_TRIGGER)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
