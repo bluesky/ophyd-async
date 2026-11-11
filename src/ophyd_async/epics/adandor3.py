@@ -65,7 +65,7 @@ class Andor3DriverIO(ADBaseIO):
     """
 
     trigger_mode: A[SignalRW[Andor3TriggerMode], PvSuffix.rbv("TriggerMode")]
-    andor_readout_time: A[SignalR[float], PvSuffix("ReadoutTime")]
+    readout_time: A[SignalR[float], PvSuffix("ReadoutTime")]
     image_mode: A[SignalRW[Andor3ImageMode], PvSuffix.rbv("ImageMode")]
 
 
