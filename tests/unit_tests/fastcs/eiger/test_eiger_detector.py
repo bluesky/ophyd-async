@@ -40,7 +40,8 @@ async def test_prepare_internal_calls_correct_parameters(
         detector,
         [
             call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL),
-            call.detector.nimages.put(10),
+            call.detector.ntrigger.put(10),
+            call.detector.nimages.put(1),
             call.detector.count_time.put(0.1),
             call.detector.frame_time.put(0.1),
             call.od.acquisition_id.put(""),

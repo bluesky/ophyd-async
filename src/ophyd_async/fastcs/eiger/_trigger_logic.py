@@ -14,7 +14,8 @@ async def _prepare_detector(
 ):
     coros = [
         detector.trigger_mode.set(trigger_mode),
-        detector.nimages.set(num),
+        detector.ntrigger.set(num),
+        detector.nimages.set(1),
     ]
     if livetime:
         coros += [
