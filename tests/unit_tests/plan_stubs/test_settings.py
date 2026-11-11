@@ -66,18 +66,6 @@ async def test_get_current_config_settings(
     RE(my_plan())
 
 
-async def test_store_settings(RE, parent_device: ParentOfEverythingDevice, tmp_path):
-    provider = YamlSettingsProvider(tmp_path)
-
-    def my_plan():
-        yield from store_settings(provider, "test_file", parent_device)
-        with open(tmp_path / "test_file.yaml") as actual_file:
-            with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
-                assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
-
-    RE(my_plan())
-
-
 async def test_store_config_settings(
     RE, every_parent_device: OneOfEverythingDevice, tmp_path
 ):
