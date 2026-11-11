@@ -6,10 +6,11 @@ from typing import Any, TypeVar
 from unittest.mock import AsyncMock, Mock
 
 from ._command import Command, CommandConnector, MockCommandBackend, MockExecuteCallback
-from ._device import Device, DeviceMock
+from ._device import Device
 from ._mock_signal_backend import MockCallbackFilter, MockPutCallback, MockSignalBackend
 from ._signal import Signal, SignalConnector, SignalR
 from ._signal_backend import SignalDatatypeT
+from ._utils import error_if_none
 
 MockT = TypeVar("MockT")
 
@@ -43,13 +44,16 @@ def set_mock_attr(device: Device, attr: str, mock: MockT) -> MockT:
 def get_mock(device: Device | Signal) -> Mock:
     """Return the mock (which may have child mocks attached) for a Device.
 
-    The device must have been connected in mock mode.
+    This works for any connected Device, real or mocked. The mocks of its mocked
+    children are nested under it, so a call on a child is in `mock_calls` here.
+
+    :raises RuntimeError: If the last connect of the Device has not succeeded.
     """
-    mock = device._mock  # noqa: SLF001
-    if not isinstance(mock, DeviceMock):
-        msg = f"Device {device} not connected in mock mode"
-        raise RuntimeError(msg)
-    return mock()
+    device_mock = error_if_none(
+        device._mock,  # noqa: SLF001
+        f"Device {device} not connected",
+    )
+    return device_mock()
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:

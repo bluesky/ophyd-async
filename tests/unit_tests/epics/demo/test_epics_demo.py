@@ -10,7 +10,7 @@ from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
-    LazyMock,
+    DeviceMock,
     get_mock,
     get_mock_execute,
     get_mock_put,
@@ -37,11 +37,11 @@ scalar_int_dtype = (
 
 @pytest.fixture
 async def mock_motor():
-    # Connect with a plain LazyMock, rather than mock=True that will use
+    # Connect with a plain DeviceMock, rather than mock=True that will use
     # a InstantMovableMock, so we can have full control of how the readback is set
     # in the tests
     mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:X:", name="mock_motor")
-    await mock_motor.connect(mock=LazyMock())
+    await mock_motor.connect(mock=DeviceMock())
     set_mock_units(mock_motor.readback, "mm")
     set_mock_precision(mock_motor.readback, 3)
     set_mock_value(mock_motor.velocity, 1)
@@ -137,7 +137,7 @@ async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):
 
 
 async def test_mocks_in_device_share_parent():
-    lm = LazyMock()
+    lm = DeviceMock()
     mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:Y:")
     await mock_motor.connect(mock=lm)
     mock = lm()

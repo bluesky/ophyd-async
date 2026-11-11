@@ -39,6 +39,7 @@ tox -p                  # all envs in parallel (CI equivalent)
 - **No private-attribute access in tests** (`det._trigger_logic`, …) — call public methods and assert on output (e.g. `trigger()` then `describe()`), unless no public equivalent exists.
 - **Happy path in one public-interface test; unhappy paths small.** For a multi-step lifecycle (e.g. `prepare` → `kickoff` → `complete`), write a *single* "happy path" test that drives the whole sequence through the public interface and asserts the observable end state — don't split one test per step. Then add small "unhappy path" tests (ordering errors, limit violations, injected failures); these stay majority-public-interface but may use mocks to shorten sequences or inject errors. The smell this avoids is a step-scoped test that has to call the *other* steps to set itself up (e.g. a `kickoff` test that also calls `prepare`+`complete`) — fold that into the happy path instead.
 - **Parametrize normal + edge cases together** in one `@pytest.mark.parametrize`, not two functions.
+- **Keep CI test stages to about a minute.** Each "Run tests" stage for unit tests and for system tests should take about a minute in CI. Take care to trim tests down in size, scale and sleeping to stay in that range.
 - `set_mock_value(signal, value)` injects state; `init_devices(mock=True)` (async CM) builds devices; `assert_has_calls(device, [...])` from `ophyd_async.testing` checks PV writes in order.
 
 ## Docs & docstring conventions

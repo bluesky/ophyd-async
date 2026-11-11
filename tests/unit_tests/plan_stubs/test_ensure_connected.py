@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from ophyd_async.core import Device, NotConnectedError, soft_signal_rw
+from ophyd_async.core import Device, NotConnectedError, get_mock, soft_signal_rw
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -24,20 +24,18 @@ def test_ensure_connected(RE):
     ):
         RE(connect())
 
-    assert isinstance(device1.signal._connect_task.exception(), NotConnectedError)
+    with pytest.raises(RuntimeError, match="not connected"):
+        get_mock(device1.signal)
 
     device1.signal = soft_signal_rw(str)
     RE(connect())
-    assert device1.signal._connect_task.exception() is None
+    get_mock(device1.signal)
 
     device2 = MyDevice("PREFIX2", name="device2")
-
-    def connect_with_mocking():
-        assert device2.signal._mock is None
-        yield from ensure_connected(device2, mock=True, timeout=0.1)
-        assert device2.signal._mock is not None
-
-    RE(connect_with_mocking())
+    with pytest.raises(RuntimeError, match="not connected"):
+        get_mock(device2.signal)
+    RE(ensure_connected(device2, mock=True, timeout=0.1))
+    get_mock(device2.signal)
 
 
 def test_ensure_connected_fails_for_non_unique_device_names(RE):

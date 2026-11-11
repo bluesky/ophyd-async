@@ -138,7 +138,7 @@ async def test_panda_gets_types_from_common_class(panda_t):
     ``SeqBlock``/``PulseBlock``'s own class annotations, needing at most
     ``connect(mock=True)`` and no live PVI tree at all (see
     ``PviDeviceConnector.create_children_from_annotations``, which runs at
-    ``Device.__init__`` time from the annotations alone, vs. ``connect_real``,
+    ``Device.__init__`` time from the annotations alone, vs. a real ``connect``,
     which is the only thing that ever talks to a network):
 
     - sub-block type resolution (``panda.pcap`` is a ``PcapBlock``,
@@ -162,7 +162,7 @@ async def test_panda_gets_types_from_common_class(panda_t):
     - ``panda.pcap.newsignal`` and its ``NO_ARG_VOID_SIGNATURE`` signature
       check -- ``newsignal`` is not declared anywhere in ``PcapBlock``; it
       only ever appears by walking a live PVI tree in
-      ``PviDeviceConnector.connect_real`` (gated behind the
+      ``PviDeviceConnector.connect`` (gated behind the
       ``INCLUDE_EXTRA_SIGNAL`` macro in the old system test's IOC database).
     - ``panda.extra`` and its ``isinstance(..., DeviceVector)`` check --
       same story, ``extra`` is a block gated behind ``INCLUDE_EXTRA_BLOCK``

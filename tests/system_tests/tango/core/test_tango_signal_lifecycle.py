@@ -45,7 +45,7 @@ once per module - `reset_everything_device`'s hardcoded `asyncio.sleep(1)`
 (44 seconds of pure sleep alone), and a from-scratch `TangoDevice(...).
 connect()` per case, which for the exhaustive tier's
 `auto_fill_signals=True` means rediscovering all 37 attributes/commands on
-every one of the 37 cases (see `TangoDeviceConnector.connect_real`).
+every one of the 37 cases (see `TangoDeviceConnector.connect`).
 
 `reset_everything_device` (below) is fixed by a plain per-process guard
 flag: every case's own `assert_signal_lifecycle` already restores its
@@ -60,14 +60,11 @@ scenario (`tests/system_tests/epics/signal/test_signals.py`'s
 `ioc_devices` fixture + `assert_monitor_then_put`'s `await signal.connect
 (timeout=1)`): construct the (unconnected) device *once*, in a plain
 *synchronous* `scope="module"` fixture, then `await device.connect()`
-inside each test as before. `Device.connect()` caches its result in an
-`asyncio.Task` (`self._connect_task`, `src/ophyd_async/core/_device.py`) -
-once that task is done, every later `.connect()` call just re-awaits the
-same completed task, which is safe from a different test's event loop:
-awaiting an already-done `asyncio.Task`/`Future` never touches the loop it
-was created on (`Task.__await__` returns `self.result()` immediately
-without yielding). So only the *first* parametrized case actually pays
-the connect/discovery cost; the rest are cache hits. This avoids
+inside each test as before. `Device.connect()` caches a successful
+connect, so every later `.connect()` with the same mock choice returns
+without connecting again, which is safe from a different test's event
+loop as it awaits nothing. So only the *first* parametrized case actually
+pays the connect/discovery cost; the rest are cache hits. This avoids
 pytest-asyncio's `loop_scope="module"` entirely (an earlier attempt using
 it broke CI - see this PR's commit history for why), so it doesn't need
 any change to the shared, function-scoped `event_loop` fixture in this
@@ -163,11 +160,10 @@ def lifecycle_device(everything_device_trl: str) -> TangoTestDevice:
     Deliberately a plain *synchronous* fixture that only constructs the
     Device - it does not `connect()` it. Each test still calls `await
     device.connect()` itself (same as `exhaustive_device` below), which is
-    what makes sharing this safe: `Device.connect()` caches its work in an
-    `asyncio.Task` (`src/ophyd_async/core/_device.py`), so only the first
-    test's call actually connects - every later call, even from a
-    different test's event loop, just re-awaits that already-done task,
-    which never touches the loop it was created on. This is the same
+    what makes sharing this safe: `Device.connect()` caches a successful
+    connect, so only the first test's call actually connects - every later
+    call, even from a different test's event loop, returns without
+    awaiting anything. This is the same
     pattern EPICS's own system tests already use for this exact scenario
     (`tests/system_tests/epics/signal/test_signals.py`'s `ioc_devices`
     fixture, constructed once and `.connect()`-ed per test/signal).
@@ -184,7 +180,7 @@ def exhaustive_device(everything_device_trl: str) -> TangoDevice:
     See `lifecycle_device` above for why this is safe despite being shared
     across tests/event loops. `auto_fill_signals=True` discovers and
     connects *every* attribute/command on the device on first `connect()`
-    (see `TangoDeviceConnector.connect_real`) - without this fixture, each
+    (see `TangoDeviceConnector.connect`) - without this fixture, each
     of the 37 parametrized cases reconnecting its own fresh `TangoDevice`
     paid that whole-device discovery cost again, ~37x more network round
     trips than the single connect this module actually needs.
@@ -304,7 +300,7 @@ async def test_signal_mock_parity(
     """A mock-connected device agrees on shape/dtype with a real-connected
     one, and never touches the network for get/set."""
     real = TangoTestDevice(everything_device_trl, name="real")
-    # Never dialled: mock mode skips connect_real entirely.
+    # Never dialled: a mocked connect never makes the proxy.
     mock = TangoTestDevice("does/not/matter#dbase=no", name="mock")
     await real.connect()
     await mock.connect(mock=True)
@@ -339,7 +335,7 @@ class _DeviceVectorTestDevice(TangoDevice, StandardReadable):
     Neither `TangoTestDevice` nor `OneOfEverythingTangoDevice` (the real
     server it pairs with) declares a `DeviceVector` field, so mock-connecting
     the real curated device never exercises
-    `TangoDeviceConnector.connect_mock`'s `isinstance(device, DeviceVector)`
+    `TangoDeviceConnector.connect`'s `isinstance(device, DeviceVector)`
     branch (added on this same PR to fix a bug where it unconditionally
     called `create_device_vector_entries_to_mock` for *every* device, vector
     or not). This one-off Device exists purely to mock-connect and exercise
