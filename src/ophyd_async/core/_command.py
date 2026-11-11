@@ -8,7 +8,7 @@ from functools import cached_property
 from typing import Generic, cast
 from unittest.mock import AsyncMock
 
-from ._device import Device, DeviceConnector, LazyMock
+from ._device import Device, DeviceConnector, DeviceMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
 from ._utils import (
@@ -61,15 +61,20 @@ class CommandConnector(DeviceConnector, Generic[P, T]):
     def __init__(self, backend: CommandBackend[P, T]):
         self.backend = self._init_backend = backend
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
-        """Connect the backend in mock mode."""
-        self.backend = MockCommandBackend(self._init_backend, mock)
-
-    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        """Connect the backend to real hardware."""
-        self.backend = self._init_backend
-        device.log.debug(f"Connecting to {self.backend.source(device.name)}")
-        await self.backend.connect(timeout)
+    async def connect(
+        self,
+        device: Device,
+        mock: DeviceMock,
+        timeout: float,
+        force_reconnect: bool,
+    ):
+        """Connect the backend in mock mode or to real hardware."""
+        if mock.mocked:
+            self.backend = MockCommandBackend(self._init_backend, mock)
+        else:
+            self.backend = self._init_backend
+            device.log.debug(f"Connecting to {self.backend.source(device.name)}")
+            await self.backend.connect(timeout)
 
 
 class Command(Device, Generic[P, T]):
@@ -265,7 +270,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
 class MockCommandBackend(CommandBackend[P, T]):
     """A backend for a Command that uses a mock for testing."""
 
-    def __init__(self, initial_backend: CommandBackend[P, T], mock: LazyMock):
+    def __init__(self, initial_backend: CommandBackend[P, T], mock: DeviceMock):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: MockExecuteCallback[P, T] | None = None

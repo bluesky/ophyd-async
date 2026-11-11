@@ -36,12 +36,8 @@ from ._device import (
     DeviceConnector,
     DeviceMap,
     DeviceMock,
-    DeviceProcessor,
     DeviceVector,
-    LazyMock,
     default_mock_class,
-    init_devices,
-    print_connection_status,
 )
 from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
@@ -52,6 +48,12 @@ from ._enums import (
     YesNo,
 )
 from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
+from ._init_devices import (
+    DeviceProcessor,
+    connect_devices,
+    init_devices,
+    print_connection_status,
+)
 from ._log import config_ophyd_async_logging, logger
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
@@ -172,6 +174,7 @@ def __getattr__(name):
 
     renames = {
         "NotConnected": NotConnectedError,
+        "LazyMock": DeviceMock,
     }
     rename = renames.get(name)
     if rename is not None:
@@ -194,6 +197,7 @@ __all__ = [
     "DeviceMap",
     "DeviceVector",
     "DeviceProcessor",
+    "connect_devices",
     "init_devices",
     "print_connection_status",
     # Movable
@@ -240,7 +244,6 @@ __all__ = [
     "soft_signal_rw",
     # Mock signal
     "DeviceMock",
-    "LazyMock",
     "MockSignalBackend",
     "default_mock_class",
     # Mocking utilities

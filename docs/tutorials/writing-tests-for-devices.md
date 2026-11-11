@@ -25,7 +25,7 @@ We will be writing a test using the pytest framework which encourages fixtures t
 :pyobject: mock_motor
 ```
 
-This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#LazyMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
+This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#DeviceMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
 
 If we had any cleanup to do, we would do that after the yield statement.
 
@@ -53,9 +53,47 @@ used when connected in mock mode:
 ```
 
 Now whenever a `Motor` is connected using [](#init_devices)`(mock=True)`, it will
-automatically use `InstantMotorMock` without any fixture setup. You can still override
-the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
-or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
+automatically use `InstantMotorMock` without any fixture setup.
+
+A default mock class should make the Device's verbs work in the most minimal way
+possible, e.g. a move completes instantly. Mocks that model real behavior, like velocity
+or timing, should be opt-in rather than registered as the default.
+
+You can still override the automatic mock for specific tests by passing a
+[](#DeviceMock) instance to `connect()`, as the `mock_motor` fixture above does.
+
+:::{note}
+A second `connect(mock=True)` with the same mock choice is cached, so it keeps the mock values and the call record. `connect(mock=True, force_reconnect=True)`, or a different mock choice, makes a new mock for the Device and all of its children, resetting mock values and the call record and dropping subscriptions and staging made before it. Subscribe or stage again afterwards.
+:::
+
+(override-mock-by-type)=
+### Mocking by Device type
+
+To mock only some Devices, or to override their mocks, including Devices deep in a composite Device, pass a mapping of Device type to `True`, `False` or a `DeviceMock` class to [](#init_devices) or [](#ensure_connected):
+
+```python
+# Real, except Motors and everything under them, which are mocked
+with init_devices(mock={Motor: True}):
+    stage = Stage("PREFIX:")
+
+# Mocked, except Motors, which are real all the way down, signals included
+with init_devices(mock={Device: True, Motor: False}):
+    stage = Stage("PREFIX:")
+
+# Real, except Motors, which use VeloAndAcclRespectingMotorMock
+with init_devices(mock={Motor: VeloAndAcclRespectingMotorMock}):
+    stage = Stage("PREFIX:")
+
+# The whole detector is mocked, plugins included
+with init_devices(mock={AreaDetector: True}):
+    det = AreaDetector(...)
+```
+
+Each Device looks itself up by the nearest class in its MRO, and a `DeviceMock` class means mocked with that class. A Device with no entry follows its parent, so mocking a Device mocks its whole subtree. An entry under `Device` is the default for the first level only, the top level Devices, or the direct children of a `DeviceMock` passed to `connect()`. Below that a Device with no entry follows its parent, so `{Device: True}` mocks the whole tree, and `{Device: XMock}` gives `XMock` to the top level Devices and each child its own default mock class. `Signal` and `Command` types cannot be keys, passing one raises `TypeError`: they always follow their parent Device.
+
+Every connected Device holds the [](#DeviceMock) it was connected with, real ones included, and the mocks of mocked children are nested under the mock of their parent, real or not. So in the examples above [](#get_mock) on `stage` shows the calls made on the mocked motors, as `get_mock(stage).mtr.user_setpoint.put`. Real Signals record nothing, so a fully real tree has no calls to see.
+
+`Device.connect()` takes a `bool` or a `DeviceMock` instance instead. The instance is mocked unless made with `mocked=False`, and its children follow it unless its `mock_types` say otherwise, with a `Device` entry applying to its direct children only. Only `init_devices` and `ensure_connected` check a mapping, so pass one through them.
 
 ## Simulating a signal that stops updating
 
@@ -96,7 +134,9 @@ timing — the [](#Motor) module also ships `VeloAndAcclRespectingMotorMock`, wh
 drives the readback towards the setpoint over time while respecting the motor's
 velocity and acceleration.
 
-To use it, pass an instance directly to `connect()` instead of relying on the default:
+To use it for every Device of a type, rather than one Device, pass `init_devices(mock={DeviceType: MockType})`, as explained in [](#override-mock-by-type).
+
+To use it for a single Device, pass an instance directly to `connect()` instead of relying on the default:
 
 ```{literalinclude} ../../tests/unit_tests/epics/test_motor.py
 :language: python
@@ -146,7 +186,7 @@ Now let's call some verbs and check that they do the right thing. We want to che
 :pyobject: test_motor_stopped
 ```
 
-This time we use [](#get_mock_execute) to get an [](#unittest.mock.AsyncMock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with no arguments. We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all its children, useful to check ordering.
+This time we use [](#get_mock_execute) to get an [](#unittest.mock.AsyncMock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with no arguments. We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all its children, useful to check ordering. [](#get_mock) works on any connected Device, real or mocked.
 
 For [](#Signal)s, the equivalent is [](#get_mock_put), which returns an `AsyncMock` that records every `Signal.set()` / `put()` call.
 

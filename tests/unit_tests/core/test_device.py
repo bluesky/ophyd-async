@@ -2,22 +2,31 @@ import asyncio
 import os
 import time
 import traceback
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock, call
 
 import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Command,
     Device,
+    DeviceConnector,
     DeviceFiller,
     DeviceMap,
+    DeviceMock,
     DeviceProcessor,
     DeviceVector,
     NotConnectedError,
     Reference,
+    Signal,
     SignalRW,
+    connect_devices,
+    default_mock_class,
+    get_mock,
+    get_mock_put,
     init_devices,
     set_mock_attr,
+    soft_command,
     soft_signal_rw,
     wait_for_connection,
 )
@@ -238,6 +247,463 @@ async def test_device_with_init_devices():
     assert parent.dict_with_children[123].parent == parent.dict_with_children
     assert parent.child1.connected
     assert parent.dict_with_children[123].connected
+
+
+class RecordingMock(DeviceMock):
+    async def connect(self, device: Device) -> None:
+        device.connected_with = self  # type: ignore
+
+
+class RootMock(RecordingMock):
+    pass
+
+
+class MiddleMock(RecordingMock):
+    pass
+
+
+class LeafMock(RecordingMock):
+    pass
+
+
+class VectorMock(RecordingMock):
+    pass
+
+
+class XMock(RecordingMock):
+    pass
+
+
+class YMock(RecordingMock):
+    pass
+
+
+@default_mock_class(VectorMock)
+class Leaves(DeviceVector):
+    pass
+
+
+class Sensor(Device):
+    pass
+
+
+@default_mock_class(LeafMock)
+class Leaf(Sensor):
+    def __init__(self) -> None:
+        self.sig = soft_signal_rw(float)
+        super().__init__()
+
+
+@default_mock_class(MiddleMock)
+class Middle(Device):
+    def __init__(self) -> None:
+        self.leaf = Leaf()
+        super().__init__()
+
+
+@default_mock_class(RootMock)
+class Root(Device):
+    def __init__(self, name: str = "root") -> None:
+        self.middle = Middle()
+        self.leaves = Leaves({1: Leaf()})
+        super().__init__(name)
+
+
+def is_mocked(device: Device) -> bool:
+    if isinstance(device, Signal):
+        try:
+            get_mock_put(device)
+        except RuntimeError:
+            return False
+        return True
+    # The DeviceMock of the last mock connect is the one get_mock reads from
+    recorder = getattr(device, "connected_with", None)
+    return recorder is not None and recorder() is get_mock(device)
+
+
+def connected_with(device: Device) -> dict[str, type[DeviceMock] | None]:
+    """Map each non-Signal Device name to its DeviceMock class, None if real."""
+    mocked = is_mocked(device)
+    result = {device.name: type(device.connected_with) if mocked else None}  # type: ignore
+    for _, child in device.children():
+        if isinstance(child, Signal):
+            # Signals always follow their parent
+            assert is_mocked(child) == mocked
+        else:
+            result.update(connected_with(child))
+    return result
+
+
+def tree(root, middle, middle_leaf, leaves, leaves_1) -> dict[str, type | None]:
+    return {
+        "root": root,
+        "root-middle": middle,
+        "root-middle-leaf": middle_leaf,
+        "root-leaves": leaves,
+        "root-leaves-1": leaves_1,
+    }
+
+
+REAL_TREE = tree(None, None, None, None, None)
+DEFAULT_TREE = tree(RootMock, MiddleMock, LeafMock, VectorMock, LeafMock)
+
+MOCK_CHOICES = [
+    (False, REAL_TREE),
+    ({}, REAL_TREE),
+    (True, DEFAULT_TREE),
+    ({Device: True}, DEFAULT_TREE),
+    # Mock by type, with everything below it
+    ({Middle: True}, tree(None, MiddleMock, LeafMock, None, None)),
+    ({Leaf: True}, tree(None, None, LeafMock, None, LeafMock)),
+    # Mock everything except by type, which is real all the way down
+    (
+        {Device: True, Middle: False},
+        tree(RootMock, None, None, VectorMock, LeafMock),
+    ),
+    # The entry under Device is dropped below the first level, so Top real is all real
+    ({Device: True, Root: False}, REAL_TREE),
+    # A mocked Device under a real parent
+    (
+        {Device: True, Middle: False, Leaf: True},
+        tree(RootMock, None, LeafMock, VectorMock, LeafMock),
+    ),
+    # Mock by type with a DeviceMock class
+    ({Leaf: XMock}, tree(None, None, XMock, None, XMock)),
+    ({Root: XMock}, tree(XMock, MiddleMock, LeafMock, VectorMock, LeafMock)),
+    ({Middle: XMock, Root: YMock}, tree(YMock, XMock, LeafMock, VectorMock, LeafMock)),
+    ({Device: XMock}, tree(XMock, MiddleMock, LeafMock, VectorMock, LeafMock)),
+    ({Device: XMock, Leaf: YMock}, tree(XMock, MiddleMock, YMock, VectorMock, YMock)),
+    # A class under Device is for the first level only, True gets the default class
+    (
+        {Device: XMock, Middle: True},
+        tree(XMock, MiddleMock, LeafMock, VectorMock, LeafMock),
+    ),
+    # The nearest class in the MRO wins
+    ({Sensor: XMock}, tree(None, None, XMock, None, XMock)),
+    ({Sensor: XMock, Leaf: YMock}, tree(None, None, YMock, None, YMock)),
+    ({Sensor: True, Leaf: False}, REAL_TREE),
+]
+MOCK_CHOICE_IDS = [
+    "False",
+    "empty",
+    "True",
+    "Device True",
+    "Middle True",
+    "Leaf True",
+    "Device True, Middle False",
+    "Device True, Root False",
+    "mocked under real",
+    "Leaf class",
+    "Root class",
+    "Middle class, Root class",
+    "Device class",
+    "Device class, Leaf class",
+    "Device class, Middle True",
+    "base class",
+    "nearest class",
+    "nearest False",
+]
+
+
+@pytest.mark.parametrize("mock, expected", MOCK_CHOICES, ids=MOCK_CHOICE_IDS)
+async def test_init_devices_and_ensure_connected_choose_per_type(mock, expected, RE):
+    async with init_devices(mock=mock):
+        root = Root()
+    assert connected_with(root) == expected
+    # Mocked Signals are mocked all the way down, real ones are real
+    if expected["root-middle-leaf"]:
+        await root.middle.leaf.sig.set(1.0)
+        assert is_mocked(root.middle.leaf.sig)
+        # Mocks nest under their parent's, real Devices included
+        get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
+    else:
+        assert not is_mocked(root.middle.leaf.sig)
+
+    other = Root("other")
+    RE(ensure_connected(other, mock=mock))
+    assert connected_with(other) == {
+        k.replace("root", "other"): v for k, v in expected.items()
+    }
+
+
+async def test_connect_mock_instance_is_used_and_children_default_to_mocked():
+    root = Root()
+    instance = XMock()
+
+    await root.connect(mock=instance)
+
+    assert get_mock(root) is instance()
+    assert connected_with(root) == tree(
+        XMock, MiddleMock, LeafMock, VectorMock, LeafMock
+    )
+    await root.middle.leaf.sig.set(1.0)
+    instance().middle.leaf.sig.put.assert_called_once_with(1.0)
+
+
+@pytest.mark.parametrize(
+    "mock, expected",
+    [
+        (
+            XMock(mock_types={Middle: False, Leaf: YMock}),
+            tree(XMock, None, YMock, VectorMock, YMock),
+        ),
+        # A Device entry is the default for the direct children only
+        (
+            DeviceMock(mocked=False, mock_types={Device: True, Middle: False}),
+            tree(None, None, None, VectorMock, LeafMock),
+        ),
+    ],
+    ids=["children by type", "Device entry for direct children"],
+)
+async def test_connect_mock_instance_mock_types_choose_for_children(mock, expected):
+    root = Root()
+
+    await root.connect(mock=mock)
+
+    assert connected_with(root) == expected
+
+
+@pytest.mark.parametrize(
+    "parent_mocked", [False, True], ids=["real parent", "mocked parent"]
+)
+async def test_real_children_get_the_callers_args_and_connect_in_parallel(
+    parent_mocked,
+):
+    class Slow(Device):
+        started = 0
+        args_seen = []
+
+        async def connect(
+            self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+        ):
+            Slow.args_seen.append((timeout, force_reconnect))
+            Slow.started += 1
+            while Slow.started < 2:
+                await asyncio.sleep(0)
+            await super().connect(mock, timeout, force_reconnect)
+
+    class Holder(Device):
+        def __init__(self):
+            self.a, self.b, self.c = Slow(), Slow(), Leaf()
+            super().__init__("holder")
+
+    holder = Holder()
+
+    # Deadlocks if the real children a and b were connected serially
+    mock = DeviceMock(mock_types={Slow: False, Leaf: True}, mocked=parent_mocked)
+    await asyncio.wait_for(
+        holder.connect(mock=mock, timeout=2.5, force_reconnect=True), 1
+    )
+
+    assert Slow.args_seen == [(2.5, True), (2.5, True)]
+    assert is_mocked(holder.c) and not is_mocked(holder.a)
+
+
+class CountingConnector(DeviceConnector):
+    real_connects = 0
+
+    async def connect(self, device, mock, timeout, force_reconnect):
+        if not mock.mocked:
+            CountingConnector.real_connects += 1
+        await super().connect(device, mock, timeout, force_reconnect)
+
+
+async def test_real_connect_is_cached_until_the_mock_choice_changes():
+    CountingConnector.real_connects = 0
+    root = Device(connector=CountingConnector())
+    root.leaf = Leaf()
+
+    await root.connect()
+    await root.connect()
+    assert CountingConnector.real_connects == 1
+    assert not is_mocked(root.leaf)
+
+    # A different choice for the children reconnects, the same one does not
+    await root.connect(mock=DeviceMock(mocked=False, mock_types={Leaf: True}))
+    await root.connect(mock=DeviceMock(mocked=False, mock_types={Leaf: True}))
+    assert CountingConnector.real_connects == 2
+    assert is_mocked(root.leaf)
+
+    await root.connect()
+    assert CountingConnector.real_connects == 3
+    assert not is_mocked(root.leaf)
+
+
+class RealOne(Device):
+    def __init__(self) -> None:
+        self.leaf = Leaf()
+        super().__init__(connector=CountingConnector())
+
+
+class Top(Device):
+    def __init__(self) -> None:
+        self.a = RealOne()
+        super().__init__("top")
+
+
+@pytest.mark.parametrize("force_reconnect", [False, True])
+async def test_mocks_under_a_real_child_stay_nested_when_connected_again(
+    force_reconnect,
+):
+    top = Top()
+    mock = {Device: True, RealOne: False, Leaf: True}
+    await connect_devices({"top": top}, mock=mock)
+
+    await connect_devices({"top": top}, mock=mock, force_reconnect=force_reconnect)
+
+    await top.a.leaf.sig.set(2.0)
+    get_mock(top).a.leaf.sig.put.assert_called_once_with(2.0)
+
+
+async def test_connect_that_is_not_cached_connects_everything_below_again():
+    CountingConnector.real_connects = 0
+    top = Top()
+    real_top = DeviceMock(mocked=False, mock_types={RealOne: False, Leaf: True})
+    mocked_top = DeviceMock(mocked=True, mock_types={RealOne: False, Leaf: True})
+    await top.connect(mock=real_top)
+    await top.connect(mock=real_top)
+    assert CountingConnector.real_connects == 1
+
+    # The real child's own mock choice is unchanged, but its parent connects again
+    await top.connect(mock=mocked_top)
+
+    assert CountingConnector.real_connects == 2
+    await top.a.leaf.sig.set(3.0)
+    get_mock(top).a.leaf.sig.put.assert_called_once_with(3.0)
+
+
+@pytest.mark.parametrize(
+    "bad_mock, match",
+    [
+        ("yes", "mock must be a bool"),
+        (1, "mock must be a bool"),
+        (None, "mock must be a bool"),
+        (DeviceMock, "mock must be a bool"),
+        ({Leaf: "X"}, "value 'X' for Leaf is not a bool or a DeviceMock subclass"),
+        ({Leaf: 1}, "is not a bool or a DeviceMock subclass"),
+        ({Leaf: Leaf}, "is not a bool or a DeviceMock subclass"),
+        ({Leaf: XMock()}, "is not a bool or a DeviceMock subclass"),
+        ({"Leaf": XMock}, "key 'Leaf' is not a Device subclass"),
+        ({XMock: XMock}, "is not a Device subclass"),
+        ({Signal: True}, "key Signal is a Signal or Command type"),
+        ({SignalRW: True}, "key SignalRW is a Signal or Command type"),
+        ({Command: XMock}, "key Command is a Signal or Command type"),
+        ({Device: True, Command: False}, "is a Signal or Command type"),
+    ],
+)
+async def test_bad_mock_raises_type_error(bad_mock, match, RE):
+    with pytest.raises(TypeError, match=match):
+        await connect_devices({"root": Root("root")}, mock=bad_mock)
+    with pytest.raises(TypeError, match=match):
+        async with init_devices(mock=bad_mock):
+            Root("root")
+    with pytest.raises(TypeError, match=match):
+        RE(ensure_connected(Root("root"), mock=bad_mock))
+
+
+async def test_init_devices_and_ensure_connected_reject_device_mock_instance(RE):
+    # Only Device.connect takes a DeviceMock instance
+    with pytest.raises(TypeError, match="mock must be a bool or a Mapping"):
+        async with init_devices(mock=XMock()):  # type: ignore
+            Root("root")
+    with pytest.raises(TypeError, match="mock must be a bool or a Mapping"):
+        RE(ensure_connected(Root("root"), mock=XMock()))  # type: ignore
+
+
+async def test_signal_follows_its_parent_whatever_the_mapping():
+    leaf = Leaf()
+
+    await connect_devices({"leaf": leaf}, mock={Leaf: True})
+    assert is_mocked(leaf.sig)
+    await connect_devices({"leaf": leaf}, mock={Device: True, Leaf: False})
+    assert not is_mocked(leaf.sig)
+    # Connected on its own, a Signal follows the entry under Device
+    await connect_devices({"sig": leaf.sig}, mock={Device: True})
+    assert is_mocked(leaf.sig)
+
+
+async def test_connect_mock_again_is_cached_until_forced():
+    root = Root()
+    await root.connect(mock=True)
+    root_mock, leaf_mock = get_mock(root), get_mock(root.middle.leaf)
+    await root.middle.leaf.sig.set(1.0)
+
+    await root.connect(mock=True)
+
+    assert get_mock(root) is root_mock
+    assert get_mock(root.middle.leaf) is leaf_mock
+    root_mock.middle.leaf.sig.put.assert_called_once_with(1.0)
+
+    await root.connect(mock=True, force_reconnect=True)
+
+    assert get_mock(root) is not root_mock
+    assert get_mock(root.middle.leaf) is not leaf_mock
+    await root.middle.leaf.sig.set(2.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(2.0)
+
+
+async def test_connect_mock_child_then_parent_attaches_child_under_parent():
+    root = Root()
+    await root.middle.connect(mock=True)
+    alone = get_mock(root.middle)
+
+    await root.connect(mock=True)
+
+    assert get_mock(root.middle) is not alone
+    await root.middle.leaf.sig.set(1.0)
+    get_mock(root).middle.leaf.sig.put.assert_called_once_with(1.0)
+
+
+async def test_connect_mock_again_keeps_soft_signal_value():
+    root = Root()
+    await root.connect(mock=True)
+    await root.middle.leaf.sig.set(1.5)
+
+    await root.connect(mock=True)
+
+    assert await root.middle.leaf.sig.get_value() == 1.5
+
+
+async def test_connect_mock_same_instance_again_is_cached():
+    root = Root()
+    instance = XMock()
+    await root.connect(mock=instance)
+    leaf_mock = get_mock(root.middle.leaf)
+
+    await root.connect(mock=instance)
+
+    assert get_mock(root) is instance()
+    assert get_mock(root.middle.leaf) is leaf_mock
+
+
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        (True, DeviceMock(mocked=False, mock_types={Leaf: XMock})),
+        (DeviceMock(mocked=False, mock_types={Leaf: XMock}), True),
+        (
+            DeviceMock(mocked=False, mock_types={Leaf: XMock}),
+            DeviceMock(mocked=False, mock_types={Leaf: YMock}),
+        ),
+        (True, XMock()),
+        (XMock(), YMock()),
+        (True, False),
+        (False, True),
+        (
+            DeviceMock(mocked=False, mock_types={Leaf: True}),
+            DeviceMock(mocked=False, mock_types={Middle: True}),
+        ),
+    ],
+)
+async def test_connect_again_applies_new_mock_choice(first, second):
+    fresh = Root()
+    await fresh.connect(mock=second)
+    root = Root()
+    await root.connect(mock=first)
+
+    await root.connect(mock=second)
+
+    assert connected_with(root) == connected_with(fresh)
 
 
 async def test_wait_for_connection():
@@ -491,3 +957,89 @@ def test_device_repr_and_str_without_name():
     unnamed_device = Device()
     expected = object.__repr__(unnamed_device)
     assert repr(unnamed_device) == str(unnamed_device) == expected
+
+
+class MockedByType(Device):
+    def __init__(self, name: str = "") -> None:
+        self.leaf = Leaf()
+        super().__init__(name)
+
+
+async def test_init_devices_mapping_applies_to_top_level_and_nested_devices():
+    async with init_devices(mock={Leaf: XMock}):
+        leaf = Leaf()
+        holder = MockedByType()
+
+    assert connected_with(leaf)["leaf"] is XMock
+    assert connected_with(holder.leaf)["holder-leaf"] is XMock
+    assert connected_with(holder)["holder"] is None
+
+
+class SeenMock(DeviceMock):
+    seen: list[str] = []
+
+    async def connect(self, device: Device) -> None:
+        self.seen.append(device.name)
+
+
+def _noop() -> None:
+    pass
+
+
+class HookInner(Device):
+    def __init__(self, name: str = "") -> None:
+        self.sig = soft_signal_rw(float)
+        self.cmd = soft_command(_noop)
+        super().__init__(name)
+
+
+class HookOuter(Device):
+    def __init__(self, name: str = "") -> None:
+        self.inner = HookInner()
+        super().__init__(name)
+
+
+async def test_hooks_run_children_first_for_every_device_signal_and_command():
+    SeenMock.seen.clear()
+    async with init_devices(mock={HookOuter: SeenMock, HookInner: SeenMock}):
+        outer = HookOuter()
+    assert SeenMock.seen == ["outer-inner", "outer"]
+
+    # Reconnecting runs the hooks again
+    SeenMock.seen.clear()
+    await outer.connect(mock=SeenMock(mock_types={HookInner: SeenMock}))
+    assert SeenMock.seen == ["outer-inner", "outer"]
+
+    # A Device entry reaches top level Signals and Commands
+    SeenMock.seen.clear()
+    await connect_devices(
+        {"sig": outer.inner.sig, "cmd": outer.inner.cmd}, mock={Device: SeenMock}
+    )
+    assert SeenMock.seen == ["outer-inner-sig", "outer-inner-cmd"]
+
+
+def test_lazy_mock_alias_is_device_mock():
+    with pytest.warns(DeprecationWarning, match="'LazyMock' is deprecated") as record:
+        from ophyd_async.core import LazyMock
+
+    assert LazyMock is DeviceMock
+    assert record[0].filename == __file__
+
+
+async def test_get_mock_works_for_every_connected_device():
+    root = Root()
+
+    await root.connect(mock=DeviceMock(mocked=False, mock_types={Leaf: True}))
+    await root.middle.leaf.sig.set(1.0)
+
+    # The real parents hold the mock of the mocked Leaf below them
+    expected = [call.put(1.0)]
+    assert get_mock(root).middle.leaf.sig.mock_calls == expected
+    assert get_mock(root.middle).leaf.sig.mock_calls == expected
+    assert get_mock(root.middle.leaf).sig.mock_calls == expected
+    # Real Devices record nothing themselves
+    assert get_mock(root.leaves).mock_calls == []
+    assert get_mock(root).mock_calls == [call.middle.leaf.sig.put(1.0)]
+    # A Device that was never connected has no DeviceMock
+    with pytest.raises(RuntimeError, match="not connected"):
+        get_mock(Root())

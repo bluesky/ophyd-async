@@ -14,8 +14,8 @@ from ophyd_async.core import (
     Device,
     DeviceFiller,
     DeviceMap,
+    DeviceMock,
     DeviceVector,
-    LazyMock,
     Signal,
     SignalR,
     SignalRW,
@@ -87,19 +87,27 @@ class PviDeviceConnector(_PvPrefixDeviceConnector):
         fill_children_with_prefix(self.prefix, self.filler, filled=False)
         self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock) -> None:
-        # A DeviceVector gets fabricated mock children; a DeviceMap does not (its
-        # entries come from the served PVI tree, so in mock mode it stays empty).
-        if isinstance(device, DeviceVector):
-            self.filler.create_device_dict_entries_to_mock(
-                self.mock_device_vector_children
-            )
-        device.set_name(device.name)
-        return await super().connect_mock(device, mock)
-
-    async def connect_real(
-        self, device: Device, timeout: float, force_reconnect: bool
+    async def connect(
+        self,
+        device: Device,
+        mock: DeviceMock,
+        timeout: float,
+        force_reconnect: bool,
     ) -> None:
+        if mock.mocked:
+            # A DeviceVector gets fabricated mock children; a DeviceMap does not
+            # (its entries come from the served PVI tree, so in mock mode it stays
+            # empty).
+            if isinstance(device, DeviceVector):
+                self.filler.create_device_dict_entries_to_mock(
+                    self.mock_device_vector_children
+                )
+        else:
+            await self._fill_from_pvi_tree(device, timeout)
+        device.set_name(device.name)
+        await super().connect(device, mock, timeout, force_reconnect)
+
+    async def _fill_from_pvi_tree(self, device: Device, timeout: float) -> None:
         if self.pvi_tree is None:
             # Top-level device: discover the served PVI tree.
             self.pvi_tree = await PviTree.build_device_tree(
@@ -123,8 +131,6 @@ class PviDeviceConnector(_PvPrefixDeviceConnector):
 
         suffix = f"\n{self.error_hint}" if self.error_hint else ""
         self.filler.check_filled(f"{self.pvi_pv}: {tree}{suffix}")
-        device.set_name(device.name)
-        return await super().connect_real(device, timeout, force_reconnect)
 
     def _fill_named_entries(self, tree: PviTree, *, as_map: bool) -> None:
         """Fill a node's normal (non-"__N") entries.
