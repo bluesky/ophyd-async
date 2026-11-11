@@ -1,4 +1,4 @@
-"""Support for the ADAndor areaDetector driver.
+"""Support for the ADAndor3 areaDetector driver.
 
 https://github.com/areaDetector/ADAndor3.
 """
@@ -40,13 +40,12 @@ _MAX_NUM_IMAGE = 999_999
 
 
 class Andor3TriggerMode(StrictEnum):
-    """Trigger modes for ADAndor detector."""
+    """Trigger modes for ADAndor3 detector."""
 
     INTERNAL = "Internal"
     EXT_TRIGGER = "External"
     EXT_START = "External Start"
     EXT_EXPOSURE = "External Exposure"
-    EXT_FVP = "External FVP"
     SOFTWARE = "Software"
 
 
