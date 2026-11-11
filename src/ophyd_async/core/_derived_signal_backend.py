@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import Awaitable, Callable, Mapping
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -140,15 +141,20 @@ class SignalTransformer(Generic[TransformT]):
     def _make_derived_readings(
         self, raw_and_transform_readings: dict[str, Reading]
     ) -> dict[str, Reading]:
-        # Calculate the latest timestamp and max severity from them
-        timestamp = max(
-            raw_and_transform_readings[device.name]["timestamp"]
+        # Calculate the latest timestamp and max severity from them.
+        # A derived value with no source signals is observed at read time.
+        source_readings = [
+            raw_and_transform_readings[device.name]
             for device in self.raw_and_transform_subscribables.values()
-        )
-        alarm_severity = max(
-            raw_and_transform_readings[device.name].get("alarm_severity", 0)
-            for device in self.raw_and_transform_subscribables.values()
-        )
+        ]
+        if source_readings:
+            timestamp = max(reading["timestamp"] for reading in source_readings)
+            alarm_severity = max(
+                reading.get("alarm_severity", 0) for reading in source_readings
+            )
+        else:
+            timestamp = time.time()
+            alarm_severity = 0
         # Make the transform using the values from the readings for those args
         transform = self._make_transform_from_readings(raw_and_transform_readings)
         # Create the raw values from the rest then calculate the derived readings
@@ -217,7 +223,12 @@ class SignalTransformer(Generic[TransformT]):
                 msg = f"Callback already set for {name}"
                 raise RuntimeError(msg)
             self._derived_callbacks[name] = callback
-            if self._cached_readings is None:
+            if not self.raw_and_transform_subscribables:
+                # Nothing to subscribe to. Publish the current value once so a
+                # monitor does not wait forever; later Python-state changes are
+                # visible to uncached reads.
+                callback(self._make_derived_readings({})[name])
+            elif self._cached_readings is None:
                 # Add the callbacks to all the raw devices, this will run the first
                 # callback
                 self._cached_readings = {}
