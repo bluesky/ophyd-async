@@ -11,7 +11,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from bluesky.run_engine import RunEngine, TransitionError
+from bluesky.run_engine import (
+    RunEngine,
+    TransitionError,  # pyright: ignore[reportPrivateImportUsage]
+)
 from pytest import FixtureRequest
 
 from ophyd_async.core import (
@@ -139,8 +142,8 @@ def _error_and_kill_pending_tasks(
         task
         for task in asyncio.all_tasks(loop)
         if (coro := task.get_coro()) is not None
-        and hasattr(coro, "__name__")
-        and coro.__name__ not in _ALLOWED_PYTEST_TASKS
+        and (name := getattr(coro, "__name__", None)) is not None
+        and name not in _ALLOWED_PYTEST_TASKS
         and not task.done()
     }
     for task in unfinished_tasks:

@@ -85,10 +85,10 @@ def test_logger_adapter_ophyd_async_device():
     logger.addHandler(log_stream)
 
     device = Device(name="test_device")
-    device._log = logging.LoggerAdapter(
+    device_log = logging.LoggerAdapter(
         logging.getLogger("ophyd_async.devices"),
         {"ophyd_async_device_name": device.name},
     )
-    device._log.warning("here is a warning")
+    device_log.warning("here is a warning")
     assert log_buffer.getvalue().startswith("[test_device]")
     assert log_buffer.getvalue().endswith("here is a warning\n")

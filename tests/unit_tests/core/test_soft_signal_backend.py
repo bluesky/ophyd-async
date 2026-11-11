@@ -2,7 +2,7 @@ import asyncio
 import os
 import typing
 from collections.abc import Callable, Sequence
-from typing import Any, TypeVar
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -11,13 +11,12 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     Array1D,
+    SignalDatatypeT,
     SoftSignalBackend,
     StrictEnum,
     soft_signal_rw,
 )
 from ophyd_async.testing import ExampleEnum, ExampleTable, MonitorQueue
-
-T = TypeVar("T")
 
 
 class MyEnum(StrictEnum):
@@ -131,9 +130,9 @@ scalar_int_dtype = (
     ],
 )
 async def test_soft_signal_backend_get_put_monitor(
-    datatype: type[T],
-    initial_value: T,
-    put_value: T,
+    datatype: type[SignalDatatypeT],
+    initial_value: SignalDatatypeT,
+    put_value: SignalDatatypeT,
     descriptor: Callable[[Any], dict],
     dtype_numpy: str,
 ):
@@ -162,10 +161,10 @@ async def test_soft_signal_backend_get_put_monitor(
         (Array1D[np.float64], 1),
     ],
 )
-async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | None):
+async def test_soft_signal_backend_records_ndim(datatype: Any, ndim: int | None):
     backend = SoftSignalBackend(datatype)
     await backend.connect(timeout=1)
-    assert backend.converter.ndim == ndim
+    assert backend.converter.ndim == ndim  # pyright: ignore[reportAttributeAccessIssue]
 
 
 @pytest.mark.parametrize(
@@ -180,7 +179,7 @@ async def test_soft_signal_backend_records_ndim(datatype: type[T], ndim: int | N
     ],
 )
 async def test_soft_signal_backend_checks_shape(
-    datatype: type[T], put_value: Any, expected: tuple[int, ...] | str
+    datatype: Any, put_value: Any, expected: tuple[int, ...] | str
 ):
     backend = SoftSignalBackend(datatype)
     await backend.connect(timeout=1)
@@ -229,20 +228,20 @@ async def test_soft_signal_descriptor_fails_for_invalid_class():
             pass
 
     with pytest.raises(TypeError):
-        SoftSignalBackend(MyClass)
+        SoftSignalBackend(MyClass)  # pyright: ignore[reportArgumentType]
 
 
 async def test_soft_signal_descriptor_with_metadata():
     soft_signal = soft_signal_rw(int, 0, units="mm", precision=0)
     await soft_signal.connect()
     datakey = await soft_signal.describe()
-    assert datakey[""]["units"] == "mm"
-    assert datakey[""]["precision"] == 0
+    assert datakey[""].get("units") == "mm"
+    assert datakey[""].get("precision") == 0
 
     soft_signal = soft_signal_rw(int, units="")
     await soft_signal.connect()
     datakey = await soft_signal.describe()
-    assert datakey[""]["units"] == ""
+    assert datakey[""].get("units") == ""
     assert not hasattr(datakey[""], "precision")
 
 
@@ -262,7 +261,9 @@ async def test_soft_signal_coerces_numpy_types():
     await soft_signal.set(np.float64(1.1))
     assert await soft_signal.get_value() == 1.1
     assert type(await soft_signal.get_value()) is float
-    soft_signal._connector.backend.set_value(np.float64(2.2))
+    backend = soft_signal._connector.backend
+    assert isinstance(backend, SoftSignalBackend)
+    backend.set_value(np.float64(2.2))
     assert await soft_signal.get_value() == 2.2
     assert type(await soft_signal.get_value()) is float
 

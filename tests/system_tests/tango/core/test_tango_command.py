@@ -50,12 +50,12 @@ TEST_PARAMS = [
     (Sequence[str], ["a", "b"], "a_str_spectrum_cmd"),
     (
         TangoLongStringTable,
-        TangoLongStringTable(long=[1, 2], string=["a", "b"]),
+        TangoLongStringTable(long=[1, 2], string=["a", "b"]),  # pyright: ignore[reportArgumentType]
         "long_string_cmd",
     ),
     (
         TangoDoubleStringTable,
-        TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]),
+        TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]),  # pyright: ignore[reportArgumentType]
         "double_string_cmd",
     ),
 ]
@@ -104,6 +104,7 @@ async def test_tango_command(
             assert isinstance(cmd, TriggerableCommand)
         else:
             assert isinstance(cmd, Command)
+        assert cmd.signature is not None
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
             assert Array1D[np.uint8] == cmd.signature.return_annotation
             assert (
@@ -119,9 +120,9 @@ async def test_tango_command(
                 assert ctype == list(cmd.signature.parameters.values())[0].annotation
 
         if isinstance(val, np.ndarray):
-            assert np.array_equal(val, await cmd.execute(val))
+            assert np.array_equal(val, await cmd.execute(val))  # pyright: ignore[reportCallIssue]
         else:
-            assert val == await cmd.execute(val)
+            assert val == await cmd.execute(val)  # pyright: ignore[reportCallIssue]
 
 
 @pytest.mark.parametrize("ctype, val, name", TEST_PARAMS)
@@ -142,7 +143,7 @@ async def test_tango_command_factory(
 
     trl = ""
 
-    def spec(x: ctype) -> ctype: ...
+    def spec(x: ctype) -> ctype: ...  # pyright: ignore[reportInvalidTypeForm]
 
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + f"/{name}" + everything_device_trl[-9:]
@@ -171,12 +172,13 @@ async def test_tango_command_factory(
     if name == "void_cmd":
         assert cmd.signature is None
     else:
+        assert cmd.signature is not None
         assert expected_datatype == cmd.signature.return_annotation
 
     if isinstance(val, np.ndarray):
-        assert np.array_equal(val, await cmd.execute(val))
+        assert np.array_equal(val, await cmd.execute(val))  # pyright: ignore[reportCallIssue]
     else:
-        assert val == await cmd.execute(val)
+        assert val == await cmd.execute(val)  # pyright: ignore[reportCallIssue]
 
 
 @pytest.mark.asyncio
@@ -184,56 +186,56 @@ async def test_tango_command_validation(
     everything_device_trl: str,
 ):
     # This should pass
-    def call_spec(x: float) -> float: ...
+    def float_to_float_spec(x: float) -> float: ...
 
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=float_to_float_spec, trl=trl, name="float64_cmd")
     await cmd.connect()
     ret = await cmd.execute(1.0)
     assert ret == 1.0
 
     # This should pass
-    def call_spec(x: float) -> None: ...
+    def float_to_none_spec(x: float) -> None: ...
 
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=float_to_none_spec, trl=trl, name="float64_cmd")
     await cmd.connect()
     ret = await cmd.execute(1.0)
     assert ret == 1.0
 
     # Multiple input params should fail
     # Commands with more than one input parameter are not yet supported.
-    def call_spec(x: float, y: int) -> float: ...
+    def two_inputs_spec(x: float, y: int) -> float: ...
 
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
     with pytest.raises(TypeError) as excinfo:
-        tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
+        tango_command(call_spec=two_inputs_spec, trl=trl, name="float64_cmd")
     assert "Commands with more than one input parameter" in str(excinfo.value)
 
     # Mistyped return type should fail unless it is None
-    def call_spec(x: float) -> int: ...
+    def float_to_int_spec(x: float) -> int: ...
 
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=float_to_int_spec, trl=trl, name="float64_cmd")
     with pytest.raises(TypeError) as excinfo:
         await cmd.connect()
     assert "not <class 'int'>" in str(excinfo.value)
 
     # Mistyped input parameter should fail unless it is None
-    def call_spec(x: Array1D[np.float32]) -> float: ...
+    def array_input_spec(x: Array1D[np.float32]) -> float: ...
 
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=array_input_spec, trl=trl, name="float64_cmd")
     with pytest.raises(TypeError) as excinfo:
         await cmd.connect()
     assert "has input parameter of type <class 'float'>, not" in str(excinfo.value)
@@ -290,6 +292,7 @@ async def test_tango_command_mixed_types(everything_device_trl: str):
         )
     cmd = tango_command(call_spec=call_spec, trl=trl, name="float_to_bool_cmd")
     await cmd.connect()
+    assert cmd.signature is not None
     assert cmd.signature.return_annotation is bool
     assert list(cmd.signature.parameters.values())[0].annotation is float
     assert await cmd.execute(1.0) is True

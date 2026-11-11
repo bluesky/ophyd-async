@@ -1,7 +1,6 @@
 import asyncio
 import os
 import time
-import traceback
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
@@ -11,6 +10,7 @@ from ophyd_async.core import (
     Device,
     DeviceFiller,
     DeviceMap,
+    DeviceMock,
     DeviceProcessor,
     DeviceVector,
     NotConnectedError,
@@ -63,7 +63,10 @@ class DummyBaseDevice(Device):
         super().__init__()
 
     async def connect(
-        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+        self,
+        mock: bool | DeviceMock = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
     ):
         self.connected = True
 
@@ -123,7 +126,7 @@ def test_reserved_attr_allowed_by_env_var(monkeypatch, value):
     device = Device()
     mock = AsyncMock()
     device.set = mock
-    assert device.set is mock
+    assert device.set is mock  # pyright: ignore[reportAttributeAccessIssue]
 
 
 @pytest.mark.parametrize("value", ["NO", "", "true", "1"])
@@ -137,7 +140,7 @@ def test_reserved_attr_still_raises_when_env_var_not_yes(monkeypatch, value):
 def test_set_mock_attr_overrides_reserved_name_and_returns_mock():
     device = Device()
     mock = set_mock_attr(device, "set", AsyncMock())
-    assert device.set is mock
+    assert device.set is mock  # pyright: ignore[reportAttributeAccessIssue]
 
 
 async def test_device_connect_missing_connector() -> None:
@@ -245,7 +248,12 @@ async def test_wait_for_connection():
         def __init__(self, name) -> None:
             self.set_name(name)
 
-        async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+        async def connect(
+            self,
+            mock: bool | DeviceMock = False,
+            timeout: float = DEFAULT_TIMEOUT,
+            force_reconnect: bool = False,
+        ):
             await asyncio.sleep(0.01)
             self.connected = True
 
@@ -267,11 +275,12 @@ async def test_wait_for_connection_propagates_error(
 
     with pytest.raises(NotConnectedError) as exc:
         await wait_for_connection(**failing_coros)
-        assert traceback.extract_tb(exc.__traceback__)[-1].name == "failing_coroutine"
+    assert list(exc.value.sub_errors) == ["failing"]
 
 
 async def test_device_log_has_correct_name():
     device = DummyBaseDevice()
+    assert device.log.extra is not None
     assert device.log.extra["ophyd_async_device_name"] == ""
     device.set_name("device")
     assert device.log.extra["ophyd_async_device_name"] == "device"
@@ -468,8 +477,8 @@ async def test_device_processor_customization():
             ok = DummyDeviceGroup("parent")
             not_ok = DummyDisconnectDevice("not_ok")
 
-    assert ok.name in registry
-    assert not_ok.name not in registry
+    assert ok.name in registry  # pyright: ignore[reportPossiblyUnboundVariable]
+    assert not_ok.name not in registry  # pyright: ignore[reportPossiblyUnboundVariable]
 
 
 def test_device_repr_and_str_with_name():

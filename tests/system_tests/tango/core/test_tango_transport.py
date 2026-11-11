@@ -1,13 +1,13 @@
 import asyncio
 import logging
-from collections.abc import Sequence
-from typing import Any, TypeVar, get_origin
+from collections.abc import Awaitable, Callable, Sequence
+from typing import Any, TypeVar, cast, get_origin
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 from tango import AttrDataFormat, CmdArgType, DevState
-from tango.asyncio import DeviceProxy
+from tango.asyncio import DeviceProxy as _AsyncioDeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
@@ -25,6 +25,7 @@ from ophyd_async.tango.core import (
     CommandProxy,
     DevStateEnum,
     TangoDevice,
+    TangoDeviceConnector,
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
@@ -44,6 +45,10 @@ T = TypeVar("T")
 # tango_test_device fixture comes from conftest.py, shared with every other
 # test module in this directory.
 
+# tango's stubs say the asyncio DeviceProxy constructor returns a DeviceProxy,
+# but in asyncio green mode it returns an awaitable of one
+DeviceProxy = cast(Callable[..., Awaitable[Any]], _AsyncioDeviceProxy)
+
 
 # --------------------------------------------------------------------
 async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
@@ -62,7 +67,7 @@ async def make_backend(
     typ: type | None,
     pv: str,
     connect: bool = True,
-    allow_events: bool | None = True,
+    allow_events: bool = True,
 ) -> TangoSignalBackend:
     """Wrapper for making the tango signal backend."""
 
@@ -254,6 +259,7 @@ def test_get_python_type(tango_type, tango_format, expected):
     if tango_type is CmdArgType.DevEnum:
         config.enum_labels = ["A", "B", "C"]
         py_type = get_python_type(config)
+        assert py_type is not None
         assert issubclass(py_type, StrictEnum)
         assert [e.name for e in py_type] == ["A", "B", "C"]
     elif tango_format == "bad_format":
@@ -310,7 +316,7 @@ def test_try_to_cast_as_float():
         (npt.NDArray[np.uint32], np.dtype("uint32")),
         (npt.NDArray[np.uint64], np.dtype("uint64")),
         (npt.NDArray[np.bool_], np.dtype("bool")),
-        (npt.NDArray[DevState], CmdArgType.DevState),
+        (npt.NDArray[DevState], CmdArgType.DevState),  # pyright: ignore[reportInvalidTypeForm]
         (npt.NDArray[np.str_], np.dtype("str")),
         (npt.NDArray[np.float32], np.dtype("float32")),
         (npt.NDArray[np.complex64], np.dtype("complex64")),
@@ -373,7 +379,7 @@ async def test_attribute_proxy_get(tango_test_device, attr):
 async def test_attribute_proxy_put(tango_test_device, attr):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
-    old_value = await attr_proxy.get()
+    old_value: Any = await attr_proxy.get()
     new_value = old_value + 1
     await attr_proxy.put(new_value)
     await asyncio.sleep(
@@ -412,7 +418,7 @@ async def test_attribute_get_config(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "justvalue")
     config = await attr_proxy.get_config()
-    assert config.writable is not None
+    assert config.writable is not None  # pyright: ignore[reportAttributeAccessIssue]
 
 
 # --------------------------------------------------------------------
@@ -467,7 +473,7 @@ async def test_attribute_poll(tango_test_device):
 
     attr_proxy.set_polling(True, 0.1, 1, 1.0)
     attr_proxy.subscribe_callback(callback)
-    current_value = await attr_proxy.get()
+    current_value: Any = await attr_proxy.get()
     new_value = current_value + 2
     await attr_proxy.put(new_value)
     polling_period = attr_proxy._polling_period
@@ -501,7 +507,7 @@ async def test_attribute_poll(tango_test_device):
     attr_proxy.unsubscribe_callback()
 
     # Test polling with bad callback
-    attr_proxy.subscribe_callback(bad_callback)
+    attr_proxy.subscribe_callback(bad_callback)  # pyright: ignore[reportArgumentType]
     await asyncio.sleep(0.2)
     assert "Could not poll the attribute" in str(attr_proxy.exception)
     attr_proxy.unsubscribe_callback()
@@ -550,7 +556,7 @@ async def test_attribute_poll_exceptions(tango_test_device):
     def callback(reading, value):
         pass
 
-    attr_proxy.subscribe_callback(callback)
+    attr_proxy.subscribe_callback(callback)  # pyright: ignore[reportArgumentType]
     await asyncio.sleep(0.2)
     assert "Could not poll the attribute" in str(attr_proxy.exception)
     attr_proxy.unsubscribe_callback()
@@ -670,7 +676,9 @@ async def test_tango_transport_put(tango_test_device):
     await transport.connect(1)
     source = transport.source("", True)
     await transport.put(2.0)
-    val = await transport.proxies[source].get_w_value()
+    proxy = transport.proxies[source]
+    assert proxy is not None
+    val = await proxy.get_w_value()
     assert val == 2.0
 
 
@@ -693,13 +701,14 @@ async def test_tango_transport_get_datakey(tango_test_device):
     assert datakey["source"] == trl
     assert datakey["dtype"] == "number"
     assert datakey["shape"] == []
+    limits = datakey.get("limits")
+    assert limits is not None
     for key in ["alarm", "control", "rds", "warning"]:
-        assert key in datakey["limits"]
-    limits = datakey["limits"]
-    assert limits["alarm"] == {"high": 5.0, "low": 1.0}
-    assert limits["control"] == {"high": 6.0, "low": 0.0}
-    assert limits["rds"] == {"time_difference": 1.0, "value_difference": 1.0}
-    assert limits["warning"] == {"high": 4.0, "low": 2.0}
+        assert key in limits
+    assert limits.get("alarm") == {"high": 5.0, "low": 1.0}
+    assert limits.get("control") == {"high": 6.0, "low": 0.0}
+    assert limits.get("rds") == {"time_difference": 1.0, "value_difference": 1.0}
+    assert limits.get("warning") == {"high": 4.0, "low": 2.0}
 
 
 # --------------------------------------------------------------------
@@ -855,7 +864,7 @@ async def test_type_mismatch_array(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "array")
 
-    transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
+    transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)  # pyright: ignore[reportInvalidTypeForm]
     with pytest.raises(TypeError) as exc:
         await transport.connect(1)
     val = str(exc.value)
@@ -869,7 +878,12 @@ async def test_type_mismatch_sequence(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "sequence")
 
-    transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
+    transport = TangoSignalBackend(
+        Sequence[int],  # pyright: ignore[reportArgumentType]
+        trl,
+        trl,
+        device_proxy,
+    )
     with pytest.raises(TypeError) as exc:
         await transport.connect(1)
     val = str(exc.value)
@@ -940,7 +954,7 @@ async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
         pass
 
     with caplog.at_level(logging.DEBUG, logger="ophyd_async"):
-        attr_proxy.subscribe_callback(callback)
+        attr_proxy.subscribe_callback(callback)  # pyright: ignore[reportArgumentType]
         await asyncio.sleep(0.1)
 
     assert any(
@@ -953,7 +967,7 @@ async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
 # now-deleted test_tango_signals.py (see the block comment above
 # `make_backend` near the top of this file).
 # --------------------------------------------------------------------
-def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
+def get_test_descriptor(python_type: Any, value: Any, is_cmd: bool) -> dict:
     if python_type in [bool]:
         return {"dtype": "boolean", "shape": []}
     if python_type in [int]:
@@ -1025,10 +1039,13 @@ async def test_backend_get_put_monitor_attr(
     """
     device = TangoDevice(everything_device_trl, name="backend_get_put_monitor")
     await device.connect()
+    connector = device._connector
+    assert isinstance(connector, TangoDeviceConnector)
+    assert connector.trl is not None
     try:
         for attr_data in everything_signal_info.values():
             signal = getattr(device, attr_data.name)
-            source = get_full_attr_trl(device._connector.trl, attr_data.name)
+            source = get_full_attr_trl(connector.trl, attr_data.name)
             await asyncio.wait_for(
                 assert_monitor_then_put(
                     signal,
@@ -1094,7 +1111,7 @@ async def test_set_callback(everything_device_trl):
     # Try to add a non-callable callback
     transport.allow_events(True)
     with pytest.raises(RuntimeError) as exc:
-        transport.set_callback(1)
+        transport.set_callback(1)  # pyright: ignore[reportArgumentType]
     assert "Callback must be a callable" in str(exc.value)
 
 
@@ -1121,6 +1138,7 @@ async def test_attribute_subscribe_callback(everything_device_trl):
     source = get_full_attr_trl(everything_device_trl, "int64")
     backend = await make_backend(int, source)
     attr_proxy = backend.proxies[source]
+    assert isinstance(attr_proxy, AttributeProxy)
     val = None
 
     def callback(reading):
@@ -1129,7 +1147,7 @@ async def test_attribute_subscribe_callback(everything_device_trl):
 
     attr_proxy.subscribe_callback(callback)
     assert attr_proxy.has_subscription()
-    old_value = await attr_proxy.get()
+    old_value: Any = await attr_proxy.get()
     new_value = old_value + 1
     await attr_proxy.put(new_value)
     await asyncio.sleep(0.2)
@@ -1148,6 +1166,7 @@ async def test_attribute_unsubscribe_callback(everything_device_trl):
     source = get_full_attr_trl(everything_device_trl, "float32")
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
+    assert isinstance(attr_proxy, AttributeProxy)
 
     def callback(reading):
         pass

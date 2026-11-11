@@ -185,7 +185,7 @@ async def test_flyable_complete_without_movable_logic_yields_no_updates(
     status = flyer.complete()
     assert isinstance(status, WatchableAsyncStatus)
     updates: list[dict] = []
-    status.watch(lambda **kwargs: updates.append(kwargs))
+    status.watch(lambda *_, **kwargs: updates.append(kwargs))
     await status
 
     assert logic.calls == ["on_prepare", "on_kickoff", "on_complete"]
@@ -204,7 +204,7 @@ async def test_flyable_complete_watches_movable_logic():
     status = flyer.complete()
     assert isinstance(status, WatchableAsyncStatus)
     updates: list[dict] = []
-    status.watch(lambda **kwargs: updates.append(kwargs))
+    status.watch(lambda *_, **kwargs: updates.append(kwargs))
     await status
 
     # Progress was reported by observing the readback up to the target, with the

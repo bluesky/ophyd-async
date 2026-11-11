@@ -78,7 +78,7 @@ TEST_PARAMS = [
 
 @pytest.mark.parametrize("datatype, value", TEST_PARAMS)
 async def test_soft_command_execution(datatype, value):
-    def callback(v: datatype) -> datatype:
+    def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 
     cmd = soft_command(callback, name="test_cmd")
@@ -138,23 +138,23 @@ async def test_execute_raises_typeerror_on_bad_arguments():
     backend = SoftCommandBackend(callback, sig)
     # Too few arguments
     with pytest.raises(TypeError, match="missing a required argument"):
-        await backend.execute(1)
+        await backend.execute(1)  # pyright: ignore[reportCallIssue]
     # Too many positional arguments
     with pytest.raises(TypeError, match="too many positional arguments"):
-        await backend.execute(1, 2, 3)
+        await backend.execute(1, 2, 3)  # pyright: ignore[reportCallIssue]
     # Unexpected keyword argument
     with pytest.raises(TypeError, match="unexpected keyword argument"):
-        await backend.execute(a=1, b=2, c=3)
+        await backend.execute(a=1, b=2, c=3)  # pyright: ignore[reportCallIssue]
     # Multiple values for the same argument
     with pytest.raises(TypeError, match="multiple values for argument"):
-        await backend.execute(1, a=2)
+        await backend.execute(1, a=2)  # pyright: ignore[reportCallIssue]
 
 
 @pytest.mark.parametrize("datatype, value", TEST_PARAMS)
 async def test_mock_command_backend_default_values(datatype, value):
     """Test MockCommandBackend returns manufactured defaults for various types."""
 
-    async def callback(v: datatype) -> datatype:
+    async def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 
     cmd = soft_command(callback, name="test_cmd")
@@ -274,6 +274,7 @@ async def test_mock_command_backend_properties():
     assert cmd._connector.backend.source("test") == "mock+softcmd://test"
 
     # Verify return type
+    assert cmd.signature is not None
     assert cmd.signature.return_annotation is str
 
     # Verify connect raises error
@@ -380,8 +381,8 @@ async def test_fill_child_command_vector_index():
 
     filler = DeviceFiller(
         device=vector,
-        signal_backend_factory=lambda _: None,
-        device_connector_factory=lambda: None,
+        signal_backend_factory=lambda _: None,  # pyright: ignore[reportArgumentType]
+        device_connector_factory=lambda: None,  # pyright: ignore[reportArgumentType]
         command_backend_factory=backend_factory,
     )
 
@@ -422,6 +423,7 @@ async def test_mock_command_null_sig_backend_uses_no_arg_void_signature():
     await cmd.connect(mock=mock)
 
     assert cmd.signature == NO_ARG_VOID_SIGNATURE
+    assert cmd.signature is not None
     assert cmd.signature.return_annotation is None
     assert list(cmd.signature.parameters) == []
 
@@ -456,7 +458,7 @@ async def test_mock_command_applies_conversion_like_soft(datatype, raw, expected
     converted, exactly as SoftCommandBackend.execute() would convert it.
     """
 
-    def callback(v: datatype) -> datatype:
+    def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 
     cmd = soft_command(callback, name="test_cmd")

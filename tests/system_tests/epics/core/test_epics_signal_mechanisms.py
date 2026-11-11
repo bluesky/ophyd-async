@@ -556,7 +556,7 @@ async def test_can_read_using_ophyd_async_then_ophyd(
 
     def a_plan():
         yield from bps.rd(ophyd_async_sig)
-        yield from bps.rd(ophyd_signal)
+        yield from bps.rd(ophyd_signal)  # pyright: ignore[reportArgumentType]
 
     RE(a_plan())
 
@@ -621,16 +621,17 @@ async def test_all_updates_defaults_to_true(
 async def default_all_updates(pv: str) -> bool:
     sig = epics_signal_rw(int, pv)
     await sig.connect()
-    backend = sig._connector.backend
+    backend = _get_epics_backend(sig)
 
+    sig.subscribe_reading(lambda v: None)
+    subscription = backend.subscription
+    assert isinstance(subscription, Subscription)
     try:
-        sig.subscribe_reading(lambda v: ...)
-        assert isinstance(backend.subscription, Subscription)
-        assert isinstance(backend.subscription.all_updates, bool)
-        return backend.subscription.all_updates
+        assert isinstance(subscription.all_updates, bool)
+        return subscription.all_updates
     finally:
-        backend.subscription.close()
-        sig.clear_sub(lambda v: ...)
+        subscription.close()
+        sig.clear_sub(lambda v: None)
 
 
 @pytest.mark.timeout(TIMEOUT + 0.5)

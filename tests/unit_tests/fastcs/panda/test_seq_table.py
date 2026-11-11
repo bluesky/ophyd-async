@@ -1,4 +1,5 @@
 from functools import reduce
+from typing import Any
 
 import numpy as np
 import pytest
@@ -8,7 +9,10 @@ from ophyd_async.fastcs.panda import SeqTable, SeqTrigger
 
 
 def test_seq_table_converts_lists():
-    seq_table_dict_with_lists = {field_name: [] for field_name, _ in SeqTable()}
+    seq_table_dict_with_lists: dict[str, Any] = {
+        field_name: []
+        for field_name, _ in SeqTable()  # pyright: ignore[reportCallIssue]
+    }
     # Validation passes
     seq_table = SeqTable(**seq_table_dict_with_lists)
     for field_name, field_value in seq_table:
@@ -20,25 +24,26 @@ def test_seq_table_converts_lists():
 
 def test_seq_table_validation_errors():
     with pytest.raises(ValidationError, match="17 validation errors for SeqTable"):
-        SeqTable(
-            repeats=0,
-            trigger=SeqTrigger.IMMEDIATE,
-            position=0,
-            time1=0,
-            outa1=False,
-            outb1=False,
-            outc1=False,
-            outd1=False,
-            oute1=False,
-            outf1=False,
-            time2=0,
-            outa2=False,
-            outb2=False,
-            outc2=False,
-            outd2=False,
-            oute2=False,
-            outf2=False,
-        )
+        not_arrays: dict[str, Any] = {
+            "repeats": 0,
+            "trigger": SeqTrigger.IMMEDIATE,
+            "position": 0,
+            "time1": 0,
+            "outa1": False,
+            "outb1": False,
+            "outc1": False,
+            "outd1": False,
+            "oute1": False,
+            "outf1": False,
+            "time2": 0,
+            "outa2": False,
+            "outb2": False,
+            "outc2": False,
+            "outd2": False,
+            "oute2": False,
+            "outf2": False,
+        }
+        SeqTable(**not_arrays)
 
     large_seq_table = SeqTable(
         repeats=np.zeros(4096, dtype=np.uint16),
@@ -65,7 +70,7 @@ def test_seq_table_validation_errors():
             "1 validation error for SeqTable\n  Value error, Length 4097 is too long."
         ),
     ):
-        large_seq_table + SeqTable.row()
+        _ = large_seq_table + SeqTable.row()
     # TODO: validation of numpy types disabled until bool -> uint8 CA issue resolved
     # with pytest.raises(
     #     ValidationError,

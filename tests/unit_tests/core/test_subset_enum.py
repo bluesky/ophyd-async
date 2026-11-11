@@ -50,10 +50,11 @@ async def test_ca_runtime_enum_converter():
 
     epics_value = EpicsValue()
     converter = ca_make_converter(
-        AB, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
+        AB,
+        values={"READ_PV": epics_value, "WRITE_PV": epics_value},  # pyright: ignore[reportArgumentType]
     )
-    assert converter.supported_values == {"A": "A", "B": "B", "C": "C"}
-    assert set(AB).issubset(set(converter.supported_values.keys()))
+    assert converter.supported_values == {"A": "A", "B": "B", "C": "C"}  # pyright: ignore[reportAttributeAccessIssue]
+    assert set(AB).issubset(set(converter.supported_values.keys()))  # pyright: ignore[reportAttributeAccessIssue]
 
 
 async def test_pva_runtime_enum_converter():
@@ -67,7 +68,7 @@ async def test_pva_runtime_enum_converter():
     converter = pva_make_converter(
         AB, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
-    assert {"A", "B"}.issubset(set(converter.supported_values))
+    assert {"A", "B"}.issubset(set(converter.supported_values))  # pyright: ignore[reportAttributeAccessIssue]
 
 
 async def test_runtime_enum_signal():
@@ -77,8 +78,8 @@ async def test_runtime_enum_signal():
     await signal_rw_ca.connect(mock=True)
     assert await signal_rw_pva.get_value() == "A1"
     assert await signal_rw_ca.get_value() == "A2"
-    await signal_rw_pva.set("B1")
-    await signal_rw_ca.set("B2")
+    await signal_rw_pva.set("B1")  # pyright: ignore[reportArgumentType]
+    await signal_rw_ca.set("B2")  # pyright: ignore[reportArgumentType]
     assert await signal_rw_pva.get_value() == "B1"
     assert await signal_rw_ca.get_value() == "B2"
 

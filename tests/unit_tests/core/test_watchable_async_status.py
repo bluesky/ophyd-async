@@ -163,8 +163,8 @@ async def test_asyncstatus_wraps_set_iterator_with_class_or_func_watcher(RE):
     updates = []
 
     w = TWatcher()
-    st.watch(partial(watcher_test, updates))
-    st.watch(w)
+    st.watch(partial(watcher_test, updates))  # pyright: ignore[reportArgumentType]
+    st.watch(w)  # pyright: ignore[reportArgumentType]
     await st
     assert st.done
     assert st.success
@@ -179,7 +179,7 @@ async def test_watchableasyncstatus_wraps_failing_set_iterator(RE):
     st = td.set(6)
     updates = []
 
-    st.watch(partial(watcher_test, updates))
+    st.watch(partial(watcher_test, updates))  # pyright: ignore[reportArgumentType]
     try:
         await st
     except Exception:

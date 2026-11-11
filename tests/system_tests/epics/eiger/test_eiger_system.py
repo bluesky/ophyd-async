@@ -115,7 +115,12 @@ async def setup_device(RE, ioc_prefixes):
 async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
     provider = StaticPathProvider(StaticFilenameProvider("test_eiger"), Path(SAVE_PATH))
     async with init_devices():
-        test_eiger = EigerDetector("", provider, ioc_prefixes[0], ioc_prefixes[1])
+        test_eiger = EigerDetector(
+            "",
+            provider,
+            ioc_prefixes[0],
+            ioc_prefixes[1],  # pyright: ignore[reportCallIssue]
+        )
 
     return test_eiger
 
@@ -123,10 +128,8 @@ async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
 @pytest.mark.skip(reason="Flaky test, see GH-819")
 async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: SetupDevice):
     single_shot = TriggerInfo(
-        exposure_timeout=None,
         number_of_events=1,
         trigger=DetectorTrigger.INTERNAL,
-        livetime=None,
     )
 
     await test_eiger.stage()

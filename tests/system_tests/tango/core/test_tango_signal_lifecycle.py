@@ -150,7 +150,7 @@ async def reset_everything_device(everything_device_trl: str) -> None:
         return
     resetter = TangoDevice(everything_device_trl, name="resetter")
     await resetter.connect()
-    await resetter.reset_values.trigger()
+    await resetter.reset_values.trigger()  # pyright: ignore[reportAttributeAccessIssue]
     await asyncio.sleep(1)
     _reset_everything_device_done = True
 
@@ -380,11 +380,11 @@ async def test_signal_error_paths(everything_device_trl: str):
 
     # Wrong Python type for a StrictEnum signal
     with pytest.raises(TypeError):
-        await device.strenum.set(0)
+        await device.strenum.set(0)  # pyright: ignore[reportArgumentType]
 
     # Right type, not a valid choice
     with pytest.raises(ValueError):
-        await device.strenum.set("NOT_A_REAL_CHOICE")
+        await device.strenum.set("NOT_A_REAL_CHOICE")  # pyright: ignore[reportArgumentType]
 
     # A well-formed TRL (real host:port, so PyTango accepts the syntax) but
     # for a device name nothing is serving
@@ -413,9 +413,9 @@ async def test_enum_set_accepts_name_value_and_member(
     device = TangoTestDevice(everything_device_trl, name="enum_converter")
     await device.connect()
     try:
-        await device.strenum.set("AAA")
+        await device.strenum.set("AAA")  # pyright: ignore[reportArgumentType]
         await device.strenum.set(ExampleStrEnum.B)
-        await device.strenum.set(ExampleStrEnum.C.value)
+        await device.strenum.set(ExampleStrEnum.C.value)  # pyright: ignore[reportArgumentType]
         await device.my_state.set(DevStateEnum.EXTRACT)
     finally:
         # Leave the server as documented-default for the next test/module.

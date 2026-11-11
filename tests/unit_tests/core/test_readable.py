@@ -293,7 +293,7 @@ def test_standard_readable_hinted_signal():
     assert sr._read_funcs == (signal_r.read,)
     assert sr._stage_funcs == (signal_r.stage,)
     assert sr._unstage_funcs == (signal_r.unstage,)
-    assert sr._has_hints[0].device == signal_r
+    assert sr._has_hints[0].device == signal_r  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_standard_readable_uncached_signal():
@@ -301,7 +301,7 @@ def test_standard_readable_uncached_signal():
     sr = StandardReadable()
     sr.add_readables([signal_r], Format.UNCACHED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
-    assert sr._read_funcs[0].signal == signal_r
+    assert sr._read_funcs[0].signal == signal_r  # pyright: ignore[reportFunctionMemberAccess]
 
 
 def test_standard_readable_hinted_uncached_signal():
@@ -309,8 +309,8 @@ def test_standard_readable_hinted_uncached_signal():
     sr = StandardReadable()
     sr.add_readables([signal_r], Format.HINTED_UNCACHED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
-    assert sr._read_funcs[0].signal == signal_r
-    assert sr._has_hints[0].device == signal_r
+    assert sr._read_funcs[0].signal == signal_r  # pyright: ignore[reportFunctionMemberAccess]
+    assert sr._has_hints[0].device == signal_r  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_standard_readable_add_children_multi_nested():

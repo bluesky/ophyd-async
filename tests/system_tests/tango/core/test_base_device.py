@@ -26,7 +26,12 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
+from ophyd_async.tango.core import (
+    TangoDevice,
+    TangoDeviceConnector,
+    get_full_attr_trl,
+    get_python_type,
+)
 from ophyd_async.tango.demo import (
     DemoMotor,
     DemoPointDetector,
@@ -57,7 +62,7 @@ class TestTangoReadable(TangoDevice, StandardReadable):
 async def describe_class(fqtrl):
     description = {}
     values = {}
-    dev = await AsyncDeviceProxy(fqtrl)
+    dev = await AsyncDeviceProxy(fqtrl)  # pyright: ignore[reportGeneralTypeIssues]
 
     for name in TESTED_FEATURES:
         dtype = "none"
@@ -89,7 +94,7 @@ async def describe_class(fqtrl):
 
         elif name in dev.get_command_list():
             cmd_conf = await dev.get_command_config(name)
-            _, _, descr = get_python_type(cmd_conf)
+            _, _, descr = get_python_type(cmd_conf)  # pyright: ignore[reportGeneralTypeIssues]
             shape = []
             value = getattr(dev, name)()
 
@@ -122,7 +127,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
-        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}
+        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}  # pyright: ignore[reportAttributeAccessIssue]
     if issubclass(python_type, Enum):
         return {
             "dtype": "string",
@@ -132,7 +137,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
     return {
         "dtype": "array",
-        "shape": [np.Inf] if is_cmd else list(np.array(value).shape),
+        "shape": [np.inf] if is_cmd else list(np.array(value).shape),
     }
 
 
@@ -159,6 +164,7 @@ async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
     test_device = TestTangoReadable(trl="", name="test_device")
 
+    assert isinstance(test_device._connector, TangoDeviceConnector)
     test_device._connector.set_trl(tango_test_device)
     await test_device.connect()
 
@@ -275,13 +281,13 @@ async def test_command_autofill(tango_test_device):
     await test_device.connect()
 
     assert hasattr(test_device, "echo")
-    echo = test_device.echo
+    echo = test_device.echo  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "set_msg")
-    set_msg = test_device.set_msg
+    set_msg = test_device.set_msg  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "get_msg")
-    get_msg = test_device.get_msg
+    get_msg = test_device.get_msg  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "clear")
-    clear = test_device.clear
+    clear = test_device.clear  # pyright: ignore[reportAttributeAccessIssue]
 
     assert isinstance(echo, Command)
     assert isinstance(set_msg, Command)
