@@ -103,7 +103,7 @@ class MerlinTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(MerlinTriggerMode.INTERNAL)
         await prepare_exposures(self.driver, num, livetime, deadtime)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         # Is this the right trigger mode?
         await self.driver.trigger_mode.set(MerlinTriggerMode.TRIGGER_START_RISING)
         await prepare_exposures(self.driver, num, livetime)

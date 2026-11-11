@@ -116,7 +116,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
         )
         await prepare_exposures(self.driver, num, livetime, deadtime)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         await asyncio.gather(
             self.driver.trigger_mode.set(OnOff.ON),
             self.driver.exposure_mode.set(VimbaExposeOutMode.TIMED),

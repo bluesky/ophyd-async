@@ -98,6 +98,9 @@ class TriggerInfo(ConfinedModel):
     number_of_events: NonNegativeInt = Field(default=1)
     """Number of bluesky events that will be emitted, (0 means infinite)."""
 
+    images_per_exposure: PositiveInt = Field(default=1)
+    """Number of frames the detector should produce for every trigger sent to it."""
+
     exposure_timeout: float = Field(
         default_factory=lambda d: d["livetime"] + d["deadtime"] + DEFAULT_TIMEOUT,
         gt=0,
@@ -166,10 +169,11 @@ class DetectorTriggerLogic:
         """
         raise NotImplementedError(self)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure: int, livetime: float):
         """Prepare the detector to take external edge triggered exposures.
 
         :param num: the number of exposures to take
+        :param images_per_trigger: the number frames each exposure should produce
         :param livetime: how long the exposure should be, 0 means what is currently set
         """
         raise NotImplementedError(self)
@@ -601,6 +605,7 @@ class StandardDetector(
                 case DetectorTrigger.EXTERNAL_EDGE:
                     await self._trigger_logic.prepare_edge(
                         num=value.number_of_exposures,
+                        images_per_exposure=value.images_per_exposure,
                         livetime=value.livetime,
                     )
                 case DetectorTrigger.EXTERNAL_LEVEL:

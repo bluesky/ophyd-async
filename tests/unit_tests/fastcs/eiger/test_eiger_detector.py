@@ -40,6 +40,7 @@ async def test_prepare_internal_calls_correct_parameters(
         detector,
         [
             call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL),
+            call.detector.ntrigger.put(1),
             call.detector.nimages.put(10),
             call.detector.count_time.put(0.1),
             call.detector.frame_time.put(0.1),
@@ -52,6 +53,69 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.block_size.put(100000),
             call.pixel_mask.put(str(tmp_path / "filename_meta.h5") + "//mask"),
             call.od.fp.start_writing.execute(),
+        ],
+        reset_after=False,
+    )
+
+
+async def test_prepare_edge_calls_correct_parameters(detector: EigerDetector, tmp_path):
+    await detector.prepare(
+        TriggerInfo(
+            number_of_events=10,
+            images_per_exposure=5,
+            livetime=0.1,
+            trigger=DetectorTrigger.EXTERNAL_EDGE,
+        )
+    )
+    assert_has_calls(
+        detector,
+        [
+            call.detector.trigger_mode.put(EigerTriggerMode.EDGE),
+            call.detector.ntrigger.put(10),
+            call.detector.nimages.put(5),
+            call.detector.count_time.put(0.1),
+            call.detector.frame_time.put(0.1),
+            call.od.acquisition_id.put(""),
+            call.od.file_prefix.put("filename"),
+            call.od.file_path.put(str(tmp_path)),
+            call.od.fp.data_compression.put("BSLZ4"),
+            call.od.fp.data_datatype.put("uint16"),
+            call.od.fp.frames.put(0),
+            call.od.block_size.put(100000),
+            call.pixel_mask.put(str(tmp_path / "filename_meta.h5") + "//mask"),
+            call.od.fp.start_writing.execute(),
+            call.arm_when_ready.execute(),
+        ],
+        reset_after=False,
+    )
+
+
+async def test_prepare_level_calls_correct_parameters(
+    detector: EigerDetector, tmp_path
+):
+    await detector.prepare(
+        TriggerInfo(
+            number_of_events=10,
+            livetime=0.1,
+            trigger=DetectorTrigger.EXTERNAL_LEVEL,
+        )
+    )
+    assert_has_calls(
+        detector,
+        [
+            call.detector.trigger_mode.put(EigerTriggerMode.GATE),
+            call.detector.ntrigger.put(1),
+            call.detector.nimages.put(10),
+            call.od.acquisition_id.put(""),
+            call.od.file_prefix.put("filename"),
+            call.od.file_path.put(str(tmp_path)),
+            call.od.fp.data_compression.put("BSLZ4"),
+            call.od.fp.data_datatype.put("uint16"),
+            call.od.fp.frames.put(0),
+            call.od.block_size.put(100000),
+            call.pixel_mask.put(str(tmp_path / "filename_meta.h5") + "//mask"),
+            call.od.fp.start_writing.execute(),
+            call.arm_when_ready.execute(),
         ],
         reset_after=False,
     )

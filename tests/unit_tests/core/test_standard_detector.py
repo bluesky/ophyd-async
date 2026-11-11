@@ -63,7 +63,7 @@ class AllTriggerTypesLogic(DetectorTriggerLogic):
         self.trigger = DetectorTrigger.INTERNAL
         self.num, self.livetime, self.deadtime = num, livetime, deadtime
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         self.trigger = DetectorTrigger.EXTERNAL_EDGE
         self.num, self.livetime = num, livetime
 
@@ -1071,7 +1071,7 @@ async def test_trigger_logic_not_implemented_errors():
         await logic.prepare_internal(1, 0.1, 0.01)
 
     with pytest.raises(NotImplementedError):
-        await logic.prepare_edge(1, 0.1)
+        await logic.prepare_edge(1, 1, 0.1)
 
     with pytest.raises(NotImplementedError):
         await logic.prepare_level(1)

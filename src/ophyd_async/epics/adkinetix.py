@@ -75,7 +75,7 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         await self.driver.trigger_mode.set(KinetixTriggerMode.INTERNAL)
         await prepare_exposures(self.driver, num, livetime, deadtime)
 
-    async def prepare_edge(self, num: int, livetime: float):
+    async def prepare_edge(self, num: int, images_per_exposure, livetime: float):
         await self.driver.trigger_mode.set(KinetixTriggerMode.EDGE)
         await prepare_exposures(self.driver, num, livetime)
 
