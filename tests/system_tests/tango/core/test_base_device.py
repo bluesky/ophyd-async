@@ -26,7 +26,12 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
+from ophyd_async.tango.core import (
+    DevStateEnum,
+    TangoDevice,
+    get_full_attr_trl,
+    get_python_type,
+)
 from ophyd_async.tango.demo import (
     DemoMotor,
     DemoPointDetector,
@@ -236,6 +241,7 @@ async def test_tango_sim(sim_test_context_trls):
 
     motor = DemoMotor(name="motor", trl=sim_test_context_trls["motor-x"])
     await motor.connect()
+    assert await motor.state.get_value() == DevStateEnum.ON
     await motor.velocity.set(0.5)
 
     RE = RunEngine()
@@ -246,6 +252,7 @@ async def test_tango_sim(sim_test_context_trls):
 
     set_status = motor.set(1.0)
     await asyncio.sleep(0.5)
+    assert await motor.state.get_value() == DevStateEnum.MOVING
 
     await motor.stop(success=True)
     await set_status

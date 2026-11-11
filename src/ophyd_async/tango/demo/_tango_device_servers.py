@@ -77,10 +77,6 @@ class DemoMotorDevice(Device):
     async def write_velocity(self, value: float):
         self._velocity = value
 
-    @attribute(dtype=DevState, access=AttrWriteType.READ)
-    async def state(self):
-        return self.get_state()
-
     @command
     async def stop(self):
         self._stop = True
@@ -149,10 +145,6 @@ class DemoMultiChannelDetectorDevice(Device):
     @attribute(dtype=float, access=AttrWriteType.READ)
     async def elapsed(self):
         return self._elapsed
-
-    @attribute(dtype=DevState, access=AttrWriteType.READ)
-    async def state(self):
-        return self.get_state()
 
     @command
     async def connect_devices(self):
