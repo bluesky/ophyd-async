@@ -11,7 +11,7 @@ from ._data_logic import (
     NDArrayDescription,
     PluginSignalDataLogic,
 )
-from ._detector import AreaDetector, ContAcqDetector
+from ._detector import AreaDetector, ContAcqDetector, plugins_with_proc
 from ._io import (
     NDROIIO,
     ADBaseColorMode,
@@ -102,6 +102,7 @@ __all__ = [
     # Detector
     "AreaDetector",
     "ContAcqDetector",
+    "plugins_with_proc",
     # NDAttributes
     "NDAttributeDataType",
     "NDAttributePvDbrType",
