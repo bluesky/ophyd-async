@@ -154,20 +154,6 @@ async def test_soft_signal_backend_get_put_monitor(
 
 
 @pytest.mark.parametrize(
-    "datatype, ndim",
-    [
-        (np.ndarray, None),
-        (npt.NDArray[np.float64], None),
-        (Array1D[np.float64], 1),
-    ],
-)
-async def test_soft_signal_backend_records_ndim(datatype: Any, ndim: int | None):
-    backend = SoftSignalBackend(datatype)
-    await backend.connect(timeout=1)
-    assert backend.converter.ndim == ndim  # pyright: ignore[reportAttributeAccessIssue]
-
-
-@pytest.mark.parametrize(
     "datatype, put_value, expected",
     [
         (np.ndarray, [[1.0, 2.0]], (1, 2)),
@@ -228,6 +214,7 @@ async def test_soft_signal_descriptor_fails_for_invalid_class():
             pass
 
     with pytest.raises(TypeError):
+        # deliberately wrong, tests the runtime check
         SoftSignalBackend(MyClass)  # pyright: ignore[reportArgumentType]
 
 

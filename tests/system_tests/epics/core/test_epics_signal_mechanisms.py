@@ -556,6 +556,7 @@ async def test_can_read_using_ophyd_async_then_ophyd(
 
     def a_plan():
         yield from bps.rd(ophyd_async_sig)
+        # ophyd's EpicsSignal is untyped, so not a bluesky Readable
         yield from bps.rd(ophyd_signal)  # pyright: ignore[reportArgumentType]
 
     RE(a_plan())

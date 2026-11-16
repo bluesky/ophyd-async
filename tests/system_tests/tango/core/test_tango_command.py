@@ -50,12 +50,12 @@ TEST_PARAMS = [
     (Sequence[str], ["a", "b"], "a_str_spectrum_cmd"),
     (
         TangoLongStringTable,
-        TangoLongStringTable(long=[1, 2], string=["a", "b"]),  # pyright: ignore[reportArgumentType]
+        TangoLongStringTable(long=np.array([1, 2], dtype=np.int32), string=["a", "b"]),
         "long_string_cmd",
     ),
     (
         TangoDoubleStringTable,
-        TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]),  # pyright: ignore[reportArgumentType]
+        TangoDoubleStringTable(double=np.array([1.1, 2.2]), string=["a", "b"]),
         "double_string_cmd",
     ),
 ]
@@ -119,10 +119,12 @@ async def test_tango_command(
             else:
                 assert ctype == list(cmd.signature.parameters.values())[0].annotation
 
-        if isinstance(val, np.ndarray):
-            assert np.array_equal(val, await cmd.execute(val))  # pyright: ignore[reportCallIssue]
+        if isinstance(cmd, TriggerableCommand):
+            await cmd.execute()
+        elif isinstance(val, np.ndarray):
+            assert np.array_equal(val, await cmd.execute(val))
         else:
-            assert val == await cmd.execute(val)  # pyright: ignore[reportCallIssue]
+            assert val == await cmd.execute(val)
 
 
 @pytest.mark.parametrize("ctype, val, name", TEST_PARAMS)
@@ -143,6 +145,7 @@ async def test_tango_command_factory(
 
     trl = ""
 
+    # annotation is the parametrized datatype, read at runtime
     def spec(x: ctype) -> ctype: ...  # pyright: ignore[reportInvalidTypeForm]
 
     if everything_device_trl.endswith("#dbase=no"):
@@ -175,10 +178,12 @@ async def test_tango_command_factory(
         assert cmd.signature is not None
         assert expected_datatype == cmd.signature.return_annotation
 
-    if isinstance(val, np.ndarray):
-        assert np.array_equal(val, await cmd.execute(val))  # pyright: ignore[reportCallIssue]
+    if isinstance(cmd, TriggerableCommand):
+        await cmd.execute()
+    elif isinstance(val, np.ndarray):
+        assert np.array_equal(val, await cmd.execute(val))
     else:
-        assert val == await cmd.execute(val)  # pyright: ignore[reportCallIssue]
+        assert val == await cmd.execute(val)
 
 
 @pytest.mark.asyncio

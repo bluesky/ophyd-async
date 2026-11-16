@@ -12,11 +12,13 @@ from ophyd_async.core import (
     Array1D,
     Command,
     CommandBackend,
+    DeviceConnector,
     DeviceFiller,
     DeviceMock,
     DeviceVector,
     NotConnectedError,
     SoftCommandBackend,
+    SoftSignalBackend,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
@@ -78,6 +80,7 @@ TEST_PARAMS = [
 
 @pytest.mark.parametrize("datatype, value", TEST_PARAMS)
 async def test_soft_command_execution(datatype, value):
+    # annotation is the parametrized datatype, read at runtime
     def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 
@@ -138,15 +141,19 @@ async def test_execute_raises_typeerror_on_bad_arguments():
     backend = SoftCommandBackend(callback, sig)
     # Too few arguments
     with pytest.raises(TypeError, match="missing a required argument"):
+        # deliberately wrong, tests the runtime check
         await backend.execute(1)  # pyright: ignore[reportCallIssue]
     # Too many positional arguments
     with pytest.raises(TypeError, match="too many positional arguments"):
+        # deliberately wrong, tests the runtime check
         await backend.execute(1, 2, 3)  # pyright: ignore[reportCallIssue]
     # Unexpected keyword argument
     with pytest.raises(TypeError, match="unexpected keyword argument"):
+        # deliberately wrong, tests the runtime check
         await backend.execute(a=1, b=2, c=3)  # pyright: ignore[reportCallIssue]
     # Multiple values for the same argument
     with pytest.raises(TypeError, match="multiple values for argument"):
+        # deliberately wrong, tests the runtime check
         await backend.execute(1, a=2)  # pyright: ignore[reportCallIssue]
 
 
@@ -154,6 +161,7 @@ async def test_execute_raises_typeerror_on_bad_arguments():
 async def test_mock_command_backend_default_values(datatype, value):
     """Test MockCommandBackend returns manufactured defaults for various types."""
 
+    # annotation is the parametrized datatype, read at runtime
     async def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 
@@ -381,8 +389,8 @@ async def test_fill_child_command_vector_index():
 
     filler = DeviceFiller(
         device=vector,
-        signal_backend_factory=lambda _: None,  # pyright: ignore[reportArgumentType]
-        device_connector_factory=lambda: None,  # pyright: ignore[reportArgumentType]
+        signal_backend_factory=SoftSignalBackend,
+        device_connector_factory=DeviceConnector,
         command_backend_factory=backend_factory,
     )
 
@@ -458,6 +466,7 @@ async def test_mock_command_applies_conversion_like_soft(datatype, raw, expected
     converted, exactly as SoftCommandBackend.execute() would convert it.
     """
 
+    # annotation is the parametrized datatype, read at runtime
     def callback(v: datatype) -> datatype:  # pyright: ignore[reportInvalidTypeForm]
         return v
 

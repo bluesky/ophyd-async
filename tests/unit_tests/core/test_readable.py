@@ -147,12 +147,15 @@ def test_standard_readable_add_children_context_manager():
     sr = StandardReadable()
     mock = MagicMock()
     sr.add_readables = mock
+    a = MagicMock(spec=SignalR)
+    b = MagicMock(spec=SignalR)
+    c = MagicMock(spec=SignalR)
     with sr.add_children_as_readables():
-        sr.a = MagicMock(spec=SignalR)
-        sr.b = MagicMock(spec=SignalR)
-        sr.c = MagicMock(spec=SignalR)
+        sr.a = a
+        sr.b = b
+        sr.c = c
 
-    mock.assert_called_once_with([sr.a, sr.b, sr.c], Format.CHILD)
+    mock.assert_called_once_with([a, b, c], Format.CHILD)
 
 
 @pytest.mark.parametrize(
@@ -182,14 +185,16 @@ def test_standard_readable_add_children_cm_filters_non_devices():
     mock = MagicMock()
     sr.add_readables = mock
 
+    a = MagicMock(spec=SignalR)
+    b = MagicMock(spec=Device)
     with sr.add_children_as_readables():
-        sr.a = MagicMock(spec=SignalR)
-        sr.b = MagicMock(spec=Device)
+        sr.a = a
+        sr.b = b
         sr.c = 1.0
         sr.d = "abc"
         sr.e = MagicMock(spec=MockSignalBackend)
 
-    mock.assert_called_once_with([sr.a, sr.b], Format.CHILD)
+    mock.assert_called_once_with([a, b], Format.CHILD)
 
 
 def assert_sr_has_attrs(sr: StandardReadable, expected_attrs: dict[str, tuple]):
@@ -293,24 +298,23 @@ def test_standard_readable_hinted_signal():
     assert sr._read_funcs == (signal_r.read,)
     assert sr._stage_funcs == (signal_r.stage,)
     assert sr._unstage_funcs == (signal_r.unstage,)
-    assert sr._has_hints[0].device == signal_r  # pyright: ignore[reportAttributeAccessIssue]
+    assert sr.hints == {"fields": [signal_r.name]}
 
 
-def test_standard_readable_uncached_signal():
-    signal_r = MagicMock(spec=SignalR)
+@pytest.mark.parametrize(
+    "format, hints",
+    [
+        (Format.UNCACHED_SIGNAL, {}),
+        (Format.HINTED_UNCACHED_SIGNAL, {"fields": ["sig"]}),
+    ],
+)
+async def test_standard_readable_uncached_signal(format, hints):
     sr = StandardReadable()
-    sr.add_readables([signal_r], Format.UNCACHED_SIGNAL)
-    assert sr._describe_funcs == (signal_r.describe,)
-    assert sr._read_funcs[0].signal == signal_r  # pyright: ignore[reportFunctionMemberAccess]
-
-
-def test_standard_readable_hinted_uncached_signal():
-    signal_r = MagicMock(spec=SignalR)
-    sr = StandardReadable()
-    sr.add_readables([signal_r], Format.HINTED_UNCACHED_SIGNAL)
-    assert sr._describe_funcs == (signal_r.describe,)
-    assert sr._read_funcs[0].signal == signal_r  # pyright: ignore[reportFunctionMemberAccess]
-    assert sr._has_hints[0].device == signal_r  # pyright: ignore[reportAttributeAccessIssue]
+    signal = soft_signal_rw(int, initial_value=5, name="sig")
+    sr.add_readables([signal], format)
+    assert sr.hints == hints
+    assert list(await sr.describe()) == ["sig"]
+    assert (await sr.read())["sig"]["value"] == 5
 
 
 def test_standard_readable_add_children_multi_nested():

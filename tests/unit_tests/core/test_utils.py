@@ -204,6 +204,7 @@ async def test_error_handling_value_errors(caplog):
 
 class BadDatatypeDevice(Device):
     def __init__(self, name: str = "") -> None:
+        # deliberately wrong, tests the runtime check
         self.sig = epics_signal_rw(object, "", "")  # pyright: ignore[reportArgumentType]
         super().__init__(name)
 
@@ -344,12 +345,14 @@ async def test_format_error_string_input():
         RuntimeError,
         match=("Unexpected type `<class 'int'>` expected `str` or `dict`"),
     ):
+        # deliberately wrong, tests the runtime check
         not_connected = NotConnectedError(123)  # pyright: ignore[reportArgumentType]
         str(not_connected)
 
     with pytest.raises(
         RuntimeError, match=("Unexpected type `<class 'int'>`, expected an Exception")
     ):
+        # deliberately wrong, tests the runtime check
         not_connected = NotConnectedError({"test": 123})  # pyright: ignore[reportArgumentType]
         str(not_connected)
 

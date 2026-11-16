@@ -5,6 +5,7 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import (
     RunEngine,
+    # bluesky does not export TransitionError publicly
     TransitionError,  # pyright: ignore[reportPrivateImportUsage]
 )
 
@@ -105,6 +106,7 @@ async def test_init_devices_print_connection_status(capsys):
 
 
 def test_sync_init_devices_no_run_engine_raises_error():
+    working_device: WorkingDevice | None = None
     with pytest.raises(NotConnectedError) as exc:
         with init_devices():
             working_device = WorkingDevice("somename")
@@ -113,7 +115,8 @@ def test_sync_init_devices_no_run_engine_raises_error():
         "https://blueskyproject.io/ophyd-async/main/"
         "user/explanations/event-loop-choice.html for more info."
     )
-    assert not working_device.connected  # pyright: ignore[reportPossiblyUnboundVariable]
+    assert working_device is not None
+    assert not working_device.connected
 
 
 def test_sync_init_devices_run_engine_created_connects(RE):
@@ -155,9 +158,9 @@ def test_async_init_devices_run_engine_same_event_loop():
     loop = asyncio.new_event_loop()
     checking_loop = asyncio.new_event_loop()
 
+    mock_motor = loop.run_until_complete(set_up_device())
+    RE = RunEngine(call_returns_result=True, loop=loop)
     try:
-        mock_motor = loop.run_until_complete(set_up_device())
-        RE = RunEngine(call_returns_result=True, loop=loop)
 
         def my_plan():
             yield from bps.mov(mock_motor, 3.14)
@@ -172,14 +175,14 @@ def test_async_init_devices_run_engine_same_event_loop():
         )
 
     finally:
-        if RE.state not in ("idle", "panicked"):  # pyright: ignore[reportPossiblyUnboundVariable]
+        if RE.state not in ("idle", "panicked"):
             try:
-                RE.halt()  # pyright: ignore[reportPossiblyUnboundVariable]
+                RE.halt()
             except TransitionError:
                 pass
         loop.call_soon_threadsafe(loop.stop)
         checking_loop.call_soon_threadsafe(checking_loop.stop)
-        RE._th.join()  # pyright: ignore[reportPossiblyUnboundVariable]
+        RE._th.join()
         loop.close()
         checking_loop.close()
 

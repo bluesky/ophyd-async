@@ -362,6 +362,7 @@ def _get_generic(value: T) -> T:
     return value
 
 
+# deliberately generic, tests TypeVar resolution
 async def _set_generic(value: T) -> None:  # pyright: ignore[reportInvalidTypeVarUse]
     pass
 

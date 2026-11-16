@@ -13,6 +13,7 @@ from typing import Any
 import pytest
 from bluesky.run_engine import (
     RunEngine,
+    # bluesky does not export TransitionError publicly
     TransitionError,  # pyright: ignore[reportPrivateImportUsage]
 )
 from pytest import FixtureRequest

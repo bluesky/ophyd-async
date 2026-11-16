@@ -31,7 +31,8 @@ async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     set_mock_value(det.driver.acquire, True)
     # The CB plugin Trigger is a busy record that resets itself to False once the
     # requested frames are buffered; simulate that immediate completion.
-    callback_on_mock_put(det.cb.trigger_, lambda value: False)  # pyright: ignore[reportAttributeAccessIssue]
+    cb = det.get_plugin("cb", adcore.NDCircularBuffIO)
+    callback_on_mock_put(cb.trigger_, lambda value: False)
     return det
 
 

@@ -126,6 +126,7 @@ def test_reserved_attr_allowed_by_env_var(monkeypatch, value):
     device = Device()
     mock = AsyncMock()
     device.set = mock
+    # reserved name, set through the escape hatch under test
     assert device.set is mock  # pyright: ignore[reportAttributeAccessIssue]
 
 
@@ -140,6 +141,7 @@ def test_reserved_attr_still_raises_when_env_var_not_yes(monkeypatch, value):
 def test_set_mock_attr_overrides_reserved_name_and_returns_mock():
     device = Device()
     mock = set_mock_attr(device, "set", AsyncMock())
+    # reserved name, set through the escape hatch under test
     assert device.set is mock  # pyright: ignore[reportAttributeAccessIssue]
 
 
@@ -474,11 +476,11 @@ async def test_device_processor_customization():
 
     with pytest.raises(NotConnectedError):
         async with DeviceProcessor(process_devices):
-            ok = DummyDeviceGroup("parent")
-            not_ok = DummyDisconnectDevice("not_ok")
+            ok = DummyDeviceGroup("parent")  # noqa: F841
+            not_ok = DummyDisconnectDevice("not_ok")  # noqa: F841
 
-    assert ok.name in registry  # pyright: ignore[reportPossiblyUnboundVariable]
-    assert not_ok.name not in registry  # pyright: ignore[reportPossiblyUnboundVariable]
+    assert "parent" in registry
+    assert "not_ok" not in registry
 
 
 def test_device_repr_and_str_with_name():

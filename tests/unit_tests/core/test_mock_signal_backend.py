@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import re
+import sys
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
@@ -304,6 +305,7 @@ async def test_callback_on_mock_put_fails_if_args_are_not_correct():
     def callback():
         pass
 
+    # deliberately wrong, tests the runtime check
     callback_on_mock_put(mock_signal, callback)  # pyright: ignore[reportArgumentType]
     with pytest.raises(TypeError) as exc:
         await mock_signal.set(10.0)
@@ -346,8 +348,10 @@ async def test_set_mock_values_exhausted_passes(mock_signals):
     assert calls == 6
 
 
-async def test_set_mock_values_exhausted_fails(mock_signals):
+async def test_set_mock_values_exhausted_fails(mock_signals, monkeypatch):
     signal1, _ = mock_signals
+    unraisable: list[sys.UnraisableHookArgs] = []
+    monkeypatch.setattr(sys, "unraisablehook", unraisable.append)
 
     for value_set in (
         iterator := set_mock_values(
@@ -357,11 +361,10 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
         assert await signal1.get_value() == value_set
         break
 
-    with pytest.raises(AssertionError):
-        iterator.__del__()  # pyright: ignore[reportAttributeAccessIssue]
+    # Deleting the iterator before it is exhausted fails in __del__
+    del iterator
 
-    # Set so it doesn't raise the same error on teardown
-    iterator.require_all_consumed = False  # pyright: ignore[reportAttributeAccessIssue]
+    assert [type(u.exc_value) for u in unraisable] == [AssertionError]
 
 
 async def test_reset_mock_put_calls(mock_signals):

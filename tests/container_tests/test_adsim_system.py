@@ -155,6 +155,7 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
 
     RE(prepare_then_count())
 
+    # bluesky: RE() return type ignores call_returns_result
     actual_exposure_time: float = RE(bps.rd(adsim.driver.acquire_time)).plan_result  # pyright: ignore[reportAttributeAccessIssue]
     assert actual_exposure_time == 0.2
 
@@ -165,6 +166,7 @@ def test_software_triggering(
 ) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
     assert docs == [
+        # event_model: RunStart lacks bluesky's plan metadata keys
         RunStart(  # pyright: ignore[reportCallIssue]
             uid=ANY,
             time=ANY,
@@ -241,6 +243,7 @@ def test_software_triggering(
             object_keys={"adsim": ["adsim"]},
             object_classes={"adsim": "ophyd_async.epics.adsimdetector.SimDetector"},
             run_start=ANY,
+            # event_model: descriptor hints are keyed by object name
             hints={"adsim": {"fields": ["adsim"]}},  # pyright: ignore[reportArgumentType]
         ),
         StreamResource(

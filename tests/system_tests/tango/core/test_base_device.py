@@ -62,6 +62,7 @@ class TestTangoReadable(TangoDevice, StandardReadable):
 async def describe_class(fqtrl):
     description = {}
     values = {}
+    # pytango stubs: asyncio DeviceProxy() returns an awaitable
     dev = await AsyncDeviceProxy(fqtrl)  # pyright: ignore[reportGeneralTypeIssues]
 
     for name in TESTED_FEATURES:
@@ -92,12 +93,6 @@ async def describe_class(fqtrl):
                 dtype = "array"
                 shape = [max_y, max_x]
 
-        elif name in dev.get_command_list():
-            cmd_conf = await dev.get_command_config(name)
-            _, _, descr = get_python_type(cmd_conf)  # pyright: ignore[reportGeneralTypeIssues]
-            shape = []
-            value = getattr(dev, name)()
-
         else:
             raise RuntimeError(
                 f"Cannot find {name} in attributes/commands (pipes are not supported!)"
@@ -127,6 +122,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
+        # pytango stubs omit the enum's names mapping
         return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}  # pyright: ignore[reportAttributeAccessIssue]
     if issubclass(python_type, Enum):
         return {
@@ -281,12 +277,16 @@ async def test_command_autofill(tango_test_device):
     await test_device.connect()
 
     assert hasattr(test_device, "echo")
+    # filled from the server at connect, unknown to the type checker
     echo = test_device.echo  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "set_msg")
+    # filled from the server at connect, unknown to the type checker
     set_msg = test_device.set_msg  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "get_msg")
+    # filled from the server at connect, unknown to the type checker
     get_msg = test_device.get_msg  # pyright: ignore[reportAttributeAccessIssue]
     assert hasattr(test_device, "clear")
+    # filled from the server at connect, unknown to the type checker
     clear = test_device.clear  # pyright: ignore[reportAttributeAccessIssue]
 
     assert isinstance(echo, Command)

@@ -10,8 +10,7 @@ from ophyd_async.fastcs.panda import SeqTable, SeqTrigger
 
 def test_seq_table_converts_lists():
     seq_table_dict_with_lists: dict[str, Any] = {
-        field_name: []
-        for field_name, _ in SeqTable()  # pyright: ignore[reportCallIssue]
+        field_name: [] for field_name, _ in SeqTable.empty()
     }
     # Validation passes
     seq_table = SeqTable(**seq_table_dict_with_lists)

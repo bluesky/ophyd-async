@@ -560,6 +560,7 @@ async def test_signal_error_paths(ioc: LifecycleIoc, protocol: str):
     # 0 is simply accepted as "the choice at index 0" - there's no
     # EPICS-side equivalent of Tango's set()-time TypeError.)
     with pytest.raises(ValueError):
+        # deliberately wrong, tests the runtime check
         await device.subset_enum.set("NOT_A_REAL_CHOICE")  # pyright: ignore[reportArgumentType]
 
     # Wrong inferred datatype at connect time: a_str is a string record.

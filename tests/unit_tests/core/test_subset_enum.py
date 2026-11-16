@@ -11,7 +11,13 @@ from ophyd_async.epics.core import epics_signal_rw
 # constructs a converter directly - checked, nothing here looks missing
 # from the public interface.
 from ophyd_async.epics.core._aioca import (  # noqa: PLC2701
+    CaEnumConverter,
+)
+from ophyd_async.epics.core._aioca import (  # noqa: PLC2701
     make_converter as ca_make_converter,
+)
+from ophyd_async.epics.core._p4p import (  # noqa: PLC2701
+    PvaEnumConverter,
 )
 from ophyd_async.epics.core._p4p import (  # noqa: PLC2701
     make_converter as pva_make_converter,
@@ -51,10 +57,12 @@ async def test_ca_runtime_enum_converter():
     epics_value = EpicsValue()
     converter = ca_make_converter(
         AB,
+        # minimal fake of aioca's AugmentedValue
         values={"READ_PV": epics_value, "WRITE_PV": epics_value},  # pyright: ignore[reportArgumentType]
     )
-    assert converter.supported_values == {"A": "A", "B": "B", "C": "C"}  # pyright: ignore[reportAttributeAccessIssue]
-    assert set(AB).issubset(set(converter.supported_values.keys()))  # pyright: ignore[reportAttributeAccessIssue]
+    assert isinstance(converter, CaEnumConverter)
+    assert converter.supported_values == {"A": "A", "B": "B", "C": "C"}
+    assert set(AB).issubset(set(converter.supported_values.keys()))
 
 
 async def test_pva_runtime_enum_converter():
@@ -68,7 +76,8 @@ async def test_pva_runtime_enum_converter():
     converter = pva_make_converter(
         AB, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
-    assert {"A", "B"}.issubset(set(converter.supported_values))  # pyright: ignore[reportAttributeAccessIssue]
+    assert isinstance(converter, PvaEnumConverter)
+    assert {"A", "B"}.issubset(set(converter.supported_values))
 
 
 async def test_runtime_enum_signal():
@@ -78,8 +87,8 @@ async def test_runtime_enum_signal():
     await signal_rw_ca.connect(mock=True)
     assert await signal_rw_pva.get_value() == "A1"
     assert await signal_rw_ca.get_value() == "A2"
-    await signal_rw_pva.set("B1")  # pyright: ignore[reportArgumentType]
-    await signal_rw_ca.set("B2")  # pyright: ignore[reportArgumentType]
+    await signal_rw_pva.set(AB1.B)
+    await signal_rw_ca.set(AB2.B)
     assert await signal_rw_pva.get_value() == "B1"
     assert await signal_rw_ca.get_value() == "B2"
 

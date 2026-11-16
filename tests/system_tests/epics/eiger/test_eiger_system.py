@@ -115,12 +115,7 @@ async def setup_device(RE, ioc_prefixes):
 async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
     provider = StaticPathProvider(StaticFilenameProvider("test_eiger"), Path(SAVE_PATH))
     async with init_devices():
-        test_eiger = EigerDetector(
-            "",
-            provider,
-            ioc_prefixes[0],
-            ioc_prefixes[1],  # pyright: ignore[reportCallIssue]
-        )
+        test_eiger = EigerDetector(ioc_prefixes[0], provider)
 
     return test_eiger
 

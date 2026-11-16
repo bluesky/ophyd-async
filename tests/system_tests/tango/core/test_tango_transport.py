@@ -316,6 +316,7 @@ def test_try_to_cast_as_float():
         (npt.NDArray[np.uint32], np.dtype("uint32")),
         (npt.NDArray[np.uint64], np.dtype("uint64")),
         (npt.NDArray[np.bool_], np.dtype("bool")),
+        # DevState arrays are a runtime-only form, numpy typing rejects them
         (npt.NDArray[DevState], CmdArgType.DevState),  # pyright: ignore[reportInvalidTypeForm]
         (npt.NDArray[np.str_], np.dtype("str")),
         (npt.NDArray[np.float32], np.dtype("float32")),
@@ -418,7 +419,7 @@ async def test_attribute_get_config(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "justvalue")
     config = await attr_proxy.get_config()
-    assert config.writable is not None  # pyright: ignore[reportAttributeAccessIssue]
+    assert config.data_format == AttrDataFormat.SCALAR
 
 
 # --------------------------------------------------------------------
@@ -507,6 +508,7 @@ async def test_attribute_poll(tango_test_device):
     attr_proxy.unsubscribe_callback()
 
     # Test polling with bad callback
+    # deliberately wrong, tests the runtime check
     attr_proxy.subscribe_callback(bad_callback)  # pyright: ignore[reportArgumentType]
     await asyncio.sleep(0.2)
     assert "Could not poll the attribute" in str(attr_proxy.exception)
@@ -553,10 +555,10 @@ async def test_attribute_poll_exceptions(tango_test_device):
     attr_proxy.support_events = False
     attr_proxy.set_polling(True, 0.1)
 
-    def callback(reading, value):
+    def callback(reading):
         pass
 
-    attr_proxy.subscribe_callback(callback)  # pyright: ignore[reportArgumentType]
+    attr_proxy.subscribe_callback(callback)
     await asyncio.sleep(0.2)
     assert "Could not poll the attribute" in str(attr_proxy.exception)
     attr_proxy.unsubscribe_callback()
@@ -864,12 +866,13 @@ async def test_type_mismatch_array(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "array")
 
-    transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)  # pyright: ignore[reportInvalidTypeForm]
+    transport = TangoSignalBackend(npt.NDArray[np.int64], trl, trl, device_proxy)
     with pytest.raises(TypeError) as exc:
         await transport.connect(1)
     val = str(exc.value)
-    assert f"has type {npt.NDArray[float]!r}" in val
-    assert f"expected {npt.NDArray[int]!r}" in val
+    # numpy: float is not a numpy scalar type, but gives the repr we want
+    assert f"has type {npt.NDArray[float]!r}" in val  # pyright: ignore[reportInvalidTypeForm]
+    assert f"expected {npt.NDArray[np.int64]!r}" in val
 
 
 @pytest.mark.asyncio
@@ -879,6 +882,7 @@ async def test_type_mismatch_sequence(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "sequence")
 
     transport = TangoSignalBackend(
+        # deliberately wrong, tests the runtime check
         Sequence[int],  # pyright: ignore[reportArgumentType]
         trl,
         trl,
@@ -950,11 +954,11 @@ async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
     attr_proxy = AttributeProxy(device_proxy, "nonexistent")
     attr_proxy.support_events = True
 
-    def callback(reading, value):
+    def callback(reading):
         pass
 
     with caplog.at_level(logging.DEBUG, logger="ophyd_async"):
-        attr_proxy.subscribe_callback(callback)  # pyright: ignore[reportArgumentType]
+        attr_proxy.subscribe_callback(callback)
         await asyncio.sleep(0.1)
 
     assert any(
@@ -1111,6 +1115,7 @@ async def test_set_callback(everything_device_trl):
     # Try to add a non-callable callback
     transport.allow_events(True)
     with pytest.raises(RuntimeError) as exc:
+        # deliberately wrong, tests the runtime check
         transport.set_callback(1)  # pyright: ignore[reportArgumentType]
     assert "Callback must be a callable" in str(exc.value)
 

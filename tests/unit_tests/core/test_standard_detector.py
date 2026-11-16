@@ -22,7 +22,6 @@ from ophyd_async.core import (
     StreamResourceDataProvider,
     StreamResourceInfo,
     TriggerInfo,
-    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.testing import (
@@ -554,17 +553,15 @@ async def test_collect_asset_docs_uses_trigger_observed_event(
     and ``collect_asset_docs``."""
     det = StandardDetector(name="det")
     dl = StreamableOnlyDataLogic(tmp_path)
-    dl.collections_written, set_collections_written = soft_signal_r_and_setter(  # pyright: ignore[reportAttributeAccessIssue]
-        int, getter=lambda: 0
-    )
     det.add_detector_logics(JustInternalTriggerLogic(), dl)
     await det.prepare(TriggerInfo(collections_per_event=5, exposure_timeout=0.1))
 
     status = det.trigger()
     await wait_for_pending_wakeups()
-    set_collections_written(5)
+    await dl.collections_written.set(5)
     await wait_for_pending_wakeups()
     assert status.done
+    await dl.collections_written.set(0)
 
     docs = [doc async for doc in det.collect_asset_docs()]
     assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
@@ -863,6 +860,7 @@ async def test_add_unknown_logic_type_raises():
         pass
 
     with pytest.raises(TypeError, match="Unknown logic type"):
+        # deliberately wrong, tests the runtime check
         det.add_detector_logics(UnknownLogic())  # pyright: ignore[reportArgumentType]
 
 
