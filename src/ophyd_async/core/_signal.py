@@ -92,7 +92,7 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def source(self) -> str:
-        """Returns the source of the signal.
+        """The source of the signal.
 
         E.g. "ca://PV_PREFIX:SIGNAL", or "" if not available until connection.
         """
@@ -100,7 +100,7 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def datatype(self) -> type[SignalDatatypeT] | None:
-        """Returns the datatype of the signal.
+        """The datatype of the signal.
 
         This will return what was passed at construction time. None means the
         backend will calculate it from the control system on connection.
@@ -306,10 +306,7 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     @_add_timeout
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
-        setpoint, readback = await asyncio.gather(
-            self._connector.backend.get_setpoint(), self._backend_or_cache().get_value()
-        )
-        return Location(setpoint=setpoint, readback=readback)
+        return await self._connector.backend.get_location()
 
 
 class SignalX(Signal):
@@ -369,14 +366,26 @@ def soft_signal_rw(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param setter:
-        Optional callable performing the set action. May return the settled
+        Optional callable performing the set action. May be sync or async; an
+        async setter is awaited before the put completes. May return the settled
         value; if it returns None and a getter is configured, the getter is
         called to refresh the cache.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.
+
+    :example:
+    ```python
+    def read_position() -> float: ...
+
+    async def move_to(position: float) -> float: ...
+
+    # getter and setter can independently be sync or async
+    signal = soft_signal_rw(float, getter=read_position, setter=move_to)
+    ```
     """
     backend = SoftSignalBackend(
         datatype,
@@ -413,7 +422,8 @@ def soft_signal_r_and_setter(
     :param precision: The precision of the signal.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param poll_period:
         How often (seconds) to call the getter while a subscription is active.
         Requires getter to be set.

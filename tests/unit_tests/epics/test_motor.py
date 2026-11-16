@@ -17,8 +17,14 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_units,
     set_mock_value,
+    wait_for_value,
 )
-from ophyd_async.epics.motor import Motor, MotorLimitsError
+from ophyd_async.epics.motor import (
+    Motor,
+    MotorAlarmError,
+    MotorLimitsError,
+    VeloAndAcclRespectingMotorMock,
+)
 from ophyd_async.testing import (
     StatusWatcher,
     wait_for_pending_wakeups,
@@ -41,6 +47,13 @@ async def motor():
     set_mock_value(motor.high_limit_travel, 21)
     set_mock_value(motor.dial_low_limit_travel, -11)
     set_mock_value(motor.dial_high_limit_travel, 21)
+    yield motor
+
+
+@pytest.fixture
+async def velo_and_accl_respecting_motor():
+    motor = Motor("BLxxI-MO-TABLE-01:X", name="motor")
+    await motor.connect(mock=VeloAndAcclRespectingMotorMock())
     yield motor
 
 
@@ -74,6 +87,26 @@ async def test_motor_moving_well(motor: Motor) -> None:
     set_mock_put_proceeds(motor.user_setpoint, True)
     await wait_for_pending_wakeups()
     assert s.done
+
+
+@pytest.mark.parametrize(
+    "severity, expected_error",
+    [
+        (0, None),
+        (1, "severity 1"),
+        (2, "severity 2"),
+        (-1, "severity -1"),
+    ],
+)
+async def test_motor_move_checks_readback_alarm(
+    motor: Motor, severity: int, expected_error: str | None
+):
+    set_mock_value(motor.user_readback, 0.55, alarm_severity=severity)
+    if expected_error is None:
+        await motor.set(0.55)
+    else:
+        with pytest.raises(MotorAlarmError, match=expected_error):
+            await motor.set(0.55)
 
 
 async def test_motor_move_timeout(motor: Motor):
@@ -553,3 +586,61 @@ async def test_instant_motor_mock_preserves_parent_mock_tracking():
     # Verify the mock calls include the child operations
     assert any("x" in str(call) for call in parent_mock_obj.mock_calls)
     assert any("y" in str(call) for call in parent_mock_obj.mock_calls)
+
+
+async def test_velo_and_accl_respecting_motor_mock_behavior(
+    velo_and_accl_respecting_motor: Motor,
+):
+    """Test that move time matches distance / velocity + acceleration_time."""
+    await velo_and_accl_respecting_motor.velocity.set(50.0)
+    await velo_and_accl_respecting_motor.acceleration_time.set(0.05)
+
+    # Expected: abs(10 - 0) / 50 + 0.05 = 0.25s
+    start = asyncio.get_event_loop().time()
+    status = velo_and_accl_respecting_motor.set(10.0)
+    await status
+    assert status.success
+    assert await velo_and_accl_respecting_motor.user_readback.get_value() == 10.0
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.25, abs=0.1)
+
+    # Expected: abs(-5 - 10) / 50 + 0.05 = 0.35s
+    start = asyncio.get_event_loop().time()
+    status = velo_and_accl_respecting_motor.set(-5.0)
+    await status
+    assert status.success
+    assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
+    assert asyncio.get_event_loop().time() - start == pytest.approx(0.35, abs=0.1)
+
+
+@pytest.mark.parametrize(
+    "interrupt, expected_error",
+    [
+        # RunEngine path: Motor.stop() puts to STOP, then cancels the set() status
+        ("motor_stop", RuntimeError),
+        # Someone else writes to STOP; the motor record finishes the move normally
+        ("stop_signal", None),
+        # set() timeout cancels the simulated move without any stop
+        ("timeout", TimeoutError),
+    ],
+)
+async def test_velo_and_accl_respecting_motor_mock_interrupted_move(
+    velo_and_accl_respecting_motor: Motor, interrupt: str, expected_error
+):
+    motor = velo_and_accl_respecting_motor
+    # velocity 10 over 10 units, so the full move takes about 1.1s
+    status = motor.set(10.0, timeout=0.3 if interrupt == "timeout" else 5)
+    if interrupt == "motor_stop":
+        await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+        await motor.stop()
+    elif interrupt == "stop_signal":
+        await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
+        await motor.motor_stop.set(1)
+    if expected_error:
+        with pytest.raises(expected_error):
+            await status
+    else:
+        await status
+    # DMOV is only set back to 1 when the simulated move exits, so stopping short of
+    # the target means the move ended early rather than finishing
+    assert await motor.motor_done_move.get_value() == 1
+    assert await motor.user_readback.get_value() < 10.0

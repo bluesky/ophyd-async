@@ -1,13 +1,11 @@
 import asyncio
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 
-import numpy as np
-
 from ophyd_async.core import (
     AsyncStatus,
+    DeviceMock,
     FlyMotorInfo,
     MovableLogic,
     SignalRW,
@@ -15,7 +13,9 @@ from ophyd_async.core import (
     StandardReadable,
     TimeoutCalculator,
     WatchableAsyncStatus,
+    default_mock_class,
     error_if_none,
+    simulate_move,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -27,86 +27,27 @@ class SimMotorMoveLogic(MovableLogic[float]):
     readback_set: Callable[[float], None]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
-    _move_task: asyncio.Task | None = None
 
     async def stop(self) -> None:
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
-        if self._move_task is not None:
-            self._move_task.cancel()
-
-    async def _internal_sim_move(self, new_position: float) -> None:
-        velocity = await self.velocity.get_value()
-        old_position = await self.setpoint.get_value()
-        if old_position == new_position:
-            return
-
-        await self.setpoint.set(new_position)
-        if velocity == 0:
-            self.readback_set(new_position)
-            return
-
-        start = time.monotonic()
-        acceleration_time = abs(await self.acceleration_time.get_value())
-        sign = np.sign(new_position - old_position)
-        velocity = abs(velocity) * sign
-        # The total distance to move
-        total_distance = new_position - old_position
-        # The ramp distance is the distance taken to ramp up (the same distance
-        # is taken to ramp down). This is the area under the triangle of the
-        # velocity ramp up (base * height / 2)
-        ramp_distance = acceleration_time * velocity / 2
-        if abs(ramp_distance * 2) >= abs(total_distance):
-            # All time is ramp up and down, so recalculate the maximum velocity
-            # we get to. We know the area under the ramp up triangle is half the
-            # total distance, and we also know the ratio of velocity over
-            # acceleration_time is the same as the ration of max_velocity over
-            # ramp_time, so solve the simultaneous equations to get
-            # max_velocity and ramp_time.
-            max_velocity = np.sqrt(total_distance * velocity / acceleration_time) * sign
-            ramp_time = total_distance / max_velocity
-            # So move time is just the ramp up and ramp down with no constant
-            # velocity section
-            move_time = 2 * ramp_time
-        else:
-            # Middle segments of constant velocity
-            max_velocity = velocity
-            # Ramp up and down time is exactly the requested acceleration time
-            ramp_time = acceleration_time
-            # So move time is twice this, plus the time taken to move the
-            # remaining distance at constant velocity
-            move_time = ramp_time * 2 + (total_distance - ramp_distance * 2) / velocity
-        # Make an array of relative update times at 10Hz intervals
-        update_times = list(np.arange(0.1, move_time, 0.1, dtype=float))
-        # With the end position appended
-        if update_times and np.isclose(update_times[-1], move_time):
-            update_times[-1] = move_time
-        else:
-            update_times.append(move_time)
-        # Iterate through the update times, calculating new position for each
-        for t in update_times:
-            if t <= ramp_time:
-                # Ramp up phase, calculate area under the ramp up triangle
-                current_velocity = t / ramp_time * max_velocity
-                position = old_position + current_velocity * t / 2
-            elif t >= move_time - ramp_time:
-                # Ramp down phase, subtract area under the ramp down triangle
-                time_left = move_time - t
-                current_velocity = time_left / ramp_time * max_velocity
-                position = new_position - current_velocity * time_left / 2
-            else:
-                # Constant velocity phase
-                position = old_position + ramp_distance + (t - ramp_time) * max_velocity
-            # Calculate how long to wait to get there
-            relative_time = time.monotonic() - start
-            await asyncio.sleep(t - relative_time)
-            # Update the readback position
-            self.readback_set(position)
 
     async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
-        await self._internal_sim_move(new_position)
+        old_position, velocity, acceleration_time = await asyncio.gather(
+            self.readback.get_value(),
+            self.velocity.get_value(),
+            self.acceleration_time.get_value(),
+        )
+
+        await self.setpoint.set(new_position)
+        async for position in simulate_move(
+            old_position, new_position, velocity, acceleration_time
+        ):
+            self.readback_set(position)
 
 
+# Remove InstantMovableMock as SimMotor owns this logic, depends if instant=True/False
+@default_mock_class(DeviceMock)
 class SimMotor(StandardReadable, StandardMovable[float]):
     """For usage when simulating a motor."""
 
@@ -127,7 +68,7 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
-                float, 0, units=units
+                float, initial_value, units=units
             )
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = soft_signal_rw(float, 0 if instant else 1.0)

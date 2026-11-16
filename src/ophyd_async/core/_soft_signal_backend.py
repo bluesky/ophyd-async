@@ -10,13 +10,12 @@ from functools import lru_cache
 from typing import Any, Generic, get_args
 
 import numpy as np
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from bluesky.utils import maybe_await
 from event_model import DataKey
 
 from ._datatypes import Table
 from ._signal_backend import (
-    Array1D,
     EnumT,
     Primitive,
     PrimitiveT,
@@ -27,7 +26,7 @@ from ._signal_backend import (
     make_datakey,
     make_metadata,
 )
-from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
+from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls, get_ndim
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
@@ -58,11 +57,19 @@ class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumT]]):
 
 
 @dataclass
-class NDArraySoftConverter(SoftConverter[Array1D]):
+class NDArraySoftConverter(SoftConverter[np.ndarray]):
     datatype: np.dtype | None = None
+    ndim: int | None = None
 
-    def write_value(self, value: Any) -> Array1D:
-        return np.array(() if value is None else value, dtype=self.datatype)
+    def write_value(self, value: Any) -> np.ndarray:
+        if value is None:
+            # An empty array of the requested rank, so that the default value of
+            # an ND signal passes the check below
+            return np.zeros((0,) * (self.ndim or 1), dtype=self.datatype)
+        array = np.array(value, dtype=self.datatype)
+        if self.ndim is not None and array.ndim != self.ndim:
+            raise ValueError(f"Expected {self.ndim}D array, got {array.ndim}D array")
+        return array
 
 
 @dataclass
@@ -103,8 +110,10 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
         return NDArraySoftConverter()
     elif cached_get_origin(datatype) == np.ndarray:
         if datatype not in get_args(SignalDatatype):
-            raise TypeError(f"Expected Array1D[dtype], got {datatype}")
-        return NDArraySoftConverter(get_dtype(datatype))
+            raise TypeError(
+                f"Expected Array1D[dtype] or npt.NDArray[dtype], got {datatype}"
+            )
+        return NDArraySoftConverter(get_dtype(datatype), get_ndim(datatype))
     elif enum_cls:
         return EnumSoftConverter(enum_cls)
     elif issubclass(datatype, Table):
@@ -134,9 +143,11 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         The number of digits after the decimal place to display for a float datatype.
     :param getter:
         Optional callable returning the current device value, called on
-        get_value/get_reading and periodically if poll_period is set.
+        get_value/get_reading and periodically if poll_period is set. May be
+        sync or async; an async getter is awaited.
     :param setter:
-        Optional callable performing the set action. May return the settled
+        Optional callable performing the set action. May be sync or async; an
+        async setter is awaited before the put completes. May return the settled
         value; if it returns None and a getter is configured, the getter is
         called to refresh the cache.
     :param poll_period:
@@ -186,14 +197,24 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
             except Exception:
                 continue
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the current value, alarm and timestamp."""
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the current value, timestamp and alarm severity.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
         # setp = self.converter.write_value(value)
         # self._setpoint = setp
         self.reading = Reading(
             value=self.converter.write_value(value),
-            timestamp=time.time(),
-            alarm_severity=0,
+            timestamp=time.time() if timestamp is None else timestamp,
+            alarm_severity=alarm_severity,
         )
         if self.callback:
             self.callback(self.reading)
@@ -232,8 +253,8 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         await self._update_value_from_getter()
         return self.reading["value"]
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        return self._setpoint
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        return Location(setpoint=self._setpoint, readback=await self.get_value())
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback and self.callback:

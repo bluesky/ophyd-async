@@ -337,8 +337,10 @@ def docker_composer():
         if ready_log_line is not None:
             try:
                 assert process.stdout is not None
+                output: list[str] = []
                 for line in process.stdout:
                     print(line, end="")
+                    output.append(line)
                     if ready_log_line in line:
                         break
                     if (
@@ -347,6 +349,13 @@ def docker_composer():
                     ):
                         raise TimeoutError(
                             f"docker compose with args {docker_args} timed out"
+                        )
+                else:
+                    # Output ended without the ready line, so compose has exited
+                    if process.wait() != 0:
+                        raise RuntimeError(
+                            f"docker compose with args {docker_args} exited "
+                            f"with code {process.returncode}:\n{''.join(output)}"
                         )
             except Exception:
                 process.terminate()
@@ -440,7 +449,7 @@ def bl01t_di_cam_01(ca_gateway, docker_composer):
         # ever on a cold start, where the gap is wide enough to lose the race.
         # `Acquire 1` is the *last* command in that block and the commands run
         # in order, so seeing it echoed means the whole block has run. That ties
-        # us to a pinned submodule's config (example-services, tag 2025.8.2): if
+        # us to a pinned submodule's config (example-services): if
         # a command is ever appended after it, this goes back to being too early.
         ready_log_line="dbpf BL01T-DI-CAM-01:DET:Acquire 1",
     )

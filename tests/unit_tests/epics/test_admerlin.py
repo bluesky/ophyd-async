@@ -43,6 +43,22 @@ async def test_deadtime(
     assert deadtime == 0.002
 
 
+@pytest.mark.parametrize(
+    "counter_depth,expected_data_type",
+    [
+        (admerlin.MerlinCounterDepth.BIT_12, adcore.ADBaseDataType.UINT16),
+        (admerlin.MerlinCounterDepth.BIT_24, adcore.ADBaseDataType.UINT32),
+    ],
+)
+async def test_data_type_inferred_from_counter_depth(
+    test_admerlin: admerlin.MerlinDetector,
+    counter_depth: admerlin.MerlinCounterDepth,
+    expected_data_type: adcore.ADBaseDataType,
+):
+    set_mock_value(test_admerlin.driver.counter_depth, counter_depth)
+    assert await test_admerlin.driver.data_type.get_value() == expected_data_type
+
+
 async def test_prepare_external_edge(
     test_admerlin: admerlin.MerlinDetector,
 ):

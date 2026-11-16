@@ -107,7 +107,7 @@ class Command(Device, Generic[P, T]):
 
     @property
     def source(self) -> str:
-        """Returns the source of the command."""
+        """The source of the command."""
         return self._connector.backend.source(self.name)
 
     @AsyncStatus.wrap
@@ -179,6 +179,11 @@ class SoftCommandBackend(CommandBackend[P, T]):
     caller blocks until the first finishes.  This is intentional — hardware
     commands should not run concurrently, and it prevents re-entrant callback
     invocations.
+
+    :param command_cb:
+        The callable to wrap. May be sync or async; an async callback is awaited
+        by `execute()`, which returns its result either way.
+    :param sig: The signature of `command_cb`, with all parameters annotated.
     """
 
     signature: inspect.Signature
@@ -311,7 +316,7 @@ class MockCommandBackend(CommandBackend[P, T]):
 
     @cached_property
     def execute_mock(self) -> AsyncMock:
-        """Return the mock that will track calls to the command execution."""
+        """The mock that will track calls to the command execution."""
         execute_mock = AsyncMock(name="execute", side_effect=self._make_side_effect())
         self._mock().attach_mock(execute_mock, "execute")
         return execute_mock

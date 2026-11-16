@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass, field
 from functools import cached_property
+from unittest.mock import Mock
 
 import pytest
 
@@ -62,12 +63,17 @@ class CtxFlyableLogic(FlyableLogic[int, dict]):
 class MovableFlyableLogic(MovableLogic[float], FlyableLogic[float, None]):
     """Both movable and flyable, mirroring how `Motor` combines the two.
 
-    `complete()` should report progress by observing the readback, reusing the
-    same watcher-update stream as `StandardMovable.set`.
+    `prepare()` and `complete()` should report progress by observing the readback,
+    reusing the same watcher-update stream as `StandardMovable.set`.
     """
 
     async def on_prepare(self, value: float) -> None:
-        pass
+        # Move to the fly start, writing the setpoint part-way in like Motor does
+        await asyncio.sleep(0)
+        set_mock_value(self.setpoint, value)
+        for position in (value / 2, value):
+            set_mock_value(self.readback, position)
+            await asyncio.sleep(0)
 
     async def on_kickoff(self, ctx: None) -> None:
         pass
@@ -190,10 +196,10 @@ async def test_flyable_complete_watches_movable_logic():
     async with init_devices(mock=True):
         flyer = MovableFlyer(name="flyer")
 
-    # Set the fly target on the setpoint without triggering the instant-move mock
-    # (so the readback stays at 0 until on_complete steps it).
+    # Prepare at 0, then set the fly target on the setpoint without triggering the
+    # instant-move mock (so the readback stays at 0 until on_complete steps it).
+    await flyer.prepare(0.0)
     set_mock_value(flyer.setpoint, 10.0)
-    await flyer.prepare(10.0)
     await flyer.kickoff()
     status = flyer.complete()
     assert isinstance(status, WatchableAsyncStatus)
@@ -208,6 +214,26 @@ async def test_flyable_complete_watches_movable_logic():
     assert {u["initial"] for u in updates} == {0.0}
     assert {u["target"] for u in updates} == {10.0}
     assert {u["name"] for u in updates} == {"flyer"}
+
+
+async def test_flyable_prepare_watches_movable_logic():
+    async with init_devices(mock=True):
+        flyer = MovableFlyer(name="flyer")
+
+    status = flyer.prepare(10.0)
+    assert isinstance(status, WatchableAsyncStatus)
+    watcher = Mock()
+    status.watch(watcher)
+    await status
+
+    updates = [c.kwargs for c in watcher.call_args_list]
+    assert [u["current"] for u in updates] == [0.0, 5.0, 10.0]
+    assert {u["initial"] for u in updates} == {0.0}
+    # No updates before on_prepare writes the setpoint, so the target is never stale
+    assert {u["target"] for u in updates} == {10.0}
+    assert {u["name"] for u in updates} == {"flyer"}
+    # prepare() still completes the lifecycle stage, so kickoff is allowed
+    await flyer.kickoff()
 
 
 async def test_flyable_stage_unstage_default_to_stop(recording_flyer):

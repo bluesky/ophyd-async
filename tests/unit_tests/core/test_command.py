@@ -93,8 +93,7 @@ async def test_soft_command_execution(datatype, value):
         assert res == value
 
 
-@pytest.mark.parametrize("datatype, value", TEST_PARAMS)
-def test_soft_command_init_validation(datatype, value):
+def test_soft_command_init_validation():
     def missing_param_annotation(v):
         return v
 
@@ -210,7 +209,16 @@ async def test_soft_command_mock_calls_original_func():
     assert calls == [5]
 
 
-async def test_soft_command_mock_side_effect_overrides_func():
+def _sync_override(v: int) -> int:
+    return 99
+
+
+async def _async_override(v: int) -> int:
+    return 99
+
+
+@pytest.mark.parametrize("override", [_sync_override, _async_override])
+async def test_soft_command_mock_side_effect_overrides_func(override):
     calls: list[int] = []
 
     def callback(v: int) -> int:
@@ -221,7 +229,7 @@ async def test_soft_command_mock_side_effect_overrides_func():
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
-    with callback_on_mock_execute(cmd, lambda v: 99):
+    with callback_on_mock_execute(cmd, override):
         result = await cmd.execute(5)
     assert result == 99
     assert calls == []

@@ -18,6 +18,7 @@ from ophyd_async.core import (
     UUIDFilenameProvider,
     YMDPathProvider,
 )
+from ophyd_async.core._path_providers import PathProvider
 
 
 def test_path_info_invalid_directory_path():
@@ -249,3 +250,28 @@ def test_posix_path_produces_valid_path_info_on_windows(static_filename_provider
     info = path_provider()
     assert str(info.directory_path) == "/tmp/posix_path"
     assert info.directory_uri == "file://localhost/tmp/posix_path/"
+
+
+@pytest.mark.parametrize(
+    "provider_cls, path_str, expected_type",
+    [
+        (provider_cls, path_str, expected_type)
+        for provider_cls, (path_str, expected_type) in itertools.product(
+            [StaticPathProvider, AutoIncrementingPathProvider, YMDPathProvider],
+            [
+                ("/tmp/posix_path", PurePosixPath),
+                ("C:\\Users\\test\\windows_path", PureWindowsPath),
+            ],
+        )
+    ],
+)
+def test_path_providers_accept_string_paths(
+    static_filename_provider: StaticFilenameProvider,
+    provider_cls: type[PathProvider],
+    path_str,
+    expected_type,
+):
+    path_provider = provider_cls(static_filename_provider, path_str)  # type: ignore
+    info = path_provider()
+    assert isinstance(info.directory_path, expected_type)
+    assert str(info.directory_path).startswith(path_str)

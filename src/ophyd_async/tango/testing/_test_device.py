@@ -1,7 +1,7 @@
 from typing import Annotated as A
-from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from ophyd_async.core import (
     Array1D,
@@ -62,7 +62,7 @@ class TangoTestDevice(TangoDevice, StandardReadable):
     my_state: A[SignalRW[DevStateEnum], TangoPolling(0.1)]
     float64: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
     int32_spectrum: A[SignalRW[Array1D[np.int_]], TangoPolling(0.1)]
-    float64_image: A[SignalRW[np.ndarray[Any, np.dtype[np.float64]]], TangoPolling(0.1)]
+    float64_image: A[SignalRW[npt.NDArray[np.float64]], TangoPolling(0.1)]
     void_cmd: TriggerableCommand
     float_to_bool_cmd: Command[[float], bool]
 

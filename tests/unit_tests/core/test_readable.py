@@ -9,6 +9,7 @@ from ophyd_async.core import (
     AsyncStageable,
     ConfigSignal,
     Device,
+    DeviceMap,
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
@@ -52,7 +53,6 @@ def test_standard_readable_hints():
 
 def test_standard_readable_hints_raises_when_overriding_string_literal():
     sr = StandardReadable()
-
     hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"gridding": "rectilinear_nonsequential"}
 
@@ -64,8 +64,65 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hints key .* value may not be overridden"):
+    with pytest.raises(RuntimeError, match=r"Hint key .* may not be overridden"):
         sr.hints  # noqa: B018
+
+
+@pytest.mark.parametrize(
+    ["sub_hints", "error"],
+    [
+        ({"fields": "1"}, "'fields' key must be a Sequence, received <class 'str'>"),
+        ({"fields": 1}, "'fields' key must be a Sequence, received <class 'int'>"),
+        (
+            {"dimensions": "1"},
+            "'dimensions' key must be a Sequence, received <class 'str'>",
+        ),
+        (
+            {"dimensions": 1},
+            "'dimensions' key must be a Sequence, received <class 'int'>",
+        ),
+    ],
+)
+def test_incorrect_fields_and_dimensions_in_hints(sub_hints: dict, error: str):
+    sr = StandardReadable()
+    has_hints = MagicMock(spec=HasHints)
+    has_hints.hints = sub_hints
+    sr._has_hints = (has_hints,)
+
+    with pytest.raises(RuntimeError, match=error):
+        sr.hints  # noqa: B018
+
+
+def test_standard_readable_arbitrary_hints():
+    sr = StandardReadable()
+
+    hint1 = MagicMock(spec=HasHints)
+    hint1.hints = {
+        "fields": ["field1"],
+        "common-key": 1,
+        "hint1-key": None,
+        "dimensions": [(["f1", "f2"], "s1")],
+        "gridding": "rectilinear_nonsequential",
+    }
+
+    hint2 = MagicMock(spec=HasHints)
+    hint2.hints = {
+        "fields": ["field2"],
+        "common-key": 2,
+        "hint2-key": None,
+        "dimensions": [(["f3", "f4"], "s1")],
+        "gridding": "rectilinear_nonsequential",
+    }
+
+    sr._has_hints = (
+        hint1,
+        hint2,
+    )
+    assert sr.hints == {
+        "gridding": "rectilinear_nonsequential",
+        "fields": ["field1", "field2"],
+        "dimensions": [(["f1", "f2"], "s1"), (["f3", "f4"], "s1")],
+    }  # Arbitrary keys left out.
 
 
 def test_standard_readable_hints_raises_when_overriding_sequence():
@@ -82,20 +139,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
         hint2,
     )
 
-    with pytest.raises(RuntimeError, match=r"Hint fields .* overrides existing hint"):
-        sr.hints  # noqa: B018
-
-
-@pytest.mark.parametrize("invalid_type", [1, 1.0, {"abc": "def"}, {1, 2, 3}])
-def test_standard_readable_hints_invalid_types(invalid_type):
-    sr = StandardReadable()
-
-    hint1 = MagicMock(spec=HasHints)
-    hint1.hints = {"test": invalid_type}
-
-    sr._has_hints = (hint1,)
-
-    with pytest.raises(TypeError, match=r"Unknown type for value .* for key .*"):
+    with pytest.raises(RuntimeError, match=r"Hint 'fields' .* override existing hint"):
         sr.hints  # noqa: B018
 
 
@@ -114,23 +158,29 @@ def test_standard_readable_add_children_context_manager():
     assert set(mock.call_args.args[0]) == {sr.a, sr.b, sr.c}
 
 
-def test_standard_readable_add_children_cm_device_vector():
+@pytest.mark.parametrize(
+    "device_type, keys",
+    [
+        (DeviceVector, [1, 2, 3]),
+        (DeviceMap, ["a", "b", "c"]),
+    ],
+)
+def test_standard_readable_add_children_cm_device_with_mappings(device_type, keys):
     sr = StandardReadable()
     mock = MagicMock()
     sr.add_readables = mock
 
-    # Create a mock for the DeviceVector.children() call
-    mock_d1 = MagicMock(spec=SignalR)
-    mock_d2 = MagicMock(spec=SignalR)
-    mock_d3 = MagicMock(spec=SignalR)
-    vector = DeviceVector({1: mock_d1, 2: mock_d2, 3: mock_d3})
+    # Create a mock for the DeviceVector/DeviceMap.children() call
+    devices = [MagicMock(spec=SignalR) for _ in range(3)]
+    device = device_type(dict(zip(keys, devices, strict=True)))
+
     with sr.add_children_as_readables():
-        sr.a = vector
+        sr.a = device
 
     # Can't use assert_called_once_with() as the order of items returned from
     # internal dict comprehension is not guaranteed
     mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == {mock_d1, mock_d2, mock_d3}
+    assert set(mock.call_args.args[0]) == set(devices)
 
 
 def test_standard_readable_add_children_cm_filters_non_devices():

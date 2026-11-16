@@ -150,7 +150,15 @@ async def test_spiral_trajectory_from_slice(
     sim_motors: tuple[PmacIO, Motor, Motor], motor_info: _PmacMotorInfo
 ):
     _, sim_x_motor, sim_y_motor = sim_motors
-    spec = Spiral(sim_x_motor, sim_y_motor, 0, 0, 5, 5, 3)
+    spec = Spiral(
+        x_axis=sim_x_motor,
+        x_centre=0,
+        x_diameter=5,
+        x_step=3.0,
+        y_axis=sim_y_motor,
+        y_centre=0,
+        y_diameter=5,
+    )
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2.0)

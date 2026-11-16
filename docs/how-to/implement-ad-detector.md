@@ -14,7 +14,7 @@ The first stage is to make a module in the `ophyd-async` repository to put the c
 
 Now you need an IO class that subclasses [](#adcore.ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
 
-For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings.
+For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings. For reference, see the [ADAravis driver documentation](https://areadetector.github.io/areaDetector/ADAravis/ADAravis.html).
 
 ## Add Trigger Logic for detector-specific triggering
 
@@ -24,6 +24,8 @@ Implement methods for each trigger mode your detector supports:
 - `prepare_internal(num, livetime, deadtime)` - Setup for internal triggering (detector generates its own triggers)
 - `prepare_edge(num, livetime)` - Setup for external edge triggering (rising edge starts an internally-timed exposure)
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
+- `prepare_exposures_per_collection(exposures_per_collection)` - If your detector should produce multiple exposures per individual frame written to disk, implement this method to configure the detector to produce the requested number of exposures per collection. For AD detectors, this is typically done with an optional process plugin that will perform a filter over a predefined number of exposures (i.e. an average or sum).
+
 Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
 
 If the detector has configuration values that should be captured in the scan then implement:
@@ -36,8 +38,9 @@ To preserve hardware state in plans like [`bp.count`](#bluesky.plans.count) and
 [`bps.trigger_and_read`](#bluesky.plan_stubs.trigger_and_read) that call `trigger()`
 without a preceding `prepare()`, implement:
 - `default_trigger_info()` - Return the [](#TriggerInfo) to use for the implicit
-  prepare. For AD detectors call `await trigger_info_from_num_images(self.driver)` to
-  read back the current `num_images` from the driver rather than resetting it to 1.
+  prepare. For AD detectors call `await trigger_info_from_driver(self.driver.num_images)` to
+  read back the current `num_images` from the driver rather than resetting it to 1. You should also pass a process 
+  plugin to `trigger_info_from_driver()` if your detector uses one to produce multiple exposures per collection.
 
 
 
@@ -163,7 +166,7 @@ instead of the driver's.
 For detectors that acquire continuously, use [](#adcore.ADContAcqTriggerLogic) instead of creating custom trigger logic. This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to capture frames while the detector runs continuously.
 
 Requirements:
-- Your AD IOC must have a circular buffer plugin configured
+- Your AD IOC must have a circular buffer plugin configured, reading directly from the driver. Otherwise, frames queued in an intermediate plugin would pass the gate long after they were exposed.
 - The plugin output should be fed to the file writer
 - The detector should already be acquiring continuously before use
 
@@ -172,18 +175,28 @@ Example implementation:
 driver = adcore.ADBaseIO("PREFIX:DRV:")
 cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
 det = adcore.AreaDetector(
-    driver=driver,
-    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin),
-    trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
-    path_provider=path_provider,
+    driver,
+    "PREFIX:",
+    adcore.ADWriterFactory.hdf(path_provider),
+    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin, num_frames_to_skip=1),
+    trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin, None),
     plugins={"cb1": cb_plugin},
 )
 ```
 
 The [](#adcore.ADContAcqTriggerLogic) will:
-- Validate that exposure time matches the detector's current acquisition period
-- Configure the circular buffer plugin to capture the requested number of frames
-- Use the circular buffer's trigger signal instead of the driver's acquire signal
+- Validate that a requested exposure time matches the driver's current exposure time
+- Configure zero pre-trigger frames and the requested number of post-trigger frames, then arm circular buffer capture
+
+The [](#adcore.ADContAcqAcquireLogic) opens the circular buffer gate instead of starting the driver. Unstaging stops CB capture but leaves the driver acquiring continuously.
+
+### Skip dirty frames
+
+A frame already exposing when `trigger()` is called may include motion from the preceding scan step. Set `num_frames_to_skip` on [](#adcore.ADContAcqAcquireLogic) to wait for incoming frames to pass before opening the gate. Use `0` for no wait (the default), `1` to discard the next frame, or `2` if the detector pipeline can deliver two dirty frames.
+
+Each `trigger()` or internally triggered `kickoff()` takes a fresh CB `ArrayCounter_RBV` baseline immediately before opening the gate would otherwise occur. The gate stays closed until the counter has advanced by at least `num_frames_to_skip`; frames arriving during `stage()` or `prepare()` do not count. Counter jumps are allowed because EPICS monitors may combine updates. Skipped frames are not included in the requested collection or the process plugin's exposure count.
+
+The wait timeout is `num_frames_to_skip * AcquirePeriod_RBV + DEFAULT_TIMEOUT`. If the counter stalls or the operation is cancelled, the gate is not opened. The number of frames needed depends on the detector's exposure/readout pipeline. If your driver cannot set its acquire period, so `AcquirePeriod_RBV` does not match the real frame period, pass a signal holding the real period as `acquire_period_signal`.
 
 
 ## Write tests

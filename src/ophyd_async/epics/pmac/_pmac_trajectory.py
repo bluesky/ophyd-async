@@ -134,8 +134,8 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
             await use_axis.set(False)
 
         await asyncio.gather(
-            self.pmac.trajectory.time_array.set(np.array(0)),
-            self.pmac.trajectory.user_array.set(np.array(UserProgram.END)),
+            self.pmac.trajectory.time_array.set(np.array([0])),
+            self.pmac.trajectory.user_array.set(np.array([UserProgram.END])),
             self.pmac.trajectory.points_to_build.set(1),
         )
         await self.pmac.trajectory.build_profile.trigger()
@@ -169,7 +169,10 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
         )
 
     async def _check_profile_status(
-        self, status_signal: SignalR, message_signal: SignalR
+        self,
+        status_signal: SignalR,
+        message_signal: SignalR,
+        timeout: float = DEFAULT_TIMEOUT,
     ):
         status = None
         try:

@@ -57,6 +57,55 @@ automatically use `InstantMotorMock` without any fixture setup. You can still ov
 the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
 or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
 
+## Simulating a signal that stops updating
+
+Some tests need a signal whose monitor never delivers — a disconnected IOC, or a
+detector that stops reporting state. Use [](#set_callback_filter) to modify or
+drop values on their way to subscribers:
+
+```python
+# Drop every monitor update
+set_callback_filter(sig, lambda v: None)
+
+with pytest.raises(TimeoutError):
+    # Nothing reaches the subscriber, so this times out
+    await wait_for_value(sig, 32, timeout=0.1)
+```
+
+Return a replacement value to substitute it, or `None` to drop the update
+entirely. Dropping everything includes the initial value emitted when a
+subscription is first made, which is what makes waits time out rather than
+return immediately.
+
+The filter simulates a **broken monitor, not a broken signal**. The value is
+still there; only the update stream is affected. This means:
+
+- Set the filter *before* anything subscribes. A live cache serves new
+  subscribers from its stored reading without consulting the backend, so a
+  filter set afterwards will not affect the first value they receive.
+- Use `get_value(cached=False)` to read the real value. A plain `get_value()`
+  uses the cache when one is live, so it returns filtered values — and blocks
+  indefinitely if the filter has vetoed everything.
+
+### Choosing a different mock behaviour
+
+`InstantMotorMock` moves the readback to the setpoint instantly, which is ideal for
+tests that only care about the end position. When a test needs the move to take a
+realistic amount of time — for example to check progress-bar updates or fly-scan
+timing — the [](#Motor) module also ships `VeloAndAcclRespectingMotorMock`, which
+drives the readback towards the setpoint over time while respecting the motor's
+velocity and acceleration.
+
+To use it, pass an instance directly to `connect()` instead of relying on the default:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_motor.py
+:language: python
+:pyobject: velo_and_accl_respecting_motor
+```
+
+The same pattern works for any [](#DeviceMock) subclass: instantiate it and pass it as
+the `mock=` argument to `connect()` to override the class default for that Device.
+
 ### pytest-asyncio setup
 
 :::{note}
@@ -124,7 +173,27 @@ with callback_on_mock_put(motor.setpoint, lambda v: set_mock_value(motor.readbac
 
 The callback is cleared automatically when the context exits. For a persistent side effect across a whole test, call it as a plain function (without `with`).
 
-For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else.
+The callback may be **either a sync function or an `async def` coroutine function**. An async callback is awaited before the `put()` completes, so use one when the side effect itself needs to `await` — for instance setting another Signal via its `set()`:
+
+```python
+async def on_put(value: float) -> None:
+    await motor.velocity.set(value / 2)
+
+with callback_on_mock_put(motor.setpoint, on_put):
+    await motor.setpoint.set(10.0)
+```
+
+Either way, the value the callback returns (if not `None`) becomes the readback; returning `None` leaves the readback as the value that was put.
+
+`callback_on_mock_put` returns a [](#MockPutHandle). Its `cancel()` interrupts any async callback still running, and the put completes as if the callback had returned `None`. Use it to mimic a stop PV that ends a put callback in progress, as the motor mock does:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: STOP ends the move
+:end-at: moves.cancel()
+```
+
+For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else. Like [](#callback_on_mock_put), it takes a sync or async callback, and its return value becomes the result of `execute()`.
 
 For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
 
@@ -165,8 +234,9 @@ There are a few other things we may wish to do in tests:
 - [](#set_mock_attr) to override a verb (or any reserved-name attribute) on a Device with a mock
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
 - [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
-- [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
-- [](#callback_on_mock_execute) to override the function called when a Command is executed
+- [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal (sync or async callback)
+- [](#callback_on_mock_execute) to override the function called when a Command is executed (sync or async callback)
+- [](#set_callback_filter) to modify or drop values before they reach subscribers of a Signal
 - [](#get_mock_put) to get the `AsyncMock` tracking `put()` calls on a Signal
 - [](#get_mock_execute) to get the `AsyncMock` tracking `execute()` calls on a Command
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing

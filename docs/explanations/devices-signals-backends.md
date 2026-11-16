@@ -73,7 +73,7 @@ These are all concrete classes, but delegate their actions to a [](#SignalBacken
 :pyobject: SignalBackend
 ```
 
-Each control system implements its own concrete `SignalBackend` subclass with those methods filled in. It is these subclasses that take control system specific parameters like EPICS PV or Tango TRL. The instance is passed to `Signal.__init__`, which passes it to a generic [](#SignalConnector).
+Each control system implements its own concrete `SignalBackend` subclass with those methods filled in. It is these subclasses that take control system specific parameters like EPICS PV or Tango TRL. The instance is passed to `Signal.__init__`, which passes it to a generic `SignalConnector`.
 
 At `connect()` time this `SignalConnector` does one of two things:
 - if `mock==False` then it calls `SignalBackend.connect` to connect it to the control system, and wires all the `Signal` methods to use it
@@ -116,7 +116,7 @@ Like `Signal`, `Command` delegates to a [](#CommandBackend):
 - `EpicsCommandBackend` (`CaCommandBackend` / `PvaCommandBackend`) triggers an EPICS PV write.
 - `TangoCommandBackend` executes a Tango device command, supporting typed input and output.
 
-At `connect()` time, [](#CommandConnector) either connects the real backend or swaps in a [](#MockCommandBackend) for testing.
+At `connect()` time, the `CommandConnector` either connects the real backend or swaps in a `MockCommandBackend` for testing.
 
 To construct a soft command:
 ```python

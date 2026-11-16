@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey
 
 from ._derived_signal_backend import DerivedSignalBackend
@@ -21,6 +21,7 @@ MockPutCallback = (
     Callable[[SignalDatatypeT], SignalDatatypeT | None]
     | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
 )
+MockCallbackFilter = Callable[[SignalDatatypeT], SignalDatatypeT | None]
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -48,6 +49,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         # use existing Mock if provided
         self.mock = mock
         self._mock_put_callback: MockPutCallback | None = None
+        self._callback_filter: MockCallbackFilter | None = None
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_mock_put_callback(self, callback: MockPutCallback | None):
@@ -56,9 +58,12 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             # put_mock cached property exists, so set the side effect on it
             self.put_mock.side_effect = callback
 
+    def set_mock_callback_filter(self, filter: MockCallbackFilter | None):
+        self._callback_filter = filter
+
     @cached_property
     def put_mock(self) -> AsyncMock:
-        """Return the mock that will track calls to `put()`."""
+        """The mock that will track calls to `put()`."""
         put_mock = AsyncMock(
             name="put",
             spec=Callable,
@@ -69,9 +74,19 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
-    def set_value(self, value: SignalDatatypeT):
-        """Set the value of the signal."""
-        self.soft_backend.set_value(value)
+    def set_value(
+        self,
+        value: SignalDatatypeT,
+        timestamp: float | None = None,
+        alarm_severity: int = 0,
+    ):
+        """Set the value, timestamp and alarm severity of the signal.
+
+        :param value: The new value.
+        :param timestamp: The reading timestamp, `None` means now.
+        :param alarm_severity: The alarm severity, 0 means ok.
+        """
+        self.soft_backend.set_value(value, timestamp, alarm_severity)
 
     def set_units(self, units: str):
         self.soft_backend.metadata["units"] = units
@@ -87,7 +102,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
-        """Return an Event that will block `put()` until set.
+        """An Event that will block `put()` until set.
 
         The Event is initially set, but can be unset to block `put()`.
         """
@@ -108,11 +123,28 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_value(self) -> SignalDatatypeT:
         return await self.soft_backend.get_value()
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        return await self.soft_backend.get_setpoint()
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        return await self.soft_backend.get_location()
 
     async def get_datakey(self, source: str) -> DataKey:
         return await self.soft_backend.get_datakey(source)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
-        self.soft_backend.set_callback(callback)
+        # None pass through
+        if callback is None:
+            self.soft_backend.set_callback(None)
+            return
+
+        def filtered(reading: Reading[SignalDatatypeT]) -> None:
+            if self._callback_filter is not None:
+                value = self._callback_filter(reading["value"])
+                # None means veto: the subscriber never sees this update. This
+                # includes the initial value the soft backend emits synchronously
+                # at subscribe time, which is what makes waits time out for real.
+                if value is None:
+                    return
+                # Copy rather than mutate
+                reading = {**reading, "value": value}
+            callback(reading)
+
+        self.soft_backend.set_callback(filtered)

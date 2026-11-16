@@ -3,7 +3,7 @@ import re
 import inflection
 import pytest
 
-from ophyd_async.core import Device, Signal
+from ophyd_async.core import Device, DeviceVector, Signal
 
 # Need to import them all so the subclass walking gets all subclasses
 # If we forget then the full test suite will find the subclasses, but
@@ -13,6 +13,7 @@ from ophyd_async.epics import (
     adaravis,  # noqa
     adcore,
     adkinetix,  # noqa
+    admerlin,  # noqa
     adpilatus,  # noqa
     adsimdetector,  # noqa
     advimba,  # noqa
@@ -26,7 +27,7 @@ def get_rec_subclasses(cls: type):
 
 
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
-async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
+async def test_regularly_named_attributes(cls: type[adcore.NDArrayBaseIO]):
     io = cls("")
     for name, device in io.children():
         check_name(name, device)
@@ -34,11 +35,16 @@ async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
 
 def check_name(name: str, device: Device):
     if isinstance(device, Signal):
+        # Derived signals have no PV name to check against
+        if device.source.startswith("derived://"):
+            return
         pv = extract_last_pv_part(device.source)
         # remove trailing underscore from name,
         # used to resolve clashes with Bluesky terms
         name = name[:-1] if name.endswith("_") else name
         assert inflection.underscore(pv) == name
+    elif isinstance(device, DeviceVector):
+        return
     else:
         for name, signal in device.children():
             check_name(name, signal)
@@ -54,7 +60,7 @@ def extract_last_pv_part(raw_pv):
     """
     pattern = re.compile(
         r"""
-        ca://           # Literal prefix "ca://"
+        (?:ca|pva)://   # Literal prefix "ca://" or "pva://"
         (?:.*:)?        # Optional prefix ending with a colon (non-capturing)
         ([^:_]+)        # Capturing group: base name without colon or underscore
         (?:_RBV)?       # Optional "_RBV" suffix (non-capturing)

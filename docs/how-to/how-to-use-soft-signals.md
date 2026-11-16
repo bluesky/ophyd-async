@@ -43,10 +43,25 @@ motor_position = soft_signal_rw(
     getter=read_position,
 )
 ```
+
+`getter` and `setter` may each be **either a sync function or an `async def` coroutine function** — they are independent, so one can be sync and the other async. An async getter is awaited on every `get_value()`/`get_reading()` (and on each poll if `poll_period` is set); an async setter is awaited before the `set()` completes:
+
+```python
+async def read_position() -> float:
+    return await client.get_position()
+
+async def move_to(position: float) -> float:
+    await client.move(position)
+    return await client.get_position()
+
+motor_position = soft_signal_rw(float, setter=move_to, getter=read_position)
+```
+
 **Rationale**:
 - Directly wrap the callable in a `SoftSignalBackend`-backed signal.
 - Avoids the need for separate `Command` + `Signal` pairs when types align.
 - Preserves type hints and integrates seamlessly with scans.
+- An async callable means I/O-bound devices don't have to block the event loop.
 
 ## Case C: Mismatched setter and getter types or multiple input types
 
@@ -101,3 +116,4 @@ pressure = await pressure_signal.read()
 2. **Combine `Command` + `Signal`** when types diverge or actions yield secondary results (Cases C/D).
 3. **Avoid overloading signals**: If a callable performs an action *and* returns data, model the action as a `Command` and the data as one or more `Signal`s.
 4. **Polling**: Use `poll_period` in `SoftSignalBackend` for live updates (e.g., sensor readings), but ensure `getter` is lightweight.
+5. **Sync or async**: every callable you hand to ophyd-async here — `getter`, `setter`, and the callback passed to `soft_command` — may be a plain function or a coroutine function. Prefer `async def` whenever the callable does I/O.

@@ -81,3 +81,35 @@ assert (await motor.locate())["readback"] == 10.0
 `StandardMovable` device, including how to define custom automatic mock behaviour and
 how to opt out of the default mock for fine-grained control.
 ```
+
+## Reporting progress when moving several children
+
+If a device's `set` moves several `Movable` children in parallel, wrap it with
+[](#WatchableAsyncStatus.wrap) and pass the children's statuses to
+[](#forward_watcher_updates), so progress bars watching the parent see the child moves:
+
+```python
+class Stage(Device):
+    def __init__(self, name: str = ""):
+        self.x = SimMotor(instant=False)
+        self.y = SimMotor(instant=False)
+        super().__init__(name=name)
+
+    @WatchableAsyncStatus.wrap
+    async def set(self, value: tuple[float, float]):
+        statuses = [self.x.set(value[0]), self.y.set(value[1])]
+        async for update in forward_watcher_updates(statuses, self.name):
+            yield update
+```
+
+Start every child move before iterating, so they run concurrently. The iterator ends
+once all children have finished, and re-raises the error if any child fails.
+
+`combine` controls what the parent's watchers receive:
+
+- `combine=True` (default): a single update named after the parent, giving the mean
+  fractional progress of all children from 0 to 1. Use this when one progress bar
+  should represent the whole move, as children may have different units and ranges.
+- `combine=False`: each child's update unchanged, interleaved in the order they
+  arrive. Use this when watchers should show one progress bar per child, keyed by
+  the child's `name`.

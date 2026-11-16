@@ -2,7 +2,9 @@ import asyncio
 import re
 import sys
 from asyncio import CancelledError
+from typing import TypeVar, assert_type
 
+import numpy as np
 import pytest
 
 from ophyd_async.core import (
@@ -18,10 +20,14 @@ from ophyd_async.core import (
     get_mock_put,
     merge_gathered_dicts,
     set_mock_value,
+    simulate_move,
     soft_signal_rw,
 )
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.motor import Motor
+
+
+T = TypeVar("T")
 
 
 class ValueErrorBackend(SoftSignalBackend):
@@ -337,7 +343,7 @@ def test_core_notconnected_emits_deprecation_warning():
         from ophyd_async.core import NotConnected  # noqa: F401
 
 
-async def _async_value(val):
+async def _async_value(val: T) -> T:
     """Helper function to create an awaitable that returns a value."""
     return val
 
@@ -348,32 +354,25 @@ async def test_gather_dict_empty():
     assert result == {}
 
 
-async def test_gather_dict_duplicate_resolved_keys():
-    """Test gather_dict when different awaitable keys resolve to the same value."""
-    # Two coroutine objects that resolve to the same key - second should win
+async def test_gather_dict_awaits_values_and_infers_types():
+    """Test gather_dict keeps keys and order, and types the result without hints."""
     result = await gather_dict(
-        {
-            _async_value("key"): "first",
-            _async_value("key"): "second",
-        }
+        {"a": _async_value(1), "b": _async_value(2), "c": _async_value(3)}
     )
-    assert result == {"key": "second"}
+    assert_type(result, dict[str, int])
+    assert result == {"a": 1, "b": 2, "c": 3}
+    assert list(result) == ["a", "b", "c"]
 
 
-@pytest.mark.parametrize("keys_awaitable", ("", "b", "abc"))
-@pytest.mark.parametrize("values_awaitable", ([], [2], [1, 2, 3]))
-async def test_gather_dict(keys_awaitable, values_awaitable):
-    """Test gather_dict with plain values, awaitable keys, and awaitable values."""
-    expected = {"a": 1, "b": 2, "c": 3}
+async def test_gather_dict_infers_array_values():
+    """Test gather_dict types ndarray results, which the old signature got wrong."""
 
-    input_dict = {}
-    for k, v in expected.items():
-        key = _async_value(k) if k in keys_awaitable else k
-        value = _async_value(v) if v in values_awaitable else v
-        input_dict[key] = value
-    result = await gather_dict(input_dict)
-    assert result == expected
-    assert list(result.keys()) == list(expected.keys())
+    async def get_array(n: int) -> np.ndarray:
+        return np.zeros(n)
+
+    result = await gather_dict({k: get_array(n) for k, n in (("a", 1), ("b", 2))})
+    assert_type(result, dict[str, np.ndarray])
+    assert list(result) == ["a", "b"]
 
 
 # Cancellation propagation is broken in asyncio.gather on Python 3.10, so the exception
@@ -443,7 +442,7 @@ async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
     )
     if set_to_delay:
         with pytest.raises(asyncio.TimeoutError) as exc_info:
-            await asyncio.wait_for(gather_awaitable, timeout=0.3)
+            await asyncio.wait_for(gather_awaitable, timeout=0.1)
         cause = exc_info.value.__cause__
         assert isinstance(cause, CancelledError)
         assert _contains_message(cause, expected_message)
@@ -469,3 +468,17 @@ def _patch_motor(motor: Motor, initial_position=0):
     set_mock_value(motor.max_velocity, 5)
     set_mock_value(motor.high_limit_travel, float("inf"))
     set_mock_value(motor.low_limit_travel, float("-inf"))
+
+
+@pytest.mark.parametrize(
+    "acceleration_time",
+    [
+        0.05,
+        # No ramp at all, which used to make the last position NaN
+        0,
+    ],
+)
+async def test_simulate_move_ends_at_target(acceleration_time: float):
+    positions = [p async for p in simulate_move(0, 1.5, 10, acceleration_time)]
+    assert positions[-1] == 1.5
+    assert positions == sorted(positions)

@@ -4,8 +4,6 @@ from ._command import (
     NO_ARG_VOID_SIGNATURE,
     Command,
     CommandBackend,
-    CommandConnector,
-    MockCommandBackend,
     SoftCommandBackend,
     TriggerableCommand,
     soft_command,
@@ -43,6 +41,7 @@ from ._device import (
     LazyMock,
     default_mock_class,
     init_devices,
+    print_connection_status,
 )
 from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
@@ -53,15 +52,17 @@ from ._enums import (
     YesNo,
 )
 from ._flyable import FlyableLogic, FlyMotorInfo, StandardFlyable
-from ._log import config_ophyd_async_logging, logger, set_handler
+from ._log import config_ophyd_async_logging, logger
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    MockPutHandle,
     callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
     get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_callback_filter,
     set_mock_attr,
     set_mock_precision,
     set_mock_put_proceeds,
@@ -106,7 +107,6 @@ from ._settings import Settings, SettingsProvider
 from ._signal import (
     Ignore,
     Signal,
-    SignalConnector,
     SignalDict,
     SignalR,
     SignalRW,
@@ -133,7 +133,12 @@ from ._signal_backend import (
     make_datakey,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._status import (
+    AsyncStatus,
+    WatchableAsyncStatus,
+    completed_status,
+    forward_watcher_updates,
+)
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -151,9 +156,11 @@ from ._utils import (
     gather_dict,
     get_dtype,
     get_enum_cls,
+    get_ndim,
     get_unique,
     in_micros,
     non_zero,
+    simulate_move,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -188,6 +195,7 @@ __all__ = [
     "DeviceVector",
     "DeviceProcessor",
     "init_devices",
+    "print_connection_status",
     # Movable
     "MovableLogic",
     "StandardMovable",
@@ -206,6 +214,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "WatcherUpdate",
     "completed_status",
+    "forward_watcher_updates",
     # Signal
     "Signal",
     "SignalR",
@@ -213,7 +222,6 @@ __all__ = [
     "SignalRW",
     "SignalX",
     "SignalBackend",
-    "SignalConnector",
     # Signal Types
     "SignalDatatype",
     "SignalDatatypeT",
@@ -243,9 +251,11 @@ __all__ = [
     "get_mock_put",
     "get_mock_execute",
     "callback_on_mock_put",
+    "MockPutHandle",
     "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
+    "set_callback_filter",
     "set_mock_units",
     "set_mock_precision",
     # Signal utilities
@@ -297,7 +307,6 @@ __all__ = [
     # Utils
     "config_ophyd_async_logging",
     "logger",
-    "set_handler",
     "CALCULATE_TIMEOUT",
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
@@ -309,12 +318,14 @@ __all__ = [
     "gather_dict",
     "get_dtype",
     "get_enum_cls",
+    "get_ndim",
     "get_unique",
     "in_micros",
     "make_datakey",
     "wait_for_connection",
     "Ignore",
     "non_zero",
+    "simulate_move",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",
@@ -335,8 +346,6 @@ __all__ = [
     # Commands
     "Command",
     "CommandBackend",
-    "CommandConnector",
-    "MockCommandBackend",
     "NO_ARG_VOID_SIGNATURE",
     "SoftCommandBackend",
     "soft_command",

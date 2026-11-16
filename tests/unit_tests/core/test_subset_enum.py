@@ -86,3 +86,16 @@ async def test_runtime_enum_signal():
     # Though type checking should compain
     await signal_rw_pva.set("C1")  # type: ignore
     await signal_rw_ca.set("C2")  # type: ignore
+
+
+def test_subset_enum_known_value_is_member():
+    # Known values must be returned as the enum member itself
+    assert AB("A") is AB.A
+    assert AB(AB.A) is AB.A
+
+
+def test_subset_enum_unknown_value_is_str():
+    # Values the backend has but the enum doesn't still pass through
+    value = AB("C")
+    assert value == "C"
+    assert not isinstance(value, AB)

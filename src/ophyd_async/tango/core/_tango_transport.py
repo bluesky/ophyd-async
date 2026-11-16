@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import logging
 import re
 from abc import abstractmethod
-from collections.abc import Callable, Coroutine, Sequence
+from collections.abc import Callable, Sequence
+from types import CoroutineType
 from typing import (
     Any,
     ParamSpec,
@@ -15,13 +18,13 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from bluesky.protocols import Reading
+from bluesky.protocols import Location, Reading
 from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
 from tango import (
     AttrDataFormat,
     CmdArgType,
-    DevFailed,  # type: ignore
+    DevFailed,
     DeviceProxy,
     DevState,
     EventType,
@@ -78,18 +81,18 @@ R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[P, Coroutine[Any, Any, R]],
-) -> Callable[P, Coroutine[Any, Any, R]]:
+    func: Callable[P, CoroutineType[Any, Any, R]],
+) -> Callable[P, CoroutineType[Any, Any, R]]:
     """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
     async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
-        if not current_executor.in_executor_context():  # type: ignore
+        current_executor: AsyncioExecutor = get_global_executor()
+        if not current_executor.in_executor_context():
             set_global_executor(AsyncioExecutor())
         return await func(*args, **kwargs)
 
-    return wrapper  # type: ignore[return-value]
+    return wrapper
 
 
 # Base mapping for Tango types to Python types
@@ -281,7 +284,7 @@ class TangoProxy:
     ):
         """Set polling parameters."""
 
-    def set_converter(self, converter: "TangoConverter"):
+    def set_converter(self, converter: TangoConverter):
         self._converter = converter
 
 
@@ -291,6 +294,7 @@ class AttributeProxy(TangoProxy):
     def __init__(self, device_proxy: DeviceProxy, name: str):
         self._callback: Callback | None = None
         self._eid: int | None = None
+        self._subscribe_task: asyncio.Task | None = None
         self._poll_task: asyncio.Task | None = None
         self._abs_change: float | None = None
         self._rel_change: float | None = None
@@ -301,6 +305,7 @@ class AttributeProxy(TangoProxy):
         super().__init__(device_proxy, name)
 
     async def connect(self) -> None:
+        eid = None
         try:
             # I have to typehint proxy as tango.DeviceProxy because
             # tango.asyncio.DeviceProxy cannot be used as a typehint.
@@ -309,23 +314,33 @@ class AttributeProxy(TangoProxy):
             eid = await self._proxy.subscribe_event(  # type: ignore
                 self._name, EventType.CHANGE_EVENT, self._event_processor
             )
-            await self._proxy.unsubscribe_event(eid)  # type: ignore
-            self.support_events = True
         except Exception:
-            pass
+            # The attribute does not support change events
+            return
+        finally:
+            # Undo the probe subscription synchronously rather than with an
+            # `await`: this also has to run when connect is being cancelled
+            # (a connection timeout), and an awaited unsubscribe would itself
+            # be cancelled immediately, leaving a live subscription behind.
+            # Tango pushes events at it from its own thread, so once the
+            # event loop it was made on closes those events are dispatched
+            # into a closed loop.
+            if eid is not None:
+                self._unsubscribe_event(eid)
+        self.support_events = True
 
     @ensure_proper_executor
-    async def get(self) -> object:  # type: ignore
+    async def get(self) -> object:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         return self._converter.value(attr.value)
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:  # type: ignore
+    async def get_w_value(self) -> object:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         return self._converter.value(attr.w_value)
 
     @ensure_proper_executor
-    async def put(  # type: ignore
+    async def put(
         self, value: object | None, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
@@ -345,11 +360,11 @@ class AttributeProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeConfig:  # type: ignore
+    async def get_config(self) -> AttributeConfig:
         return await self._proxy.get_attribute_config(self._name)  # type: ignore
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:  # type: ignore
+    async def get_reading(self) -> Reading:
         attr = await self._proxy.read_attribute(self._name)  # type: ignore
         reading = Reading(
             value=self._converter.value(attr.value),
@@ -362,16 +377,31 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
+    def _unsubscribe_event(self, eid: int) -> None:
+        try:
+            self._proxy.unsubscribe_event(eid, green_mode=False)  # type: ignore
+        except Exception as exc:
+            logger.warning(f"Could not unsubscribe from event: {exc}")
+
     @ensure_proper_executor
     async def _subscribe_to_event(self):
         try:
             if not self._eid:
-                self._eid = await self._proxy.subscribe_event(
+                eid = await self._proxy.subscribe_event(
                     self._name,
                     EventType.CHANGE_EVENT,
                     self._event_processor,
                     green_mode=GreenMode.Asyncio,
                 )  # type: ignore
+                if self._callback is None:
+                    # unsubscribe_callback() ran while we were still
+                    # subscribing, so it found no event id to remove. Undo
+                    # the subscription here instead, otherwise nothing ever
+                    # will and tango keeps pushing events at it from its own
+                    # thread after the event loop it was made on has closed.
+                    self._unsubscribe_event(eid)
+                else:
+                    self._eid = eid
         except Exception as exc:
             logger.debug(f"Subscribe to event failed: {exc}")
 
@@ -383,7 +413,9 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            asyncio.create_task(self._subscribe_to_event())
+            # Held so the event loop's weak reference to the task isn't the
+            # only one and it can't be garbage collected mid-flight
+            self._subscribe_task = asyncio.create_task(self._subscribe_to_event())
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
@@ -406,23 +438,23 @@ class AttributeProxy(TangoProxy):
             )
 
     def unsubscribe_callback(self):
+        # Clear the callback up front: subscribe_callback() subscribes in a
+        # background task, so if that task hasn't landed yet there is no event
+        # id here for us to remove. It checks self._callback when it lands and
+        # undoes its own subscription instead.
+        callback, self._callback = self._callback, None
         if self._eid:
-            try:
-                self._proxy.unsubscribe_event(self._eid, green_mode=False)  # type: ignore
-            except Exception as exc:
-                logger.warning(f"Could not unsubscribe from event: {exc}")
-            finally:
-                self._eid = None
+            self._unsubscribe_event(self._eid)
+            self._eid = None
         if self._poll_task:
             self._poll_task.cancel()
             self._poll_task = None
-            if self._callback is not None:
+            if callback is not None:
                 # Call the callback with the last reading
                 try:
-                    self._callback(self._last_reading)
+                    callback(self._last_reading)
                 except TypeError:
                     pass
-        self._callback = None
 
     @ensure_proper_executor
     async def _event_processor(self, event):
@@ -569,7 +601,7 @@ class CommandProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandConfig:  # type: ignore
+    async def get_config(self) -> CommandConfig:
         return await self._proxy.get_command_config(self._name)  # type: ignore
 
     def set_polling(
@@ -962,14 +994,18 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         value = await proxy.get()
         return cast(SignalDatatypeT, value)
 
-    async def get_setpoint(self) -> SignalDatatypeT:
-        if self.proxies[self.write_trl] is None:
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        write_proxy = self.proxies[self.write_trl]
+        if write_proxy is None:
             raise NotConnectedError(f"Not connected to {self.write_trl}")
-        proxy = self.proxies[self.write_trl]
-        if proxy is None:
-            raise NotConnectedError(f"Not connected to {self.write_trl}")
-        w_value = await proxy.get_w_value()
-        return cast(SignalDatatypeT, w_value)
+        value, w_value = await asyncio.gather(
+            self.get_value(),
+            write_proxy.get_w_value(),
+        )
+        return Location(
+            setpoint=cast(SignalDatatypeT, w_value),
+            readback=value,
+        )
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:

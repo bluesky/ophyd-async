@@ -29,17 +29,30 @@ from ophyd_async.core import (
     default_mock_class,
     error_if_none,
     set_mock_value,
+    simulate_move,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
+__all__ = [
+    "MotorLimitsError",
+    "MotorAlarmError",
+    "Motor",
+    "InstantMotorMock",
+    "VeloAndAcclRespectingMotorMock",
+    "OffsetMode",
+    "UseSetMode",
+]
 
 
 class MotorLimitsError(Exception):
     """Exception for invalid motor limits."""
 
     pass
+
+
+class MotorAlarmError(Exception):
+    """Exception for a motor that has an alarm severity set after a move."""
 
 
 # Back compat - delete before 1.0
@@ -185,8 +198,19 @@ class MotorFlyableMovableLogic(
             raise ValueError(msg) from error
 
     async def move(self, new_position: float, timeout: TimeoutCalculator) -> None:
-        """Move by setting the setpoint and waiting for put completion."""
+        """Move by setting the setpoint and waiting for put completion.
+
+        Raises `MotorAlarmError` if the readback has an alarm severity set once
+        the put has completed.
+        """
         await self.setpoint.set(new_position, timeout=timeout())
+        reading = await self.readback.read()
+        severity = reading[self.readback.name].get("alarm_severity", 0)
+        if severity:
+            raise MotorAlarmError(
+                f"Motor {self.readback.name} is in alarm (severity {severity}) "
+                f"after a move to {new_position}."
+            )
 
     async def on_prepare(self, value: FlyMotorInfo) -> MotorFlyCtx:
         """Move to the beginning of a run-up distance ready for a fly scan."""
@@ -259,6 +283,39 @@ class InstantMotorMock(DeviceMock["Motor"]):
             set_mock_value(device.motor_done_move, 1)  # Done
 
         callback_on_mock_put(device.user_setpoint, _instant_move)
+
+
+class VeloAndAcclRespectingMotorMock(DeviceMock["Motor"]):
+    """Mock behaviour that respects motor velocity and acceleration time."""
+
+    async def connect(self, device: Motor) -> None:
+        """Mock signals to simulate a move respecting velocity and acceleration."""
+        set_mock_value(device.velocity, 10)
+        set_mock_value(device.max_velocity, 100)
+        set_mock_value(device.acceleration_time, 0.1)
+
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        async def _move(value: float) -> None:
+            current, velocity, acceleration_time = await asyncio.gather(
+                device.user_readback.get_value(),
+                device.velocity.get_value(),
+                device.acceleration_time.get_value(),
+            )
+            set_mock_value(device.motor_done_move, 0)
+            try:
+                async for position in simulate_move(
+                    current, value, velocity, acceleration_time
+                ):
+                    set_mock_value(device.user_readback, position)
+            finally:
+                # Done however the move ended; readback stays where it reached
+                set_mock_value(device.motor_done_move, 1)
+
+        # STOP ends the move, but the put to the setpoint completes normally
+        moves = callback_on_mock_put(device.user_setpoint, _move)
+        callback_on_mock_put(device.motor_stop, lambda _: moves.cancel())
 
 
 @default_mock_class(InstantMotorMock)

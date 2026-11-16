@@ -26,6 +26,8 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
+from ophyd_async.core._log import logger
+
 from ._data_providers import ReadableDataProvider, StreamableDataProvider
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
@@ -101,6 +103,15 @@ class TriggerInfo(ConfinedModel):
         gt=0,
     )
     """What is the maximum timeout on waiting for an exposure"""
+
+    collection_timeout: float = Field(
+        default_factory=lambda d: (
+            (d["livetime"] + d["deadtime"]) * d["exposures_per_collection"]
+            + DEFAULT_TIMEOUT
+        ),
+        gt=0,
+    )
+    """What is the maximum timeout on waiting for a collection"""
 
     @computed_field
     @cached_property
@@ -488,14 +499,16 @@ class StandardDetector(
                         dl.prepare_unbounded(self.name + dl.datakey_suffix)
                     )
                 elif _data_logic_supported(dl.prepare_single):
-                    if trigger_info.number_of_collections > 1:
-                        raise RuntimeError(
-                            f"Multiple collections not supported by"
-                            f" {self.name + dl.datakey_suffix}"
+                    if trigger_info.number_of_collections == 1:
+                        readable_coros.append(
+                            dl.prepare_single(self.name + dl.datakey_suffix)
                         )
-                    readable_coros.append(
-                        dl.prepare_single(self.name + dl.datakey_suffix)
-                    )
+                    else:
+                        logger.warning(
+                            f"DataLogic {dl} only supports a single collection, but "
+                            "the detector was prepared for "
+                            f"{trigger_info.number_of_collections} collections."
+                        )
                 else:
                     msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"
                     raise RuntimeError(msg)
@@ -503,6 +516,7 @@ class StandardDetector(
                 asyncio.gather(*streamable_coros),
                 asyncio.gather(*readable_coros),
             )
+
         # Stash the prepare context so we can use it in trigger/kickoff
         self._prepare_ctx = _PrepareCtx(
             trigger_info=trigger_info,
@@ -531,7 +545,7 @@ class StandardDetector(
         if data_providers:
             async for sig, value in observe_signals_value(
                 *current_collections_written.keys(),
-                timeout=trigger_info.exposure_timeout,
+                timeout=trigger_info.collection_timeout,
             ):
                 current_collections_written[sig] = value
                 collections_written = min(current_collections_written.values())

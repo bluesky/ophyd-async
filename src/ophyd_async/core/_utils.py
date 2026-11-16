@@ -2,11 +2,18 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
+import time
+from collections.abc import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Iterable,
+    Mapping,
+    Sequence,
+)
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
 from functools import lru_cache
-from inspect import isawaitable
 from typing import (
     Any,
     Generic,
@@ -57,9 +64,12 @@ class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
             member.
 
         """
-        if isinstance(value, str) and not isinstance(value, cls):
-            return value
-        return super().__call__(value, *args, **kwargs)
+        try:
+            return super().__call__(value, *args, **kwargs)
+        except ValueError:
+            if isinstance(value, str):
+                return value
+            raise
 
 
 class StrictEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
@@ -240,6 +250,31 @@ def get_dtype(datatype: type) -> np.dtype:
     return np.dtype(get_args(get_args(datatype)[1])[0])
 
 
+def get_ndim(datatype: type) -> int | None:
+    """Get the number of dimensions from a numpy ndarray type annotation.
+
+    Returns None if the annotation leaves the shape unconstrained, as in
+    `np.ndarray[Any, np.dtype[np.int8]]` or `npt.NDArray[np.int8]`.
+
+    ```python
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_ndim(Array1D[np.int8])
+    1
+
+    ```
+    """
+    if not cached_get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    # datatype = numpy.ndarray[tuple[int], numpy.dtype[numpy.int8]]
+    # so the number of shape arguments is the number of dimensions, unless it is
+    # variadic (tuple[Any, ...]) or unparametrized (Any)
+    shape = get_args(get_args(datatype)[0])
+    if not shape or Ellipsis in shape:
+        return None
+    return len(shape)
+
+
 def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """Get the enum class from a datatype.
 
@@ -322,36 +357,10 @@ async def merge_gathered_dicts(
     return ret
 
 
-def _partition_awaitable(
-    maybe_awaitables: Iterable[T | Awaitable[T]],
-) -> tuple[dict[int, Awaitable[T]], dict[int, T]]:
-    awaitable: dict[int, Awaitable[T]] = {}
-    not_awaitable: dict[int, T] = {}
-    for i, x in enumerate(maybe_awaitables):
-        if isawaitable(x):
-            awaitable[i] = x
-        else:
-            not_awaitable[i] = x
-    return awaitable, not_awaitable
-
-
-async def gather_dict(coros: dict[T | Awaitable[T], V | Awaitable[V]]) -> dict[T, V]:
-    """Await any coros in the keys or values of a dictionary."""
-    k_awaitable, k_not_awaitable = _partition_awaitable(coros.keys())
-    v_awaitable, v_not_awaitable = _partition_awaitable(coros.values())
-
-    # Await all awaitables in parallel
-    k_results, v_results = await asyncio.gather(
-        asyncio.gather(*k_awaitable.values()),
-        asyncio.gather(*v_awaitable.values()),
-    )
-
-    # Combine awaited and non-awaited values by index
-    k_map = k_not_awaitable | dict(zip(k_awaitable, k_results, strict=True))
-    v_map = v_not_awaitable | dict(zip(v_awaitable, v_results, strict=True))
-
-    # Reconstruct dict in original index order
-    return {k_map[i]: v_map[i] for i in range(len(coros))}
+async def gather_dict(coros: Mapping[T, Awaitable[V]]) -> dict[T, V]:
+    """Await the values of a dictionary in parallel, keeping the keys."""
+    results = await asyncio.gather(*coros.values())
+    return dict(zip(coros, results, strict=True))
 
 
 def in_micros(t: float) -> int:
@@ -433,3 +442,81 @@ async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T
         return await asyncio.wait_for(coro, timeout)
     except TimeoutError as exc:
         raise TimeoutError(source) from exc
+
+
+async def simulate_move(
+    old_position: float,
+    new_position: float,
+    velocity: float,
+    acceleration_time: float,
+) -> AsyncIterator[float]:
+    """Yield positions at 10Hz along a trapezoidal velocity profile.
+
+    :param old_position: Where the move starts.
+    :param new_position: Where the move ends, always the last value yielded.
+    :param velocity: Speed of the constant velocity section, 0 means instant.
+    :param acceleration_time: Time taken to ramp up to (and down from) velocity.
+    """
+    if velocity == 0 or old_position == new_position:
+        yield new_position
+        return
+
+    start = time.monotonic()
+    acceleration_time = abs(acceleration_time)
+    sign = np.sign(new_position - old_position)
+    velocity = abs(velocity) * sign
+    # The total distance to move
+    total_distance = new_position - old_position
+    # The ramp distance is the distance taken to ramp up (the same distance
+    # is taken to ramp down). This is the area under the triangle of the
+    # velocity ramp up (base * height / 2)
+    ramp_distance = acceleration_time * velocity / 2
+    if abs(ramp_distance * 2) >= abs(total_distance):
+        # All time is ramp up and down, so recalculate the maximum velocity
+        # we get to. We know the area under the ramp up triangle is half the
+        # total distance, and we also know the ratio of velocity over
+        # acceleration_time is the same as the ration of max_velocity over
+        # ramp_time, so solve the simultaneous equations to get
+        # max_velocity and ramp_time.
+        max_velocity = np.sqrt(total_distance * velocity / acceleration_time) * sign
+        ramp_time = total_distance / max_velocity
+        # So move time is just the ramp up and ramp down with no constant
+        # velocity section
+        move_time = 2 * ramp_time
+    else:
+        # Middle segments of constant velocity
+        max_velocity = velocity
+        # Ramp up and down time is exactly the requested acceleration time
+        ramp_time = acceleration_time
+        # So move time is twice this, plus the time taken to move the
+        # remaining distance at constant velocity
+        move_time = ramp_time * 2 + (total_distance - ramp_distance * 2) / velocity
+    # Make an array of relative update times at 10Hz intervals
+    update_times = list(np.arange(0.1, move_time, 0.1, dtype=float))
+    # With the end position appended
+    if update_times and np.isclose(update_times[-1], move_time):
+        update_times[-1] = move_time
+    else:
+        update_times.append(move_time)
+    # Iterate through the update times, calculating new position for each
+    for t in update_times:
+        if t >= move_time:
+            # Final update, exactly at the target
+            position = new_position
+        elif t <= ramp_time:
+            # Ramp up phase, calculate area under the ramp up triangle
+            current_velocity = t / ramp_time * max_velocity
+            position = old_position + current_velocity * t / 2
+        elif t >= move_time - ramp_time:
+            # Ramp down phase, subtract area under the ramp down triangle
+            time_left = move_time - t
+            current_velocity = time_left / ramp_time * max_velocity
+            position = new_position - current_velocity * time_left / 2
+        else:
+            # Constant velocity phase
+            position = old_position + ramp_distance + (t - ramp_time) * max_velocity
+        # Calculate how long to wait to get there
+        relative_time = time.monotonic() - start
+        await asyncio.sleep(t - relative_time)
+        # Update the readback position
+        yield position

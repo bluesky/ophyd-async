@@ -3,7 +3,8 @@ from collections.abc import Sequence
 from typing import Generic, TypedDict, TypeVar
 
 import numpy as np
-from bluesky.protocols import Reading
+import numpy.typing as npt
+from bluesky.protocols import Location, Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._datatypes import Array1D, Table
@@ -32,6 +33,17 @@ SignalDatatype = (
     | Array1D[np.uint64]
     | Array1D[np.float32]
     | Array1D[np.float64]
+    | npt.NDArray[np.bool_]
+    | npt.NDArray[np.int8]
+    | npt.NDArray[np.uint8]
+    | npt.NDArray[np.int16]
+    | npt.NDArray[np.uint16]
+    | npt.NDArray[np.int32]
+    | npt.NDArray[np.uint32]
+    | npt.NDArray[np.int64]
+    | npt.NDArray[np.uint64]
+    | npt.NDArray[np.float32]
+    | npt.NDArray[np.float64]
     | np.ndarray
     | Sequence[str]
     | Sequence[StrictEnum]
@@ -44,10 +56,14 @@ SignalDatatype = (
 - A python primitive [](#bool), [](#int), [](#float), [](#str)
 - An [](#EnumTypes) subclass
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
+- A fixed datatype `npt.NDArray` of the same, which can change dimensions at runtime
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
 - A sequence of [](#EnumTypes) subclasses
 - A [](#Table) subclass
+
+See [](#choose-array-datatypes) for which of the array spellings each backend
+accepts.
 """
 # TODO: These typevars will not be needed when we drop python 3.11
 # as you can do MyConverter[SignalType: SignalTypeUnion]:
@@ -95,8 +111,8 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """Return the current value."""
 
     @abstractmethod
-    async def get_setpoint(self) -> SignalDatatypeT:
-        """Return the point that a signal was requested to move to."""
+    async def get_location(self) -> Location[SignalDatatypeT]:
+        """Return the setpoint and readback in a single fetch."""
 
     @abstractmethod
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:

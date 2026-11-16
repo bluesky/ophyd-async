@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 from ._device import Device
 from ._protocol import AsyncStageable
-from ._status import AsyncStatus
+from ._status import AsyncStatus, AsyncStatusBase
 
 
 class _StandardBase(Device, AsyncStageable):
@@ -17,8 +17,8 @@ class _StandardBase(Device, AsyncStageable):
     """
 
     # Immutable defaults to avoid accidental sharing between instances
-    _stage_funcs: tuple[Callable[[], AsyncStatus], ...] = ()
-    _unstage_funcs: tuple[Callable[[], AsyncStatus], ...] = ()
+    _stage_funcs: tuple[Callable[[], AsyncStatusBase], ...] = ()
+    _unstage_funcs: tuple[Callable[[], AsyncStatusBase], ...] = ()
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
