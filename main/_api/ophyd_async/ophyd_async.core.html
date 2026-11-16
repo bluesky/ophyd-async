@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -8,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.21.5.dev1+g55a302c1c documentation</title>
   
   
   
@@ -27,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -37,12 +36,12 @@
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=3519df7d"></script>
+    <script src="../../_static/documentation_options.js?v=7273a8a5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,7 +49,7 @@
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async/ophyd_async.core';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -63,6 +62,7 @@
     <link rel="next" title="Environment Variables" href="../../reference/environment-variables.html" />
     <link rel="prev" title="ophyd_async.epics.adandor" href="ophyd_async.epics.adandor.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
   
@@ -112,7 +112,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
   
   
 </a></div>
@@ -197,7 +197,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -207,11 +207,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -224,8 +231,7 @@
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -236,8 +242,7 @@
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -268,7 +273,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -277,7 +282,7 @@
   
 
   
-    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -353,11 +358,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -370,8 +382,7 @@
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -382,8 +393,7 @@
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -412,7 +422,8 @@
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
   </svg>
   <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
@@ -461,7 +472,7 @@
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3 current active"><a aria-current="page" class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
 </ul>
 </details></li>
 </ul>
@@ -893,43 +904,46 @@ in the keyword argument list.  For example:  dict(one=1, two=2)</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.gather_dict" title="ophyd_async.core._utils.gather_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gather_dict</span></code></a></p></td>
 <td><p>Await the values of a dictionary in parallel, keeping the keys.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core._utils.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_unaliased_origin" title="ophyd_async.core._utils.get_unaliased_origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unaliased_origin</span></code></a></p></td>
+<td><p>Get the origin of a type, looking through a <code class="docutils literal notranslate"><span class="pre">type</span></code> alias to what it stands for.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core._utils.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core._utils.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core._utils.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
 <td><p>Get the enum class from a datatype.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_ndim" title="ophyd_async.core._utils.get_ndim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ndim</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_ndim" title="ophyd_async.core._utils.get_ndim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ndim</span></code></a></p></td>
 <td><p>Get the number of dimensions from a numpy ndarray type annotation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core._utils.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core._utils.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
 <td><p>If all values are the same, return that value, otherwise raise TypeError.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core._utils.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core._utils.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
 <td><p>Convert between a seconds and microseconds.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.make_datakey" title="ophyd_async.core._signal_backend.make_datakey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.make_datakey" title="ophyd_async.core._signal_backend.make_datakey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></a></p></td>
 <td><p>Make a DataKey for a given datatype.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core._utils.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core._utils.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
 <td><p>Call many underlying signals, accumulating exceptions and returning them.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.non_zero" title="ophyd_async.core._utils.non_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_zero</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.non_zero" title="ophyd_async.core._utils.non_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_zero</span></code></a></p></td>
 <td><p>Return True if the value cast to an int is not zero.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.simulate_move" title="ophyd_async.core._utils.simulate_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate_move</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.simulate_move" title="ophyd_async.core._utils.simulate_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate_move</span></code></a></p></td>
 <td><p>Yield positions at 10Hz along a trapezoidal velocity profile.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_r" title="ophyd_async.core._derived_signal.derived_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_r</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_r" title="ophyd_async.core._derived_signal.derived_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_r</span></code></a></p></td>
 <td><p>Create a read only derived signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_rw" title="ophyd_async.core._derived_signal.derived_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_rw" title="ophyd_async.core._derived_signal.derived_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></a></p></td>
 <td><p>Create a read-write derived signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_w" title="ophyd_async.core._derived_signal.derived_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_w</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.derived_signal_w" title="ophyd_async.core._derived_signal.derived_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derived_signal_w</span></code></a></p></td>
 <td><p>Create a write only derived signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core._command.soft_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_command</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.soft_command" title="ophyd_async.core._command.soft_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_command</span></code></a></p></td>
 <td><p>Create a <a class="reference internal" href="#ophyd_async.core.Command" title="ophyd_async.core.Command"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Command</span></code></a> backed by a Python callable.</p></td>
 </tr>
 </tbody>
@@ -1411,10 +1425,10 @@ for an example.</p></li>
 </dl>
 <p>For example, to connect and name 2 motors in parallel:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="k">async</span><span class="p">]</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
-    <span class="n">t1x</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X&quot;</span><span class="p">)</span>
-    <span class="n">t1y</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;pva://BLxxI-MO-TABLE-01:Y&quot;</span><span class="p">)</span>
+    <span class="n">t1x</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">"BLxxI-MO-TABLE-01:X"</span><span class="p">)</span>
+    <span class="n">t1y</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">"pva://BLxxI-MO-TABLE-01:Y"</span><span class="p">)</span>
     <span class="c1"># Names and connects devices here</span>
-<span class="k">assert</span> <span class="n">t1x</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;t1x&quot;</span>
+<span class="k">assert</span> <span class="n">t1x</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"t1x"</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1434,7 +1448,7 @@ for an example.</p></li>
 </dl>
 <p>For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="k">async</span><span class="p">]</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">on_connect_hook</span><span class="o">=</span><span class="n">print_connection_status</span><span class="p">):</span>
-    <span class="n">t1x</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X&quot;</span><span class="p">)</span>
+    <span class="n">t1x</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">Motor</span><span class="p">(</span><span class="s2">"BLxxI-MO-TABLE-01:X"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1607,8 +1621,8 @@ same names as the equivalent ophyd sync device.</p></li>
 <dd><p>Return value, timestamp, optional per-point metadata for each field name.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;value&quot;: 5, &quot;timestamp&quot;: 1472493713.271991},
-    &quot;channel2&quot;: {&quot;value&quot;: 16, &quot;timestamp&quot;: 1472493713.539238},
+    "channel1": {"value": 5, "timestamp": 1472493713.271991},
+    "channel2": {"value": 16, "timestamp": 1472493713.539238},
 }
 </pre></div>
 </div>
@@ -1620,8 +1634,8 @@ same names as the equivalent ophyd sync device.</p></li>
 <dd><p>Return per-scan metadata for each field name in <code class="docutils literal notranslate"><span class="pre">read()</span></code>.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;source&quot;: &quot;SOME_PV1&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
-    &quot;channel2&quot;: {&quot;source&quot;: &quot;SOME_PV2&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
+    "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
+    "channel2": {"source": "SOME_PV2", "dtype": "number", "shape": []},
 }
 </pre></div>
 </div>
@@ -2279,16 +2293,16 @@ accepts.</p>
 <span class="gp">... </span>    <span class="n">a</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
 <span class="gp">... </span>    <span class="n">b</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">MyTable</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">MyTable</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># the length is the number of rows</span>
 <span class="go">2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># adding tables together concatenates them</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">a</span>
 <span class="go">array([1, 2, 1, 2], dtype=int8)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">b</span>
-<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;x&#39;, &#39;y&#39;]</span>
+<span class="go">['x', 'y', 'x', 'y']</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># slice a row</span>
-<span class="go">array([(2, b&#39;y&#39;)], dtype=[(&#39;a&#39;, &#39;i1&#39;), (&#39;b&#39;, &#39;S40&#39;)])</span>
+<span class="go">array([(2, b'y')], dtype=[('a', 'i1'), ('b', 'S40')])</span>
 
 </pre></div>
 </div>
@@ -2534,10 +2548,10 @@ Any calls to the child are then accessible from the parent mock.</p>
 <p>Subclasses can override the <code class="docutils literal notranslate"><span class="pre">connect()</span></code> method to inject custom logic
 when mock devices are connected.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parent</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">(</span><span class="s2">"child"</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span> <span class="o">=</span> <span class="n">child</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span><span class="p">()</span>
-<span class="go">&lt;Mock name=&#39;mock.child()&#39; id=&#39;...&#39;&gt;</span>
+<span class="go">&lt;Mock name='mock.child()' id='...'&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parent_mock</span> <span class="o">=</span> <span class="n">parent</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parent_mock</span><span class="o">.</span><span class="n">mock_calls</span>
 <span class="go">[call.child()]</span>
@@ -2716,7 +2730,7 @@ single expression.</p>
 <dt class="field-even">Example<span class="colon">:</span></dt>
 <dd class="field-even"><p></p></dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mock_set</span> <span class="o">=</span> <span class="n">set_mock_attr</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">())</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mock_set</span> <span class="o">=</span> <span class="n">set_mock_attr</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="s2">"set"</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">())</span>
 <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">kickoff</span><span class="p">()</span>
 <span class="n">mock_set</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span><span class="p">)</span>
 </pre></div>
@@ -3214,8 +3228,8 @@ once per run.</p>
 <dd><p>Return per-scan metadata for each field name in <code class="docutils literal notranslate"><span class="pre">read()</span></code>.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;source&quot;: &quot;SOME_PV1&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
-    &quot;channel2&quot;: {&quot;source&quot;: &quot;SOME_PV2&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
+    "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
+    "channel2": {"source": "SOME_PV2", "dtype": "number", "shape": []},
 }
 </pre></div>
 </div>
@@ -3227,8 +3241,8 @@ once per run.</p>
 <dd><p>Return value, timestamp, optional per-point metadata for each field name.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;value&quot;: 5, &quot;timestamp&quot;: 1472493713.271991},
-    &quot;channel2&quot;: {&quot;value&quot;: 16, &quot;timestamp&quot;: 1472493713.539238},
+    "channel1": {"value": 5, "timestamp": 1472493713.271991},
+    "channel2": {"value": 16, "timestamp": 1472493713.539238},
 }
 </pre></div>
 </div>
@@ -3743,8 +3757,8 @@ once per run.</p>
 <dd><p>Return per-scan metadata for each field name in <code class="docutils literal notranslate"><span class="pre">read()</span></code>.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;source&quot;: &quot;SOME_PV1&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
-    &quot;channel2&quot;: {&quot;source&quot;: &quot;SOME_PV2&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},
+    "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
+    "channel2": {"source": "SOME_PV2", "dtype": "number", "shape": []},
 }
 </pre></div>
 </div>
@@ -3770,8 +3784,8 @@ with minimal guidance from the user. See :ref:<code class="docutils literal notr
 <dd><p>Return value, timestamp, optional per-point metadata for each field name.</p>
 <p>For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
-    &quot;channel1&quot;: {&quot;value&quot;: 5, &quot;timestamp&quot;: 1472493713.271991},
-    &quot;channel2&quot;: {&quot;value&quot;: 16, &quot;timestamp&quot;: 1472493713.539238},
+    "channel1": {"value": 5, "timestamp": 1472493713.271991},
+    "channel2": {"value": 16, "timestamp": 1472493713.539238},
 }
 </pre></div>
 </div>
@@ -4303,7 +4317,7 @@ if stage and unstage need to differ.</p>
 <span class="n">settings2</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="p">{</span><span class="n">device</span><span class="o">.</span><span class="n">sig1</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">sig3</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="c1"># They act like a dictionaries</span>
 <span class="k">assert</span> <span class="n">settings1</span><span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">sig1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-<span class="c1"># Including the ability to &quot;or&quot; two settings together</span>
+<span class="c1"># Including the ability to "or" two settings together</span>
 <span class="n">settings</span> <span class="o">=</span> <span class="n">settings1</span> <span class="o">|</span> <span class="n">settings2</span>
 <span class="k">assert</span> <span class="nb">dict</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span>
     <span class="n">device</span><span class="o">.</span><span class="n">sig1</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
@@ -4330,7 +4344,7 @@ and the second contains the signals for which the predicate returned False.</p>
 <dd class="field-odd"><p></p></dd>
 </dl>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="p">{</span><span class="n">device</span><span class="o">.</span><span class="n">special</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">sig</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="n">specials</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="k">lambda</span> <span class="n">sig</span><span class="p">:</span> <span class="s2">&quot;special&quot;</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">specials</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="k">lambda</span> <span class="n">sig</span><span class="p">:</span> <span class="s2">"special"</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -4398,12 +4412,12 @@ corresponding integer. Default is ‘WARNING’.</p></li>
 <dd class="field-odd"><p></p></dd>
 </dl>
 <p>Log to a file.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(file=&#39;/tmp/what_is_happening.txt&#39;)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(file='/tmp/what_is_happening.txt')
 </pre></div>
 </div>
 <p>Include the date along with the time. (The log messages will always include
 microseconds, which are configured separately, not as part of ‘datefmt’.)</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(datefmt=&quot;%Y-%m-%d %H:%M:%S&quot;)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(datefmt="%Y-%m-%d %H:%M:%S")
 </pre></div>
 </div>
 <p>Turn off ANSI color codes.</p>
@@ -4411,7 +4425,7 @@ microseconds, which are configured separately, not as part of ‘datefmt’.)</p
 </pre></div>
 </div>
 <p>Increase verbosity: show level DEBUG or higher.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(level=&#39;DEBUG&#39;)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>config_ophyd_async_logging(level='DEBUG')
 </pre></div>
 </div>
 </dd></dl>
@@ -4540,13 +4554,24 @@ changed by a method, then used in a later method.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.get_unaliased_origin">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_unaliased_origin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_unaliased_origin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_unaliased_origin" title="Link to this definition">#</a></dt>
+<dd><p>Get the origin of a type, looking through a <code class="docutils literal notranslate"><span class="pre">type</span></code> alias to what it stands for.</p>
+<p>NumPy 2.5 makes <code class="docutils literal notranslate"><span class="pre">npt.NDArray</span></code> a <code class="docutils literal notranslate"><span class="pre">type</span></code> alias, so <code class="docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code> has the
+alias as its origin rather than <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>. Use this instead of
+<code class="docutils literal notranslate"><span class="pre">cached_get_origin</span></code> wherever the annotation might be an array type.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.get_dtype">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><span class="pre">type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.6.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_dtype" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.6.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_dtype" title="Link to this definition">#</a></dt>
 <dd><p>Get the runtime dtype from a numpy ndarray type annotation.</p>
+<p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> if the element type has no numpy dtype, rather than
+silently returning the object dtype that numpy falls back to.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array1D</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_dtype</span><span class="p">(</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">])</span>
-<span class="go">dtype(&#39;int8&#39;)</span>
+<span class="go">dtype('int8')</span>
 
 </pre></div>
 </div>
@@ -4565,12 +4590,12 @@ or <a class="reference internal" href="#ophyd_async.core.SupersetEnum" title="op
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrictEnum</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;A value&quot;</span>
+<span class="gp">... </span>    <span class="n">A</span> <span class="o">=</span> <span class="s2">"A value"</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_enum_cls</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_enum_cls</span><span class="p">(</span><span class="n">MyEnum</span><span class="p">)</span>
-<span class="go">&lt;enum &#39;MyEnum&#39;&gt;</span>
+<span class="go">&lt;enum 'MyEnum'&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_enum_cls</span><span class="p">(</span><span class="n">Sequence</span><span class="p">[</span><span class="n">MyEnum</span><span class="p">])</span>
-<span class="go">&lt;enum &#39;MyEnum&#39;&gt;</span>
+<span class="go">&lt;enum 'MyEnum'&gt;</span>
 
 </pre></div>
 </div>
@@ -4595,9 +4620,9 @@ or <a class="reference internal" href="#ophyd_async.core.SupersetEnum" title="op
 <dt class="sig sig-object py" id="ophyd_async.core.get_unique">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_unique</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_unique"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_unique" title="Link to this definition">#</a></dt>
 <dd><p>If all values are the same, return that value, otherwise raise TypeError.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_unique</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;integers&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_unique</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">"integers"</span><span class="p">)</span>
 <span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">get_unique</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;integers&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_unique</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">"integers"</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w"> </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">Differing integers: a has 1, b has 2</span>
@@ -5109,7 +5134,7 @@ by <code class="docutils literal notranslate"><span class="pre">execute()</span>
 keyword, and mixed arguments:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
 
-<span class="n">cmd</span> <span class="o">=</span> <span class="n">soft_command</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;move&quot;</span><span class="p">)</span>
+<span class="n">cmd</span> <span class="o">=</span> <span class="n">soft_command</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"move"</span><span class="p">)</span>
 <span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>             <span class="c1"># positional</span>
 <span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>           <span class="c1"># keyword</span>
 <span class="k">await</span> <span class="n">cmd</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># mixed</span>
@@ -5131,11 +5156,11 @@ when written to.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">MyDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Reset.PROC"</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>Procedural EPICS usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reset</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="s2">&quot;PREFIX:Reset.PROC&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reset</span> <span class="o">=</span> <span class="n">epics_triggerable_command</span><span class="p">(</span><span class="s2">"PREFIX:Reset.PROC"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Satisfies the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.16.1.dev2+g2ca46def4"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Triggerable</span></code></a> protocol so
@@ -5642,6 +5667,7 @@ for the deprecated <a class="reference internal" href="#ophyd_async.core.SignalX
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Reference"><code class="docutils literal notranslate"><span class="pre">Reference</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.error_if_none"><code class="docutils literal notranslate"><span class="pre">error_if_none()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.gather_dict"><code class="docutils literal notranslate"><span class="pre">gather_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_unaliased_origin"><code class="docutils literal notranslate"><span class="pre">get_unaliased_origin()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_dtype"><code class="docutils literal notranslate"><span class="pre">get_dtype()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_enum_cls"><code class="docutils literal notranslate"><span class="pre">get_enum_cls()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_ndim"><code class="docutils literal notranslate"><span class="pre">get_ndim()</span></code></a></li>
@@ -5761,8 +5787,8 @@ for the deprecated <a class="reference internal" href="#ophyd_async.core.SignalX
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -5774,7 +5800,7 @@ for the deprecated <a class="reference internal" href="#ophyd_async.core.SignalX
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

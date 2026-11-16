@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -7,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.5.dev1+g55a302c1c documentation</title>
   
   
   
@@ -26,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -36,18 +35,17 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=3519df7d"></script>
+    <script src="../../../_static/documentation_options.js?v=7273a8a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -56,173 +54,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -267,6 +103,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -274,7 +136,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -291,42 +161,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -349,7 +277,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -360,12 +288,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -385,8 +307,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -398,7 +320,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -410,9 +332,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -435,8 +357,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -446,10 +371,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -474,10 +397,8 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
@@ -485,7 +406,7 @@ window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_signal';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -496,6 +417,7 @@ window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
   
@@ -545,7 +467,7 @@ window.runMermaid = runMermaid;</script>
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -569,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
   
   
 </a></div>
@@ -630,7 +552,7 @@ window.runMermaid = runMermaid;</script>
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -640,11 +562,18 @@ window.runMermaid = runMermaid;</script>
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -657,8 +586,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -669,8 +597,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -701,7 +628,7 @@ window.runMermaid = runMermaid;</script>
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -784,11 +711,18 @@ window.runMermaid = runMermaid;</script>
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -801,8 +735,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -813,8 +746,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -946,7 +878,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for connecting signals with a given backend.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Used for connecting signals with a given backend."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="n">backend</span>
@@ -956,27 +888,27 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
-        <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ChildrenNotAllowed</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Cannot add Device or Signal child </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> of Signal, &quot;</span>
-            <span class="s2">&quot;make a subclass of Device instead&quot;</span>
+            <span class="sa">f</span><span class="s2">"Cannot add Device or Signal child </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> of Signal, "</span>
+            <span class="s2">"make a subclass of Device instead"</span>
         <span class="p">)</span>
 
 
 <div class="viewcode-block" id="Signal">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Signal">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Signal</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Device with the concept of a value, with R, RW, W and X flavours.</span>
+<span class="w">    </span><span class="sd">"""A Device with the concept of a value, with R, RW, W and X flavours.</span>
 
 <span class="sd">    :param backend: The backend for providing Signal values.</span>
 <span class="sd">    :param timeout: The default timeout for operations on the Signal.</span>
 <span class="sd">    :param name: The name of the signal.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_connector</span><span class="p">:</span> <span class="n">SignalConnector</span>
     <span class="n">_child_devices</span> <span class="o">=</span> <span class="n">_ChildrenNotAllowed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
@@ -985,7 +917,7 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">SignalConnector</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
@@ -994,24 +926,24 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The source of the signal.</span>
+<span class="w">        </span><span class="sd">"""The source of the signal.</span>
 
-<span class="sd">        E.g. &quot;ca://PV_PREFIX:SIGNAL&quot;, or &quot;&quot; if not available until connection.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        E.g. "ca://PV_PREFIX:SIGNAL", or "" if not available until connection.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The datatype of the signal.</span>
+<span class="w">        </span><span class="sd">"""The datatype of the signal.</span>
 
 <span class="sd">        This will return what was passed at construction time. None means the</span>
 <span class="sd">        backend will calculate it from the control system on connection.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype</span></div>
 
 
 
-<span class="n">SignalT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;SignalT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Signal</span><span class="p">)</span>
+<span class="n">SignalT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"SignalT"</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Signal</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_SignalCache</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
@@ -1026,18 +958,18 @@ window.runMermaid = runMermaid;</script>
             <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Need a running event loop to subscribe to a signal, &quot;</span>
-                <span class="s2">&quot;are you trying to run subscribe outside a plan?&quot;</span>
+                <span class="s2">"Need a running event loop to subscribe to a signal, "</span>
+                <span class="s2">"are you trying to run subscribe outside a plan?"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-        <span class="n">signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making subscription on source </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Making subscription on source </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Closing subscription on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Closing subscription on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
-        <span class="n">reading</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">,</span> <span class="s2">&quot;Monitor not working&quot;</span><span class="p">)</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">,</span> <span class="s2">"Monitor not working"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">reading</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
@@ -1046,12 +978,12 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
         <span class="n">reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reading</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Updated subscription: reading of source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> changed &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Updated subscription: reading of source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> changed "</span>
+            <span class="sa">f</span><span class="s2">"from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span> <span class="o">=</span> <span class="n">reading</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
@@ -1076,9 +1008,9 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unsubscribe failed for signal </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; subscriber </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> was not found&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; in listeners list: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Unsubscribe failed for signal </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:"</span>
+                <span class="sa">f</span><span class="s2">" subscriber </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> was not found"</span>
+                <span class="sa">f</span><span class="s2">" in listeners list: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staged</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">)</span>
 
@@ -1090,7 +1022,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="SignalR">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalR</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be read from and monitored.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Signal that can be read from and monitored."""</span>
 
     <span class="n">_cache</span><span class="p">:</span> <span class="n">_SignalCache</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1101,7 +1033,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">cached</span><span class="p">:</span>
-            <span class="n">cache</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> not being monitored&quot;</span><span class="p">)</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> not being monitored"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">cache</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span>
@@ -1120,14 +1052,14 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.read">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a single item dict with the reading in it.</span>
+<span class="w">        </span><span class="sd">"""Return a single item dict with the reading in it.</span>
 
 <span class="sd">        :param cached:</span>
 <span class="sd">            Whether to use the cached monitored value:</span>
 <span class="sd">            - If None, use the cache if it exists.</span>
 <span class="sd">            - If False, do an explicit get.</span>
-<span class="sd">            - If True, explicitly use the cache and raise an error if it doesn&#39;t exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            - If True, explicitly use the cache and raise an error if it doesn't exist.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_or_cache</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()}</span></div>
 
 
@@ -1135,7 +1067,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.describe">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a single item dict describing the signal value.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return a single item dict describing the signal value."""</span>
         <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)}</span></div>
 
 
@@ -1143,16 +1075,16 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current value.</span>
+<span class="w">        </span><span class="sd">"""Return the current value.</span>
 
 <span class="sd">        :param cached:</span>
 <span class="sd">            Whether to use the cached monitored value:</span>
 <span class="sd">            - If None, use the cache if it exists.</span>
 <span class="sd">            - If False, do an explicit get.</span>
-<span class="sd">            - If True, explicitly use the cache and raise an error if it doesn&#39;t exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            - If True, explicitly use the cache and raise an error if it doesn't exist.</span>
+<span class="sd">        """</span>
         <span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_or_cache</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;get_value() on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> returned </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"get_value() on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> returned </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">value</span></div>
 
 
@@ -1161,10 +1093,10 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_reading</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in the reading.</span>
+<span class="w">        </span><span class="sd">"""Subscribe to updates in the reading.</span>
 
 <span class="sd">        :param function: The callback function to call when the reading changes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">)</span></div>
 
 
@@ -1173,10 +1105,10 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="SignalR.clear_sub">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a subscription passed to `subscribe_reading`.</span>
+<span class="w">        </span><span class="sd">"""Remove a subscription passed to `subscribe_reading`.</span>
 
 <span class="sd">        :param function: The callback function to remove.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_del_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">function</span><span class="p">))</span></div>
 
 
@@ -1184,7 +1116,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.stage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start caching this signal.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Start caching this signal."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">set_staged</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
 
 
@@ -1192,7 +1124,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.unstage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop caching this signal.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Stop caching this signal."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_del_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">set_staged</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span></div>
 </div>
 
@@ -1201,7 +1133,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="SignalW">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalW</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Movable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be set.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Signal that can be set."""</span>
 
 <div class="viewcode-block" id="SignalW.set">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set">[docs]</a>
@@ -1211,15 +1143,15 @@ window.runMermaid = runMermaid;</script>
         <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value and return a status saying when it&#39;s done.</span>
+<span class="w">        </span><span class="sd">"""Set the value and return a status saying when it's done.</span>
 
 <span class="sd">        :param value: The value to set.</span>
 <span class="sd">        :param timeout: The timeout for the set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
         <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Putting value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="n">retry_context</span><span class="p">(</span>
             <span class="n">on</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">,</span>
             <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_attempts</span><span class="p">,</span>
@@ -1228,7 +1160,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">):</span>
             <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
                 <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully put value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully put value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 </div>
 
 
@@ -1236,13 +1168,13 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="SignalRW">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalRW</span><span class="p">(</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Locatable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be both read and set.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Signal that can be both read and set."""</span>
 
 <div class="viewcode-block" id="SignalRW.locate">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the setpoint and readback.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the setpoint and readback."""</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_location</span><span class="p">()</span></div>
 </div>
 
@@ -1251,21 +1183,21 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="SignalX">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalX</span><span class="p">(</span><span class="n">Signal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that puts the default value.</span>
+<span class="w">    </span><span class="sd">"""Signal that puts the default value.</span>
 
 <span class="sd">    ```{version-deprecated} 0.19</span>
 <span class="sd">    Use [](#TriggerableCommand) instead.</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;SignalX is deprecated, use TriggerableCommand instead&quot;</span><span class="p">,</span>
+            <span class="s2">"SignalX is deprecated, use TriggerableCommand instead"</span><span class="p">,</span>
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1275,16 +1207,16 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX.trigger">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trigger the action and return a status saying when it&#39;s done.</span>
+<span class="w">        </span><span class="sd">"""Trigger the action and return a status saying when it's done.</span>
 
 <span class="sd">        :param timeout: The timeout for the trigger.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
         <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Putting default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully put default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully put default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 </div>
 
 
@@ -1294,7 +1226,7 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">soft_signal_rw</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1302,7 +1234,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">setter</span><span class="p">:</span> <span class="n">Setter</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">poll_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read-writable Signal with a [](#SoftSignalBackend).</span>
+<span class="w">    </span><span class="sd">"""Create a read-writable Signal with a [](#SoftSignalBackend).</span>
 
 <span class="sd">    May pass metadata, which are propagated into describe.</span>
 
@@ -1333,7 +1265,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    # getter and setter can independently be sync or async</span>
 <span class="sd">    signal = soft_signal_rw(float, getter=read_position, setter=move_to)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span>
         <span class="n">datatype</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">,</span>
@@ -1353,14 +1285,14 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">soft_signal_r_and_setter</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">getter</span><span class="p">:</span> <span class="n">Getter</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">poll_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read-only Signal with a [](#SoftSignalBackend).</span>
+<span class="w">    </span><span class="sd">"""Create a read-only Signal with a [](#SoftSignalBackend).</span>
 
 <span class="sd">    May pass metadata, which are propagated into describe.</span>
 <span class="sd">    Use soft_signal_rw if you want a device that is externally modifiable.</span>
@@ -1378,7 +1310,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        How often (seconds) to call the getter while a subscription is active.</span>
 <span class="sd">        Requires getter to be set.</span>
 <span class="sd">    :return: A tuple of the created SignalR and a callable to set its value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span>
         <span class="n">datatype</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">,</span>
@@ -1400,7 +1332,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">done_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
+<span class="w">    </span><span class="sd">"""Subscribe to the value of a signal so it can be iterated from.</span>
 
 <span class="sd">    The first value yielded in the iterator will be the current value of the</span>
 <span class="sd">    Signal, and subsequent updates from the control system will result in that</span>
@@ -1418,7 +1350,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param done_timeout:</span>
 <span class="sd">        If given, the maximum time to watch a signal, in seconds. If the loop is</span>
 <span class="sd">        still being watched after this length, raise asyncio.TimeoutError. This</span>
-<span class="sd">        should be used instead of on an &#39;asyncio.wait_for&#39; timeout.</span>
+<span class="sd">        should be used instead of on an 'asyncio.wait_for' timeout.</span>
 
 <span class="sd">    Due to a rare condition with busy signals, it is not recommended to use this</span>
 <span class="sd">    function with asyncio.timeout, including in an `asyncio.wait_for` loop.</span>
@@ -1429,7 +1361,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    async for value in observe_value(sig):</span>
 <span class="sd">        do_something_with(value)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
         <span class="n">signal</span><span class="p">,</span>
         <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
@@ -1455,7 +1387,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">done_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to a set of signals so they can be iterated from.</span>
+<span class="w">    </span><span class="sd">"""Subscribe to a set of signals so they can be iterated from.</span>
 
 <span class="sd">    The first values yielded in the iterator will be the current values of the</span>
 <span class="sd">    Signals, and subsequent updates from the control system will result in that</span>
@@ -1484,7 +1416,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        elif signal is sig2:</span>
 <span class="sd">            do_something_else_with(value)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
     <span class="p">)</span>
@@ -1495,7 +1427,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">queue_value</span><span class="p">(</span><span class="n">reading</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]],</span> <span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">"value"</span><span class="p">]</span>
             <span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">((</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
 
         <span class="n">cbs</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue_value</span>
@@ -1509,24 +1441,24 @@ window.runMermaid = runMermaid;</script>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">overall_deadline</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">overall_deadline</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;observe_value was still observing signals &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2"> after &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;timeout </span><span class="si">{</span><span class="n">done_timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
+                    <span class="sa">f</span><span class="s2">"observe_value was still observing signals "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2"> after "</span>
+                    <span class="sa">f</span><span class="s2">"timeout </span><span class="si">{</span><span class="n">done_timeout</span><span class="si">}</span><span class="s2">s"</span>
                 <span class="p">)</span>
             <span class="n">iteration_timeout</span> <span class="o">=</span> <span class="n">_get_iteration_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">overall_deadline</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">iteration_timeout</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Timeout Error while waiting </span><span class="si">{</span><span class="n">iteration_timeout</span><span class="si">}</span><span class="s2">s to update &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2">. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Last observed signal and value were </span><span class="si">{</span><span class="n">last_item</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Timeout Error while waiting </span><span class="si">{</span><span class="n">iteration_timeout</span><span class="si">}</span><span class="s2">s to update "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2">. "</span>
+                    <span class="sa">f</span><span class="s2">"Last observed signal and value were </span><span class="si">{</span><span class="n">last_item</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
             <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Cancelled Error while waiting </span><span class="si">{</span><span class="n">iteration_timeout</span><span class="si">}</span><span class="s2">s to update &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2">. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Last observed signal and value were </span><span class="si">{</span><span class="n">last_item</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Cancelled Error while waiting </span><span class="si">{</span><span class="n">iteration_timeout</span><span class="si">}</span><span class="s2">s to update "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2">. "</span>
+                    <span class="sa">f</span><span class="s2">"Last observed signal and value were </span><span class="si">{</span><span class="n">last_item</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
             <span class="k">if</span> <span class="n">done_status</span> <span class="ow">and</span> <span class="n">item</span> <span class="ow">is</span> <span class="n">done_status</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">exc</span> <span class="o">:=</span> <span class="n">done_status</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
@@ -1551,7 +1483,7 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_matcher</span> <span class="o">=</span> <span class="n">match</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">match</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">match</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_matcher</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">==</span> <span class="n">match</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
@@ -1571,8 +1503,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;last value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn't match </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, "</span>
+                <span class="sa">f</span><span class="s2">"last value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
 
@@ -1583,7 +1515,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">match</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a signal to have a matching value.</span>
+<span class="w">    </span><span class="sd">"""Wait for a signal to have a matching value.</span>
 
 <span class="sd">    :param signal:</span>
 <span class="sd">        Call subscribe_reading on this at the start, and clear_sub on it at the</span>
@@ -1599,7 +1531,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    # or</span>
 <span class="sd">    await wait_for_value(device.num_captured, lambda v: v &gt; 45, timeout=1)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">await</span> <span class="n">_ValueChecker</span><span class="p">(</span><span class="n">match</span><span class="p">)</span><span class="o">.</span><span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
 
 
@@ -1615,7 +1547,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">set_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">wait_for_set_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor another signal until it has the specified value.</span>
+<span class="w">    </span><span class="sd">"""Set a signal and monitor another signal until it has the specified value.</span>
 
 <span class="sd">    This function sets a set_signal to a specified set_value and waits for</span>
 <span class="sd">    a match_signal to have the match_value.</span>
@@ -1639,7 +1571,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ```python</span>
 <span class="sd">    await set_and_wait_for_value(device.setpoint, 1, device.readback, 1)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Start monitoring before the set to avoid a race condition</span>
     <span class="n">checker</span> <span class="o">=</span> <span class="n">_ValueChecker</span><span class="p">(</span><span class="n">match_value</span><span class="p">)</span>
     <span class="n">wait_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
@@ -1648,7 +1580,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="c1"># Put this in a try/except to ensure wait_task is cancelled when we exit</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># NOTE: this timeout races wait_task&#39;s own internal timeout (same</span>
+        <span class="c1"># NOTE: this timeout races wait_task's own internal timeout (same</span>
         <span class="c1"># duration, started moments earlier) - whichever elapses first wins.</span>
         <span class="c1"># That race is harmless because each path reports its own distinct,</span>
         <span class="c1"># helpful message.</span>
@@ -1657,8 +1589,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">await</span> <span class="n">checker</span><span class="o">.</span><span class="n">got_first_value</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t provide an initial value within &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, is it connected?&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn't provide an initial value within "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, is it connected?"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
         <span class="c1"># Now we can start the set</span>
@@ -1692,7 +1624,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">set_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">wait_for_set_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor that same signal until it has the specified value.</span>
+<span class="w">    </span><span class="sd">"""Set a signal and monitor that same signal until it has the specified value.</span>
 
 <span class="sd">    This function sets a set_signal to a specified set_value and waits for</span>
 <span class="sd">    a match_signal to have the match_value.</span>
@@ -1711,7 +1643,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    [](#interact-with-signals)</span>
 
 <span class="sd">    :examples:</span>
-<span class="sd">    To set a parameter and wait for it&#39;s value to change:</span>
+<span class="sd">    To set a parameter and wait for it's value to change:</span>
 <span class="sd">    ```python</span>
 <span class="sd">    await set_and_wait_for_value(device.parameter, 1)</span>
 <span class="sd">    ```</span>
@@ -1728,7 +1660,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    await status</span>
 <span class="sd">    # device has finished acquiring</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">match_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match_value</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">return</span> <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
@@ -1746,7 +1678,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="walk_rw_signals">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all SignalRWs from a device.</span>
+<span class="w">    </span><span class="sd">"""Retrieve all SignalRWs from a device.</span>
 
 <span class="sd">    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as</span>
 <span class="sd">    part of saving and loading a device.</span>
@@ -1756,7 +1688,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :return:</span>
 <span class="sd">        A dictionary matching the string attribute path of a SignalRW with the</span>
 <span class="sd">        signal itself.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">all_devices</span> <span class="o">=</span> <span class="n">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">path</span><span class="p">:</span> <span class="n">dev</span> <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">all_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SignalRW</span><span class="p">}</span></div>
 
@@ -1767,7 +1699,7 @@ window.runMermaid = runMermaid;</script>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">walk_config_signals</span><span class="p">(</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all configuration signals from a device.</span>
+<span class="w">    </span><span class="sd">"""Retrieve all configuration signals from a device.</span>
 
 <span class="sd">    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as</span>
 <span class="sd">    part of saving and loading a device.</span>
@@ -1776,7 +1708,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :return:</span>
 <span class="sd">        A dictionary matching the string attribute path of a SignalRW with the</span>
 <span class="sd">        signal itself.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">config_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">Configurable</span><span class="p">):</span>
         <span class="n">configuration</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span>
@@ -1796,7 +1728,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="Ignore">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Ignore">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Ignore</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Annotation to ignore a signal when connecting a device.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Annotation to ignore a signal when connecting a device."""</span>
 
     <span class="k">pass</span></div>
 
@@ -1804,18 +1736,18 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="walk_devices">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_devices">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively retrieve all Devices from a device tree.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Recursively retrieve all Devices from a device tree.</span>
 
 <span class="sd">    :param device: Root device to start from.</span>
 <span class="sd">    :param path_prefix: For internal use, leave blank when calling the method.</span>
 <span class="sd">    :return: A dictionary mapping dotted attribute paths to Device instances.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">devices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">devices</span><span class="p">[</span><span class="n">dot_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
-        <span class="n">devices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">walk_devices</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">))</span>
+        <span class="n">devices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">walk_devices</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">"."</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">devices</span></div>
 
 
@@ -1823,12 +1755,12 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="walk_signal_sources">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_signal_sources">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">walk_signal_sources</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively gather the `source` field from every Signal in a device tree.</span>
+<span class="w">    </span><span class="sd">"""Recursively gather the `source` field from every Signal in a device tree.</span>
 
 <span class="sd">    :param device: Root device to start from.</span>
 <span class="sd">    :param path_prefix: For internal use, leave blank when calling the method.</span>
 <span class="sd">    :return: A dictionary mapping dotted attribute paths to Signal source strings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">all_devices</span> <span class="o">=</span> <span class="n">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">source</span> <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">all_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span>
@@ -1874,8 +1806,8 @@ window.runMermaid = runMermaid;</script>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1887,7 +1819,7 @@ window.runMermaid = runMermaid;</script>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

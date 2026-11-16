@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -7,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
+    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.21.5.dev1+g55a302c1c documentation</title>
   
   
   
@@ -26,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
@@ -36,18 +35,17 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../../_static/documentation_options.js?v=3519df7d"></script>
+    <script src="../../../../_static/documentation_options.js?v=7273a8a5"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -56,173 +54,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -267,6 +103,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -274,7 +136,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -291,42 +161,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -349,7 +277,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -360,12 +288,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -385,8 +307,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -398,7 +320,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -410,9 +332,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -435,8 +357,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -446,10 +371,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -474,10 +397,8 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
@@ -485,7 +406,7 @@ window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/adcore/_data_logic';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -496,6 +417,7 @@ window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
   
@@ -545,7 +467,7 @@ window.runMermaid = runMermaid;</script>
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -569,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
   
   
 </a></div>
@@ -630,7 +552,7 @@ window.runMermaid = runMermaid;</script>
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -640,11 +562,18 @@ window.runMermaid = runMermaid;</script>
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -657,8 +586,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -669,8 +597,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -701,7 +628,7 @@ window.runMermaid = runMermaid;</script>
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -784,11 +711,18 @@ window.runMermaid = runMermaid;</script>
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -801,8 +735,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -813,8 +746,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -964,14 +896,14 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayDescription">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDArrayDescription</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signals that describe the shape and data type of an NDArray frame.</span>
+<span class="w">    </span><span class="sd">"""Signals that describe the shape and data type of an NDArray frame.</span>
 
 <span class="sd">    :param shape_signals: Signals providing the frame dimensions (e.g.</span>
 <span class="sd">        ``size_y``, ``size_x``).  Zero-valued entries are filtered out, so it</span>
 <span class="sd">        is safe to include ``array_size_z`` for 2-D detectors.</span>
 <span class="sd">    :param data_type_signal: Signal providing the pixel data type.</span>
 <span class="sd">    :param color_mode_signal: Signal providing the colour mode (MONO or RGB1).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">shape_signals</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
     <span class="n">data_type_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">ADBaseDataType</span><span class="p">]</span>
@@ -995,14 +927,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">array_description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> is blank, &quot;</span>
-            <span class="s2">&quot;this is not supported&quot;</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">array_description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> is blank, "</span>
+            <span class="s2">"this is not supported"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="n">ADBaseColorMode</span><span class="o">.</span><span class="n">RGB1</span><span class="p">:</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">shape</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">color_mode</span> <span class="o">!=</span> <span class="n">ADBaseColorMode</span><span class="o">.</span><span class="n">MONO</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unsupported ColorMode </span><span class="si">{</span><span class="n">color_mode</span><span class="si">}</span><span class="s2">! Only Mono and RGB1 are supported.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Unsupported ColorMode </span><span class="si">{</span><span class="n">color_mode</span><span class="si">}</span><span class="s2">! Only Mono and RGB1 are supported."</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">StreamResourceInfo</span><span class="p">(</span>
         <span class="n">data_key</span><span class="o">=</span><span class="n">data_key</span><span class="p">,</span>
@@ -1023,23 +955,23 @@ window.runMermaid = runMermaid;</script>
     <span class="k">for</span> <span class="n">maybe_xml</span> <span class="ow">in</span> <span class="n">nd_attribute_xmls</span><span class="p">:</span>
         <span class="c1"># This is the check that ADCore does to see if it is an XML string</span>
         <span class="c1"># rather than a filename to parse</span>
-        <span class="k">if</span> <span class="s2">&quot;&lt;Attributes&gt;&quot;</span> <span class="ow">in</span> <span class="n">maybe_xml</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"&lt;Attributes&gt;"</span> <span class="ow">in</span> <span class="n">maybe_xml</span><span class="p">:</span>
             <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">maybe_xml</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">:</span>
-                    <span class="n">dbrtype</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dbrtype&quot;</span><span class="p">,</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">dbrtype</span> <span class="o">==</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"EPICS_PV"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"EPICS_PV"</span><span class="p">:</span>
+                    <span class="n">dbrtype</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dbrtype"</span><span class="p">,</span> <span class="s2">"DBR_NATIVE"</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">dbrtype</span> <span class="o">==</span> <span class="s2">"DBR_NATIVE"</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;NDAttribute </span><span class="si">{</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> has dbrtype &quot;</span>
-                            <span class="s2">&quot;DBR_NATIVE, which is not supported&quot;</span>
+                            <span class="sa">f</span><span class="s2">"NDAttribute </span><span class="si">{</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2"> has dbrtype "</span>
+                            <span class="s2">"DBR_NATIVE, which is not supported"</span>
                         <span class="p">)</span>
                     <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="n">NDAttributePvDbrType</span><span class="p">[</span><span class="n">dbrtype</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-                    <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;ca://&quot;</span> <span class="o">+</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="s2">"ca://"</span> <span class="o">+</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">datatype</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datatype&quot;</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">)</span>
+                    <span class="n">datatype</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"datatype"</span><span class="p">,</span> <span class="s2">"INT"</span><span class="p">)</span>
                     <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="n">NDAttributeDataType</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-                    <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">ndattribute_dtypes</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtype_numpy</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="s2">""</span>
+                <span class="n">ndattribute_dtypes</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtype_numpy</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ndattribute_dtypes</span>
 
 
@@ -1049,14 +981,14 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># Set the directory creation depth first, since dir creation callback happens</span>
     <span class="c1"># when directory path PV is processed.</span>
     <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">create_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">path_info</span><span class="o">.</span><span class="n">create_dir_depth</span><span class="p">)</span>
-    <span class="c1"># When setting the path for windows based AD IOCs, areaDetector adds a &#39;/&#39;</span>
-    <span class="c1"># rather than a &#39;\\&#39;, which will cause the readback to never register the</span>
+    <span class="c1"># When setting the path for windows based AD IOCs, areaDetector adds a '/'</span>
+    <span class="c1"># rather than a '\\', which will cause the readback to never register the</span>
     <span class="c1"># same value.</span>
     <span class="c1"># Ensure that trailing separator is added to the directory path to avoid this.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">PureWindowsPath</span><span class="p">):</span>
-        <span class="n">directory_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="se">\\</span><span class="s2">&quot;</span>
+        <span class="n">directory_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="se">\\</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">directory_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">directory_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="s2">/"</span>
     <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
         <span class="n">writer</span><span class="o">.</span><span class="n">file_path</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">directory_path</span><span class="p">),</span>
         <span class="n">writer</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">path_info</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span>
@@ -1067,7 +999,7 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
     <span class="c1"># Check the path exists on the host</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">file_path_exists</span><span class="o">.</span><span class="n">get_value</span><span class="p">():</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Path </span><span class="si">{</span><span class="n">directory_path</span><span class="si">}</span><span class="s2"> doesn&#39;t exist or not writable!&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Path </span><span class="si">{</span><span class="n">directory_path</span><span class="si">}</span><span class="s2"> doesn't exist or not writable!"</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="c1"># Overwrite num_capture to go forever</span>
     <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -1077,7 +1009,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFDataLogic">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADHDFDataLogic</span><span class="p">(</span><span class="n">DetectorDataLogic</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data logic for AreaDetector HDF5 writer plugin.</span>
+<span class="w">    </span><span class="sd">"""Data logic for AreaDetector HDF5 writer plugin.</span>
 
 <span class="sd">    :param array_description: Signals describing the NDArray shape and data type.</span>
 <span class="sd">    :param path_provider: Callable that provides path information for file writing.</span>
@@ -1086,14 +1018,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.</span>
 <span class="sd">    :param datakey_suffix: Suffix to append to the data key for the main dataset</span>
 <span class="sd">    :param hinted: Include the image in hints. Set False for BestEffortCallback.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
     <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span>
     <span class="n">writer</span><span class="p">:</span> <span class="n">NDFileHDF5IO</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">plugins</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">hinted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="ADHDFDataLogic.prepare_unbounded">
@@ -1114,10 +1046,10 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">num_extra_dims</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">lazy_open</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">swmr_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">xml_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">xml_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">""</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EnableDisable</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">),</span>
             <span class="n">prepare_file_paths</span><span class="p">(</span>
-                <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span> <span class="n">file_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">.h5&quot;</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span>
+                <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span> <span class="n">file_template</span><span class="o">=</span><span class="s2">"</span><span class="si">%s%s</span><span class="s2">.h5"</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="c1"># Start capturing</span>
@@ -1128,7 +1060,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
             <span class="n">array_description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">,</span>
             <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;/entry/data/data&quot;</span><span class="p">},</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"dataset"</span><span class="p">:</span> <span class="s2">"/entry/data/data"</span><span class="p">},</span>
             <span class="n">frames_per_chunk</span><span class="o">=</span><span class="n">frames_per_chunk</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">ndattribute_dtype_sources</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndattribute_dtype_source</span><span class="p">(</span>
@@ -1143,14 +1075,14 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">16384</span><span class="p">,),</span>
                 <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">dtype_numpy</span><span class="p">,</span>
                 <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
-                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"dataset"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">},</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">dtype_numpy</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ndattribute_dtype_sources</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">StreamResourceDataProvider</span><span class="p">(</span>
-            <span class="n">uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_uri</span><span class="si">}{</span><span class="n">path_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">,</span>
+            <span class="n">uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_uri</span><span class="si">}{</span><span class="n">path_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5"</span><span class="p">,</span>
             <span class="n">resources</span><span class="o">=</span><span class="p">[</span><span class="n">main_dataset</span><span class="p">]</span> <span class="o">+</span> <span class="n">ndattribute_datasets</span><span class="p">,</span>
-            <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;application/x-hdf5&quot;</span><span class="p">,</span>
+            <span class="n">mimetype</span><span class="o">=</span><span class="s2">"application/x-hdf5"</span><span class="p">,</span>
             <span class="n">collections_written_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span>
             <span class="n">flush_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">flush_now</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -1174,24 +1106,24 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADMultipartDataLogic">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADMultipartDataLogic</span><span class="p">(</span><span class="n">DetectorDataLogic</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data logic for multipart AreaDetector file writers (e.g. JPEG, TIFF).</span>
+<span class="w">    </span><span class="sd">"""Data logic for multipart AreaDetector file writers (e.g. JPEG, TIFF).</span>
 
 <span class="sd">    :param array_description: Signals describing the NDArray shape and data type.</span>
 <span class="sd">    :param path_provider: Callable that provides path information for file writing.</span>
 <span class="sd">    :param writer: The NDFilePluginIO instance.</span>
-<span class="sd">    :param extension: File extension for the written files (e.g. &quot;.jpg&quot;, &quot;.tiff&quot;).</span>
+<span class="sd">    :param extension: File extension for the written files (e.g. ".jpg", ".tiff").</span>
 <span class="sd">    :param mimetype:</span>
-<span class="sd">        Mimetype for the written files (e.g. &quot;multipart/related;type=image/jpeg&quot;).</span>
+<span class="sd">        Mimetype for the written files (e.g. "multipart/related;type=image/jpeg").</span>
 <span class="sd">    :param datakey_suffix: Suffix to append to the data key for the main dataset</span>
 <span class="sd">    :param hinted: Include the image in hints. Set False for BestEffortCallback.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
     <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span>
     <span class="n">writer</span><span class="p">:</span> <span class="n">NDPluginFileIO</span>
     <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">mimetype</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">hinted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="ADMultipartDataLogic.prepare_unbounded">
@@ -1204,7 +1136,7 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">lazy_open</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="n">prepare_file_paths</span><span class="p">(</span>
                 <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span>
-                <span class="n">file_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%6.6d</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span>
+                <span class="n">file_template</span><span class="o">=</span><span class="s2">"</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%6.6d</span><span class="s2">"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span>
                 <span class="n">writer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
@@ -1216,7 +1148,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
             <span class="n">array_description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">,</span>
             <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">path_info</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;_</span><span class="si">{:06d}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">},</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"template"</span><span class="p">:</span> <span class="n">path_info</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">"_</span><span class="si">{:06d}</span><span class="s2">"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">},</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">StreamResourceDataProvider</span><span class="p">(</span>
             <span class="n">uri</span><span class="o">=</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_uri</span><span class="p">,</span>
@@ -1244,21 +1176,21 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADWriterFactory</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory that creates a file-writer plugin and its matching data logic.</span>
+<span class="w">    </span><span class="sd">"""Factory that creates a file-writer plugin and its matching data logic.</span>
 
 <span class="sd">    Construct using the classmethods `hdf`, `jpeg`, or `tiff`, then pass one</span>
 <span class="sd">    or more instances to `AreaDetector` as positional `*writer_factories`</span>
 <span class="sd">    arguments.  When the detector is initialised `__call__` is invoked with</span>
-<span class="sd">    the detector&#39;s PV `prefix`, its `driver`, and the flat list of extra</span>
+<span class="sd">    the detector's PV `prefix`, its `driver`, and the flat list of extra</span>
 <span class="sd">    `plugins`; it returns the writer device and the corresponding</span>
 <span class="sd">    `DetectorDataLogic`.</span>
 
 <span class="sd">    :param writer_cls: Concrete `NDPluginFileIO` subclass to instantiate.</span>
-<span class="sd">    :param writer_suffix: PV suffix appended to *prefix* to form the writer&#39;s PV prefix.</span>
+<span class="sd">    :param writer_suffix: PV suffix appended to *prefix* to form the writer's PV prefix.</span>
 <span class="sd">    :param writer_name:</span>
 <span class="sd">        Attribute name under which the writer device is stored on the</span>
 <span class="sd">        `AreaDetector` instance.  Each static method defaults to its own name</span>
-<span class="sd">        (``&quot;hdf&quot;``, ``&quot;jpeg&quot;``, ``&quot;tiff&quot;``); override when passing multiple</span>
+<span class="sd">        (``"hdf"``, ``"jpeg"``, ``"tiff"``); override when passing multiple</span>
 <span class="sd">        factories so each writer gets a distinct name.</span>
 <span class="sd">    :param datakey_suffix: Suffix appended to the datakey name in stream resources.</span>
 <span class="sd">    :param array_description:</span>
@@ -1270,7 +1202,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param data_logic_factory:</span>
 <span class="sd">        Callable ``(writer, array_description, driver, plugins) → DetectorDataLogic``</span>
 <span class="sd">        that builds the data logic given the already-constructed writer.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">writer_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">]</span>
     <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span>
@@ -1290,14 +1222,14 @@ window.runMermaid = runMermaid;</script>
         <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDPluginBaseIO</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the writer plugin and build the data logic.</span>
+<span class="w">        </span><span class="sd">"""Instantiate the writer plugin and build the data logic.</span>
 
 <span class="sd">        :param prefix: EPICS PV prefix for the detector (same as `AreaDetector.prefix`).</span>
 <span class="sd">        :param driver: The detector driver, used to read array shape/type metadata.</span>
 <span class="sd">        :param plugins: Additional plugins whose NDAttribute XML files should be</span>
 <span class="sd">            included in HDF5 metadata.</span>
 <span class="sd">        :return: ``(writer, data_logic)`` tuple ready to attach to the detector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer_cls</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer_suffix</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">):</span>
             <span class="n">array_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
@@ -1321,30 +1253,30 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hdf</span><span class="p">(</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
-        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hdf&quot;</span><span class="p">,</span>
-        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"HDF1:"</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"hdf"</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
         <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
         <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">hinted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDFileHDF5IO]&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for an HDF5 file writer.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ADWriterFactory[NDFileHDF5IO]"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a factory for an HDF5 file writer.</span>
 
 <span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
 <span class="sd">        :param writer_suffix: PV suffix for the NDFileHDF5 plugin, defaults to</span>
 <span class="sd">            ``HDF1:``.</span>
 <span class="sd">        :param writer_name:</span>
 <span class="sd">            Attribute name for the writer on the detector, defaults to</span>
-<span class="sd">            ``&quot;hdf&quot;``.</span>
-<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">            ``"hdf"``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.</span>
 <span class="sd">        :param array_description:</span>
 <span class="sd">            Override the array shape/type description built from the driver.</span>
 <span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
 <span class="sd">            when the shape/type comes from a plugin rather than the main driver</span>
 <span class="sd">            (e.g. an ROI plugin).</span>
 <span class="sd">        :param hinted: Include the image in hints. Set False for BestEffortCallback.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
             <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDFileHDF5IO</span><span class="p">,</span>
             <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
@@ -1368,29 +1300,29 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">jpeg</span><span class="p">(</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;JPEG1:&quot;</span><span class="p">,</span>
-        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
-        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"JPEG1:"</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"jpeg"</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
         <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
         <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">hinted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDPluginFileIO]&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for a JPEG file writer.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ADWriterFactory[NDPluginFileIO]"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a factory for a JPEG file writer.</span>
 
 <span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
 <span class="sd">        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to</span>
 <span class="sd">            ``JPEG1:``.</span>
 <span class="sd">        :param writer_name:</span>
 <span class="sd">            Attribute name for the writer on the detector, defaults to</span>
-<span class="sd">            ``&quot;jpeg&quot;``.</span>
-<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">            ``"jpeg"``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.</span>
 <span class="sd">        :param array_description:</span>
 <span class="sd">            Override the array shape/type description built from the driver.</span>
 <span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
 <span class="sd">            when the shape/type comes from a plugin.</span>
 <span class="sd">        :param hinted: Include the image in hints. Set False for BestEffortCallback.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
             <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDPluginFileIO</span><span class="p">,</span>
             <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
@@ -1402,8 +1334,8 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
                     <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
                     <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-                    <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span>
-                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/jpeg&quot;</span><span class="p">,</span>
+                    <span class="n">extension</span><span class="o">=</span><span class="s2">".jpg"</span><span class="p">,</span>
+                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">"multipart/related;type=image/jpeg"</span><span class="p">,</span>
                     <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
                     <span class="n">hinted</span><span class="o">=</span><span class="n">hinted</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -1416,29 +1348,29 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tiff</span><span class="p">(</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;TIFF1:&quot;</span><span class="p">,</span>
-        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tiff&quot;</span><span class="p">,</span>
-        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"TIFF1:"</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tiff"</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
         <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
         <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">hinted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDPluginFileIO]&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for a TIFF file writer.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ADWriterFactory[NDPluginFileIO]"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a factory for a TIFF file writer.</span>
 
 <span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
 <span class="sd">        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to</span>
 <span class="sd">            ``TIFF1:``.</span>
 <span class="sd">        :param writer_name:</span>
 <span class="sd">            Attribute name for the writer on the detector, defaults to</span>
-<span class="sd">            ``&quot;tiff&quot;``.</span>
-<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">            ``"tiff"``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``""``.</span>
 <span class="sd">        :param array_description:</span>
 <span class="sd">            Override the array shape/type description built from the driver.</span>
 <span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
 <span class="sd">            when the shape/type comes from a plugin.</span>
 <span class="sd">        :param hinted: Include the image in hints. Set False for BestEffortCallback.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
             <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDPluginFileIO</span><span class="p">,</span>
             <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
@@ -1450,8 +1382,8 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
                     <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
                     <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-                    <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.tiff&quot;</span><span class="p">,</span>
-                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/tiff&quot;</span><span class="p">,</span>
+                    <span class="n">extension</span><span class="o">=</span><span class="s2">".tiff"</span><span class="p">,</span>
+                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">"multipart/related;type=image/tiff"</span><span class="p">,</span>
                     <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
                     <span class="n">hinted</span><span class="o">=</span><span class="n">hinted</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -1488,8 +1420,8 @@ window.runMermaid = runMermaid;</script>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1501,7 +1433,7 @@ window.runMermaid = runMermaid;</script>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

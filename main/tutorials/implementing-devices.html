@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -8,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.21.5.dev1+g55a302c1c documentation</title>
   
   
   
@@ -27,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -37,18 +36,17 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=3519df7d"></script>
+    <script src="../_static/documentation_options.js?v=7273a8a5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -57,173 +55,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -268,6 +104,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -275,7 +137,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -292,42 +162,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -350,7 +278,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -361,12 +289,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -386,8 +308,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -399,7 +321,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -411,9 +333,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -436,8 +358,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -447,10 +372,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -475,10 +398,8 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
@@ -486,7 +407,7 @@ window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/implementing-devices';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -499,6 +420,7 @@ window.runMermaid = runMermaid;</script>
     <link rel="next" title="Writing Tests for Devices" href="writing-tests-for-devices.html" />
     <link rel="prev" title="Using Devices" href="using-devices.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
   
@@ -548,7 +470,7 @@ window.runMermaid = runMermaid;</script>
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -572,8 +494,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
   
   
 </a></div>
@@ -633,7 +555,7 @@ window.runMermaid = runMermaid;</script>
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -643,11 +565,18 @@ window.runMermaid = runMermaid;</script>
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -660,8 +589,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -672,8 +600,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -704,7 +631,7 @@ window.runMermaid = runMermaid;</script>
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -713,7 +640,7 @@ window.runMermaid = runMermaid;</script>
   
 
   
-    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -789,11 +716,18 @@ window.runMermaid = runMermaid;</script>
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -806,8 +740,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -818,8 +751,7 @@ window.runMermaid = runMermaid;</script>
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -848,7 +780,8 @@ window.runMermaid = runMermaid;</script>
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
   </svg>
   <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
@@ -863,7 +796,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="asyncio.html">A crash course on asyncio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Implementing Devices</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Implementing Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementing-detectors.html">Implementing File Writing Detectors</a></li>
 </ul>
@@ -964,8 +897,8 @@ FastCS</label><div class="sd-tab-content docutils">
 EPICS</label><div class="sd-tab-content docutils">
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ipython --matplotlib=qt6 -i -m ophyd_async.epics.demo
 Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
-Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
-IPython 8.30.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.
 
 In [1]: 
 </pre></div>
@@ -976,8 +909,8 @@ In [1]:
 Tango</label><div class="sd-tab-content docutils">
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ipython --matplotlib=qt6 -i -m ophyd_async.tango.demo
 Python 3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]
-Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
-IPython 9.9.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+Type 'copyright', 'credits' or 'license' for more information
+IPython 9.9.0 -- An enhanced Interactive Python. Type '?' for help.
 
 In [1]: 
 </pre></div>
@@ -993,8 +926,8 @@ FastCS</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 <span class="n">Transient</span> <span class="n">Scan</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">1</span>     <span class="n">Time</span><span class="p">:</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">14</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">05</span>
-<span class="n">Persistent</span> <span class="n">Unique</span> <span class="n">Scan</span> <span class="n">ID</span><span class="p">:</span> <span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span>
-<span class="n">New</span> <span class="n">stream</span><span class="p">:</span> <span class="s1">&#39;primary&#39;</span>
+<span class="n">Persistent</span> <span class="n">Unique</span> <span class="n">Scan</span> <span class="n">ID</span><span class="p">:</span> <span class="s1">'2e0e75d8-33dd-430f-8cd8-6d6ae053c429'</span>
+<span class="n">New</span> <span class="n">stream</span><span class="p">:</span> <span class="s1">'primary'</span>
 <span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="o">|</span>   <span class="n">seq_num</span> <span class="o">|</span>       <span class="n">time</span> <span class="o">|</span>    <span class="n">stage</span><span class="o">-</span><span class="n">x</span> <span class="o">|</span>    <span class="n">stage</span><span class="o">-</span><span class="n">y</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span>
 <span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
@@ -1008,9 +941,9 @@ FastCS</label><div class="sd-tab-content docutils">
 <span class="o">|</span>         <span class="mi">8</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">11.4</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>      <span class="mf">2.500</span> <span class="o">|</span>                  <span class="mi">537</span> <span class="o">|</span>                  <span class="mi">516</span> <span class="o">|</span>                  <span class="mi">498</span> <span class="o">|</span>
 <span class="o">|</span>         <span class="mi">9</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">12.2</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>      <span class="mf">3.000</span> <span class="o">|</span>                  <span class="mi">487</span> <span class="o">|</span>                  <span class="mi">467</span> <span class="o">|</span>                  <span class="mi">448</span> <span class="o">|</span>
 <span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="n">generator</span> <span class="n">grid_scan</span> <span class="p">[</span><span class="s1">&#39;2e0e75d8&#39;</span><span class="p">]</span> <span class="p">(</span><span class="n">scan</span> <span class="n">num</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">generator</span> <span class="n">grid_scan</span> <span class="p">[</span><span class="s1">'2e0e75d8'</span><span class="p">]</span> <span class="p">(</span><span class="n">scan</span> <span class="n">num</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">RunEngineResult</span><span class="p">(</span><span class="n">run_start_uids</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span><span class="p">,),</span> <span class="n">plan_result</span><span class="o">=</span><span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span><span class="p">,</span> <span class="n">exit_status</span><span class="o">=</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">RunEngineResult</span><span class="p">(</span><span class="n">run_start_uids</span><span class="o">=</span><span class="p">(</span><span class="s1">'2e0e75d8-33dd-430f-8cd8-6d6ae053c429'</span><span class="p">,),</span> <span class="n">plan_result</span><span class="o">=</span><span class="s1">'2e0e75d8-33dd-430f-8cd8-6d6ae053c429'</span><span class="p">,</span> <span class="n">exit_status</span><span class="o">=</span><span class="s1">'success'</span><span class="p">,</span> <span class="n">interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1021,7 +954,7 @@ FastCS</label><div class="sd-tab-content docutils">
 <input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-6">
 EPICS</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""Used for tutorial `Implementing Devices`."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 
@@ -1052,10 +985,10 @@ EPICS</label><div class="sd-tab-content docutils">
 </span><span class="hll"><span class="c1"># connected and named at the end of the with block</span>
 </span><span class="hll"><span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
 </span><span class="hll">    <span class="c1"># Create a sample stage with X and Y motors</span>
-</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">STAGE:&quot;</span><span class="p">)</span>
+</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">STAGE:"</span><span class="p">)</span>
 </span><span class="hll">    <span class="c1"># Create a multi channel counter with the same number</span>
 </span><span class="hll">    <span class="c1"># of counters as the IOC</span>
-</span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">DET:&quot;</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="n">NUM_CHANNELS</span><span class="p">)</span>
+</span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">DET:"</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="n">NUM_CHANNELS</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>EPICS PVs are normally broadcast to your entire network subnet. To avoid PV name clashes, we pick a random prefix, then start the demo IOC using this PV  prefix. Starting an IOC here is done just for the demo, in production the IOC would already be running before you started bluesky.</p>
@@ -1068,7 +1001,7 @@ EPICS</label><div class="sd-tab-content docutils">
 <input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-7">
 Tango</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""Used for tutorial `Implementing Devices`."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 
@@ -1101,7 +1034,7 @@ Tango</label><div class="sd-tab-content docutils">
 </span><span class="hll">
 </span><span class="hll">
 </span><span class="hll"><span class="k">def</span><span class="w"> </span><span class="nf">trl</span><span class="p">(</span><span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span class="hll"><span class="w">    </span><span class="sd">&quot;&quot;&quot;TRL of `device_name`, served by `servers` under `prefix`.&quot;&quot;&quot;</span>
+</span><span class="hll"><span class="w">    </span><span class="sd">"""TRL of `device_name`, served by `servers` under `prefix`."""</span>
 </span><span class="hll">    <span class="k">return</span> <span class="n">testing</span><span class="o">.</span><span class="n">trl</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">device_name</span><span class="p">)</span>
 </span><span class="hll">
 </span><span class="hll">
@@ -1109,12 +1042,12 @@ Tango</label><div class="sd-tab-content docutils">
 </span><span class="hll"><span class="c1"># connected and named at the end of the with block</span>
 </span><span class="hll"><span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
 </span><span class="hll">    <span class="c1"># Create a sample stage with X and Y motors</span>
-</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="n">trl</span><span class="p">(</span><span class="s2">&quot;motor-x&quot;</span><span class="p">),</span> <span class="n">trl</span><span class="p">(</span><span class="s2">&quot;motor-y&quot;</span><span class="p">))</span>
+</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="n">trl</span><span class="p">(</span><span class="s2">"motor-x"</span><span class="p">),</span> <span class="n">trl</span><span class="p">(</span><span class="s2">"motor-y"</span><span class="p">))</span>
 </span><span class="hll">    <span class="c1"># Create a multi channel counter with the same number</span>
 </span><span class="hll">    <span class="c1"># of counters as the device servers</span>
 </span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span>
-</span><span class="hll">        <span class="n">trl</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">),</span>
-</span><span class="hll">        <span class="p">[</span><span class="n">trl</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;channel-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_CHANNELS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
+</span><span class="hll">        <span class="n">trl</span><span class="p">(</span><span class="s2">"detector"</span><span class="p">),</span>
+</span><span class="hll">        <span class="p">[</span><span class="n">trl</span><span class="p">(</span><span class="sa">f</span><span class="s2">"channel-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_CHANNELS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
 </span><span class="hll">    <span class="p">)</span>
 </span></pre></div>
 </div>
@@ -1175,20 +1108,20 @@ EPICS</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EnergyMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy mode for `DemoPointDetectorChannel`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Energy mode for `DemoPointDetectorChannel`."""</span>
 
-    <span class="n">LOW</span> <span class="o">=</span> <span class="s2">&quot;Low Energy&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Low energy mode&quot;&quot;&quot;</span>
+    <span class="n">LOW</span> <span class="o">=</span> <span class="s2">"Low Energy"</span>
+<span class="w">    </span><span class="sd">"""Low energy mode"""</span>
 
-    <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">&quot;High Energy&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;High energy mode&quot;&quot;&quot;</span>
+    <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">"High Energy"</span>
+<span class="w">    </span><span class="sd">"""High energy mode"""</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetectorChannel</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A channel for `DemoPointDetector` with int value based on X and Y Motors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A channel for `DemoPointDetector` with int value based on X and Y Motors."""</span>
 
-    <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span><span class="p">]</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Value"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span><span class="p">]</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Mode"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>When the Device is instantiated, the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> baseclass will look at all the type hints for annotations with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a>. It will append that to the PV prefix that is passed into the device. In this case if we made a <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel(prefix=&quot;PREFIX:&quot;)</span></code>, then <code class="docutils literal notranslate"><span class="pre">value</span></code> would have PV <code class="docutils literal notranslate"><span class="pre">PREFIX:Value</span></code>. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> also allows you to specify different suffixes for the read and write PVs if they are different.</p>
@@ -1204,17 +1137,17 @@ Tango</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EnergyMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy mode for `DemoPointDetectorChannel`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Energy mode for `DemoPointDetectorChannel`."""</span>
 
-    <span class="n">LOW</span> <span class="o">=</span> <span class="s2">&quot;Low Energy&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Low energy mode&quot;&quot;&quot;</span>
+    <span class="n">LOW</span> <span class="o">=</span> <span class="s2">"Low Energy"</span>
+<span class="w">    </span><span class="sd">"""Low energy mode"""</span>
 
-    <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">&quot;High Energy&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;High energy mode&quot;&quot;&quot;</span>
+    <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">"High Energy"</span>
+<span class="w">    </span><span class="sd">"""High energy mode"""</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetectorChannel</span><span class="p">(</span><span class="n">TangoDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A channel for `DemoPointDetector` with int value based on X and Y Motors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A channel for `DemoPointDetector` with int value based on X and Y Motors."""</span>
 
     <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span><span class="p">]</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
@@ -1268,18 +1201,18 @@ EPICS</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetector</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">Triggerable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo detector that produces a point values based on X and Y motors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A demo detector that produces a point values based on X and Y motors."""</span>
 
-    <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AcquireTime&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
-    <span class="n">start</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Start.PROC&quot;</span><span class="p">)]</span>
-    <span class="n">acquiring</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Acquiring&quot;</span><span class="p">)]</span>
-    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"AcquireTime"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Start.PROC"</span><span class="p">)]</span>
+    <span class="n">acquiring</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Acquiring"</span><span class="p">)]</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Reset.PROC"</span><span class="p">)]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="n">i</span><span class="p">:</span> <span class="n">DemoPointDetectorChannel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                    <span class="n">i</span><span class="p">:</span> <span class="n">DemoPointDetectorChannel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="p">}</span>
             <span class="p">)</span>
@@ -1319,14 +1252,14 @@ Tango</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetector</span><span class="p">(</span><span class="n">TangoDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Triggerable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo detector that produces a point values based on X and Y motors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A demo detector that produces a point values based on X and Y motors."""</span>
 
     <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
     <span class="n">start</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
     <span class="n">acquiring</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="n">reset</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel_trls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel_trls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
                 <span class="p">{</span>
@@ -1432,14 +1365,14 @@ EPICS</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A demo movable that moves based on velocity."""</span>
 
     <span class="c1"># Define some signals</span>
-    <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
-    <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
-    <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Setpoint&quot;</span><span class="p">)]</span>
+    <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Readback"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
+    <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Velocity"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Setpoint"</span><span class="p">)]</span>
     <span class="c1"># If a signal name clashes with a bluesky verb add _ to the attribute name</span>
-    <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">TriggerableCommand</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Stop.PROC"</span><span class="p">)]</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>
@@ -1497,9 +1430,9 @@ Tango</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">TangoDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StandardMovable</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A demo movable that moves based on velocity."""</span>
 
-    <span class="c1"># If the server doesn&#39;t support events, the TangoPolling annotation gives</span>
+    <span class="c1"># If the server doesn't support events, the TangoPolling annotation gives</span>
     <span class="c1"># the parameters for ophyd to poll instead</span>
     <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
@@ -1544,13 +1477,13 @@ EPICS</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoStage</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simulated sample stage with X and Y movables.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A simulated sample stage with X and Y movables."""</span>
 
     <span class="c1"># The stage has a fixed set of child Devices, so we can declare them the</span>
     <span class="c1"># same way as Signals: a PvSuffix addresses each motor relative to the</span>
-    <span class="c1"># stage&#39;s prefix, and Format.CHILD merges its readings into the stage.</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;X:&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Y:&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
+    <span class="c1"># stage's prefix, and Format.CHILD merges its readings into the stage.</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"X:"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">DemoMotor</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">"Y:"</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CHILD</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Unlike <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code>, the stage has a <em>fixed</em> set of child Devices — always an <code class="docutils literal notranslate"><span class="pre">x</span></code> and a <code class="docutils literal notranslate"><span class="pre">y</span></code> — rather than a runtime-sized <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>. So instead of instantiating them in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, we can declare them the same way as Signals: via a type hint annotated with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a>. The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> baseclass prepends the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> to the stage’s prefix to address each motor, so a <code class="docutils literal notranslate"><span class="pre">DemoStage(prefix=&quot;PREFIX:&quot;)</span></code> gives <code class="docutils literal notranslate"><span class="pre">x</span></code> the prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:X:</span></code>. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD" title="ophyd_async.core.StandardReadableFormat.CHILD"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">StandardReadableFormat.CHILD</span></code></a> adds each motor’s <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> into the stage’s, just as if we had used <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a>. Declared sub-devices may themselves declare sub-devices, so this nests to any depth.</p>
@@ -1572,9 +1505,9 @@ Tango</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoStage</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simulated sample stage with X and Y movables.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A simulated sample stage with X and Y movables."""</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some child Devices</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">DemoMotor</span><span class="p">(</span><span class="n">x_trl</span><span class="p">)</span>
@@ -1698,8 +1631,8 @@ FastCS</label><div class="sd-tab-content docutils">
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1711,7 +1644,7 @@ FastCS</label><div class="sd-tab-content docutils">
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

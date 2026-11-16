@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -8,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.4.dev26+g242f29215 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.21.5.dev1+g55a302c1c documentation</title>
   
   
   
@@ -27,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -37,12 +36,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=3519df7d"></script>
+    <script src="../_static/documentation_options.js?v=7273a8a5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,7 +49,7 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/writing-tests-for-devices';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -63,6 +62,7 @@
     <link rel="next" title="Implementing File Writing Detectors" href="implementing-detectors.html" />
     <link rel="prev" title="Implementing Devices" href="implementing-devices.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
   
@@ -112,7 +112,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.4.dev26+g242f29215 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.5.dev1+g55a302c1c documentation - Home"/>
   
   
 </a></div>
@@ -197,7 +197,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -207,11 +207,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -224,8 +231,7 @@
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -236,8 +242,7 @@
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -268,7 +273,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -277,7 +282,7 @@
   
 
   
-    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -353,11 +358,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -370,8 +382,7 @@
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -382,8 +393,7 @@
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">PyPI</span></a>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -412,7 +422,8 @@
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
   </svg>
   <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
@@ -428,7 +439,7 @@
 <li class="toctree-l1"><a class="reference internal" href="asyncio.html">A crash course on asyncio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementing-devices.html">Implementing Devices</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Writing Tests for Devices</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Writing Tests for Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementing-detectors.html">Implementing File Writing Detectors</a></li>
 </ul>
 </div>
@@ -517,9 +528,9 @@
     <span class="c1"># Connect with a plain LazyMock, rather than mock=True that will use</span>
     <span class="c1"># a InstantMovableMock, so we can have full control of how the readback is set</span>
     <span class="c1"># in the tests</span>
-    <span class="n">mock_motor</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoMotor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X:&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">)</span>
+    <span class="n">mock_motor</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoMotor</span><span class="p">(</span><span class="s2">"BLxxI-MO-TABLE-01:X:"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"mock_motor"</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">mock_motor</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">LazyMock</span><span class="p">())</span>
-    <span class="n">set_mock_units</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">)</span>
+    <span class="n">set_mock_units</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">)</span>
     <span class="n">set_mock_precision</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">yield</span> <span class="n">mock_motor</span>
@@ -535,16 +546,16 @@ behavior for a Device type across many tests, you can define a <a class="referen
 to automatically inject that behavior when the Device is connected in mock mode. This is
 especially useful for defining standard mock behavior alongside your Device definitions.</p>
 <p>For example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InstantMotorMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">&quot;Motor&quot;</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock behaviour that instantly moves readback to setpoint.&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InstantMotorMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">"Motor"</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Mock behaviour that instantly moves readback to setpoint."""</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Motor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock signals to do an instant move on setpoint write.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Mock signals to do an instant move on setpoint write."""</span>
         <span class="c1"># Set sensible defaults to avoid runtime errors</span>
         <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
         <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
 
-        <span class="c1"># Motor starts in &quot;done&quot; state (not moving)</span>
+        <span class="c1"># Motor starts in "done" state (not moving)</span>
         <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># When setpoint is written to, immediately update readback and done flag</span>
@@ -606,7 +617,7 @@ velocity and acceleration.</p>
 <p>To use it, pass an instance directly to <code class="docutils literal notranslate"><span class="pre">connect()</span></code> instead of relying on the default:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">velo_and_accl_respecting_motor</span><span class="p">():</span>
-    <span class="n">motor</span> <span class="o">=</span> <span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;motor&quot;</span><span class="p">)</span>
+    <span class="n">motor</span> <span class="o">=</span> <span class="n">Motor</span><span class="p">(</span><span class="s2">"BLxxI-MO-TABLE-01:X"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"motor"</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">VeloAndAcclRespectingMotorMock</span><span class="p">())</span>
     <span class="k">yield</span> <span class="n">motor</span>
 </pre></div>
@@ -621,12 +632,12 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
 <p>Fixtures and tests for async Devices must be <code class="docutils literal notranslate"><span class="pre">async</span></code>. To enable this, install and configure <a class="reference external" href="https://github.com/pytest-dev/pytest-asyncio">pytest-asyncio</a> in your project’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.optional-dependencies]</span>
 <span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;pytest-asyncio&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"pytest-asyncio"</span><span class="p">,</span>
 <span class="w">    </span><span class="c1"># other dependencies</span>
 <span class="p">]</span>
 
 <span class="k">[tool.pytest.ini_options]</span>
-<span class="n">asyncio_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span>
+<span class="n">asyncio_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"auto"</span>
 <span class="c1"># other options</span>
 </pre></div>
 </div>
@@ -639,15 +650,15 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
     <span class="k">await</span> <span class="n">mock_motor</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span>
     <span class="k">await</span> <span class="n">assert_reading</span><span class="p">(</span>
         <span class="n">mock_motor</span><span class="p">,</span>
-        <span class="p">{</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">"mock_motor"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"value"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">"alarm_severity"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
     <span class="p">)</span>
     <span class="k">await</span> <span class="n">assert_configuration</span><span class="p">(</span>
         <span class="n">mock_motor</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">&quot;mock_motor-velocity&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span>
-                <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"mock_motor-velocity"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"value"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span>
+                <span class="s2">"alarm_severity"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">)</span>
@@ -656,14 +667,14 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
     <span class="k">await</span> <span class="n">assert_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">assert_reading</span><span class="p">(</span>
         <span class="n">mock_motor</span><span class="p">,</span>
-        <span class="p">{</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">"mock_motor"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"value"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">"alarm_severity"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
     <span class="p">)</span>
     <span class="c1"># Check we can still read when not staged</span>
     <span class="k">await</span> <span class="n">mock_motor</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">assert_reading</span><span class="p">(</span>
         <span class="n">mock_motor</span><span class="p">,</span>
-        <span class="p">{</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">"mock_motor"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"value"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span> <span class="s2">"alarm_severity"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -678,7 +689,7 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
 <h2>Checking that commands and signals were called<a class="headerlink" href="#checking-that-commands-and-signals-were-called" title="Link to this heading">#</a></h2>
 <p>Now let’s call some verbs and check that they do the right thing. We want to check that <code class="docutils literal notranslate"><span class="pre">stop()</span></code> triggers the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerableCommand" title="ophyd_async.core.TriggerableCommand"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerableCommand</span></code></a> <code class="docutils literal notranslate"><span class="pre">stop_</span></code>, waiting for it to complete:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_motor_stopped</span><span class="p">(</span><span class="n">mock_motor</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoMotor</span><span class="p">):</span>
-    <span class="c1"># Check it hasn&#39;t already been called</span>
+    <span class="c1"># Check it hasn't already been called</span>
     <span class="n">stop_mock</span> <span class="o">=</span> <span class="n">get_mock_execute</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">stop_</span><span class="p">)</span>
     <span class="n">stop_mock</span><span class="o">.</span><span class="n">assert_not_called</span><span class="p">()</span>
     <span class="c1"># Call stop and check execute() is called with no arguments</span>
@@ -705,11 +716,11 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
     <span class="c1"># Watch for updates, and make sure the first update is the current position</span>
     <span class="n">watcher</span> <span class="o">=</span> <span class="n">StatusWatcher</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">watcher</span><span class="o">.</span><span class="n">wait_for_call</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"mock_motor"</span><span class="p">,</span>
         <span class="n">current</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">target</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
-        <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span>
+        <span class="n">unit</span><span class="o">=</span><span class="s2">"mm"</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
         <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.18</span><span class="p">),</span>
     <span class="p">)</span>
@@ -720,11 +731,11 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
     <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">watcher</span><span class="o">.</span><span class="n">wait_for_call</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"mock_motor"</span><span class="p">,</span>
         <span class="n">current</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
         <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">target</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
-        <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span>
+        <span class="n">unit</span><span class="o">=</span><span class="s2">"mm"</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
         <span class="c1"># windows-latest CI runners intermittently overshoot asyncio.sleep(0.2)</span>
         <span class="c1"># by well over the (already generous) 0.18s tolerance - observed</span>
@@ -733,9 +744,9 @@ the <code class="docutils literal notranslate"><span class="pre">mock=</span></c
         <span class="c1"># same ~15 minutes). Local runs are rock solid at ~0.202s (50/50</span>
         <span class="c1"># passes), so the extra latency is Windows scheduler/CI-load jitter,</span>
         <span class="c1"># not a code regression. Widen only on Windows, matching the existing</span>
-        <span class="c1"># os.name == &quot;nt&quot; precedent in</span>
+        <span class="c1"># os.name == "nt" precedent in</span>
         <span class="c1"># test_device.py::test_many_individual_device_connects_not_slow.</span>
-        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span> <span class="k">else</span> <span class="mf">0.18</span><span class="p">),</span>
+        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"nt"</span> <span class="k">else</span> <span class="mf">0.18</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="c1"># Make it almost get there and check that it completes</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.5499999</span><span class="p">)</span>
@@ -788,7 +799,7 @@ exercise what a plan does when a verb <em>fails</em>, since the real logic still
 <li><p><strong>Replace the verb with a mock using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_attr" title="ophyd_async.core.set_mock_attr"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_attr</span></code></a>.</strong> Reach for this when you
 specifically want to bypass the verb’s logic — e.g. to assert it was called with
 the right argument, or to make it fail on demand:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mock_set</span> <span class="o">=</span> <span class="n">set_mock_attr</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">())</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mock_set</span> <span class="o">=</span> <span class="n">set_mock_attr</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="s2">"set"</span><span class="p">,</span> <span class="n">MagicMock</span><span class="p">())</span>
 <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">kickoff</span><span class="p">()</span>
 <span class="n">mock_set</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span><span class="p">)</span>
 </pre></div>
@@ -826,11 +837,11 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
 <section id="create-a-runengine-in-a-fixture">
 <span id="run-engine-fixture"></span><h3>Create a RunEngine in a fixture<a class="headerlink" href="#create-a-runengine-in-a-fixture" title="Link to this heading">#</a></h3>
 <p>First you need to define a RunEngine that could be used in any test. If you don’t already have one in your project you could define one like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">"function"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">RE</span><span class="p">():</span>
     <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">(</span><span class="n">call_returns_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">yield</span> <span class="n">RE</span>
-    <span class="k">if</span> <span class="n">RE</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;idle&quot;</span><span class="p">,</span> <span class="s2">&quot;panicked&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">RE</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"idle"</span><span class="p">,</span> <span class="s2">"panicked"</span><span class="p">):</span>
         <span class="n">RE</span><span class="o">.</span><span class="n">halt</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -841,7 +852,7 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">mock_point_detector</span><span class="p">():</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">mock_point_detector</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="s2">&quot;MOCK:DET:&quot;</span><span class="p">)</span>
+        <span class="n">mock_point_detector</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="s2">"MOCK:DET:"</span><span class="p">)</span>
     <span class="k">yield</span> <span class="n">mock_point_detector</span>
 </pre></div>
 </div>
@@ -857,10 +868,10 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
     <span class="c1"># Run the plan and assert the right docs are produced</span>
     <span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">count</span><span class="p">([</span><span class="n">mock_point_detector</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">assert_emitted</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">docs</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span>
-        <span class="s2">&quot;mock_point_detector-channel-1-value&quot;</span><span class="p">:</span> <span class="mi">101</span><span class="p">,</span>
-        <span class="s2">&quot;mock_point_detector-channel-2-value&quot;</span><span class="p">:</span> <span class="mi">102</span><span class="p">,</span>
-        <span class="s2">&quot;mock_point_detector-channel-3-value&quot;</span><span class="p">:</span> <span class="mi">103</span><span class="p">,</span>
+    <span class="k">assert</span> <span class="n">docs</span><span class="p">[</span><span class="s2">"event"</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span>
+        <span class="s2">"mock_point_detector-channel-1-value"</span><span class="p">:</span> <span class="mi">101</span><span class="p">,</span>
+        <span class="s2">"mock_point_detector-channel-2-value"</span><span class="p">:</span> <span class="mi">102</span><span class="p">,</span>
+        <span class="s2">"mock_point_detector-channel-3-value"</span><span class="p">:</span> <span class="mi">103</span><span class="p">,</span>
     <span class="p">}</span>
 </pre></div>
 </div>
@@ -983,8 +994,8 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -996,7 +1007,7 @@ before migrating each <code class="docutils literal notranslate"><span class="pr
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>
