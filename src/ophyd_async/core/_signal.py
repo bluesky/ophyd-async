@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import functools
 import inspect
 import time
@@ -680,13 +679,11 @@ async def set_and_wait_for_other_value(
     """
     # Start monitoring before the set to avoid a race condition
     checker = _ValueChecker(match_value)
-    wait_task = asyncio.create_task(
+    # The wait is cancelled when we exit, whether by error, cancel or success
+    async with AsyncStatus(
         checker.wait_for_value(match_signal, timeout=timeout)
-    )
-
-    # Put this in a try/except to ensure wait_task is cancelled when we exit
-    try:
-        # NOTE: this timeout races wait_task's own internal timeout (same
+    ) as wait_status:
+        # NOTE: this timeout races the wait's own internal timeout (same
         # duration, started moments earlier) - whichever elapses first wins.
         # That race is harmless because each path reports its own distinct,
         # helpful message.
@@ -704,19 +701,13 @@ async def set_and_wait_for_other_value(
 
         if not wait_for_set_completion:
             # Just wait for the match_signal to be at value
-            await wait_task
+            await wait_status
         else:
             # Wait for both to complete, so if the set raises an exception it
             # is surfaced early. Wait for the status task so if either errors
             # the other is cancelled
-            await asyncio.gather(wait_task, status.task)
+            await asyncio.gather(wait_status.task, status.task)
         return status
-    except Exception:
-        # Make sure the wait is not left dangling if there was an error
-        wait_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await wait_task
-        raise
 
 
 async def set_and_wait_for_value(

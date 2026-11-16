@@ -1,8 +1,10 @@
 import asyncio
+import gc
 import re
 import sys
 from asyncio import CancelledError
 from collections.abc import Sequence
+from contextlib import nullcontext
 
 import numpy as np
 import numpy.typing as npt
@@ -25,12 +27,14 @@ from ophyd_async.core import (
     StrictEnum,
     AsyncStatus,
     callback_on_mock_put,
+    cancel_and_wait,
     get_mock_put,
     merge_gathered_dicts,
     set_mock_value,
     simulate_move,
     soft_signal_rw,
 )
+from ophyd_async.core._utils import _wait_for
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.motor import Motor
 
@@ -529,3 +533,202 @@ def test_get_dtype_raises_for_element_type_without_numpy_dtype(datatype):
 )
 def test_get_unaliased_origin(annotation, origin):
     assert get_unaliased_origin(annotation) is origin
+
+
+class StuckPutBackend(SoftSignalBackend):
+    """A put that never finishes, and may fail while being cancelled."""
+
+    def __init__(self, cleanup_error: Exception | None):
+        self.cleanup_error = cleanup_error
+        super().__init__(datatype=int)
+
+    async def put(self, value: int | None) -> None:
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            if self.cleanup_error is not None:
+                raise self.cleanup_error from None
+            raise
+
+
+@pytest.mark.parametrize(
+    "cleanup_error, expected",
+    [(None, TimeoutError), (ValueError("cleanup failed"), ValueError)],
+)
+async def test_a_timed_out_put_raises_the_error_its_cancellation_raised(
+    cleanup_error: Exception | None, expected: type[Exception]
+):
+    loop = asyncio.get_running_loop()
+    unhandled = []
+    loop.set_exception_handler(lambda _, context: unhandled.append(context))
+    signal = SignalRW(StuckPutBackend(cleanup_error), name="sig")
+    await signal.connect()
+
+    with pytest.raises(expected):
+        await signal.set(1, timeout=0.01)
+
+    # The error was retrieved, not left for the loop to log
+    gc.collect()
+    await asyncio.sleep(0)
+    loop.set_exception_handler(None)
+    assert unhandled == []
+
+
+async def test_a_cancelled_wait_for_leaves_no_unretrieved_error():
+    loop = asyncio.get_running_loop()
+    unhandled = []
+    loop.set_exception_handler(lambda _, context: unhandled.append(context))
+
+    async def fails_when_cancelled():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            raise ValueError("cleanup failed") from None
+
+    outer = asyncio.create_task(_wait_for(fails_when_cancelled(), 10, "source"))
+    await asyncio.sleep(0.01)
+    outer.cancel()
+    # The error raised while ending the cancelled work shows through
+    with pytest.raises(ValueError, match="cleanup failed"):
+        await outer
+
+    gc.collect()
+    await asyncio.sleep(0)
+    loop.set_exception_handler(None)
+    assert unhandled == []
+
+
+async def test_wait_for_returns_the_result_with_and_without_a_timeout():
+    async def value():
+        await asyncio.sleep(0)
+        return 42
+
+    assert await _wait_for(value(), 5, "source") == 42
+    assert await _wait_for(value(), None, "source") == 42
+
+
+async def test_wait_for_expiry_raises_timeout_error_naming_the_source():
+    with pytest.raises(TimeoutError, match="^source$"):
+        await _wait_for(asyncio.sleep(1), 0.01, "source")
+
+
+async def test_wait_for_relabels_a_timeout_error_from_the_coroutine():
+    async def inner():
+        raise TimeoutError("inner")
+
+    with pytest.raises(TimeoutError, match="^source$") as exc_info:
+        await _wait_for(inner(), 5, "source")
+    assert str(exc_info.value.__cause__) == "inner"
+
+
+async def test_wait_for_does_not_swallow_a_cancel_arriving_as_the_work_finishes():
+    finished = asyncio.get_running_loop().create_future()
+
+    async def inner():
+        return await finished
+
+    outer = asyncio.create_task(_wait_for(inner(), 5, "source"))
+    await asyncio.sleep(0)
+    finished.set_result(1)
+    outer.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await outer
+
+
+async def test_wait_for_shows_an_error_raised_while_being_cancelled():
+    async def inner():
+        try:
+            await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise ValueError("cleanup") from None
+
+    with pytest.raises(ValueError, match="cleanup"):
+        await _wait_for(inner(), 0.01, "source")
+
+
+async def test_wait_for_expiry_and_an_outside_cancel_is_a_cancel():
+    outer = asyncio.create_task(_wait_for(asyncio.sleep(1), 0.05, "source"))
+    await asyncio.sleep(0.05)  # About when the timeout expires
+    outer.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await outer
+
+
+async def test_wait_for_expiry_after_a_swallowed_cancel_is_still_a_timeout_error():
+    async def body():
+        try:
+            await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            pass  # Swallowed without uncancel()
+        await _wait_for(asyncio.sleep(1), 0.01, "source")
+
+    task = asyncio.create_task(body())
+    await asyncio.sleep(0)
+    task.cancel()
+    with pytest.raises(TimeoutError, match="^source$"):
+        await task
+
+
+async def _raise_on_cancel(
+    error: Exception | None, cleanup_time: float, cancelled: asyncio.Event
+) -> None:
+    try:
+        await asyncio.sleep(10)
+    except asyncio.CancelledError:
+        cancelled.set()
+        await asyncio.sleep(cleanup_time)
+        if error is not None:
+            raise error from None
+        raise
+
+
+@pytest.mark.parametrize(
+    "errors, raised",
+    [
+        ([None, None], None),
+        ([None, ValueError()], ValueError),
+        # The first task in the order given wins, though it ends last
+        ([ValueError(), RuntimeError()], ValueError),
+    ],
+)
+async def test_cancel_and_wait_waits_for_every_task_then_raises_the_first_error(
+    errors: list[Exception | None], raised: type[Exception] | None
+):
+    cleanup_times = [0.02, 0.0]
+    tasks = [
+        asyncio.create_task(_raise_on_cancel(error, cleanup_time, asyncio.Event()))
+        for error, cleanup_time in zip(errors, cleanup_times, strict=True)
+    ]
+    await asyncio.sleep(0)  # let the tasks start
+    expectation = pytest.raises(raised) if raised else nullcontext()
+    with expectation:
+        await cancel_and_wait(*tasks)
+    assert all(task.done() for task in tasks)
+
+
+@pytest.mark.parametrize("caller_cancels", [1, 2])
+async def test_cancel_and_wait_cancelled_caller_waits_then_raises_its_cancel(
+    caller_cancels: int,
+):
+    loop = asyncio.get_running_loop()
+    unhandled: list[str] = []
+    old_handler = loop.get_exception_handler()
+    loop.set_exception_handler(lambda _, context: unhandled.append(context["message"]))
+    try:
+        cancelled = asyncio.Event()
+        task = asyncio.create_task(_raise_on_cancel(ValueError(), 0.02, cancelled))
+        await asyncio.sleep(0)  # let the task start
+        caller = asyncio.create_task(cancel_and_wait(task))
+        await cancelled.wait()
+        for _ in range(caller_cancels):
+            caller.cancel()
+            await asyncio.sleep(0)
+        await asyncio.wait([caller])
+        assert caller.cancelled()
+        assert task.done()
+        # A task whose error was never retrieved logs it when collected
+        del task, caller
+        gc.collect()
+    finally:
+        loop.set_exception_handler(old_handler)
+    assert unhandled == []

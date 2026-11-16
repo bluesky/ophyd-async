@@ -64,6 +64,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     partial_reading,
+    wait_for_pending_wakeups,
 )
 
 _array_vals = {
@@ -1344,3 +1345,25 @@ async def test_soft_signal_r_and_setter_with_poll_period():
 async def test_soft_signal_r_and_setter_poll_period_without_getter_raises():
     with pytest.raises(ValueError, match="poll_period requires a getter"):
         soft_signal_r_and_setter(float, poll_period=0.1)
+
+
+async def test_set_and_wait_for_other_value_cancelled_before_first_value():
+    set_signal = epics_signal_rw(int, "pva://signal", name="s")
+    match_signal = epics_signal_rw(int, "pva://match_signal", name="m")
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    async def never_yields(signal):
+        await asyncio.sleep(1000)
+        yield  # pragma: no cover - unreachable, just makes this a generator
+
+    with patch("ophyd_async.core._signal.observe_value", never_yields):
+        task = asyncio.create_task(
+            set_and_wait_for_other_value(set_signal, 1, match_signal, 20, timeout=None)
+        )
+        await wait_for_pending_wakeups()
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    # The match wait it started must not outlive it
+    assert asyncio.all_tasks() == {asyncio.current_task()}

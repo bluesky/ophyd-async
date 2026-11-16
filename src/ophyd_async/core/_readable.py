@@ -182,8 +182,8 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
                 )
                 raise KeyError(error_msg)
 
-        new_keys = dict_copy.keys() ^ new_dict.keys()
-        new_values = [new_dict[key] for key in new_keys]
+        # Newly added children, in the order they were declared
+        new_values = [value for key, value in new_dict.items() if key not in dict_copy]
 
         flattened_values = []
         for value in new_values:
