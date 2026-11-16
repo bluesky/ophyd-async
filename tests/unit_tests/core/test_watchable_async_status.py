@@ -85,7 +85,7 @@ class ASTestDeviceSingleSet(ASTestDevice):
     async def set(self, val):
         assert self._staged
         await asyncio.sleep(0.01)
-        self._sig_setter(val)  # type: ignore
+        self._sig_setter(val)
 
 
 class ASTestDeviceTimeoutSet(ASTestDevice):
@@ -122,7 +122,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 fraction=0,
             )
         if self.complete_set:
-            self._sig_setter(val)  # type: ignore
+            self._sig_setter(val)
             yield WatcherUpdate(
                 name=self.name,
                 current=val,

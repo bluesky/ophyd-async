@@ -328,7 +328,7 @@ async def test_status_of_set_and_wait_for_value():
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_after_delay)
     before = asyncio.all_tasks()
 
     status = await set_and_wait_for_value(set_signal, 2)
@@ -378,7 +378,7 @@ async def test_set_and_wait_for_other_value_keeps_the_set_running_past_the_match
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_slower_than_the_match_timeout)  # type: ignore
+    callback_on_mock_put(set_signal, set_slower_than_the_match_timeout)
     before = asyncio.all_tasks()
 
     with pytest.raises(asyncio.TimeoutError):
@@ -404,7 +404,7 @@ async def test_callable_match_value_set_and_wait_for_value():
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)
-    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+    callback_on_mock_put(set_signal, set_match_signal_after_delay)
     before = asyncio.all_tasks()
 
     def _equals_x(value, x):

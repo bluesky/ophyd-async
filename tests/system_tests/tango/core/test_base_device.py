@@ -122,8 +122,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
-        # pytango stubs omit the enum's names mapping
-        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}  # pyright: ignore[reportAttributeAccessIssue]
+        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}
     if issubclass(python_type, Enum):
         return {
             "dtype": "string",

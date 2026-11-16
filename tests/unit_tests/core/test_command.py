@@ -385,7 +385,7 @@ async def test_fill_child_command_vector_index():
         return SoftCommandBackend(callback, sig)
 
     vector: DeviceVector[Command[[], int]] = DeviceVector()
-    vector.__orig_class__ = DeviceVector[Command[[], int]]  # type: ignore
+    vector.__orig_class__ = DeviceVector[Command[[], int]]
 
     filler = DeviceFiller(
         device=vector,

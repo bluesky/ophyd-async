@@ -237,7 +237,7 @@ class DemoPointDetectorChannelDevice(Device):
             )
             * 2500
             * self._elapsed
-        )  # type: ignore
+        )
 
     @command
     async def connect_devices(self):

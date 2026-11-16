@@ -543,7 +543,7 @@ async def test_derived_signal_r_reports_typevar_constraints():
             "for raw_to_derived return and explicit derived_datatype."
         ),
     ):
-        derived_signal_r(_get_constrained_generic, derived_datatype=str, value=value)  # type: ignore[arg-type]
+        derived_signal_r(_get_constrained_generic, derived_datatype=str, value=value)
 
 
 async def test_derived_signal_rw_generic_get_and_set_requires_datatype_on_describe(

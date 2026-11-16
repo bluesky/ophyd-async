@@ -3,7 +3,7 @@ from ophyd_async.epics.pmac import (
     PmacAxisAssignmentIO,
     PmacCoordIO,
     PmacIO,
-    PmacTrajectoryIO,  # type: ignore
+    PmacTrajectoryIO,
 )
 
 

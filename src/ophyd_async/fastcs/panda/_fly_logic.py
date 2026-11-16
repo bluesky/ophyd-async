@@ -83,8 +83,8 @@ class PosOutScaleOffset:
         inenc = panda.inenc[number]  # type: ignore
         return cls(
             name=f"INENC{number}.VAL",
-            scale=inenc.val_scale,  # type: ignore
-            offset=inenc.val_offset,  # type: ignore
+            scale=inenc.val_scale,
+            offset=inenc.val_offset,
         )
 
 
