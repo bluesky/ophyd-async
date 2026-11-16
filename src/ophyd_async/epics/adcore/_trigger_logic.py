@@ -15,7 +15,6 @@ from ._io import (
     ADBaseDataType,
     ADBaseIO,
     ADImageMode,
-    NDCBFlushOnSoftTrgMode,
     NDCircularBuffIO,
     NDProcessFilterCallbacks,
     NDProcessFilterType,
@@ -140,16 +139,8 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await self._ensure_driver_acquiring(livetime)
-        # Setup the CB plugin with the current parameters
-        await asyncio.gather(
-            self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
-            self.cb_plugin.pre_count.set(0),
-            self.cb_plugin.post_count.set(num),
-            # Set preset trigger count to 0 to allow triggering to continue indefinitely
-            # until explicitly stopped.
-            self.cb_plugin.preset_trigger_count.set(0),
-            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
-        )
+        # Setup the CB plugin to emit `num` images
+        await self.cb_plugin.post_count.set(num)
 
     async def prepare_exposures_per_collection(self, exposures_per_collection: int):
         await prepare_filter(self.process_plugin, exposures_per_collection)

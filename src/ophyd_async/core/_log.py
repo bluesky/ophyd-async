@@ -6,7 +6,6 @@ import colorlog
 __all__ = (
     "config_ophyd_async_logging",
     "logger",
-    "set_handler",
 )
 
 DEFAULT_FORMAT = (
@@ -126,6 +125,3 @@ def config_ophyd_async_logging(
         return handler
     finally:
         handler.close()
-
-
-set_handler = config_ophyd_async_logging  # for back-compat

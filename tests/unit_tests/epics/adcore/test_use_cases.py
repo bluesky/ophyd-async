@@ -167,7 +167,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
         for i in range(3)
     ]
     # Check we can prepare and do a second one
-    await det.prepare(TriggerInfo(exposure_timeout=0.1))
+    await det.prepare(TriggerInfo(collection_timeout=0.1))
     callback_on_mock_put(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 2)
     )
@@ -633,7 +633,7 @@ async def test_step_scan_keep_numimages(
 
     # Check we can prepare and change the exposure
     await det.prepare(
-        TriggerInfo(collections_per_event=42, livetime=0.01, exposure_timeout=0.1)
+        TriggerInfo(collections_per_event=42, livetime=0.01, collection_timeout=0.1)
     )
     callback_on_mock_put(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 84)

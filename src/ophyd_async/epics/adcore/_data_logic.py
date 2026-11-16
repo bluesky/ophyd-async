@@ -291,8 +291,6 @@ class ADMultipartDataLogic(DetectorDataLogic):
             parameters={"template": path_info.filename + "_{:06d}" + self.extension},
         )
         return StreamResourceDataProvider(
-            # TODO: remove the type ignore after
-            # https://github.com/bluesky/ophyd-async/issues/1186
             uri=path_info.directory_uri,
             resources=[main_dataset],
             mimetype=self.mimetype,
