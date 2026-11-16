@@ -16,6 +16,7 @@ from ._utils import (
     SupersetEnum,
     cached_get_origin,
     get_enum_cls,
+    get_unaliased_origin,
 )
 
 Primitive = bool | int | float | str
@@ -146,7 +147,7 @@ class SignalMetadata(TypedDict, total=False):
 def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
     if (
         datatype is np.ndarray
-        or cached_get_origin(datatype) in (Sequence, np.ndarray)
+        or get_unaliased_origin(datatype) in (Sequence, np.ndarray)
         or issubclass(datatype, Table)
     ):
         return "array"

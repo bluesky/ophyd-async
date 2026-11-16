@@ -7,7 +7,13 @@ import numpy as np
 from pydantic import ConfigDict, Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 
-from ._utils import ConfinedModel, cached_get_origin, cached_get_type_hints, get_dtype
+from ._utils import (
+    ConfinedModel,
+    cached_get_origin,
+    cached_get_type_hints,
+    get_dtype,
+    get_unaliased_origin,
+)
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
@@ -85,7 +91,7 @@ class Table(ConfinedModel):
         cls.model_config = ConfigDict(validate_assignment=True, extra="forbid")
         # Change fields to have the correct annotations
         for k, anno in cached_get_type_hints(cls).items():
-            if cached_get_origin(anno) is np.ndarray:
+            if get_unaliased_origin(anno) is np.ndarray:
                 dtype = get_dtype(anno)
                 new_anno = Annotated[
                     anno,
@@ -162,7 +168,7 @@ class Table(ConfinedModel):
             raise AssertionError(f"Cannot construct Table from {data}")
         for field_name, field_value in cls.model_fields.items():
             if (
-                cached_get_origin(field_value.annotation) is np.ndarray
+                get_unaliased_origin(field_value.annotation) is np.ndarray
                 and field_value.annotation
                 and field_name in data_dict
             ):

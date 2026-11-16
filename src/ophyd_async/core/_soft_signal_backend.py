@@ -26,7 +26,14 @@ from ._signal_backend import (
     make_datakey,
     make_metadata,
 )
-from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls, get_ndim
+from ._utils import (
+    Callback,
+    cached_get_origin,
+    get_dtype,
+    get_enum_cls,
+    get_ndim,
+    get_unaliased_origin,
+)
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
@@ -108,7 +115,7 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
         return SequenceEnumSoftConverter(enum_cls)
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
-    elif cached_get_origin(datatype) == np.ndarray:
+    elif get_unaliased_origin(datatype) == np.ndarray:
         if datatype not in get_args(SignalDatatype):
             raise TypeError(
                 f"Expected Array1D[dtype] or npt.NDArray[dtype], got {datatype}"
