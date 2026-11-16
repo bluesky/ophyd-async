@@ -6,6 +6,7 @@ import pytest
 from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
@@ -405,7 +406,7 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
     execute_mock.assert_awaited_once_with()
 
 
-async def test_unstage_during_move_to_start_releases_then_aborts(
+async def test_unstage_during_move_to_start_aborts(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
     pmac_io, sim_x_motor, _ = sim_motors
@@ -415,7 +416,14 @@ async def test_unstage_during_move_to_start_releases_then_aborts(
     )
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
     events: list[str] = []
-    callback_on_mock_put(coord.defer_moves, lambda v: events.append(f"defer_moves {v}"))
+    moves_released = asyncio.Event()
+
+    def on_defer_moves(held: bool) -> None:
+        events.append(f"defer_moves {held}")
+        if not held:
+            moves_released.set()
+
+    callback_on_mock_put(coord.defer_moves, on_defer_moves)
     # The CS moves the motor, and stays moving until it is aborted
     callback_on_mock_put(
         coord.cs_axis_setpoint[7],
@@ -430,7 +438,9 @@ async def test_unstage_during_move_to_start_releases_then_aborts(
 
     with mock_puts_blocked(coord.cs_axis_setpoint[7]):
         prepare_status = flyer.prepare(value)
-        await asyncio.sleep(0.1)
+        # Prepare has released the held moves, so the motor is moving and the
+        # setpoint put that started it is still blocked
+        await asyncio.wait_for(moves_released.wait(), DEFAULT_TIMEOUT)
         assert not prepare_status.done
         await flyer.unstage()
 
