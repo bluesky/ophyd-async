@@ -1,6 +1,6 @@
 import asyncio
 from abc import abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from enum import Enum
 from functools import cached_property
 from typing import Generic, TypeVar, cast
@@ -193,7 +193,7 @@ class StandardFlyable(
         self._reset_fly_state()
 
     @WatchableAsyncStatus.wrap
-    async def prepare(self, value: PrepareT) -> AsyncIterator[WatcherUpdate]:
+    async def prepare(self, value: PrepareT) -> AsyncGenerator[WatcherUpdate, None]:
         """Move to the start and set up the fly scan.
 
         If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report
@@ -246,7 +246,7 @@ class StandardFlyable(
         self._fly_stage = _FlyStage.KICKED_OFF
 
     @WatchableAsyncStatus.wrap
-    async def complete(self) -> AsyncIterator[WatcherUpdate]:
+    async def complete(self) -> AsyncGenerator[WatcherUpdate, None]:
         """Block until the fly scan is done.
 
         If the logic is also a `MovableLogic` (e.g. a flying `Motor`), report

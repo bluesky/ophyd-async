@@ -270,7 +270,7 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             },
         ),
     ]
-    assert status.done
+    await status
     # Check that another kickoff without prepare is not allowed
     with pytest.raises(
         RuntimeError,
@@ -313,7 +313,7 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             },
         ),
     ]
-    assert status.done
+    await status
 
 
 async def test_get_indices_written(hdf_panda: HDFPanda):

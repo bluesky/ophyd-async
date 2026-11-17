@@ -5,7 +5,7 @@ import functools
 import os
 import time
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
@@ -622,7 +622,7 @@ class StandardDetector(
             await self._acquire_logic.start_acquiring()
 
     @WatchableAsyncStatus.wrap
-    async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
+    async def trigger(self) -> AsyncGenerator[WatcherUpdate[int], None]:
         """Trigger a single exposure.
 
         If [`prepare()`](#StandardDetector.prepare) has not been called since

@@ -152,10 +152,7 @@ def test_standard_readable_add_children_context_manager():
         sr.b = MagicMock(spec=SignalR)
         sr.c = MagicMock(spec=SignalR)
 
-    # Can't use assert_called_once_with() as the order of items returned from
-    # internal dict comprehension is not guaranteed
-    mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == {sr.a, sr.b, sr.c}
+    mock.assert_called_once_with([sr.a, sr.b, sr.c], Format.CHILD)
 
 
 @pytest.mark.parametrize(
@@ -177,10 +174,7 @@ def test_standard_readable_add_children_cm_device_with_mappings(device_type, key
     with sr.add_children_as_readables():
         sr.a = device
 
-    # Can't use assert_called_once_with() as the order of items returned from
-    # internal dict comprehension is not guaranteed
-    mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == set(devices)
+    mock.assert_called_once_with(devices, Format.CHILD)
 
 
 def test_standard_readable_add_children_cm_filters_non_devices():
@@ -195,10 +189,7 @@ def test_standard_readable_add_children_cm_filters_non_devices():
         sr.d = "abc"
         sr.e = MagicMock(spec=MockSignalBackend)
 
-    # Can't use assert_called_once_with() as the order of items returned from
-    # internal dict comprehension is not guaranteed
-    mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == {sr.a, sr.b}
+    mock.assert_called_once_with([sr.a, sr.b], Format.CHILD)
 
 
 def assert_sr_has_attrs(sr: StandardReadable, expected_attrs: dict[str, tuple]):

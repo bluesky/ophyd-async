@@ -6,7 +6,7 @@ import sys
 import time
 import typing
 from collections.abc import (
-    AsyncIterator,
+    AsyncGenerator,
     Awaitable,
     Callable,
     Iterable,
@@ -330,8 +330,11 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     return None
 
 
-def get_unique(values: dict[str, T], types: str) -> T:
+def get_unique(values: Mapping[str, T], types: str) -> T:
     """If all values are the same, return that value, otherwise raise TypeError.
+
+    :param values: the values by label
+    :param types: what the values are, for the error message
 
     ```python
     >>> get_unique({"a": 1, "b": 1}, "integers")
@@ -460,9 +463,38 @@ def non_zero(value):
     return int(value) != 0
 
 
+async def cancel_and_wait(*tasks: asyncio.Task[Any]) -> None:
+    """Cancel `tasks`, wait for all of them to end, then raise the first error.
+
+    The first error is that of the first task, in the order given, that ended
+    with one. If the caller is cancelled while waiting, it keeps waiting until
+    every task has ended, then raises its own `CancelledError` instead.
+
+    :param tasks: The tasks to cancel.
+    """
+    for task in tasks:
+        task.cancel()
+    caller_cancel: asyncio.CancelledError | None = None
+    while not all(task.done() for task in tasks):
+        try:
+            await asyncio.wait(tasks)
+        except asyncio.CancelledError as cancel:
+            caller_cancel = cancel
+    # Retrieve every error, even when re-raising a cancel, so asyncio never logs
+    # "Task exception was never retrieved"
+    errors = [task.exception() for task in tasks if not task.cancelled()]
+    first_error = next((error for error in errors if error is not None), None)
+    if caller_cancel is not None:
+        raise caller_cancel
+    if first_error is not None:
+        raise first_error
+
+
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    """Await `coro`, raising `TimeoutError(source)` if it takes over `timeout`."""
     try:
-        return await asyncio.wait_for(coro, timeout)
+        async with asyncio.timeout(timeout):
+            return await coro
     except TimeoutError as exc:
         raise TimeoutError(source) from exc
 
@@ -472,7 +504,7 @@ async def simulate_move(
     new_position: float,
     velocity: float,
     acceleration_time: float,
-) -> AsyncIterator[float]:
+) -> AsyncGenerator[float, None]:
     """Yield positions at 10Hz along a trapezoidal velocity profile.
 
     :param old_position: Where the move starts.

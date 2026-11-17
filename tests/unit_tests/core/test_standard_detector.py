@@ -720,7 +720,7 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
     # Yield so detector can get collections written, then set it so we complete
     await wait_for_pending_wakeups(raise_if_exceeded=False)
     await dl.collections_written.set(1)
-    assert status.done
+    await status
     assert status.success
     docs = [doc async for doc in det.collect_asset_docs()]
     assert docs == [
