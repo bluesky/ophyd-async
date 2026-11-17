@@ -310,7 +310,7 @@ async def forward_watcher_updates(
 
     def _make_watcher(i: int) -> Watcher[Any]:
         # Watchers are only ever called with keywords, see _update_watcher.
-        def watcher(*_: Any, **kw: Any) -> None:
+        def watcher(**kw: Any) -> None:
             updates.put_nowait((i, kw))
 
         return watcher

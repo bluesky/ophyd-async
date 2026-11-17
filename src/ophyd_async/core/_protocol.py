@@ -126,6 +126,7 @@ class Watcher(Protocol, Generic[C]):
 
     def __call__(
         self,
+        *,
         current: C | None = None,
         initial: C | None = None,
         target: C | None = None,

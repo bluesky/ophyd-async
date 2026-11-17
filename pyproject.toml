@@ -103,6 +103,7 @@ addopts = """
 filterwarnings = [
     "error",
     "ignore:.*asyncio.iscoroutinefunction.*:DeprecationWarning", # https://github.com/epics-base/p4p/issues/210
+    "ignore:Setting the shape on a NumPy array:DeprecationWarning:epicscorelibs.ca.dbr", # https://github.com/epics-base/epicscorelibs/issues/57
 ]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests/unit_tests"
