@@ -8,7 +8,7 @@ from ._io import EigerDetectorIO, EigerTriggerMode
 # Conservative readout time for the detector
 # TODO: Investigate range of possible value for
 # detector_readout_time, and implement get_deadtime correctly
-_MIN_DEADTIME = 0.0001
+_MIN_DEADTIME = 10e-6
 
 
 async def _prepare_detector(

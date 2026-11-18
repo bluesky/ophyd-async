@@ -36,7 +36,7 @@ def detector(RE, tmp_path):
                 call.detector.nimages.put(10),
                 call.detector.ntrigger.put(1),
                 call.detector.count_time.put(0.1),
-                call.detector.frame_time.put(0.1 + 0.0001),
+                call.detector.frame_time.put(0.1 + 10e-6),
             ],
         ),
         (
@@ -46,7 +46,7 @@ def detector(RE, tmp_path):
                 call.detector.nimages.put(1),
                 call.detector.ntrigger.put(10),
                 call.detector.count_time.put(0.1),
-                call.detector.frame_time.put(0.1 + 0.0001),
+                call.detector.frame_time.put(0.1 + 10e-6),
             ],
         ),
         (
@@ -96,4 +96,4 @@ async def test_deadtime_correct(detector: EigerDetector):
         DetectorTrigger.EXTERNAL_EDGE,
         DetectorTrigger.EXTERNAL_LEVEL,
     }
-    assert deadtime == 0.0001
+    assert deadtime == 10e-6
