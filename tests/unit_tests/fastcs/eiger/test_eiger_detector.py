@@ -26,23 +26,49 @@ def detector(RE, tmp_path):
     return detector
 
 
-async def test_prepare_internal_calls_correct_parameters(
-    detector: EigerDetector, tmp_path
+@pytest.mark.parametrize(
+    "trigger, expected_calls",
+    [
+        (
+            DetectorTrigger.INTERNAL,
+            [
+                call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL),
+                call.detector.nimages.put(10),
+                call.detector.ntrigger.put(1),
+                call.detector.count_time.put(0.1),
+                call.detector.frame_time.put(0.1 + 0.0001),
+            ],
+        ),
+        (
+            DetectorTrigger.EXTERNAL_EDGE,
+            [
+                call.detector.trigger_mode.put(EigerTriggerMode.EDGE),
+                call.detector.nimages.put(1),
+                call.detector.ntrigger.put(10),
+                call.detector.count_time.put(0.1),
+                call.detector.frame_time.put(0.1 + 0.0001),
+            ],
+        ),
+        (
+            DetectorTrigger.EXTERNAL_LEVEL,
+            [
+                call.detector.trigger_mode.put(EigerTriggerMode.GATE),
+                call.detector.nimages.put(1),
+                call.detector.ntrigger.put(10),
+            ],
+        ),
+    ],
+)
+async def test_prepare_calls_correct_parameters(
+    detector: EigerDetector, tmp_path, trigger, expected_calls
 ):
     await detector.prepare(
-        TriggerInfo(
-            number_of_events=10,
-            livetime=0.1,
-            trigger=DetectorTrigger.INTERNAL,
-        )
+        TriggerInfo(number_of_events=10, livetime=0.1, trigger=trigger)
     )
     assert_has_calls(
         detector,
         [
-            call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL),
-            call.detector.nimages.put(10),
-            call.detector.count_time.put(0.1),
-            call.detector.frame_time.put(0.1),
+            *expected_calls,
             call.od.acquisition_id.put(""),
             call.od.file_prefix.put("filename"),
             call.od.file_path.put(str(tmp_path)),
@@ -52,6 +78,12 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.block_size.put(100000),
             call.pixel_mask.put(str(tmp_path / "filename_meta.h5") + "//mask"),
             call.od.fp.start_writing.execute(),
+            # External triggers arm during prepare
+            *(
+                []
+                if trigger == DetectorTrigger.INTERNAL
+                else [call.arm_when_ready.execute()]
+            ),
         ],
         reset_after=False,
     )
