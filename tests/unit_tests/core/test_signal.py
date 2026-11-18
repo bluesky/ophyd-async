@@ -463,7 +463,7 @@ async def test_partial_matcher_still_gives_timeout_error():
 
 async def test_set_and_wait_for_other_value_gives_helpful_error_with_no_first_value():
     """A match_signal that gives no value within `timeout` raises a TimeoutError
-    that says so."""
+    that says so. observe_value is patched to never yield, so no value arrives."""
     set_signal = epics_signal_rw(int, "pva://signal", name="s")
     match_signal = epics_signal_rw(int, "pva://match_signal", name="m")
     await set_signal.connect(mock=True)
