@@ -702,6 +702,9 @@ async def set_and_wait_for_other_value(
         finally:
             first_value.cancel()
         if not checker.got_first_value.is_set():
+            # wait_task finished with no first value, so it holds a TimeoutError.
+            # Awaiting it raises that error here, so we never start the set or
+            # await wait_task a second time below
             await wait_task
 
         # Now we can start the set
