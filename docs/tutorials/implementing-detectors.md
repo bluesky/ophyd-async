@@ -23,6 +23,12 @@ Now let's run a grid scan on the point detector, and pass a callback to the RunE
     :suppress:
 
     from ophyd_async.sim.__main__ import *
+    # bluesky 1.16 can't subscribe builtin print as a callback, so wrap it in
+    # a plain function. Remove when https://github.com/bluesky/bluesky/issues/2117
+    # is fixed
+    import builtins
+    def print(*args, **kwargs):
+        builtins.print(*args, **kwargs)
     # Make the moves faster so docs build don't take too long
     RE(bps.mv(stage.x.velocity, 1000, stage.y.velocity, 1000))
 
