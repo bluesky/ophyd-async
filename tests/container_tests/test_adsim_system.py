@@ -239,8 +239,7 @@ def test_software_triggering(
                 }
             },
             object_keys={"adsim": ["adsim"]},
-            # event-model 1.24 always adds this
-            object_classes={},
+            object_classes={"adsim": "ophyd_async.epics.adsimdetector.SimDetector"},
             run_start=ANY,
             hints={"adsim": {"fields": ["adsim"]}},
         ),
