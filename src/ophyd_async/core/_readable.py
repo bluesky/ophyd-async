@@ -25,6 +25,9 @@ class StandardReadableFormat(Enum):
       [](#bluesky.protocols.Configurable)
     - `stage()`, `unstage()` if it is [](#bluesky.protocols.Stageable)
     - `hints` if it [](#bluesky.protocols.HasHints)
+
+    For a bare `SignalR` this means a cached `read()`, `describe()`, `stage()` and
+    `unstage()`, but no `hints`: the non-hinted equivalent of `HINTED_SIGNAL`.
     """
 
     CONFIG_SIGNAL = "CONFIG_SIGNAL"
