@@ -47,6 +47,13 @@ Out[3]:
   'alarm_severity': 0}}
 ```
 
+The `alarm_severity` is 0 for no alarm, 1 for a minor alarm, 2 for a major
+alarm, and -1 for an invalid or disconnected reading. For EPICS signals with an
+active subscription (including staged signals), a disconnect retains the last
+value and sets the timestamp to when the disconnect was observed. No reading
+is emitted before the first value arrives. On reconnection, readings again use
+the value, timestamp and alarm severity from the PV.
+
 ## Run some plans
 
 Although it is useful to run the verbs using the `await` syntax for debugging, most of the time we will run them via plans executed by the [](#bluesky.run_engine.RunEngine). For instance we can read it using the [`bps.rd`](#bluesky.plan_stubs.rd) plan stub:

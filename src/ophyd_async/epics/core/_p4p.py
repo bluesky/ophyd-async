@@ -6,6 +6,7 @@ import logging
 import typing
 from collections.abc import Mapping, Sequence
 from math import isnan, nan
+from time import time
 from typing import Any, Generic
 
 import numpy as np
@@ -13,6 +14,7 @@ from bluesky.protocols import Location, Reading
 from event_model import DataKey, Limits, LimitsRange
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
+from p4p.client.raw import Disconnected, Finished
 from pydantic import BaseModel
 
 from ophyd_async.core import (
@@ -457,15 +459,29 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = None
 
         if callback:
+            reading: Reading[SignalDatatypeT] | None = None
 
             async def async_callback(v):
-                callback(self._make_reading(v))
+                nonlocal reading
+                # Finished also derives from Disconnected, but ends the monitor.
+                if isinstance(v, Disconnected) and not isinstance(v, Finished):
+                    if reading is None:
+                        return
+                    reading = {**reading, "alarm_severity": -1, "timestamp": time()}
+                elif isinstance(v, Exception):
+                    logger.info(
+                        "Subscription exception skipped for %s: %r", self.read_pv, v
+                    )
+                    return
+                else:
+                    reading = self._make_reading(v)
+                callback(reading)
 
             request = _pva_request_string(
                 self.converter.value_fields + self.converter.reading_fields
             )
             self.subscription = context().monitor(
-                self.read_pv, async_callback, request=request
+                self.read_pv, async_callback, request=request, notify_disconnect=True
             )
 
 

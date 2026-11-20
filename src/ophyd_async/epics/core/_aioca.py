@@ -6,6 +6,7 @@ import typing
 from collections.abc import Mapping, Sequence
 from functools import cache
 from math import isnan, nan
+from time import time
 from typing import Any, Generic, cast
 
 import numpy as np
@@ -394,12 +395,24 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = None
 
         if callback:
+            reading: Reading[SignalDatatypeT] | None = None
+
+            def monitor_callback(value: AugmentedValue):
+                nonlocal reading
+                if value.ok:
+                    reading = self._make_reading(value)
+                elif reading is not None:
+                    reading = {**reading, "alarm_severity": -1, "timestamp": time()}
+                if reading is not None:
+                    callback(reading)
+
             self.subscription = camonitor(
                 self.read_pv,
-                lambda v: callback(self._make_reading(v)),
+                monitor_callback,
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
                 all_updates=self._all_updates,
+                notify_disconnect=True,
             )
 
 
