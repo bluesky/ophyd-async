@@ -23,7 +23,7 @@ class OdinDataLogic(DetectorDataLogic):
         self,
         path_provider: PathProvider,
         odin: OdinIO,
-        detector_bit_depth: SignalR[int],
+        detector_bit_depth: SignalR[int] | None = None,
         pixel_mask: SignalRW[str] | None = None,
     ):
         self.path_provider = path_provider
@@ -35,7 +35,11 @@ class OdinDataLogic(DetectorDataLogic):
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Get the current bit depth
-        datatype = f"uint{await self.detector_bit_depth.get_value()}"
+        datatype = (
+            f"uint{await self.detector_bit_depth.get_value()}"
+            if self.detector_bit_depth is not None
+            else "uint32"
+        )
         # Setup the HDF writer
         filename = f"{path_info.filename}"
         await self.odin.acquisition_id.set("")
