@@ -212,7 +212,7 @@ class StandardMovable(
         if stop_state == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
-    async def stop(self, success=False):
+    async def stop(self, *, success: bool = False):
         """Request to stop moving and return immediately."""
         self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
         await self.movable_logic.stop()

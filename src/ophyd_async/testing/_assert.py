@@ -71,11 +71,18 @@ async def assert_reading(
     _assert_readings_approx_equal(expected_reading, actual_reading, full_match)
 
 
+def _approx_timestamp(timestamp: Any) -> Any:
+    # Pass matchers like `ANY` through, pytest.approx only accepts numbers
+    if isinstance(timestamp, float):
+        return pytest.approx(timestamp, rel=0.1)
+    return timestamp
+
+
 def _approx_reading(expected: Mapping[str, Any], actual: Reading) -> Reading:
     ret = dict(
         expected,
         value=approx_value(expected["value"]),
-        timestamp=pytest.approx(expected["timestamp"], rel=0.1)
+        timestamp=_approx_timestamp(expected["timestamp"])
         if "timestamp" in expected
         else actual["timestamp"],
     )
