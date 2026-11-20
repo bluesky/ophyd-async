@@ -55,3 +55,5 @@ class EigerDetectorIO(Device):
     arm: TriggerableCommand
     disarm: TriggerableCommand
     trigger_: TriggerableCommand
+    hv_reset_duration: SignalRW[int]
+    hv_reset: TriggerableCommand
