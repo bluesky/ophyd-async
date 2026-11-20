@@ -75,3 +75,12 @@ def test_validate_array_dtypes():
 
     table = TestTable(int_array=[])  # type: ignore
     assert table.int_array.dtype == np.dtype(np.int32)
+
+
+def test_table_float_column_keeps_nan():
+    class FloatTable(Table):
+        x: Array1D[np.float64]
+
+    table = FloatTable(x=[1.0, np.nan])  # type: ignore
+    assert table.x.dtype == np.dtype(np.float64)
+    np.testing.assert_array_equal(table.x, [1.0, np.nan])
