@@ -326,6 +326,10 @@ def derived_signal_r(
 ) -> SignalR[SignalDatatypeT]:
     """Create a read only derived signal.
 
+    The function may take no device arguments. That reading is timestamped
+    when it is read, with no alarm. A monitor receives the reading once;
+    later changes are visible to an uncached read.
+
     :param raw_to_derived:
         A function that takes the raw values as individual keyword arguments and
         returns the derived value.

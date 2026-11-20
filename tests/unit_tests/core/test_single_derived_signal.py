@@ -1,5 +1,6 @@
 import asyncio
 import re
+import time
 from unittest.mock import MagicMock, call, patch
 
 import numpy as np
@@ -12,6 +13,8 @@ from ophyd_async.core import (
     Signal,
     SignalBackend,
     SignalDatatype,
+    StandardReadable,
+    StandardReadableFormat,
     derived_signal_r,
     derived_signal_rw,
     derived_signal_w,
@@ -324,3 +327,61 @@ async def test_datakey_shape():
         match="Can't make shape for 0.0 with SignalDataType: <class 'numpy.float64'>",
     ):
         await intensity.describe()
+
+
+class _ConfiguredName(StandardReadable):
+    def __init__(self, name: str = "") -> None:
+        self._master_name = "master"
+        with self.add_children_as_readables(StandardReadableFormat.CONFIG_SIGNAL):
+            self.master_name = derived_signal_r(self._read_master_name)
+        super().__init__(name)
+
+    def _read_master_name(self) -> str:
+        return self._master_name
+
+
+async def test_derived_signal_r_without_source_signals_reads_python_state():
+    device = _ConfiguredName("pair")
+    before = time.time()
+    config = await device.read_configuration()
+    after = time.time()
+    reading = config["pair-master_name"]
+    assert reading["value"] == "master"
+    assert reading["alarm_severity"] == 0
+    assert before <= reading["timestamp"] <= after
+
+    device._master_name = "slave"
+    updated = await device.read_configuration()
+    assert updated["pair-master_name"]["value"] == "slave"
+    assert updated["pair-master_name"]["timestamp"] >= reading["timestamp"]
+
+
+def _same(ts: int) -> int:
+    return ts
+
+
+async def test_derived_signal_r_keeps_source_timestamp():
+    source = soft_signal_rw(int, initial_value=4)
+    derived = derived_signal_r(_same, ts=source)
+    source_reading = next(iter((await source.read()).values()))
+    derived_reading = next(iter((await derived.read()).values()))
+    assert derived_reading["value"] == 4
+    assert derived_reading["timestamp"] == source_reading["timestamp"]
+    assert derived_reading["alarm_severity"] == source_reading["alarm_severity"]
+
+
+async def test_derived_signal_r_without_sources_publishes_an_initial_reading():
+    state = {"name": "master"}
+
+    def current_name() -> str:
+        return state["name"]
+
+    signal = derived_signal_r(current_name)
+    updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
+    signal.subscribe_reading(updates.put_nowait)
+    first = await asyncio.wait_for(updates.get(), timeout=1)
+    assert next(iter(first.values()))["value"] == "master"
+    assert updates.empty()
+
+    state["name"] = "slave"
+    assert await signal.get_value(cached=False) == "slave"
