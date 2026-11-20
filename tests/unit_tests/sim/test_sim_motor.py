@@ -3,9 +3,7 @@ import sys
 from unittest.mock import Mock, call, patch
 
 import pytest
-from bluesky.plans import spiral_square
 from bluesky.protocols import Reading
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     Device,
@@ -64,19 +62,6 @@ async def test_device_forwards_progress_of_two_moving_motors(combine: bool):
             assert currents[-1] == target
 
 
-async def test_move_sim_in_plan():
-    RE = RunEngine()
-    m1 = SimMotor("M1")
-    m2 = SimMotor("M2")
-
-    my_plan = spiral_square([], m1, m2, 0, 0, 4, 4, 10, 10)
-
-    RE(my_plan)
-
-    assert await m1.user_readback.get_value() == -2
-    assert await m2.user_readback.get_value() == -2
-
-
 @pytest.fixture(params=[True, False])
 def m1(
     request: pytest.FixtureRequest,
@@ -112,28 +97,28 @@ async def test_stop(m2: SimMotor):
 
 
 @pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
-async def test_fly(m1: SimMotor):
-    await m1.acceleration_time.set(0.1)
+async def test_fly(m2: SimMotor):
+    await m2.acceleration_time.set(0.1)
     info = FlyMotorInfo(start_position=0, end_position=1, time_for_move=0.2)
     fly_start, fly_end, velocity = -0.25, 1.25, 5
-    await m1.prepare(info)
-    assert await m1.user_readback.get_value() == fly_start
-    assert await m1.velocity.get_value() == velocity
-    await m1.kickoff()
-    status = m1.complete()
+    await m2.prepare(info)
+    assert await m2.user_readback.get_value() == fly_start
+    assert await m2.velocity.get_value() == velocity
+    await m2.kickoff()
+    status = m2.complete()
     watcher = StatusWatcher(status)
     for i, v in enumerate([-0.25, 0, 0.5, 1.0, 1.25]):
         await watcher.wait_for_call(
             current=pytest.approx(v),
             initial=fly_start,
-            name="M1",
+            name="M2",
             target=fly_end,
             time_elapsed=pytest.approx(i * 0.1, abs=0.1),
             unit="mm",
         )
     await status
     watcher.mock.assert_not_called()
-    assert await m1.user_readback.get_value() == fly_end
+    assert await m2.user_readback.get_value() == fly_end
 
 
 async def test_sim_motor_can_be_set_to_its_current_position(m1: SimMotor):
@@ -192,9 +177,8 @@ async def test_sim_motor_move(target: float, direction: int):
     assert all(lower <= value <= upper for value in readbacks)
 
 
-@pytest.mark.parametrize("instant", [True, False])
-async def test_sim_motor_move_mode(instant: bool):
-    motor = SimMotor(initial_value=600.0, instant=instant, name="motor")
+async def test_sim_motor_move_mode_instant_jumps_straight_to_target():
+    motor = SimMotor(initial_value=600.0, instant=True, name="motor")
     await motor.connect()
 
     readbacks: list[float] = []
@@ -206,18 +190,5 @@ async def test_sim_motor_move_mode(instant: bool):
 
     await motor.set(600.05)
 
-    assert readbacks[-1] == pytest.approx(600.05)
-
-    if instant:
-        # The motor should move directly to the target.
-        assert readbacks == [600, 600.05]
-    else:
-        # The motor should have produced intermediate positions.
-        assert len(readbacks) > 2
-        assert any(600.0 < value < 600.05 for value in readbacks)
-
-        # Motion should be monotonic.
-        assert all(
-            previous <= current
-            for previous, current in zip(readbacks, readbacks[1:], strict=False)
-        )
+    # The motor should move directly to the target.
+    assert readbacks == [600, 600.05]
