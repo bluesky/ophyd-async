@@ -34,7 +34,8 @@ You only need to describe what is device-specific.
 ### Implementing MovableLogic
 
 Create a `@dataclass` subclass of [](#MovableLogic) that adds any extra signals your
-device needs, and override the hook methods that differ from the defaults:
+device needs, implement `ensure_stopped`, and override the hook methods that differ from
+the defaults:
 
 ```{literalinclude} ../../src/ophyd_async/epics/demo/_motor.py
 :pyobject: DemoMotorMoveLogic
@@ -44,9 +45,9 @@ The available hooks are:
 
 | Method | Default behaviour | Override to… |
 |--------|-------------------|--------------|
-| `stop()` | no-op | trigger a stop signal or cancel an in-flight command |
+| `ensure_stopped()` | *abstract* | stop the motion and wait until it has stopped |
 | `check_move(new)` | no-op | validate soft limits before the move begins |
-| `calculate_timeout(old, new)` | `DEFAULT_TIMEOUT` | derive a velocity-based or distance-based timeout |
+| `calculate_timeout(old, new)` | `None`, so no timeout | derive a velocity-based or distance-based timeout |
 | `get_units_precision()` | reads from `readback.describe()` | supply units and precision from dedicated signals |
 | `move(new_position, timeout)` | `set_and_wait_for_other_value` | write the setpoint and wait in a device-specific way |
 

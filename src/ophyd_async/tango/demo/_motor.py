@@ -23,8 +23,10 @@ class DemoMotorMoveLogic(MovableLogic[float]):
     stop_: TriggerableCommand
     state: SignalR[DevStateEnum]
 
-    async def stop(self):
+    async def ensure_stopped(self) -> None:
+        """Stop the motor and wait for its state to return to ON."""
         await self.stop_.trigger()
+        await wait_for_value(self.state, DevStateEnum.ON, timeout=DEFAULT_TIMEOUT)
 
     async def calculate_timeout(
         self, old_position: float, new_position: float
@@ -52,7 +54,7 @@ class DemoMotor(TangoDevice, StandardReadable, StandardMovable[float]):
     stop_: TriggerableCommand
 
     @cached_property
-    def movable_logic(self) -> MovableLogic:
+    def logic(self) -> MovableLogic:
         return DemoMotorMoveLogic(
             readback=self.readback,
             setpoint=self.setpoint,

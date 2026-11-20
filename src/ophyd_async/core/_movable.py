@@ -1,10 +1,9 @@
 import asyncio
 import time
+import warnings
 from abc import abstractmethod
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from enum import Enum
-from functools import cached_property
+from collections.abc import AsyncGenerator, Callable
+from dataclasses import dataclass, field, replace
 from typing import Generic
 
 from bluesky.protocols import (
@@ -16,16 +15,18 @@ from bluesky.protocols import (
     Subscribable,
 )
 
-from ._device import Device, DeviceMock, default_mock_class
+from ._device import DeviceMock, default_mock_class
 from ._mock_signal_utils import callback_on_mock_put, set_mock_value
 from ._signal import SignalR, SignalRW, observe_value, set_and_wait_for_other_value
 from ._signal_backend import SignalDatatypeT
+from ._standard_base import Logic, StoppedError, _StandardBase
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     CalculatableTimeout,
     Callback,
     WatcherUpdate,
+    abstract_cached_property,
 )
 
 
@@ -48,21 +49,28 @@ TimeoutCalculator = Callable[[], float | None]
 
 
 @dataclass
-class MovableLogic(Generic[SignalDatatypeT]):
+class MovableLogic(Logic, Generic[SignalDatatypeT]):
     """Minimum logic needed for controlling a `StandardMovable`.
 
-    Can be inherited to add specialised logic for stop, checking if a move is valid,
-    calculate a valid timeout for a move, and add units and precision. Sub classes can
-    also override the `get_move_status` and `move` methods if more control is needed
-    to provide a custom AsyncStatus and to handle the move logic.
+    Inherit it to say how to stop the motion, and optionally to check a move is
+    valid, calculate a timeout for a move, and add units and precision. Subclasses
+    can also override `move` if more control is needed over the move itself.
     """
 
     setpoint: SignalRW[SignalDatatypeT]
     readback: SignalR[SignalDatatypeT]
 
-    async def stop(self) -> None:
-        """Optional hook to add logic on how to stop the motion."""
-        pass
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        if "stop" in cls.__dict__:
+            warnings.warn(
+                f"{cls.__name__}.stop() is deprecated: rename it to "
+                "ensure_stopped(), which must wait until the motion has stopped",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if "ensure_stopped" not in cls.__dict__:
+                cls.ensure_stopped = cls.__dict__["stop"]
 
     async def check_move(self, new_position: SignalDatatypeT) -> None:
         """Optional hook to validate the move.
@@ -104,6 +112,39 @@ class MovableLogic(Generic[SignalDatatypeT]):
         )
 
 
+async def watch_readback(
+    logic: MovableLogic[SignalDatatypeT],
+    status: AsyncStatus,
+    target: SignalDatatypeT,
+    initial: SignalDatatypeT | None = None,
+) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
+    """Report the progress of a move by watching the readback of a logic.
+
+    Yields a `WatcherUpdate` for each readback value until the status is done,
+    then re-raises any error the status raised. Use it from a `FlyableLogic`
+    hook that moves the logic's device, returning it from the hook as its
+    progress.
+
+    :param logic: the logic whose readback is watched, and which supplies the
+        units and precision.
+    :param status: the status of the move, which is left running.
+    :param target: the value the move is going to.
+    :param initial: where the move started from. Defaults to the readback now.
+    """
+    if initial is None:
+        initial = await logic.readback.get_value()
+    units, precision = await logic.get_units_precision()
+    async for current in observe_value(logic.readback, done_status=status):
+        yield WatcherUpdate(
+            current=current,
+            initial=initial,
+            target=target,
+            name=logic.readback.name,
+            unit=units,
+            precision=precision,
+        )
+
+
 class InstantMovableMock(DeviceMock["StandardMovable"]):
     """Mock behaviour that instantly moves readback to setpoint."""
 
@@ -111,20 +152,14 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
         """Mock signals to do an instant move on setpoint write."""
 
         def _instant_move(value):
-            set_mock_value(device.movable_logic.readback, value)  # Arrive instantly
+            set_mock_value(device.logic.readback, value)  # Arrive instantly
 
-        callback_on_mock_put(device.movable_logic.setpoint, _instant_move)
-
-
-class StopState(Enum):
-    NONE = "NONE"
-    USER_SUCCESS = "USER_SUCCESS"
-    USER_FAILURE = "USER_FAILURE"
+        callback_on_mock_put(device.logic.setpoint, _instant_move)
 
 
 @default_mock_class(InstantMovableMock)
 class StandardMovable(
-    Device,
+    _StandardBase,
     Locatable[SignalDatatypeT],
     Checkable[SignalDatatypeT],
     Stoppable,
@@ -133,102 +168,105 @@ class StandardMovable(
 ):
     """Device that provides standard logic for moving.
 
-    This class must be inherited and have a `movable_logic` @cached_property.
-    If stop is called while moving, it will raise a RuntimeError.
+    This class must be inherited and have a `logic` @cached_property.
+    One `set()` runs at a time: a new one ends the one in progress, which raises
+    `StoppedError`. `stop()` ends the `set()` in progress, which raises
+    `StoppedError` unless it was `stop(success=True)`, then runs the logic's
+    `ensure_stopped` without waiting for the `set()` to finish. A
+    `StandardMovable` alone does nothing on `stage()` or `unstage()`; combined with
+    a `StandardFlyable`, `stage()` and `unstage()` run its `ensure_ready` and
+    `ensure_stopped`, which stop a `set()` in progress.
+
+    `stop()` ends only a `set()`: it does not end a `prepare()` or fly of a
+    `StandardFlyable`, only `unstage()` does. `ensure_stopped` still halts the
+    hardware, so a `stop()` during the run-up of a `prepare()` (for example from
+    `bps.stop`, or a `RunEngine` pause of a device that was also `set()`, with
+    `rewindable=False`) can leave `prepare()` finishing short of the start.
     """
 
-    # Whether set() should complete successfully or raise an error due to stop called or
-    # due to timeout.
-    _stop_state: Enum = StopState.NONE
-    _move_status: AsyncStatus | None = None
+    # Ends the latest set(): resolved by stop(), or by the next set(), with the
+    # error to raise as a value, so a future nobody awaits raises nothing
+    _set_stop: asyncio.Future[Exception | None] | None = None
 
-    @cached_property
+    @abstract_cached_property
     @abstractmethod
-    def movable_logic(self) -> MovableLogic:
+    def logic(self) -> MovableLogic[SignalDatatypeT]:
         """The logic object that describes how this device moves.
 
-        This is intentionally public so that mock helpers (e.g.
-        `InstantMovableMock`) and subclasses can access the `setpoint` and
-        `readback` signals directly. Subclasses must implement this as a
-        `@cached_property` that returns a `MovableLogic` instance.
+        Subclasses must implement this as a `@cached_property` returning a
+        `MovableLogic`.
+
+        A Device that is movable *and* flyable (e.g. `Motor`) implements this
+        once with a logic object that inherits both `MovableLogic` and
+        `FlyableLogic`.
         """
+        raise NotImplementedError
 
     async def check_value(self, value: SignalDatatypeT) -> None:
         """Check the move is valid before doing it."""
-        await self.movable_logic.check_move(value)
+        await self.logic.check_move(value)
 
-    @WatchableAsyncStatus.wrap
-    async def set(
+    def set(
         self,
         new_position: SignalDatatypeT,
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
-    ):
-        """Move to the given value."""
-        self._stop_state = StopState.NONE
-        old_position, (units, precision) = await asyncio.gather(
-            self.movable_logic.readback.get_value(),
-            self.movable_logic.get_units_precision(),
+    ) -> WatchableAsyncStatus[SignalDatatypeT]:
+        """Move to the given value, ending any `set()` in progress."""
+        self._end_set(StoppedError(f"Device {self.name}: superseded by a new set()"))
+        self._set_stop = asyncio.get_running_loop().create_future()
+        return WatchableAsyncStatus(
+            self._set(new_position, timeout),
+            name=self.name,
+            stop=self._set_stop,
         )
-        await self.movable_logic.check_move(new_position)
 
+    async def _set(
+        self, new_position: SignalDatatypeT, timeout: CalculatableTimeout
+    ) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
+        old_position = await self.logic.readback.get_value()
+        await self.logic.check_move(new_position)
         if timeout == CALCULATE_TIMEOUT:
-            move_timeout = await self.movable_logic.calculate_timeout(
+            move_timeout = await self.logic.calculate_timeout(
                 old_position, new_position
             )
         else:
             move_timeout = timeout
+        move = self.logic.move(
+            new_position=new_position, timeout=MoveTimeout(move_timeout)
+        )
+        async with AsyncStatus(move) as move_status:
+            async for update in watch_readback(
+                self.logic, move_status, target=new_position, initial=old_position
+            ):
+                yield replace(update, name=self.name)
 
-        try:
-            async with AsyncStatus(
-                self.movable_logic.move(
-                    new_position=new_position, timeout=MoveTimeout(move_timeout)
-                )
-            ) as self._move_status:
-                async for current_position in observe_value(
-                    self.movable_logic.readback,
-                    done_status=self._move_status,
-                ):
-                    yield WatcherUpdate(
-                        current=current_position,
-                        initial=old_position,
-                        target=new_position,
-                        name=self.name,
-                        unit=units,
-                        precision=precision,
-                    )
-        # Convert cancellation into the appropriate stop result.
-        # If stop(success=True) was called, complete without raising.
-        # If stop(success=False) was called, raise a RuntimeError below.
-        # If not stopped but times out, show the CancelledError from the timeout.
-        except asyncio.CancelledError:
-            if self._stop_state == StopState.NONE:
-                raise
-        finally:
-            self._move_status = None
+    async def stop(self, success: bool = False) -> None:
+        """End any `set()` in progress, then run `ensure_stopped`.
 
-        # Raise error if needed, reset stop state.
-        stop_state = self._stop_state
-        self._stop_state = StopState.NONE
-        if stop_state == StopState.USER_FAILURE:
-            raise RuntimeError(f"Device {self.name} was stopped.")
+        The `set()` raises `StoppedError`, or finishes if `success`, whether or not
+        `move()` returned early. A `set()` stopped before its move started leaves the
+        hardware alone, and a second `stop()` only runs `ensure_stopped` again. A
+        `prepare()` or fly of a `StandardFlyable` is not ended, only halted.
+        """
+        self._end_set(
+            None if success else StoppedError(f"Device {self.name} was stopped.")
+        )
+        await self.logic.ensure_stopped()
 
-    async def stop(self, success=False):
-        """Request to stop moving and return immediately."""
-        self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
-        await self.movable_logic.stop()
-        if self._move_status:
-            self._move_status.task.cancel()
+    def _end_set(self, error: StoppedError | None) -> None:
+        if self._set_stop is not None and not self._set_stop.done():
+            self._set_stop.set_result(error)
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)
         # Readback should be named the same as its parent in read()
-        self.movable_logic.readback.set_name(name)
+        self.logic.readback.set_name(name)
 
     async def locate(self) -> Location[SignalDatatypeT]:
         """Return the current setpoint and readback of the device."""
         setpoint, readback = await asyncio.gather(
-            self.movable_logic.setpoint.get_value(),
-            self.movable_logic.readback.get_value(),
+            self.logic.setpoint.get_value(),
+            self.logic.readback.get_value(),
         )
         return Location(setpoint=setpoint, readback=readback)
 
@@ -236,7 +274,7 @@ class StandardMovable(
         self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
     ) -> None:
         """Subscribe to reading."""
-        self.movable_logic.readback.subscribe_reading(function)
+        self.logic.readback.subscribe_reading(function)
 
     subscribe = subscribe_reading
 
@@ -244,4 +282,4 @@ class StandardMovable(
         self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
     ) -> None:
         """Unsubscribe."""
-        self.movable_logic.readback.clear_sub(function)
+        self.logic.readback.clear_sub(function)

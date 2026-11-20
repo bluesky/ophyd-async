@@ -6,6 +6,10 @@ Date: 2026-03-10
 
 Accepted
 
+Partly superseded by [ADR 0021](0021-single-logic-property.md), which replaced `movable_logic` with a single `logic` property.
+
+The `stop()` hook below has since been replaced by an abstract `ensure_stopped()` that waits until the motion has stopped (see [ADR 0022](0022-fly-generator-and-ensure-stopped.md)).
+
 ## Context
 
 Several device types share a common movement pattern: write a setpoint, then observe a

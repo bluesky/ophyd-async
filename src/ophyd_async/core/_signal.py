@@ -6,6 +6,7 @@ import inspect
 import time
 import warnings
 from collections.abc import AsyncGenerator, Callable
+from contextlib import aclosing
 from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
@@ -476,13 +477,18 @@ async def observe_value(
         do_something_with(value)
     ```
     """
-    async for _, value in observe_signals_value(
-        signal,
-        timeout=timeout,
-        done_status=done_status,
-        done_timeout=done_timeout,
-    ):
-        yield value
+    # Closing this generator must close the inner one, so its unsubscribe runs
+    # then, not when the abandoned inner generator is finalised
+    async with aclosing(
+        observe_signals_value(
+            signal,
+            timeout=timeout,
+            done_status=done_status,
+            done_timeout=done_timeout,
+        )
+    ) as updates:
+        async for _, value in updates:
+            yield value
 
 
 def _get_iteration_timeout(
@@ -599,11 +605,14 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             self._matcher_name = repr(match)
 
     async def _wait_for_value(self, signal: SignalR[SignalDatatypeT]):
-        async for value in observe_value(signal):
-            self._last_value = value
-            self.got_first_value.set()
-            if self._matcher(value):
-                return
+        # Closed on return, so the unsubscribe (which cancels any poll task) runs
+        # now, not when the abandoned generator is finalised after we have gone
+        async with aclosing(observe_value(signal)) as values:
+            async for value in values:
+                self._last_value = value
+                self.got_first_value.set()
+                if self._matcher(value):
+                    return
 
     async def wait_for_value(
         self, signal: SignalR[SignalDatatypeT], timeout: float | None

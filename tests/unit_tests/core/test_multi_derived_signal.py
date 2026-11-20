@@ -298,8 +298,8 @@ async def test_derived_signal_with_motor_devices(
     derived_sig = derived_signal_rw(_get, _put, m1=m1, m2=m2)
 
     await derived_sig.set(6)
-    assert await m1.movable_logic.readback.get_value() == 3
-    assert await m2.movable_logic.readback.get_value() == 3
+    assert await m1.logic.readback.get_value() == 3
+    assert await m2.logic.readback.get_value() == 3
     assert await derived_sig.get_value() == 6
 
 

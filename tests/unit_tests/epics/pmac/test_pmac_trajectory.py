@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock, call, patch
 
 import numpy as np
@@ -8,6 +9,7 @@ from ophyd_async.core import (
     callback_on_mock_execute,
     get_mock,
     get_mock_execute,
+    mock_puts_blocked,
     set_and_wait_for_value,
     set_callback_filter,
     set_mock_value,
@@ -39,6 +41,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
     value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.stage()
     await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -1.2
@@ -65,6 +68,7 @@ async def test_pmac_prepare_with_configured_ramp(
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
     value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=None)
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.stage()
     await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
@@ -91,6 +95,7 @@ async def test_pmac_prepare_with_configured_ramp_and_turnaround(
     spec = Fly(2.0 @ (2 * ~Line(sim_x_motor, 1, 5, 2)))
     value = PmacScanInfo(spec=spec, ramp_time=2, turnaround_time=3)
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.stage()
     await flyer.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -3.0
@@ -224,6 +229,7 @@ async def test_pmac_trajectory_kickoff(
     value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
+        await flyer.stage()
         await flyer.prepare(value)
         # This will consume another 2 frames
         set_mock_value(
@@ -332,21 +338,38 @@ async def test_pmac_trajectory_kickoff(
     )
 
 
-async def test_pmac_trajectory_kickoff_trajectory_raises_exception_if_no_prepare(
-    sim_motors: tuple[PmacIO, Motor, Motor],
+@pytest.mark.parametrize("run_up_ends_by", ["timeout", "unstage"])
+async def test_pmac_kickoff_that_fails_during_run_up_stops_the_trajectory(
+    sim_motors: tuple[PmacIO, Motor, Motor], run_up_ends_by: str
 ):
-    # Ordering is enforced by StandardFlyable, so drive through the device.
-    pmac_io, _, _ = sim_motors
+    pmac_io, sim_x_motor, sim_y_motor = sim_motors
     flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
-    with pytest.raises(RuntimeError, match="prepare.* before kickoff"):
-        await flyer.kickoff()
-
-
-async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmac_io, _, _ = sim_motors
-    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
-    with pytest.raises(RuntimeError, match="kickoff.* before complete"):
-        await flyer.complete()
+    spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
+    value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
+    positions = get_mock(pmac_io.trajectory.positions[7])
+    with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
+        await flyer.stage()
+        await flyer.prepare(value)
+        appends = len(positions.mock_calls)
+        # Keep the trajectory executing so it would go on appending
+        with mock_puts_blocked(pmac_io.trajectory.execute_profile):
+            if run_up_ends_by == "timeout":
+                with patch(
+                    "ophyd_async.epics.pmac._pmac_trajectory.wait_for_value",
+                    AsyncMock(side_effect=TimeoutError),
+                ):
+                    with pytest.raises(TimeoutError):
+                        await flyer.kickoff()
+            else:
+                status = flyer.kickoff()
+                await asyncio.sleep(0.01)
+                await flyer.unstage()
+                with pytest.raises(asyncio.CancelledError):
+                    await status
+            # A trajectory still running would refill the buffer as it empties
+            set_mock_value(pmac_io.trajectory.total_points, 2)
+            await asyncio.sleep(0.01)
+    assert len(positions.mock_calls) == appends
 
 
 async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -377,19 +400,25 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
 async def test_pmac_trajectory_unstage(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     logic = PmacTrajectoryFlyableLogic(pmac_io)
-    logic.stop = AsyncMock()
+    logic.ensure_stopped = AsyncMock()
     flyer = logic.with_device()
     await flyer.unstage()
-    logic.stop.assert_called_once()
+    # Unstage stops even though it was not prepared since stage
+    logic.ensure_stopped.assert_awaited_once()
 
 
 async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryFlyableLogic(pmac_io)
     execute_mock = get_mock_execute(pmac_io.trajectory.abort_profile)
+    # Aborting stops the trajectory
+    callback_on_mock_execute(
+        pmac_io.trajectory.abort_profile,
+        lambda: set_mock_value(pmac_io.trajectory.execute_state, PmacExecuteState.DONE),
+    )
 
     # Method not called as no running trajectory
-    await pmac_trajectory.stop()
+    await pmac_trajectory.ensure_stopped()
     execute_mock.assert_not_awaited()
 
     # Mocking that trajectory is executing
@@ -397,9 +426,10 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
         pmac_trajectory.pmac.trajectory.execute_state, PmacExecuteState.EXECUTING
     )
 
-    # Method called as there is now a running trajectory
-    await pmac_trajectory.stop()
+    # Method called as there is now a running trajectory, and waits for it to stop
+    await pmac_trajectory.ensure_stopped()
     execute_mock.assert_awaited_once_with()
+    assert await pmac_io.trajectory.execute_state.get_value() == PmacExecuteState.DONE
 
 
 async def test_trajectory_raises_if_profile_status_not_in_good_state(
