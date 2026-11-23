@@ -15,7 +15,7 @@ from collections.abc import (
 )
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from typing import (
     Any,
     Generic,
@@ -458,6 +458,22 @@ def error_if_none(value: T | None, msg: str) -> T:
 def non_zero(value):
     """Return True if the value cast to an int is not zero."""
     return int(value) != 0
+
+
+def abstract_cached_property(func: Callable[[Any], T]) -> cached_property[T]:
+    """A `cached_property` that `ABCMeta` treats as abstract.
+
+    Stack it on `@abstractmethod`. pyright reads the `@abstractmethod`, but
+    `functools.cached_property` does not forward its `__isabstractmethod__`, so at
+    runtime the class would stay instantiable. Setting the flag on the descriptor
+    makes the metaclass collect it, so a subclass that does not implement it
+    raises `TypeError` at instantiation.
+
+    :param func: The abstract property body.
+    """
+    prop = cached_property(func)
+    prop.__isabstractmethod__ = True  # type: ignore[attr-defined]
+    return prop
 
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
