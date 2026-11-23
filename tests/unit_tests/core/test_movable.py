@@ -423,3 +423,11 @@ async def test_stop_halts_the_hardware_but_does_not_end_a_prepare_or_fly(
     # stage() got it ready once, then the two stop()s
     assert flyer.logic.calls.count("ensure_stopped") == 3
     await flyer.unstage()
+
+
+def test_movable_without_logic_raises():
+    class NoLogicMovable(StandardMovable[float]):
+        pass
+
+    with pytest.raises(TypeError, match="logic"):
+        NoLogicMovable()  # pyright: ignore[reportAbstractUsage]

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from ophyd_async.core import AsyncStatus, soft_signal_rw
+from ophyd_async.core import AsyncStatus, callback_on_mock_put, soft_signal_rw
 
 # The waits these cleanups cancel are internal, with no public way to slow them down
 from ophyd_async.core import _signal as signal_module  # noqa: PLC2701
@@ -42,15 +42,19 @@ async def _blob_ensure_stopped(cancelling: asyncio.Event, _: pytest.MonkeyPatch)
 
 async def _set_and_wait(cancelling: asyncio.Event, monkeypatch: pytest.MonkeyPatch):
     async def wait_for_value(self, signal, timeout):
+        self.got_first_value.set()
         await _slow_to_cancel(cancelling)
+
+    def fail_put(value):
+        raise ValueError("put failed")
 
     monkeypatch.setattr(signal_module._ValueChecker, "wait_for_value", wait_for_value)
     sig = soft_signal_rw(int)
-    await sig.connect()
-    # No initial value ever arrives, so this times out and the error handler
-    # cancels the slow to cancel wait task
-    with pytest.raises(TimeoutError):
-        await signal_module.set_and_wait_for_value(sig, 1, timeout=0.1)
+    await sig.connect(mock=True)
+    callback_on_mock_put(sig, fail_put)
+    # The set fails, so the error handler cancels the slow to cancel wait task
+    with pytest.raises(ValueError):
+        await signal_module.set_and_wait_for_value(sig, 1)
 
 
 @pytest.mark.parametrize(

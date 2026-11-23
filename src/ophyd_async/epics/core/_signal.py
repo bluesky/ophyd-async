@@ -45,7 +45,8 @@ def _make_unavailable_class(
     protocol: str, error: Exception
 ) -> type[EpicsSignalBackend]:
     class TransportNotAvailable(EpicsSignalBackend):
-        __init__ = _make_unavailable_function(protocol, error)
+        # __new__ not __init__: the abstract check happens before __init__ runs
+        __new__ = _make_unavailable_function(protocol, error)
 
     return TransportNotAvailable
 
