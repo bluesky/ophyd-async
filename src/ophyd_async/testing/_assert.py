@@ -240,6 +240,7 @@ class StatusWatcher(Watcher[T]):
 
     def __call__(
         self,
+        *,
         current: T | None = None,
         initial: T | None = None,
         target: T | None = None,
