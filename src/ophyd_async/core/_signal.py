@@ -613,6 +613,11 @@ class _ValueChecker(Generic[SignalDatatypeT]):
             async with asyncio.timeout(timeout):
                 await self._wait_for_value(signal)
         except TimeoutError as exc:
+            if not self.got_first_value.is_set():
+                raise TimeoutError(
+                    f"{signal.name} didn't provide an initial value within "
+                    f"{timeout}s, is it connected?"
+                ) from exc
             raise TimeoutError(
                 f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
                 f"last value {self._last_value!r}"
@@ -686,18 +691,21 @@ async def set_and_wait_for_other_value(
 
     # Put this in a try/except to ensure wait_task is cancelled when we exit
     try:
-        # NOTE: this timeout races wait_task's own internal timeout (same
-        # duration, started moments earlier) - whichever elapses first wins.
-        # That race is harmless because each path reports its own distinct,
-        # helpful message.
+        # Don't start the set until match_signal has given a value. wait_task's
+        # timeout is the only deadline: if it finishes first, no value arrived
+        # and awaiting it raises its error.
+        first_value = asyncio.create_task(checker.got_first_value.wait())
         try:
-            async with asyncio.timeout(timeout):
-                await checker.got_first_value.wait()
-        except TimeoutError as exc:
-            raise TimeoutError(
-                f"{match_signal.name} didn't provide an initial value within "
-                f"{timeout}s, is it connected?"
-            ) from exc
+            await asyncio.wait(
+                [first_value, wait_task], return_when=asyncio.FIRST_COMPLETED
+            )
+        finally:
+            first_value.cancel()
+        if not checker.got_first_value.is_set():
+            # wait_task finished with no first value, so it holds a TimeoutError.
+            # Awaiting it raises that error here, so we never start the set or
+            # await wait_task a second time below
+            await wait_task
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
