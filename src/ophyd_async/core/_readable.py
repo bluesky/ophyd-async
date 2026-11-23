@@ -75,7 +75,7 @@ SignalFormat = Literal[
 ReadableEntry = tuple[Device, Literal[Format.CHILD]] | tuple[SignalR, SignalFormat]
 
 
-class _SealDefaultFormatsMeta(type(_StandardBase)):  # type: ignore[misc]
+class _SealDefaultFormatsMeta(type(_StandardBase)):
     """Record the formats a `StandardReadable` was constructed with.
 
     The snapshot is taken after the whole `__init__` chain has returned, so it
@@ -420,6 +420,7 @@ class StandardReadable(
         A Device that does not contribute is not yielded. It is safe to call
         [](#StandardReadable.set_readable_format) while iterating.
         """
+        # Iterate over a copy, as the dict would raise if changed while iterating
         return iter(list(self._readables.values()))
 
     def get_readable_format_changes(
@@ -448,7 +449,7 @@ class StandardReadable(
         devices: Sequence[Device],
         format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> None:
-        """Add devices to contribute to various bluesky verbs.
+        """Deprecated: use [](#StandardReadable.set_readable_format) instead.
 
         :param devices: The devices to be added
         :param format:
@@ -500,16 +501,16 @@ def walk_readable_formats(device: Device) -> ReadableFormats | None:
         A [](#ReadableFormats) suitable for storing, or `None` if there is no
         `StandardReadable` in the tree.
     """
-    paths_to_devices = _paths_to_devices(device)
+    devices = _paths_to_devices(device)
     readables = {
-        path: dev
-        for path, dev in paths_to_devices.items()
-        if isinstance(dev, StandardReadable)
+        path: dev for path, dev in devices.items() if isinstance(dev, StandardReadable)
     }
     if not readables:
         return None
     formats: ReadableFormats = {}
     for path, dev in readables.items():
+        # Child paths are stored relative to the owner, not the root, so walk
+        # from the owner
         device_to_path = {child: p for p, child in walk_devices(dev).items()}
         entries: dict[str, StandardReadableFormat | None] = {}
         for child, format in dev.get_readable_format_changes():
@@ -528,6 +529,25 @@ def walk_readable_formats(device: Device) -> ReadableFormats | None:
         if entries:
             formats[path] = entries
     return formats
+
+
+def check_readable_formats(device: Device, formats: ReadableFormats) -> None:
+    """Check that every path in `formats` names a Device in the tree.
+
+    :param device: The root Device the owner paths in `formats` are relative to.
+    :param formats: A [](#ReadableFormats), e.g. from a settings file.
+    :raises NameError: If an owner or child path does not name a Device.
+    """
+    devices = _paths_to_devices(device)
+    unknown_paths: list[str] = []
+    for owner_path, entries in formats.items():
+        if owner_path in devices:
+            children = walk_devices(devices[owner_path])
+            unknown_paths += [path for path in entries if path not in children]
+        else:
+            unknown_paths.append(owner_path)
+    if unknown_paths:
+        raise NameError(f"Unknown readable format paths {sorted(unknown_paths)}")
 
 
 def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
@@ -556,9 +576,7 @@ def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
     :raises TypeError: If an owner path does not name a `StandardReadable`.
     """
     devices = _paths_to_devices(device)
-    resolved: list[
-        tuple[StandardReadable, list[tuple[Device, StandardReadableFormat | None]]]
-    ] = []
+    changes: list[tuple[StandardReadable, Device, StandardReadableFormat | None]] = []
     # Resolve everything before changing anything, so a bad path cannot leave
     # the tree half applied
     for owner_path, entries in formats.items():
@@ -566,18 +584,10 @@ def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
         if not isinstance(owner, StandardReadable):
             raise TypeError(f"{owner_path!r} is not a StandardReadable, got {owner}")
         children = walk_devices(owner)
-        readables: list[tuple[Device, StandardReadableFormat | None]] = []
         for child_path, format in entries.items():
-            readables.append(
-                (
-                    children[child_path],
-                    None if format is None else StandardReadableFormat(format),
-                )
-            )
-        resolved.append((owner, readables))
+            changes.append((owner, children[child_path], format))
     for dev in devices.values():
         if isinstance(dev, StandardReadable):
             dev.reset_readable_formats()
-    for owner, readables in resolved:
-        for child, format in readables:
-            owner.set_readable_format(child, format)
+    for owner, child, format in changes:
+        owner.set_readable_format(child, format)

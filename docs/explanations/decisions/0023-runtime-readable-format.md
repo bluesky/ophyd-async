@@ -50,6 +50,10 @@ Formats are declared in annotations and by registration before and after
 `super().__init__()`. A metaclass `__call__` is the only point after all three, and
 `Device` already has a metaclass.
 
+The snapshot is per instance, so a parent's `__init__` that sets a format on a nested
+`StandardReadable` is a runtime change of that child, not a default: it is stored in settings
+and dropped by `reset_readable_formats`.
+
 ### Format changes apply between runs, not within one
 
 A change part way through a run would make `describe()` disagree with the descriptor
@@ -84,10 +88,13 @@ energy: 7.0
 
 Rejected:
 
-- **Store everything, apply by replacing**: an old file would unregister a signal added in
-  a later version, and undo a release's change of default.
-- **Store everything, apply by merging**: cannot return from technique B to A, as what B
-  changed and A does not mention stays.
+- **Store every format, apply by replacing the registry with the stored one**: a file
+  saved by an older version would unregister a signal added to the class since, and undo
+  any change a later release made to a default format.
+- **Store every format, apply by merging it into the registry**: loading a file only sets
+  the children it lists. If one technique's settings opt in a detector plugin, a file saved
+  for a technique without that plugin does not list it, so loading that file afterwards
+  leaves the plugin registered.
 
 Formats are applied after values, so a failed value write leaves them untouched.
 `Settings.partition` copies the formats to both halves, because plans such as

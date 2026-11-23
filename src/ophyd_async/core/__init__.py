@@ -105,6 +105,7 @@ from ._readable import (
     StandardReadable,
     StandardReadableFormat,
     apply_readable_formats,
+    check_readable_formats,
     walk_readable_formats,
 )
 from ._settings import Settings, SettingsProvider
@@ -288,6 +289,7 @@ __all__ = [
     "ReadableFormats",
     "walk_readable_formats",
     "apply_readable_formats",
+    "check_readable_formats",
     "READABLE_FORMATS_KEY",
     # Detector
     "DetectorTrigger",

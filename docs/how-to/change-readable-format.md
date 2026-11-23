@@ -31,7 +31,8 @@ for child, format in mono.get_readable_formats():
 
 ```{note}
 Change formats **between runs**, not inside one, or `describe()` and `read()` will disagree
-with the descriptor emitted at the start of the run.
+with the descriptor emitted at the start of the run. Change them while the Device is unstaged: a
+change while it is staged leaves the signal monitored after `unstage()`.
 ```
 
 ## Putting it back

@@ -383,14 +383,28 @@ async def test_null_formats_key_resets_to_class_defaults(RE, tmp_path):
     RE(my_plan())
 
 
-async def test_retrieve_settings_rejects_unknown_signal_names(
-    RE, technique_device, tmp_path
+@pytest.mark.parametrize(
+    "text, message",
+    [
+        ("energyy: 3.0\n", r"Unknown signal names \['energyy'\]"),
+        (
+            "energy: 3.0\n<READABLE_FORMATS>:\n  <ROOT_DEVICE>:\n    nope: CHILD\n",
+            r"Unknown readable format paths \['nope'\]",
+        ),
+        (
+            "energy: 3.0\n<READABLE_FORMATS>:\n  nope:\n    energy: CHILD\n",
+            r"Unknown readable format paths \['nope'\]",
+        ),
+    ],
+)
+async def test_retrieve_settings_rejects_unknown_names(
+    RE, technique_device, tmp_path, text, message
 ):
     provider = YamlSettingsProvider(tmp_path)
-    (tmp_path / "bad.yaml").write_text("energyy: 3.0\n")
+    (tmp_path / "bad.yaml").write_text(text)
 
     def my_plan():
-        with pytest.raises(NameError, match=r"Unknown signal names \['energyy'\]"):
+        with pytest.raises(NameError, match=message):
             yield from retrieve_settings(provider, "bad", technique_device)
 
     RE(my_plan())

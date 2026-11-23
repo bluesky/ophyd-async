@@ -19,6 +19,7 @@ from ophyd_async.core import (
     StandardReadableFormat,
     Table,
     apply_readable_formats,
+    check_readable_formats,
     walk_config_signals,
     walk_readable_formats,
     walk_rw_signals,
@@ -142,6 +143,9 @@ def retrieve_settings(
     unknown_names = set(data) - set(signals)
     if unknown_names:
         raise NameError(f"Unknown signal names {sorted(unknown_names)}")
+    if readable_formats:
+        # Resolve the paths now, so a stale one fails before any value is written
+        check_readable_formats(device, readable_formats)
     signal_values = {signals[name]: value for name, value in data.items()}
     return Settings(device, signal_values, readable_formats)
 
