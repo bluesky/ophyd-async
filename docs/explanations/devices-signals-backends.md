@@ -26,12 +26,13 @@ The `Device` class is the base of all ophyd-async objects that are published to 
 - a [](#Device.set_name) method to set its name and also set the names of its children using the parent name as a prefix, called at init and also when a new child is attached to an already named Device
 - a [](#Device.connect) method that connects it and its children
 
-All the above methods are concrete, but `connect()` calls out to a [](#DeviceConnector) to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for `Signal` we will see later).
+All the above methods are concrete, but `connect()` calls out to a [](#DeviceConnector) to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for `Signal` we will see later). A connect is cached: if the last connect succeeded, calling `connect()` again with the same mock choice (the `DeviceMock` class, `mocked` and `mock_types`) returns without connecting again, in mock mode as well as real. Concurrent calls are not merged: each one that is not cached connects. A connect that is not cached, because the mock choice changed, the last connect failed or has not finished, or `force_reconnect=True` was passed, connects everything below the Device again, so the tree under a re-connected Device is always rebuilt as a whole.
 
 A `DeviceConnector` provides the ability to:
 - [](#DeviceConnector.create_children_from_annotations) that is called during `__init__` to turn annotations into concrete child Devices
-- [](#DeviceConnector.connect_mock) that is called if `connect(mock=True)` is called, and should connect the child Devices in mock mode for testing without a control system
-- [](#DeviceConnector.connect_real) that is called if `connect(mock=False)` is called, and should connect the child Devices to the control system in parallel
+- [](#DeviceConnector.connect) that is called on every connect that is not cached, and should connect the Device to the control system or in mock mode as its `DeviceMock` says, then connect its children with the same timeout and `force_reconnect`: in parallel, or serially when the `DeviceMock` leaves nothing real below the Device. Each child is given a `DeviceMock` that says whether it is mocked, made from the `mock_types` of its parent's, which is how a mapping passed to `init_devices` reaches the whole Device tree
+
+A connect that is not cached, in either mode, may drop subscriptions made before it, so subscribe again afterwards. In mock mode it also resets mock values and the `Mock` call record, and drops staging, so `get_value(cached=True)` raises until the Signal is staged again. Calling `child.connect(mock=True)` directly on a child with a different mock choice from its last connect rebuilds the child's mock as a root, detached from the parent's mock tree and without the parent's `mock_types`, so re-connect from the parent instead.
 
 The base `DeviceConnector` provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in [declarative Devices](./declarative-vs-procedural.md).
 

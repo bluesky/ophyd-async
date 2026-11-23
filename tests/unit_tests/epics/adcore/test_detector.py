@@ -1,10 +1,13 @@
 import pytest
 
 from ophyd_async.core import (
+    Device,
     StaticPathProvider,
     TriggerInfo,
+    get_mock,
     init_devices,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.epics import adcore
 
@@ -53,6 +56,35 @@ def test_writer_image_hints_enabled_by_default(
         name="det",
     )
     assert det.hints == {"fields": ["det"]}
+
+
+class DetectorRig(Device):
+    def __init__(self, det: adcore.AreaDetector) -> None:
+        self.det = det
+        self.flag = soft_signal_rw(int)
+        super().__init__("rig")
+
+
+async def test_init_devices_mock_area_detector_mocks_plugins_too(
+    static_path_provider: StaticPathProvider,
+):
+    async with init_devices(mock={adcore.AreaDetector: True}):
+        rig = DetectorRig(
+            adcore.AreaDetector(
+                adcore.ADBaseIO("PREFIX:DRV:"),
+                "PREFIX:",
+                adcore.ADWriterFactory.hdf(static_path_provider),
+                plugins={"stats": adcore.NDStatsIO("PREFIX:STAT:")},
+            )
+        )
+
+    # The plugins are mocked with the detector, the rest of the rig is real
+    set_mock_value(rig.det.get_plugin("stats", adcore.NDStatsIO).total, 3.0)
+    with pytest.raises(RuntimeError, match="not connected in mock mode"):
+        set_mock_value(rig.flag, 1)
+    # Calls on the mocks are nested under the real parent's mock
+    await rig.det.driver.acquire_time.set(0.5)
+    get_mock(rig).det.driver.acquire_time.put.assert_called_once_with(0.5)
 
 
 # ---------------------------------------------------------------------------

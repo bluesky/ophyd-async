@@ -12,8 +12,8 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    DeviceMock,
     DeviceVector,
-    LazyMock,
     NotConnectedError,
     Signal,
 )
@@ -132,15 +132,24 @@ class TangoDeviceConnector(DeviceConnector):
 
             self.filler.check_created()
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
-        if isinstance(device, DeviceVector):
-            # Make 2 entries for this DeviceVector
-            self.filler.create_device_dict_entries_to_mock([1, 2])
+    async def connect(
+        self,
+        device: Device,
+        mock: DeviceMock,
+        timeout: float,
+        force_reconnect: bool,
+    ):
+        if mock.mocked:
+            if isinstance(device, DeviceVector):
+                # Make 2 entries for this DeviceVector
+                self.filler.create_device_dict_entries_to_mock([1, 2])
+        else:
+            await self._fill_from_proxy(device)
         # Set the name of the device to name all children
         device.set_name(device.name)
-        return await super().connect_mock(device, mock)
+        await super().connect(device, mock, timeout, force_reconnect)
 
-    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
+    async def _fill_from_proxy(self, device: Device) -> None:
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
         try:
@@ -192,7 +201,3 @@ class TangoDeviceConnector(DeviceConnector):
 
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")
-
-        # Set the name of the device to name all children
-        device.set_name(device.name)
-        return await super().connect_real(device, timeout, force_reconnect)
