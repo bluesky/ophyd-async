@@ -434,6 +434,34 @@ Bases: {py:obj}`ophyd_async.tango.core._tango_transport.TangoProxy`
 
 ````
 
+````{py:method} get() -> object
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get
+```
+
+````
+
+````{py:method} get_reading() -> ~bluesky.protocols.Reading
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get_reading
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get_reading
+```
+
+````
+
+````{py:method} has_subscription() -> bool
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.has_subscription
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.has_subscription
+```
+
+````
+
 ````{py:method} get_w_value() -> object
 :canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get_w_value
 :async:
