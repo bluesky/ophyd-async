@@ -772,6 +772,8 @@ def make_converter(info: AttributeConfig | CommandConfig, datatype) -> TangoConv
                 ]:
                     return TangoDevStateArrayConverter()
             case _:
+                # No special converter, fall through to the default below. The
+                # arm only satisfies pyright's reportMatchNotExhaustive.
                 pass
     else:  # command info
         match info.in_type:
@@ -790,6 +792,7 @@ def make_converter(info: AttributeConfig | CommandConfig, datatype) -> TangoConv
             case CmdArgType.DevVarDoubleStringArray:
                 return TangoDoubleStringTableConverter()
             case _:
+                # As above: only here to satisfy reportMatchNotExhaustive
                 pass
     # default case return trivial converter
     return TangoConverter()
