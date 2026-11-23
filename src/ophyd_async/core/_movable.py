@@ -1,5 +1,6 @@
 import asyncio
 import time
+from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
@@ -142,6 +143,7 @@ class StandardMovable(
     _move_status: AsyncStatus | None = None
 
     @abstract_cached_property
+    @abstractmethod
     def movable_logic(self) -> MovableLogic:
         """The logic object that describes how this device moves.
 
@@ -150,7 +152,6 @@ class StandardMovable(
         `readback` signals directly. Subclasses must implement this as a
         `@cached_property` that returns a `MovableLogic` instance.
         """
-        raise NotImplementedError
 
     async def check_value(self, value: SignalDatatypeT) -> None:
         """Check the move is valid before doing it."""

@@ -463,18 +463,13 @@ def non_zero(value):
 def abstract_cached_property(func: Callable[[Any], T]) -> cached_property[T]:
     """A `cached_property` that `ABCMeta` treats as abstract.
 
-    `functools.cached_property` does not forward `__isabstractmethod__` from the
-    function it wraps, so `@cached_property` stacked on `@abstractmethod`
-    registers nothing: the class stays instantiable and a missing implementation
-    surfaces as an `AttributeError` on `None` from deep inside `__init__`. Setting
-    the flag on the descriptor itself makes `Device`'s metaclass collect it, so
-    the omission is a `TypeError` at instantiation instead.
+    Stack it on `@abstractmethod`. pyright reads the `@abstractmethod`, but
+    `functools.cached_property` does not forward its `__isabstractmethod__`, so at
+    runtime the class would stay instantiable. Setting the flag on the descriptor
+    makes the metaclass collect it, so a subclass that does not implement it
+    raises `TypeError` at instantiation.
 
-    The declared return type is deliberately `cached_property[T]` rather than a
-    subclass, so that a subclass overriding it with a plain `@cached_property`
-    still gets checked for covariance by the type checker.
-
-    :param func: The property body, which should raise `NotImplementedError`.
+    :param func: The abstract property body.
     """
     prop = cached_property(func)
     prop.__isabstractmethod__ = True  # type: ignore[attr-defined]

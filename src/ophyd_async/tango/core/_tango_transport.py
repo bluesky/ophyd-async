@@ -235,7 +235,8 @@ class TangoProxy(ABC):
         self._proxy = device_proxy
         self._name = name
 
-    async def connect(self) -> None:  # noqa: B027
+    @abstractmethod
+    async def connect(self) -> None:
         """Perform actions after proxy is connected.
 
         e.g. check if signal can be subscribed.
