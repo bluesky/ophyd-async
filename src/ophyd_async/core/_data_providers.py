@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -10,7 +10,7 @@ from ._signal import SignalR, SignalW
 from ._utils import ConfinedModel
 
 
-class ReadableDataProvider:
+class ReadableDataProvider(ABC):
     @abstractmethod
     async def make_datakeys(self) -> dict[str, DataKey]:
         """Return a DataKey for each Readable that produces a Reading.
@@ -34,7 +34,7 @@ class SignalDataProvider(ReadableDataProvider):
         return await self.signal.read(cached=False)
 
 
-class StreamableDataProvider:
+class StreamableDataProvider(ABC):
     collections_written_signal: SignalR[int]
 
     @abstractmethod
