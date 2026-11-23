@@ -11,10 +11,8 @@ from ophyd_async.core import (
     Settings,
     StandardReadable,
     YamlSettingsProvider,
-    apply_readable_formats,
     get_mock,
     soft_signal_rw,
-    walk_readable_formats,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.plan_stubs import (
@@ -461,18 +459,61 @@ async def test_store_settings_walks_nested_devices(RE, tmp_path):
     RE(my_plan())
 
 
-def test_apply_readable_formats_rejects_unknown_path(technique_device):
-    with pytest.raises(KeyError, match="nope"):
-        apply_readable_formats(technique_device, {"nope": {}})
+@pytest.mark.parametrize(
+    "formats, message",
+    [
+        ({"nope": {}}, r"Unknown readable format paths \['nope'\]"),
+        (
+            {"<ROOT_DEVICE>": {"nope": Format.CHILD}},
+            r"Unknown readable format paths \['nope'\]",
+        ),
+        # The owner is a SignalRW, not a StandardReadable
+        (
+            {"energy": {}},
+            r"owners that are not a StandardReadable \['energy'\]",
+        ),
+        # Every bad path is reported, not just the first
+        (
+            {"nope": {}, "energy": {}, "<ROOT_DEVICE>": {"gone": None}},
+            r"Unknown readable format paths \['gone', 'nope'\]; .*\['energy'\]",
+        ),
+    ],
+)
+async def test_apply_settings_rejects_bad_readable_format_paths(
+    RE, technique_device, formats, message
+):
+    technique_device.set_readable_format(technique_device.energy, Format.HINTED_SIGNAL)
+    before = list(technique_device.get_readable_formats())
+
+    def my_plan():
+        with pytest.raises(NameError, match=message):
+            yield from apply_settings(
+                Settings(technique_device, readable_formats=formats)
+            )
+
+    RE(my_plan())
+    # Nothing was reset, so a bad path cannot leave the tree half applied
+    assert list(technique_device.get_readable_formats()) == before
 
 
-def test_apply_readable_formats_rejects_non_readable(technique_device):
-    with pytest.raises(TypeError, match="is not a StandardReadable"):
-        apply_readable_formats(technique_device, {"energy": {}})
+async def test_retrieve_settings_rejects_bad_formats_before_any_write(
+    RE, technique_device, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+    (tmp_path / "bad.yaml").write_text(
+        "energy: 3.0\n<READABLE_FORMATS>:\n  energy:\n    nope: CHILD\n"
+    )
+
+    def my_plan():
+        with pytest.raises(NameError, match="not a StandardReadable"):
+            yield from retrieve_settings(provider, "bad", technique_device)
+
+    RE(my_plan())
+    assert await technique_device.energy.get_value() == 7.0
 
 
 def test_settings_or_merges_formats_per_child(technique_device):
-    # Values merge per signal and apply_readable_formats merges per child, so
+    # Values merge per signal and applying readable formats merges per child, so
     # `other` must only replace the children it mentions: overriding a whole
     # owner would drop children it has nothing to say about
     base = Settings(
@@ -582,10 +623,6 @@ async def test_store_settings_warns_and_skips_a_readable_outside_the_tree(RE, tm
     device.set_readable_format(outsider, Format.CONFIG_SIGNAL)
 
     match = "dev: outsider is not within dev"
-    with pytest.warns(UserWarning, match=match):
-        assert walk_readable_formats(device) == {
-            "<ROOT_DEVICE>": {"sig": Format.CONFIG_SIGNAL}
-        }
 
     def my_plan():
         with pytest.warns(UserWarning, match=match):

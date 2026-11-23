@@ -16,17 +16,117 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
+    StandardReadable,
     StandardReadableFormat,
     Table,
-    apply_readable_formats,
-    check_readable_formats,
     walk_config_signals,
-    walk_readable_formats,
+    walk_devices,
     walk_rw_signals,
 )
 
 from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable
+
+#: The key standing in for the root Device itself in a ReadableFormats, where
+#: every other key is a dotted attribute path.
+_ROOT_DEVICE_KEY = "<ROOT_DEVICE>"
+
+
+def _paths_to_devices(device: Device) -> dict[str, Device]:
+    return {_ROOT_DEVICE_KEY: device, **walk_devices(device)}
+
+
+def _walk_readable_formats(device: Device) -> ReadableFormats | None:
+    """Retrieve how the readable formats in a Device tree differ from construction.
+
+    A child dropped since construction has a format of `None`. A child outside
+    its owner has no path to store, so a change to it is warned about and
+    skipped. Returns `None` if there is no `StandardReadable` in the tree.
+    """
+    devices = _paths_to_devices(device)
+    readables = {
+        path: dev for path, dev in devices.items() if isinstance(dev, StandardReadable)
+    }
+    if not readables:
+        return None
+    formats: ReadableFormats = {}
+    for path, dev in readables.items():
+        # Child paths are stored relative to the owner, not the root, so walk
+        # from the owner
+        device_to_path = {child: p for p, child in walk_devices(dev).items()}
+        entries: dict[str, StandardReadableFormat | None] = {}
+        for child, format in dev.get_readable_format_changes():
+            child_path = device_to_path.get(child)
+            if child_path is None:
+                # Not below its owner, so it has no stable path to store it
+                # against. See https://github.com/bluesky/ophyd-async/issues/1402
+                warnings.warn(
+                    f"{dev.name or dev}: {child.name or child} is not within "
+                    f"{dev.name or dev}, so the change to its readable format "
+                    "will not be stored",
+                    stacklevel=2,
+                )
+            else:
+                entries[child_path] = format
+        if entries:
+            formats[path] = entries
+    return formats
+
+
+def _resolve_readable_formats(
+    device: Device, formats: ReadableFormats
+) -> list[tuple[StandardReadable, Device, StandardReadableFormat | None]]:
+    """Turn every owner and child path in `formats` into the Devices they name.
+
+    :raises NameError:
+        If any owner or child path does not name a Device in the tree, or any
+        owner is not a `StandardReadable`. All are listed in one error.
+    """
+    devices = _paths_to_devices(device)
+    resolved: list[tuple[StandardReadable, Device, StandardReadableFormat | None]] = []
+    unknown_paths: list[str] = []
+    not_readable: list[str] = []
+    for owner_path, entries in formats.items():
+        owner = devices.get(owner_path)
+        if owner is None:
+            unknown_paths.append(owner_path)
+        elif not isinstance(owner, StandardReadable):
+            not_readable.append(owner_path)
+        else:
+            children = walk_devices(owner)
+            for child_path, format in entries.items():
+                if child_path in children:
+                    resolved.append((owner, children[child_path], format))
+                else:
+                    unknown_paths.append(child_path)
+    problems = []
+    if unknown_paths:
+        problems.append(f"Unknown readable format paths {sorted(unknown_paths)}")
+    if not_readable:
+        problems.append(
+            f"Readable format owners that are not a StandardReadable "
+            f"{sorted(not_readable)}"
+        )
+    if problems:
+        raise NameError("; ".join(problems))
+    return resolved
+
+
+def _apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
+    """Reset the readable formats in a Device tree, then apply the given changes.
+
+    Every `StandardReadable` in the tree is first put back to what it
+    registered during construction, then the changes in `formats` are applied
+    on top. So an empty `formats` restores the class defaults.
+    """
+    # Resolve everything before changing anything, so a bad path cannot leave
+    # the tree half applied
+    changes = _resolve_readable_formats(device, formats)
+    for dev in _paths_to_devices(device).values():
+        if isinstance(dev, StandardReadable):
+            dev.reset_readable_formats()
+    for owner, child, format in changes:
+        owner.set_readable_format(child, format)
 
 
 @plan
@@ -78,7 +178,7 @@ def store_settings(
     else:
         signals = walk_rw_signals(device)
     data: dict[str, Any] = yield from _get_values_of_signals(signals)
-    formats = walk_readable_formats(device)
+    formats = _walk_readable_formats(device)
     if formats is not None:
         data[READABLE_FORMATS_KEY] = {
             owner: {
@@ -145,7 +245,7 @@ def retrieve_settings(
         raise NameError(f"Unknown signal names {sorted(unknown_names)}")
     if readable_formats:
         # Resolve the paths now, so a stale one fails before any value is written
-        check_readable_formats(device, readable_formats)
+        _resolve_readable_formats(device, readable_formats)
     signal_values = {signals[name]: value for name, value in data.items()}
     return Settings(device, signal_values, readable_formats)
 
@@ -154,9 +254,25 @@ def retrieve_settings(
 def apply_settings(settings: Settings) -> MsgGenerator[None]:
     """Set every SignalRW to the given value in Settings. If value is None ignore it.
 
-    Then apply any readable formats the Settings carries with
-    [](#apply_readable_formats). Formats go last, so a failed value write leaves
-    them untouched.
+    Then apply any readable formats the Settings carries. Every `StandardReadable`
+    in the tree is first put back to what it registered during construction, so
+    an empty `readable_formats` restores the class defaults, and a child added
+    since the formats were stored keeps the format its class gives it. To stop
+    a child contributing, give it a format of `None`, which in a stored file is
+    a null:
+
+    ```yaml
+    <READABLE_FORMATS>:
+      <ROOT_DEVICE>:
+        energy: HINTED_SIGNAL
+        temperature: null
+    ```
+
+    Formats go last, so a failed value write leaves them untouched.
+
+    :raises NameError:
+        If a readable format path does not name a Device in the tree, or its
+        owner is not a `StandardReadable`.
     """
     signal_values = {
         signal: value for signal, value in settings.items() if value is not None
@@ -166,7 +282,7 @@ def apply_settings(settings: Settings) -> MsgGenerator[None]:
             yield from bps.abs_set(signal, value, group="apply_settings")
         yield from bps.wait("apply_settings")
     if settings.readable_formats is not None:
-        apply_readable_formats(settings.device, settings.readable_formats)
+        _apply_readable_formats(settings.device, settings.readable_formats)
 
 
 @plan

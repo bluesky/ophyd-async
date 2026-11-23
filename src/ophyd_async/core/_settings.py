@@ -49,7 +49,7 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
         )
         """Changes to the readable formats of the Device tree.
 
-        Applied by [](#apply_settings) with [](#apply_readable_formats), so a
+        Applied by [](#apply_settings), so a
         dict (even an empty one) first resets the tree to its class defaults,
         while `None` leaves formats alone.
         """

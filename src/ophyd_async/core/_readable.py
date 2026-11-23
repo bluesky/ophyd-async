@@ -18,7 +18,7 @@ from event_model import DataKey
 
 from ._device import Device, DeviceMap, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
-from ._signal import SignalR, walk_devices
+from ._signal import SignalR
 from ._standard_base import _StandardBase
 from ._utils import merge_gathered_dicts
 
@@ -407,7 +407,7 @@ class StandardReadable(
 
         Undoes every later [](#StandardReadable.set_readable_format), including
         formats loaded by [](#apply_settings). Resets this Device only; use
-        `apply_readable_formats(device, {})` for a whole tree.
+        `apply_settings` with `Settings(device, readable_formats={})` for a whole tree.
         """
         # Mutated rather than replaced, so the cached_property stays the same
         # object and nothing holding a reference sees a stale registry
@@ -471,123 +471,11 @@ class StandardReadable(
 #: cannot collide with a dotted attribute path.
 READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
 
-#: The key standing in for the root Device itself in a [](#ReadableFormats),
-#: where every other key is a dotted attribute path.
-ROOT_DEVICE_KEY = "<ROOT_DEVICE>"
-
 #: The changes to the readable formats of a Device tree since construction, in
 #: a form that can be stored and retrieved:
 #: `{path of the StandardReadable: {path of the child: format}}`, where a format
 #: of `None` means "stop this child contributing".
 #: The owner path is a dotted attribute path from the root Device, as produced
-#: by [](#walk_devices), with `ROOT_DEVICE_KEY` meaning the root Device
+#: by [](#walk_devices), with `<ROOT_DEVICE>` meaning the root Device
 #: itself. The child path is a dotted attribute path from the owner.
 ReadableFormats = dict[str, dict[str, StandardReadableFormat | None]]
-
-
-def _paths_to_devices(device: Device) -> dict[str, Device]:
-    return {ROOT_DEVICE_KEY: device, **walk_devices(device)}
-
-
-def walk_readable_formats(device: Device) -> ReadableFormats | None:
-    """Retrieve how the readable formats in a Device tree differ from construction.
-
-    A child dropped since construction has a format of `None`. A child outside
-    its owner has no path to store, so a change to it is warned about and
-    skipped.
-
-    :param device: The root Device to walk.
-    :return:
-        A [](#ReadableFormats) suitable for storing, or `None` if there is no
-        `StandardReadable` in the tree.
-    """
-    devices = _paths_to_devices(device)
-    readables = {
-        path: dev for path, dev in devices.items() if isinstance(dev, StandardReadable)
-    }
-    if not readables:
-        return None
-    formats: ReadableFormats = {}
-    for path, dev in readables.items():
-        # Child paths are stored relative to the owner, not the root, so walk
-        # from the owner
-        device_to_path = {child: p for p, child in walk_devices(dev).items()}
-        entries: dict[str, StandardReadableFormat | None] = {}
-        for child, format in dev.get_readable_format_changes():
-            child_path = device_to_path.get(child)
-            if child_path is None:
-                # Not below its owner, so it has no stable path to store it
-                # against. See https://github.com/bluesky/ophyd-async/issues/1402
-                warnings.warn(
-                    f"{dev.name or dev}: {child.name or child} is not within "
-                    f"{dev.name or dev}, so the change to its readable format "
-                    "will not be stored",
-                    stacklevel=2,
-                )
-            else:
-                entries[child_path] = format
-        if entries:
-            formats[path] = entries
-    return formats
-
-
-def check_readable_formats(device: Device, formats: ReadableFormats) -> None:
-    """Check that every path in `formats` names a Device in the tree.
-
-    :param device: The root Device the owner paths in `formats` are relative to.
-    :param formats: A [](#ReadableFormats), e.g. from a settings file.
-    :raises NameError: If an owner or child path does not name a Device.
-    """
-    devices = _paths_to_devices(device)
-    unknown_paths: list[str] = []
-    for owner_path, entries in formats.items():
-        if owner_path in devices:
-            children = walk_devices(devices[owner_path])
-            unknown_paths += [path for path in entries if path not in children]
-        else:
-            unknown_paths.append(owner_path)
-    if unknown_paths:
-        raise NameError(f"Unknown readable format paths {sorted(unknown_paths)}")
-
-
-def apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
-    """Reset the readable formats in a Device tree, then apply the given changes.
-
-    Every `StandardReadable` in the tree is first put back to what it
-    registered during construction, as
-    [](#StandardReadable.reset_readable_formats) does, then the changes in
-    `formats` are applied on top. So an empty `formats` restores the class
-    defaults, and a child added to a Device since `formats` was stored keeps
-    the format its class gives it.
-
-    To stop a child contributing, give it a format of `None`, which in a stored
-    file is a null:
-
-    ```yaml
-    <READABLE_FORMATS>:
-      <ROOT_DEVICE>:
-        energy: HINTED_SIGNAL
-        temperature: null
-    ```
-
-    :param device: The root Device the owner paths in `formats` are relative to.
-    :param formats: A [](#ReadableFormats), e.g. from [](#walk_readable_formats).
-    :raises KeyError: If a path does not name a Device in the tree.
-    :raises TypeError: If an owner path does not name a `StandardReadable`.
-    """
-    devices = _paths_to_devices(device)
-    changes: list[tuple[StandardReadable, Device, StandardReadableFormat | None]] = []
-    # Resolve everything before changing anything, so a bad path cannot leave
-    # the tree half applied
-    for owner_path, entries in formats.items():
-        owner = devices[owner_path]
-        if not isinstance(owner, StandardReadable):
-            raise TypeError(f"{owner_path!r} is not a StandardReadable, got {owner}")
-        children = walk_devices(owner)
-        for child_path, format in entries.items():
-            changes.append((owner, children[child_path], format))
-    for dev in devices.values():
-        if isinstance(dev, StandardReadable):
-            dev.reset_readable_formats()
-    for owner, child, format in changes:
-        owner.set_readable_format(child, format)
