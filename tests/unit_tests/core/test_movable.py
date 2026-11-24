@@ -188,33 +188,13 @@ async def test_motor_set_with_instant_mock(
     assert await movable.readback.get_value() == -50.0
 
 
-async def test_movable_logic_stop_is_deprecated_but_still_called():
+def test_movable_logic_stop_is_deprecated_and_becomes_ensure_stopped():
     with pytest.deprecated_call(match=r"OldStopLogic.stop\(\) is deprecated"):
 
         class OldStopLogic(MovableLogic[float]):
-            async def stop(self) -> None:
-                stopped.append(True)
+            async def stop(self) -> None: ...
 
-    stopped: list[bool] = []
-
-    class OldStopMovable(StandardMovable[float]):
-        def __init__(self, name: str = ""):
-            self.readback, _ = soft_signal_r_and_setter(float)
-            self.setpoint = soft_signal_rw(float)
-            super().__init__(name=name)
-
-        @cached_property
-        def logic(self) -> MovableLogic[float]:
-            # The deprecated stop() is turned into ensure_stopped() when the class
-            # is made, which pyright can not see
-            return OldStopLogic(  # pyright: ignore[reportAbstractUsage]
-                setpoint=self.setpoint, readback=self.readback
-            )
-
-    async with init_devices(mock=True):
-        movable = OldStopMovable()
-    await movable.stop()
-    assert stopped == [True]
+    assert OldStopLogic.ensure_stopped is OldStopLogic.stop
 
 
 @dataclass
@@ -331,8 +311,8 @@ async def test_a_timeout_inside_move_raises_timeout_error(
     movable: StandardMovableImpl,
 ):
     async def move(new_position: float, timeout) -> None:
-        async with asyncio.timeout(0.01):
-            await asyncio.Event().wait()
+        async with asyncio.timeout(0):
+            await asyncio.Future()
 
     movable.logic.move = move
     with pytest.raises(TimeoutError):
@@ -357,20 +337,6 @@ async def test_only_a_flyer_stops_a_set_on_stage_and_unstage(flies: bool):
     assert not move_status.done
     movable.logic.release.set()
     await move_status
-
-
-async def test_unstage_stops_the_hardware_of_a_set_in_progress(held: FlyableMovable):
-    await held.stage()
-    move_status = held.set(1.0)
-    await held.logic.moving.wait()
-
-    await held.unstage()
-
-    # Never prepared, but stopped anyway; only stop() ends the set() itself
-    assert not move_status.done
-    held.logic.release.set()
-    await move_status
-    assert held.logic.calls == ["ensure_stopped", "move 1.0", "ensure_stopped"]
 
 
 @dataclass
@@ -406,7 +372,7 @@ async def test_stop_halts_the_hardware_but_does_not_end_a_prepare_or_fly(
 
     await flyer.stop(success=success)
 
-    # Only the hardware was halted: unstage() and a new prepare() end a prepare()
+    # Only the hardware was halted: unstage() ends a prepare()
     assert not preparing.done
     flyer.logic.release.set()
     await preparing

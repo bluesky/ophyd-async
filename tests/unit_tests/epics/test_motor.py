@@ -702,7 +702,6 @@ async def test_a_set_stopped_before_or_during_motion_fails_and_stays_still(
     velo_and_accl_respecting_motor: Motor, moving: bool
 ):
     motor = velo_and_accl_respecting_motor
-    await motor.stage()
     status = motor.set(10.0)
     if moving:
         await wait_for_value(motor.user_readback, lambda v: v > 0, timeout=1)
@@ -747,7 +746,7 @@ async def test_stop_during_prepare_run_up_halts_the_motor_and_prepare_finishes_s
     )
     await wait_for_value(motor.user_readback, lambda v: v > 1, timeout=1)
     await motor.stop()
-    await asyncio.wait_for(preparing, timeout=1)
+    await preparing
     assert await motor.user_readback.get_value() < 100
     await motor.unstage()
 
@@ -758,7 +757,7 @@ async def test_default_mock_motor_stop_finishes_a_move_in_progress():
     # A test simulating a move that has not finished
     set_mock_value(motor.motor_done_move, 0)
 
-    await asyncio.wait_for(motor.stop(), timeout=1)
+    await motor.stop()
 
     get_mock_put(motor.motor_stop).assert_called_once_with(1)
     assert await motor.motor_done_move.get_value() == 1
@@ -766,7 +765,6 @@ async def test_default_mock_motor_stop_finishes_a_move_in_progress():
 
 async def test_motor_stop_allows_the_acceleration_time_to_decelerate(motor: Motor):
     await motor.acceleration_time.set(30)
-    set_mock_value(motor.motor_done_move, 0)
 
     with patch("ophyd_async.epics.motor.wait_for_value") as wait_for_value:
         await motor.stop()

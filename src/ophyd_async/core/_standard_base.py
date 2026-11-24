@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from enum import Enum
 from functools import cached_property
+from typing import final
 
 from ._device import Device
 from ._protocol import AsyncStageable
@@ -51,13 +52,6 @@ class _StateMachine:
         self._starts = starts
         self.state = _State.UNSTAGED
         self._task: asyncio.Task | None = None
-
-    def __or__(self, starts: Mapping[_State, set[_State]]) -> "_StateMachine":
-        """A new machine for the same device, with these starts added to ours."""
-        return _StateMachine(
-            self._device,
-            {s: self._starts.get(s, set()) | starts.get(s, set()) for s in _State},
-        )
 
     @asynccontextmanager
     async def transition(
@@ -126,10 +120,18 @@ class _StandardBase(Device, AsyncStageable):
     _stage_funcs: tuple[Callable[[], Awaitable[None]], ...] = ()
     _unstage_funcs: tuple[Callable[[], Awaitable[None]], ...] = ()
 
+    @final
     @cached_property
     def _state(self) -> _StateMachine:
         # cached_property as Device registration runs before super().__init__
-        return _StateMachine(self, {_State.STAGING: {_State.UNSTAGED}})
+        return _StateMachine(self, self._state_starts())
+
+    def _state_starts(self) -> Mapping[_State, set[_State]]:
+        """Each -ING state mapped to the done states it may start from.
+
+        Subclasses add their own on top of `super()._state_starts()`.
+        """
+        return {_State.STAGING: {_State.UNSTAGED}}
 
     @AsyncStatus.wrap
     async def stage(self) -> None:

@@ -34,6 +34,7 @@ from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
     _PmacMotorInfo,  # noqa: PLC2701
 )
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -362,13 +363,13 @@ async def test_pmac_kickoff_that_fails_during_run_up_stops_the_trajectory(
                         await flyer.kickoff()
             else:
                 status = flyer.kickoff()
-                await asyncio.sleep(0.01)
+                await wait_for_pending_wakeups()
                 await flyer.unstage()
                 with pytest.raises(asyncio.CancelledError):
                     await status
             # A trajectory still running would refill the buffer as it empties
             set_mock_value(pmac_io.trajectory.total_points, 2)
-            await asyncio.sleep(0.01)
+            await wait_for_pending_wakeups()
     assert len(positions.mock_calls) == appends
 
 

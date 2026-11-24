@@ -5,7 +5,7 @@ from ophyd_async.core import simulate_move
 
 
 class SimMotorHardware:
-    """Pretend motor controller: plain asyncio, no ophyd-async.
+    """Simulated motor controller: plain asyncio, no ophyd-async.
 
     A move runs in its own task, passing each position to `set_readback` at 10Hz.
 

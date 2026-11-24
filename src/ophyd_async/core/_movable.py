@@ -168,20 +168,22 @@ class StandardMovable(
 ):
     """Device that provides standard logic for moving.
 
-    This class must be inherited and have a `logic` @cached_property.
-    One `set()` runs at a time: a new one ends the one in progress, which raises
-    `StoppedError`. `stop()` ends the `set()` in progress, which raises
-    `StoppedError` unless it was `stop(success=True)`, then runs the logic's
-    `ensure_stopped` without waiting for the `set()` to finish. A
-    `StandardMovable` alone does nothing on `stage()` or `unstage()`; combined with
-    a `StandardFlyable`, `stage()` and `unstage()` run its `ensure_ready` and
-    `ensure_stopped`, which stop a `set()` in progress.
+    Provide `logic` as a `@cached_property`.
 
-    `stop()` ends only a `set()`: it does not end a `prepare()` or fly of a
-    `StandardFlyable`, only `unstage()` does. `ensure_stopped` still halts the
-    hardware, so a `stop()` during the run-up of a `prepare()` (for example from
-    `bps.stop`, or a `RunEngine` pause of a device that was also `set()`, with
-    `rewindable=False`) can leave `prepare()` finishing short of the start.
+    `set()` moves to a value. Only one runs at a time: a new `set()` ends the
+    one in progress, which raises `StoppedError`.
+
+    `stop()` ends the `set()` in progress, which raises `StoppedError`, or
+    finishes normally if called with `success=True`. It then calls
+    `logic.ensure_stopped()` to halt the hardware, without waiting for the
+    `set()` to finish.
+
+    A `StandardMovable` does nothing on `stage()` or `unstage()` by itself.
+    Combined with `StandardFlyable`, those run the logic's
+    `ensure_ready` and `ensure_stopped`, which also halt a `set()` in progress.
+    `stop()` does not end a `prepare()` or fly, only `unstage()` does, but it
+    still halts the hardware, so a `stop()` during the run-up can leave
+    `prepare()` finishing short of the start.
     """
 
     # Ends the latest set(): resolved by stop(), or by the next set(), with the

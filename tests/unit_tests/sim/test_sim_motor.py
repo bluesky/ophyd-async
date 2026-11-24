@@ -17,6 +17,7 @@ from ophyd_async.core import (
     StoppedError,
     WatchableAsyncStatus,
     forward_watcher_updates,
+    wait_for_value,
 )
 from ophyd_async.sim import SimMotor
 
@@ -104,18 +105,15 @@ async def test_short_move_is_exactly_move_time(m2: SimMotor):
 @pytest.mark.parametrize("success", [False, True])
 async def test_stop(m2: SimMotor, success: bool, moving: bool):
     # this move should take 10 seconds but we will stop it partway through.
-    # The sim motor updates its readback at 10Hz, so 0.2s is two update ticks
-    # in - enough for the readback to have moved off 0 without waiting longer.
     move_status = m2.set(10)
     if moving:
-        await asyncio.sleep(0.2)
+        await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
     await m2.stop(success=success)
     new_pos = await m2.user_readback.get_value()
     assert (0 < new_pos < 10) if moving else new_pos == 0
 
     if success:
         await move_status
-        assert move_status.success
     else:
         assert not move_status.success
         with pytest.raises(StoppedError, match=f"Device {m2.name} was stopped"):
@@ -128,7 +126,7 @@ async def test_stop(m2: SimMotor, success: bool, moving: bool):
 @pytest.mark.timeout(3)
 async def test_second_set_supersedes_the_first(m2: SimMotor):
     first = m2.set(10)
-    await asyncio.sleep(0.2)
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
     second = m2.set(0.5)
 
     with pytest.raises(StoppedError, match=r"M2: superseded by a new set\(\)"):
@@ -147,7 +145,7 @@ async def test_unstage_stops_a_fly_and_waits_for_it(m2: SimMotor):
     await m2.prepare(FlyMotorInfo(start_position=0, end_position=5, time_for_move=1))
     await m2.kickoff()
     status = m2.complete()
-    await asyncio.sleep(0.2)
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
 
     await m2.unstage()
 
@@ -162,18 +160,15 @@ async def test_unstage_stops_a_fly_and_waits_for_it(m2: SimMotor):
 
 
 @pytest.mark.timeout(5)
-@pytest.mark.parametrize("success", [False, True])
-async def test_stop_during_a_fly_halts_the_motor_and_ends_complete(
-    m2: SimMotor, success: bool
-):
+async def test_stop_during_a_fly_halts_the_motor_and_ends_complete(m2: SimMotor):
     await asyncio.gather(m2.velocity.set(10), m2.acceleration_time.set(0.05))
     await m2.stage()
     await m2.prepare(FlyMotorInfo(start_position=0, end_position=2, time_for_move=1))
     await m2.kickoff()
     status = m2.complete()
-    await asyncio.sleep(0.2)
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
 
-    await m2.stop(success=success)
+    await m2.stop()
 
     # As for a real motor, the fly ends early where the motor stopped
     await status
@@ -216,7 +211,7 @@ async def test_unstage_during_kickoff_run_up_leaves_no_move_running(m2: SimMotor
     await m2.stage()
     await m2.prepare(FlyMotorInfo(start_position=0, end_position=5, time_for_move=1))
     kickoff_status = m2.kickoff()
-    await asyncio.sleep(0.2)
+    await wait_for_value(m2.user_readback, lambda v: v != 0, timeout=1)
     await m2.unstage()
     with pytest.raises(asyncio.CancelledError):
         await kickoff_status

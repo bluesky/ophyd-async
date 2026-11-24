@@ -52,12 +52,7 @@ class PmacPrepareCtx:
 
     #: The path to fly, consumed a slice at a time as the trajectory runs.
     path: Path
-    #: The first slice of the path, which is built into the trajectory to start with.
-    first_slice: Slice
-    #: How many points of the path are left after the first slice.
-    path_length: int
     motor_info: _PmacMotorInfo
-    ramp_up_pos: dict[Motor, np.float64]
     ramp_up_time: float
     turnaround_time: float | None
     #: The PVT the last built slice exited at, which the next slice starts from.
@@ -81,17 +76,14 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacPrepareCtx]):
         )
         ctx = PmacPrepareCtx(
             path=path,
-            first_slice=first_slice,
-            path_length=len(path),
             motor_info=motor_info,
-            ramp_up_pos=ramp_up_pos,
             ramp_up_time=ramp_up_time,
             turnaround_time=value.turnaround_time,
         )
         yield ctx
         await asyncio.gather(
-            self._build_trajectory(ctx),
-            self._move_to_start(ctx.motor_info, ctx.ramp_up_pos),
+            self._build_trajectory(ctx, first_slice, len(path)),
+            self._move_to_start(motor_info, ramp_up_pos),
         )
 
     async def fly(self, ctx: PmacPrepareCtx) -> AsyncGenerator[KICKED_OFF, None]:
@@ -187,10 +179,12 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacPrepareCtx]):
             self.pmac.trajectory.append_message,
         )
 
-    async def _build_trajectory(self, ctx: PmacPrepareCtx):
+    async def _build_trajectory(
+        self, ctx: PmacPrepareCtx, first_slice: Slice, path_length: int
+    ):
         motor_info = ctx.motor_info
         trajectory = await self._parse_trajectory(
-            ctx, ctx.first_slice, ctx.path_length, ctx.ramp_up_time
+            ctx, first_slice, path_length, ctx.ramp_up_time
         )
         use_axis = {
             i: (i in motor_info.motor_cs_index.values()) for i in CS_INDEX.values()

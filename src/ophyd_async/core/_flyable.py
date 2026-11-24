@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 from abc import abstractmethod
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Mapping
 from dataclasses import replace
 from functools import cached_property
 from typing import Any, Generic, TypeVar, cast
@@ -17,7 +17,6 @@ from ._standard_base import (
     TransitionError,
     _StandardBase,
     _State,
-    _StateMachine,
 )
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
@@ -56,8 +55,6 @@ class FlyableLogic(Logic, Generic[PrepareT, CtxT]):
 
     The type parameters are the per-scan info `PrepareT` and the context `CtxT`,
     which defaults to `None`, so `FlyableLogic[PrepareT]` is a logic without one.
-    The hooks are not named after bluesky verbs, so a logic passed to a plan is not
-    mistaken for a device.
     """
 
     def __init_subclass__(cls, **kwargs) -> None:
@@ -213,11 +210,9 @@ class StandardFlyable(
         self._stage_funcs += (self.__on_stage,)
         self._unstage_funcs += (self.__on_unstage,)
 
-    @cached_property
-    def _state(self) -> _StateMachine:
-        # super()._state caches the base machine in the instance first, then this
-        # property overwrites it with the combined one
-        return super()._state | {
+    def _state_starts(self) -> Mapping[_State, set[_State]]:
+        return {
+            **super()._state_starts(),
             _State.PREPARING: {_State.STAGED, _State.FLOWN},
             _State.FLYING: {_State.PREPARED},
         }
@@ -258,17 +253,17 @@ class StandardFlyable(
             self._fly_status = None
             previous_ctx, self._ctx = self._ctx, None
             hook = f"{type(self.logic).__name__}.prepare_to_fly()"
-            steps = self.logic.prepare_to_fly(self.name, value, previous_ctx)
-            async with contextlib.aclosing(steps):
+            preparing = self.logic.prepare_to_fly(self.name, value, previous_ctx)
+            async with contextlib.aclosing(preparing):
                 try:
-                    ctx = await anext(steps)
+                    ctx = await anext(preparing)
                 except StopAsyncIteration:
                     raise RuntimeError(
                         f"{hook} finished without yielding its context"
                     ) from None
                 if isinstance(ctx, WatcherUpdate):
                     raise TypeError(f"{hook} must yield its context first, not {ctx!r}")
-                async for update in steps:
+                async for update in preparing:
                     if not isinstance(update, WatcherUpdate):
                         raise TypeError(
                             f"{hook} must yield only WatcherUpdates after its "

@@ -1342,7 +1342,7 @@ async def test_set_and_wait_for_other_value_cancelled_before_first_value():
     await match_signal.connect(mock=True)
 
     async def never_yields(signal):
-        await asyncio.sleep(1000)
+        await asyncio.Future()
         yield  # pragma: no cover - unreachable, just makes this a generator
 
     with patch("ophyd_async.core._signal.observe_value", never_yields):

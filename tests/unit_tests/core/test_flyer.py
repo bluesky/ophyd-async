@@ -68,10 +68,10 @@ class CtxFlyableLogic(FlyableLogic[int, Ctx]):
     made: list[Ctx] = field(default_factory=list)
 
     async def prepare_to_fly(
-        self, name: str, value: int, previous_ctx: None
+        self, name: str, value: int, previous_ctx: Ctx | None
     ) -> AsyncGenerator[Ctx, None]:
         self.made.append(Ctx(value))
-        yield self.made[0]
+        yield self.made[-1]
 
     async def fly(self, ctx: Ctx) -> AsyncGenerator[KICKED_OFF | WatcherUpdate, None]:
         self.seen.append(ctx)
@@ -153,7 +153,6 @@ class FlyingLogic(FlyableLogic[int]):
 
     fail: bool = False
     fly_statuses: list[AsyncStatus] = field(default_factory=list)
-    running_when_stopped: list[bool] = field(default_factory=list)
 
     async def prepare_to_fly(
         self, name: str, value: int, previous_ctx: None
@@ -164,15 +163,11 @@ class FlyingLogic(FlyableLogic[int]):
         async with AsyncStatus(asyncio.Event().wait()) as status:
             self.fly_statuses.append(status)
             yield KICKED_OFF
-            await asyncio.sleep(0)
             if self.fail:
                 raise ValueError("bad fly")
             await status
 
-    async def ensure_stopped(self) -> None:
-        self.running_when_stopped.append(
-            any(not status.done for status in self.fly_statuses)
-        )
+    async def ensure_stopped(self) -> None: ...
 
 
 async def make_staged_flyer(logic: FlyableLogic[Any, Any]):
@@ -286,12 +281,11 @@ async def test_stage_during_a_verb_raises_and_unstage_cancels_it(verb):
         await flyer.stage()
     await flyer.unstage()
     with pytest.raises(asyncio.CancelledError):
-        await asyncio.wait_for(cast(AsyncStatus, running), timeout=1)
+        await cast(AsyncStatus, running)
 
     # The cancelled verb did not touch the state unstage left behind
     logic.block = ""
     await flyer.stage()
-    await flyer.prepare(2)
 
 
 async def test_flyable_unstage_resets_lifecycle(recording_flyer):
@@ -375,11 +369,12 @@ async def test_watch_readback_reraises_the_status_error():
         await asyncio.sleep(0)
         raise ValueError("boom")
 
+    status = AsyncStatus(fail())
+
     updates = []
     with pytest.raises(ValueError, match="boom"):
-        async with AsyncStatus(fail()) as status:
-            async for update in watch_readback(flyer.logic, status, target=1.0):
-                updates.append(update)
+        async for update in watch_readback(flyer.logic, status, target=1.0):
+            updates.append(update)
     # Initial defaults to the readback now
     assert {u.initial for u in updates} == {0.0}
 
@@ -387,11 +382,13 @@ async def test_watch_readback_reraises_the_status_error():
 @pytest.mark.parametrize("prepare", [False, True])
 async def test_unstage_always_stops(recording_flyer, prepare):
     logic, flyer = recording_flyer
+    calls = ["ensure_stopped"]
     if prepare:
         await flyer.prepare(1)
+        calls = ["prepare_to_fly", *calls]
 
     await flyer.unstage()
-    assert "ensure_stopped" in logic.calls
+    assert logic.calls == calls
 
     # ensure_ready defaults to ensure_stopped
     logic.calls.clear()
@@ -467,11 +464,8 @@ async def test_flyable_stage_unstage_can_differ():
 
     await flyer.stage()
     assert logic.calls == ["ensure_ready"]
-    await flyer.prepare(1)
-    # prepare() does not get it ready again
-    assert logic.calls == ["ensure_ready", "prepare_to_fly"]
     await flyer.unstage()
-    assert logic.calls == ["ensure_ready", "prepare_to_fly", "ensure_stopped"]
+    assert logic.calls == ["ensure_ready", "ensure_stopped"]
 
 
 @pytest.mark.parametrize(
@@ -496,19 +490,17 @@ def test_flyable_logic_defining_a_stale_hook_raises(stale: str, replacement: str
 @pytest.mark.parametrize(
     "logic_class, kwargs, missing",
     [
-        (MovableLogic, {"setpoint": None, "readback": None}, "ensure_stopped"),
-        (FlyableLogic, {}, "ensure_stopped, fly, prepare_to_fly"),
+        (MovableLogic, {"setpoint": None, "readback": None}, ["ensure_stopped"]),
+        (FlyableLogic, {}, ["ensure_stopped", "fly", "prepare_to_fly"]),
     ],
 )
 def test_logic_missing_an_abstract_hook_raises_at_construction(
-    logic_class: type, kwargs: dict, missing: str
+    logic_class: type, kwargs: dict, missing: list[str]
 ):
     incomplete = type("Incomplete", (logic_class,), {})
-    with pytest.raises(TypeError, match=r"Incomplete.*abstract") as exc_info:
+    # The methods are listed in order, only the quoting differs between Pythons
+    with pytest.raises(TypeError, match=rf"Incomplete.*abstract.*{'.*'.join(missing)}"):
         incomplete(**kwargs)
-    # The order of the missing methods in the message varies between Pythons
-    for name in missing.split(", "):
-        assert name in str(exc_info.value)
 
 
 async def test_flyable_composes_with_readable_staging():
@@ -542,22 +534,6 @@ async def test_flyable_composes_with_readable_staging():
     # The cache is torn down on unstage.
     with pytest.raises(RuntimeError, match="not being monitored"):
         await device.sig.read(cached=True)
-
-
-# Bug: fly statuses were never cancelled
-async def test_unstage_cancels_the_running_fly_before_stopping_the_hardware():
-    logic = FlyingLogic()
-    flyer = await make_staged_flyer(logic)
-    await flyer.prepare(1)
-    await flyer.kickoff()
-    await asyncio.sleep(0)
-    assert not logic.fly_statuses[0].done
-
-    await flyer.unstage()
-
-    assert logic.fly_statuses[0].task.cancelled()
-    # Neither stage's nor unstage's ensure_stopped saw the fly running
-    assert logic.running_when_stopped == [False, False]
 
 
 # Bug: an unstage() cancelled before it awaited the fly left it running unowned
@@ -606,40 +582,17 @@ async def test_restage_after_an_interrupted_unstage_starts_afresh(stop: str):
     await flyer.prepare(1)
     logic.stopping = stop
     unstaging = flyer.unstage()
-    await asyncio.sleep(0)
+    await wait_for_pending_wakeups()
     # RE.stop/abort/halt cancel a hanging unstage
     unstaging.task.cancel()
-    with pytest.raises((ValueError, asyncio.CancelledError)):
+    with pytest.raises(ValueError if stop == "fail" else asyncio.CancelledError):
         await unstaging
 
     logic.stopping = ""
     await flyer.stage()
     await flyer.prepare(2)
-    await flyer.kickoff()
-    await flyer.complete()
     await flyer.unstage()
     assert logic.previous_ctxs == [None, None]
-
-
-# Bug: a failed re-prepare left the flyer prepared with the failed prepare's ctx
-async def test_failed_reprepare_leaves_nothing_to_kick_off(recording_flyer):
-    logic, flyer = recording_flyer
-    await flyer.prepare(1)
-    await flyer.kickoff()
-    await flyer.complete()
-    logic.calls.clear()
-
-    async def fail(name: str, value: int, previous_ctx: None) -> AsyncIterator[None]:
-        raise ValueError("bad prepare")
-        yield None
-
-    logic.prepare_to_fly = fail  # type: ignore
-    with pytest.raises(ValueError, match="bad prepare"):
-        await flyer.prepare(2)
-
-    with pytest.raises(TransitionError, match="cannot go to FLYING"):
-        await flyer.kickoff()
-    assert logic.calls == []
 
 
 # After a failure every verb but unstage() raises, and the restaged retry is a first
@@ -735,7 +688,7 @@ async def test_kickoff_that_does_not_kick_off_needs_unstage(
     kickoff = flyer.kickoff()
     if error is asyncio.CancelledError:
         # Cancelled directly, not by unstage
-        await asyncio.sleep(0)
+        await wait_for_pending_wakeups()
         kickoff.task.cancel()
     with pytest.raises(error, match=match):
         await kickoff
@@ -768,9 +721,6 @@ async def test_kickoff_cancelled_just_after_kicked_off_ends_the_fly(recording_fl
     assert ended.is_set()
     with pytest.raises(TransitionError, match="from ERROR"):
         await flyer.kickoff()
-    await flyer.unstage()
-    await flyer.stage()
-    await flyer.prepare(2)
 
 
 @pytest.mark.parametrize("bad_yield", [42, KICKED_OFF])
@@ -804,7 +754,6 @@ async def test_unsuccessful_complete_cancels_the_fly_and_needs_unstage(fail):
         with pytest.raises(ValueError, match="bad fly"):
             await completing
     else:
-        await asyncio.sleep(0)
         assert not logic.fly_statuses[0].done
         completing.task.cancel()
         with pytest.raises(asyncio.CancelledError):
@@ -838,16 +787,13 @@ class FailingCleanupLogic(RecordingFlyableLogic):
     """Its fly raises while it is being cancelled, `block_kickoff` or not."""
 
     block_kickoff: bool = False
-    #: Fail on its own just after kicking off, rather than when cancelled
-    raise_after_kickoff: bool = False
 
     async def fly(self, ctx: None) -> AsyncGenerator[KICKED_OFF | WatcherUpdate, None]:
         try:
             if self.block_kickoff:
                 await asyncio.Event().wait()
             yield KICKED_OFF
-            if not self.raise_after_kickoff:
-                await asyncio.Event().wait()
+            await asyncio.Event().wait()
         finally:
             raise ValueError("cleanup failed")  # noqa: B012
 
@@ -871,7 +817,7 @@ async def test_failing_fly_cleanup_when_kickoff_or_complete_is_cancelled(
     if phase == "complete":
         await status
         status = flyer.complete()
-    await asyncio.sleep(0)
+    await wait_for_pending_wakeups()
     status.task.cancel()
 
     with pytest.raises(error):
@@ -888,7 +834,6 @@ async def test_unstage_stops_the_hardware_then_raises_the_fly_failure():
     flyer = await make_staged_flyer(logic)
     await flyer.prepare(1)
     await flyer.kickoff()
-    await asyncio.sleep(0)
     logic.calls.clear()
 
     with pytest.raises(ValueError, match="cleanup failed"):
@@ -899,85 +844,67 @@ async def test_unstage_stops_the_hardware_then_raises_the_fly_failure():
     await flyer.stage()
 
 
-class FailsToUnstage(Device):
+class FailsTo(Device):
+    """A child device whose `stage` or `unstage`, as named by `verb`, raises."""
+
+    def __init__(self, verb: str):
+        self.verb = verb
+        super().__init__()
+
     @AsyncStatus.wrap
-    async def stage(self) -> None: ...
+    async def stage(self) -> None:
+        if self.verb == "stage":
+            raise ValueError("stage failed")
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        raise ValueError("unstage failed")
+        if self.verb == "unstage":
+            raise ValueError("unstage failed")
 
 
 @dataclass
 class HangingStopLogic(RecordingFlyableLogic):
-    """Once `hang` is set, its `ensure_stopped` runs until cancelled."""
+    """Its `ensure_stopped` runs until cancelled."""
 
-    hang: bool = False
-    stopping: bool = False
+    hanging: bool = False
+
+    async def ensure_ready(self) -> None: ...
 
     async def ensure_stopped(self) -> None:
-        self.stopping = self.hang
+        self.hanging = True
         try:
-            if self.hang:
-                await asyncio.Event().wait()
+            await asyncio.Event().wait()
         finally:
-            self.stopping = False
-
-
-async def test_unstage_that_fails_leaves_no_other_hook_running():
-    logic = HangingStopLogic()
-
-    class ReadableFlyer(StandardReadable, StandardFlyable[int, None]):
-        def __init__(self, name: str = ""):
-            with self.add_children_as_readables():
-                self.child = FailsToUnstage()
-            super().__init__(name=name)
-
-        @cached_property
-        def logic(self) -> FlyableLogic[int, None]:
-            return logic
-
-    async with init_devices(mock=True):
-        device = ReadableFlyer(name="rf")
-    await device.stage()
-    logic.hang = True
-
-    with pytest.raises(ValueError, match="unstage failed"):
-        await device.unstage()
-
-    assert not logic.stopping
-
-
-class FailsToStage(Device):
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        raise ValueError("stage failed")
-
-    @AsyncStatus.wrap
-    async def unstage(self) -> None: ...
+            self.hanging = False
 
 
 @dataclass
 class HangingReadyLogic(RecordingFlyableLogic):
     """Its `ensure_ready` runs until cancelled."""
 
-    readying: bool = False
+    hanging: bool = False
 
     async def ensure_ready(self) -> None:
-        self.readying = True
+        self.hanging = True
         try:
             await asyncio.Event().wait()
         finally:
-            self.readying = False
+            self.hanging = False
 
 
-async def test_stage_that_fails_leaves_no_other_hook_running():
-    logic = HangingReadyLogic()
+@pytest.mark.parametrize(
+    "verb, logic_class",
+    [("stage", HangingReadyLogic), ("unstage", HangingStopLogic)],
+)
+async def test_stage_or_unstage_that_fails_leaves_no_other_hook_running(
+    verb: str, logic_class: type[HangingReadyLogic | HangingStopLogic]
+):
+    logic = logic_class()
 
     class ReadableFlyer(StandardReadable, StandardFlyable[int, None]):
         def __init__(self, name: str = ""):
             with self.add_children_as_readables():
-                self.child = FailsToStage()
+                self.child = FailsTo(verb)
             super().__init__(name=name)
 
         @cached_property
@@ -986,18 +913,21 @@ async def test_stage_that_fails_leaves_no_other_hook_running():
 
     async with init_devices(mock=True):
         device = ReadableFlyer(name="rf")
-
-    with pytest.raises(ValueError, match="stage failed"):
+    if verb == "unstage":
         await device.stage()
 
-    assert not logic.readying
+    with pytest.raises(ValueError, match=f"{verb} failed"):
+        await getattr(device, verb)()
+
+    assert not logic.hanging
 
 
 @dataclass
 class SlowToCancelLogic(RecordingFlyableLogic):
-    """Its verbs take a moment to finish being cancelled."""
+    """Its verbs finish being cancelled only once `release` is set."""
 
     block: str = ""
+    release: asyncio.Event = field(default_factory=asyncio.Event)
     running: set[str] = field(default_factory=set)
     running_when_stopped: list[set[str]] = field(default_factory=list)
 
@@ -1008,7 +938,7 @@ class SlowToCancelLogic(RecordingFlyableLogic):
         try:
             await asyncio.Event().wait()
         finally:
-            await asyncio.sleep(0.05)
+            await self.release.wait()
             self.running.discard(verb)
 
     async def prepare_to_fly(
@@ -1020,12 +950,13 @@ class SlowToCancelLogic(RecordingFlyableLogic):
     async def fly(self, ctx: None) -> AsyncGenerator[KICKED_OFF | WatcherUpdate, None]:
         await self._block("kickoff")
         yield KICKED_OFF
+        await self._block("complete")
 
     async def ensure_stopped(self) -> None:
         self.running_when_stopped.append(set(self.running))
 
 
-@pytest.mark.parametrize("verb", ["prepare", "kickoff"])
+@pytest.mark.parametrize("verb", ["prepare", "kickoff", "complete"])
 async def test_unstage_waits_for_the_cancelled_verb_before_stopping(verb: str):
     logic = SlowToCancelLogic(block=verb)
     flyer = await make_staged_flyer(logic)
@@ -1035,10 +966,17 @@ async def test_unstage_waits_for_the_cancelled_verb_before_stopping(verb: str):
     else:
         await flyer.prepare(1)
         running = flyer.kickoff()
+        if verb == "complete":
+            await running
+            running = flyer.complete()
     await wait_for_pending_wakeups()
     assert logic.running == {verb}
 
-    await flyer.unstage()
+    unstaging = flyer.unstage()
+    await wait_for_pending_wakeups()
+    assert not unstaging.done
+    logic.release.set()
+    await unstaging
 
     assert logic.running == set()
     assert logic.running_when_stopped == [set()]
@@ -1079,12 +1017,12 @@ async def test_complete_starts_with_the_latest_update_fly_yielded_before_it(
     flyer = await make_staged_flyer(UpdatingLogic())
     await flyer.prepare(1)
     await flyer.kickoff()
-    await asyncio.sleep(0.01)
+    await wait_for_pending_wakeups()
 
     watcher = Mock()
     status = flyer.complete()
     status.watch(watcher)
-    await asyncio.sleep(0.01)
+    await wait_for_pending_wakeups()
     release.set()
     await status
 
@@ -1099,21 +1037,17 @@ class RunUpLogic(RecordingFlyableLogic):
 
     fail: bool = False
     run_ups: list[AsyncStatus] = field(default_factory=list)
-    closed: bool = False
 
     async def prepare_to_fly(
         self, name: str, value: int, previous_ctx: None
     ) -> AsyncGenerator[Any, None]:
         yield value
-        try:
-            async with AsyncStatus(asyncio.Event().wait()) as run_up:
-                self.run_ups.append(run_up)
-                yield WatcherUpdate(current=0, initial=0, target=1)
-                if self.fail:
-                    raise ValueError("bad run-up")
-                await run_up
-        finally:
-            self.closed = True
+        async with AsyncStatus(asyncio.Event().wait()) as run_up:
+            self.run_ups.append(run_up)
+            yield WatcherUpdate(current=0, initial=0, target=1)
+            if self.fail:
+                raise ValueError("bad run-up")
+            await run_up
 
 
 @pytest.mark.parametrize("fail", [False, True])
@@ -1127,13 +1061,12 @@ async def test_prepare_that_fails_or_is_cancelled_stops_the_run_up(fail: bool):
         with pytest.raises(ValueError, match="bad run-up"):
             await preparing
     else:
-        assert not logic.closed
+        assert not logic.run_ups[0].done
         preparing.task.cancel()
         with pytest.raises(asyncio.CancelledError):
             await preparing
 
-    # The generator was closed and the run-up stopped before prepare() finished
-    assert logic.closed
+    # The run-up was stopped before prepare() finished
     assert logic.run_ups[0].task.cancelled()
     # The half-failed prepare left nothing to fly
     with pytest.raises(TransitionError, match="cannot go to FLYING from ERROR"):

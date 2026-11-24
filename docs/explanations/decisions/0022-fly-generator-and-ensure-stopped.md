@@ -16,6 +16,8 @@ Amends ADR 0017: `MovableLogic.stop()` is now `ensure_stopped()`, and the fly ho
 
 **`prepare_to_fly()` and `fly()` are async generators.** `prepare_to_fly` yields the context then any progress, and `fly` yields `KICKED_OFF` once flying then any progress. What a scan starts lives in the generator's scope, so closing or cancelling the generator stops it, and a failure maps on to the verb that was running. We rejected two hooks sharing state through the logic, and a hook returning a `(context, progress)` tuple, which leaked the progress iterator when `prepare()` failed.
 
+**The hooks are not named after bluesky verbs.** `prepare_to_fly`, `fly`, `ensure_ready` and `ensure_stopped` do not collide with `prepare`, `kickoff`, `stage` and `unstage`, so a logic passed to a plan is not mistaken for a device.
+
 **The fly runs in the status that `complete()` returns.** `kickoff()` makes a `WatchableAsyncStatus` that drives `fly` and returns at `KICKED_OFF`, and `complete()` returns that same status. It already replays the latest update to a late watcher, so no separate task, update forwarding or cleanup path is needed, and cancelling that status cancels the fly.
 
 **`ensure_stopped()` waits until the motion has ended.** `unstage()` cancels `fly`, then calls `ensure_stopped()`, so when it returns nothing is running and the hardware is still. Returning early would leave the next `stage()` or `set()` racing the deceleration.
