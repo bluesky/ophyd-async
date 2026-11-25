@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.6.dev3+g3491679bd documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.21.6.dev4+g68c6d903a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=985b55a5"></script>
+    <script src="../_static/documentation_options.js?v=1f04bcc4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev4+g68c6d903a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev4+g68c6d903a documentation - Home"/>
   
   
 </a></div>
@@ -616,7 +616,7 @@ for rationale.</p>
 </section>
 <section id="add-a-detector-that-puts-it-all-together">
 <h2>Add a Detector that puts it all together<a class="headerlink" href="#add-a-detector-that-puts-it-all-together" title="Link to this heading">#</a></h2>
-<p>Now you need to make an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore.AreaDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.AreaDetector</span></code></a> subclass that uses your IO and Trigger Logic with the standard Arm Logic and Writer classes that come with ADCore. The <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method should:</p>
+<p>Now you need to make an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore.AreaDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.AreaDetector</span></code></a> subclass that uses your IO and Trigger Logic with the standard acquire logic and data logic that come with ADCore. The <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method should:</p>
 <ol class="arabic simple">
 <li><p>Create the driver IO instance</p></li>
 <li><p>Create instances of your logic classes</p></li>
@@ -627,6 +627,7 @@ for rationale.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">prefix</span></code>: The PV prefix for the driver and plugins</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">*writer_factories</span></code>: Zero or more <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory" title="ophyd_async.epics.adcore.ADWriterFactory"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADWriterFactory</span></code></a> instances (e.g. <code class="docutils literal notranslate"><span class="pre">ADWriterFactory.hdf(path_provider)</span></code>); omit entirely to skip file writing</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">driver_suffix</span></code>: A PV suffix for the driver, defaulting to <code class="docutils literal notranslate"><span class="pre">&quot;cam1:&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">proc_suffix</span></code>: An optional PV suffix for a process plugin, which the detector creates with <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.plugins_with_proc" title="ophyd_async.epics.adcore.plugins_with_proc"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">adcore.plugins_with_proc</span></code></a> and gives to its trigger logic</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">plugins</span></code>: An optional mapping of {<code class="docutils literal notranslate"><span class="pre">name</span></code>: <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore.NDPluginBaseIO"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.NDPluginBaseIO</span></code></a>} for additional plugins</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">config_sigs</span></code>: Additional signals to report in configuration (beyond the standard acquire_time and acquire_period)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: An optional name for the device</p></li>
@@ -643,7 +644,9 @@ for rationale.</p>
 <span class="sd">    :param override_deadtime:</span>
 <span class="sd">        If provided, this value is used for deadtime instead of looking up</span>
 <span class="sd">        based on camera model.</span>
-<span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
+<span class="sd">    :param plugins:</span>
+<span class="sd">        Additional areaDetector plugins to include. "proc" is reserved: use</span>
+<span class="sd">        proc_suffix instead.</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
 <span class="sd">    :param name: Name for the detector device</span>
 <span class="sd">    """</span>
@@ -660,14 +663,14 @@ for rationale.</p>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">AravisDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
-        <span class="n">proc_plugin</span> <span class="o">=</span> <span class="n">NDProcessIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">proc_suffix</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_suffix</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">plugins</span><span class="p">,</span> <span class="n">proc</span> <span class="o">=</span> <span class="n">plugins_with_proc</span><span class="p">(</span><span class="n">plugins</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">proc_suffix</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">driver</span><span class="p">,</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">AravisTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc_plugin</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span> <span class="o">|</span> <span class="p">({</span><span class="s2">"proc"</span><span class="p">:</span> <span class="n">proc_plugin</span><span class="p">}</span> <span class="k">if</span> <span class="n">proc_plugin</span> <span class="k">else</span> <span class="p">{}),</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">AravisTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span>
@@ -676,7 +679,7 @@ for rationale.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">AreaDetector</span></code> baseclass will:</p>
 <ul class="simple">
 <li><p>Store the driver as <code class="docutils literal notranslate"><span class="pre">self.driver</span></code></p></li>
-<li><p>Call <code class="docutils literal notranslate"><span class="pre">add_detector_logics()</span></code> to register your trigger and arm logic</p></li>
+<li><p>Call <code class="docutils literal notranslate"><span class="pre">add_detector_logics()</span></code> to register your trigger and acquire logic</p></li>
 <li><p>Create and register a data logic for file writing for each factory in <code class="docutils literal notranslate"><span class="pre">writer_factories</span></code></p></li>
 <li><p>Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)</p></li>
 <li><p>Store any plugins as attributes on the detector</p></li>
@@ -891,9 +894,9 @@ instead of the driver’s.</p>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
 <p>You have now made a detector, and can import and create it like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adaravis</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adaravis</span><span class="p">,</span> <span class="n">adcore</span>
 
-<span class="n">det</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span><span class="s2">"PREFIX:"</span><span class="p">,</span> <span class="n">path_provider</span><span class="p">)</span>
+<span class="n">det</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span><span class="s2">"PREFIX:"</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADWriterFactory</span><span class="o">.</span><span class="n">hdf</span><span class="p">(</span><span class="n">path_provider</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The detector will now support:</p>

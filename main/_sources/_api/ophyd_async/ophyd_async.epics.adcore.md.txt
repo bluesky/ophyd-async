@@ -199,6 +199,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.trigger_info_from_driver
     :summary:
     ```
+* - {py:obj}`plugins_with_proc <ophyd_async.epics.adcore._detector.plugins_with_proc>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._detector.plugins_with_proc
+    :summary:
+    ```
 * - {py:obj}`ndattributes_to_xml <ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml>`
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml
     :summary:
@@ -3382,6 +3386,13 @@ Bases: {py:obj}`ophyd_async.epics.adcore._detector.AreaDetector`\[{py:obj}`ophyd
 ```{autodoc2-docstring} ophyd_async.epics.adcore._detector.ContAcqDetector
 ```
 
+````
+
+````{py:function} plugins_with_proc(plugins: ~collections.abc.Mapping[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None, prefix: str, proc_suffix: str | None) -> tuple[dict[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO], ~ophyd_async.epics.adcore._io.NDProcessIO | None]
+:canonical: ophyd_async.epics.adcore._detector.plugins_with_proc
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._detector.plugins_with_proc
+```
 ````
 
 `````{py:class} NDAttributeDataType(*args, **kwds)

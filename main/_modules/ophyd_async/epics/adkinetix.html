@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adkinetix &#8212; ophyd-async 0.21.6.dev3+g3491679bd documentation</title>
+    <title>ophyd_async.epics.adkinetix &#8212; ophyd-async 0.21.6.dev4+g68c6d903a documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=985b55a5"></script>
+    <script src="../../../_static/documentation_options.js?v=1f04bcc4"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev4+g68c6d903a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev4+g68c6d903a documentation - Home"/>
   
   
 </a></div>
@@ -854,6 +854,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">ADWriterFactory</span><span class="p">,</span>
     <span class="n">AreaDetector</span><span class="p">,</span>
     <span class="n">NDPluginBaseIO</span><span class="p">,</span>
+    <span class="n">plugins_with_proc</span><span class="p">,</span>
     <span class="n">prepare_exposures</span><span class="p">,</span>
     <span class="n">prepare_filter</span><span class="p">,</span>
     <span class="n">trigger_info_from_driver</span><span class="p">,</span>
@@ -963,7 +964,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
 <span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"</span>
 <span class="sd">    :param proc_suffix: If provided, an NDProcessIO plugin is created at this suffix</span>
-<span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
+<span class="sd">    :param plugins:</span>
+<span class="sd">        Additional areaDetector plugins to include. "proc" is reserved: use</span>
+<span class="sd">        proc_suffix instead.</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
 <span class="sd">    :param name: Name for the detector device</span>
 <span class="sd">    """</span>
@@ -979,14 +982,14 @@ window.runMermaid = runMermaid;</script>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">KinetixDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
-        <span class="n">proc_plugin</span> <span class="o">=</span> <span class="n">NDProcessIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">proc_suffix</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_suffix</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">plugins</span><span class="p">,</span> <span class="n">proc</span> <span class="o">=</span> <span class="n">plugins_with_proc</span><span class="p">(</span><span class="n">plugins</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">proc_suffix</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">driver</span><span class="p">,</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">KinetixTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc_plugin</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="p">(</span><span class="n">plugins</span> <span class="ow">or</span> <span class="p">{})</span> <span class="o">|</span> <span class="p">({</span><span class="s2">"proc"</span><span class="p">:</span> <span class="n">proc_plugin</span><span class="p">}</span> <span class="k">if</span> <span class="n">proc_plugin</span> <span class="k">else</span> <span class="p">{}),</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">KinetixTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span></div>
