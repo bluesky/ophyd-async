@@ -11,7 +11,11 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adaravis, adcore, adsimdetector
 from ophyd_async.epics.core import epics_signal_r
-from ophyd_async.testing import assert_configuration, assert_reading
+from ophyd_async.testing import (
+    assert_configuration,
+    assert_reading,
+    wait_for_pending_wakeups,
+)
 
 
 async def test_step_scan_hdf_detector_with_stats_and_temp(
@@ -373,7 +377,8 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
             },
         ),
     ]
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
     # Check that another kickoff without prepare is not allowed
     with pytest.raises(
         RuntimeError,
@@ -399,7 +404,8 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
             },
         ),
     ]
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
 
 
 async def test_2_rois_with_hdf(tmp_path):

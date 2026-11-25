@@ -410,7 +410,7 @@ async def test_trigger_arms_detector(tmp_path):
     # Trigger should arm it
     status = det.trigger()
     # Give it a moment to arm
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await wait_for_pending_wakeups()
     assert al.armed is True
     assert al.arm_count == 1
 
@@ -519,16 +519,17 @@ async def test_preserve_detector_state_multi_collection_watcher_and_assets(
     updates: list[dict] = []
     status = det.trigger()
     status.watch(lambda **kwargs: updates.append(kwargs))
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await wait_for_pending_wakeups()
     assert (await det.describe())["multidet"]["shape"] == [5, 10, 15]
 
     for collections_written in range(1, 5):
         await dl.collections_written.set(collections_written)
-        await wait_for_pending_wakeups(raise_if_exceeded=False)
+        await wait_for_pending_wakeups()
         assert not status.done
 
     await dl.collections_written.set(5)
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
     docs = [doc async for doc in det.collect_asset_docs()]
     assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
     assert docs[1][1]["indices"] == {"start": 0, "stop": 1}
@@ -558,9 +559,10 @@ async def test_collect_asset_docs_uses_trigger_observed_event(
     await det.prepare(TriggerInfo(collections_per_event=5, exposure_timeout=0.1))
 
     status = det.trigger()
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await wait_for_pending_wakeups()
     set_collections_written(5)
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
 
     docs = [doc async for doc in det.collect_asset_docs()]
     assert [name for name, _ in docs] == ["stream_resource", "stream_datum"]
@@ -718,9 +720,10 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
     # Step scan should work
     status = det.trigger()
     # Yield so detector can get collections written, then set it so we complete
-    await wait_for_pending_wakeups(raise_if_exceeded=False)
+    await wait_for_pending_wakeups()
     await dl.collections_written.set(1)
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
     assert status.success
     docs = [doc async for doc in det.collect_asset_docs()]
     assert docs == [

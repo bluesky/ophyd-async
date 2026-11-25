@@ -168,7 +168,6 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
 
         yield
 
-        # Set symmetric difference operator gives all newly added keys.
         new_dict = dict(self.children())
         for key, value in new_dict.items():
             # Check if key already exists in dict_copy and if the value has changed.
