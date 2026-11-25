@@ -1,4 +1,4 @@
-from unittest.mock import call
+from unittest.mock import MagicMock, call
 
 import pytest
 
@@ -7,7 +7,9 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
+    get_mock_execute,
     init_devices,
+    set_mock_attr,
     set_mock_value,
 )
 from ophyd_async.fastcs.eiger import EigerDetector, EigerTriggerMode
@@ -65,3 +67,18 @@ async def test_deadtime_correct(detector: EigerDetector):
         DetectorTrigger.EXTERNAL_LEVEL,
     }
     assert deadtime == 0.0001
+
+
+@pytest.mark.parametrize("duration", [0, 100])
+async def test_hv_reset_triggers_with_expected_timeout(
+    detector: EigerDetector, duration: int
+):
+    reset = detector.detector.hv_reset_
+    mock_execute = get_mock_execute(reset)
+    mock_trigger = set_mock_attr(reset, "trigger", MagicMock(wraps=reset.trigger))
+
+    await detector.detector.hv_reset_duration.set(duration)
+    await detector.detector.hv_reset.trigger()
+
+    mock_trigger.assert_called_once_with(duration + 5)
+    mock_execute.assert_awaited_once_with()

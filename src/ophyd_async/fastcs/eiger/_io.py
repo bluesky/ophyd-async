@@ -1,10 +1,15 @@
+import inspect
+
 from ophyd_async.core import (
     Device,
+    Reference,
     SignalR,
     SignalRW,
+    SoftCommandBackend,
     StrictEnum,
     TriggerableCommand,
 )
+from ophyd_async.core._device import DeviceConnector
 
 
 class EigerTriggerMode(StrictEnum):
@@ -29,6 +34,32 @@ class EigerStreamIO(Device):
     """
 
     pass
+
+
+class HVResetTrigger(TriggerableCommand):
+    """The HV reset trigger command.
+
+    The reset trigger only calls back when the reset has completed i.e. after the time
+    specified by `hv_reset_duration`. Therefore, this command uses that duration (plus
+    5 seconds) as a timeout.
+    """
+
+    async def _trigger(self) -> None:
+        reset_time = await self.hv_reset_duration().get_value()
+        await self.underlying_trigger().trigger(reset_time + 5)
+
+    def __init__(
+        self,
+        underlying_trigger: Reference[TriggerableCommand],
+        hv_reset_duration: Reference[SignalRW[int]],
+        name: str = "",
+    ):
+        command = self._trigger
+        sig = inspect.signature(command, eval_str=True)
+        backend = SoftCommandBackend(command, sig)
+        self.underlying_trigger = underlying_trigger
+        self.hv_reset_duration = hv_reset_duration
+        super().__init__(backend, timeout=None, name=name)
 
 
 class EigerDetectorIO(Device):
@@ -56,4 +87,13 @@ class EigerDetectorIO(Device):
     disarm: TriggerableCommand
     trigger_: TriggerableCommand
     hv_reset_duration: SignalRW[int]
-    hv_reset: TriggerableCommand
+    hv_reset_: TriggerableCommand
+
+    def __init__(
+        self, name: str = "", connector: DeviceConnector | None = None
+    ) -> None:
+        super().__init__(name, connector)
+        self.hv_reset = HVResetTrigger(
+            Reference(self.hv_reset_),
+            Reference(self.hv_reset_duration),
+        )
