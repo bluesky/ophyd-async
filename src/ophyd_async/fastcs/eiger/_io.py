@@ -2,6 +2,7 @@ import inspect
 
 from ophyd_async.core import (
     Device,
+    DeviceConnector,
     Reference,
     SignalR,
     SignalRW,
@@ -9,7 +10,6 @@ from ophyd_async.core import (
     StrictEnum,
     TriggerableCommand,
 )
-from ophyd_async.core._device import DeviceConnector
 
 
 class EigerTriggerMode(StrictEnum):
