@@ -88,8 +88,12 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
         await prepare_filter(self.process_plugin, num_filter=exposures_per_collection)
 
     async def default_trigger_info(self):
+        # ADKinetix currently doesn't support acquire period, so don't pass it to
+        # trigger_info_from_driver
         return await trigger_info_from_driver(
-            self.driver.num_images, self.process_plugin
+            self.driver.num_images,
+            self.driver.acquire_time,
+            process_plugin=self.process_plugin,
         )
 
 

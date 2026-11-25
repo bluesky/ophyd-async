@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     DetectorTrigger,
     EnableDisable,
     SignalR,
@@ -84,14 +85,28 @@ async def prepare_filter(
 
 async def trigger_info_from_driver(
     num_images_signal: SignalR[int],
+    acquire_time_signal: SignalR[float],
+    acquire_period_signal: SignalR[float] | None = None,
     process_plugin: NDProcessIO | None = None,
 ) -> TriggerInfo:
-    """Default TriggerInfo for AD detectors, reading num_images from the driver.
+    """Default TriggerInfo for AD detectors, reading current state from the driver.
+
+    `livetime` and `deadtime` are left at 0 so that `prepare()` keeps the
+    exposure settings currently on the driver. The acquire time and period are only
+    read to calculate `exposure_timeout` and `collection_timeout`.
 
     :param num_images_signal: SignalR for the number of images to acquire
+    :param acquire_time_signal: SignalR for the exposure time of each image
+    :param acquire_period_signal:
+        Optional SignalR for the acquire period. If given, the time per exposure
+        is the larger of this and the acquire time. Leave it out if the detector
+        ignores its acquire period.
     :param process_plugin: Optional NDProcessIO plugin for exposures per collection
     """
     num_images = await num_images_signal.get_value()
+    acquire_period = await acquire_time_signal.get_value()
+    if acquire_period_signal is not None:
+        acquire_period = max(acquire_period, await acquire_period_signal.get_value())
     exposures_per_collection = 1
 
     if process_plugin is not None and await process_plugin.enable_filter.get_value():
@@ -105,6 +120,8 @@ async def trigger_info_from_driver(
     return TriggerInfo(
         collections_per_event=max(1, num_images // exposures_per_collection),
         exposures_per_collection=exposures_per_collection,
+        exposure_timeout=acquire_period + DEFAULT_TIMEOUT,
+        collection_timeout=acquire_period * exposures_per_collection + DEFAULT_TIMEOUT,
         trigger=DetectorTrigger.INTERNAL,
     )
 
@@ -150,5 +167,8 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
         # post_count is what governs how many frames are buffered per trigger
         # in continuous-acquisition mode, not the driver's num_images.
         return await trigger_info_from_driver(
-            self.cb_plugin.post_count, self.process_plugin
+            self.cb_plugin.post_count,
+            self.driver.acquire_time,
+            acquire_period_signal=self.driver.acquire_period,
+            process_plugin=self.process_plugin,
         )

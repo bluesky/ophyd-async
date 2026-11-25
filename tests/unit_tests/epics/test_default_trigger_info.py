@@ -3,11 +3,13 @@ from collections.abc import Callable
 import pytest
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     SignalRW,
     StaticPathProvider,
     callback_on_mock_put,
     init_devices,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.epics import (
     adandor,
@@ -138,3 +140,31 @@ async def test_trigger_uses_num_images_and_process_plugin(
     assert shape_0 == expected_collections
     assert await proc.num_filter.get_value() == expected_exposures
     assert await num_signal.get_value() == expected_collections * expected_exposures
+
+
+@pytest.mark.parametrize(
+    "acquire_period, expected_exposure_time",
+    [
+        (None, 0.1),  # no acquire_period signal given, so acquire_time is used
+        (0.5, 0.5),
+        (0.05, 0.1),  # period shorter than acquire_time, so acquire_time is used
+    ],
+)
+async def test_trigger_info_from_driver_timeouts(
+    acquire_period: float | None, expected_exposure_time: float
+):
+    trigger_info = await adcore.trigger_info_from_driver(
+        soft_signal_rw(int, 3),
+        soft_signal_rw(float, 0.1),
+        acquire_period_signal=(
+            None if acquire_period is None else soft_signal_rw(float, acquire_period)
+        ),
+    )
+
+    # livetime and deadtime of 0 leave the driver's exposure settings unchanged
+    assert trigger_info.livetime == 0.0
+    assert trigger_info.deadtime == 0.0
+    expected_timeout = expected_exposure_time + DEFAULT_TIMEOUT
+    assert trigger_info.exposure_timeout == pytest.approx(expected_timeout)
+    assert trigger_info.collection_timeout == pytest.approx(expected_timeout)
+    assert trigger_info.collections_per_event == 3
