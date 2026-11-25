@@ -28,6 +28,7 @@
 ### Changed
 
 - Breaking: `WatchableAsyncStatus` and `WatchableAsyncStatus.wrap` accept only async generators. A class that implements only `__aiter__` and `__anext__` is no longer accepted.
+- On Python 3.11, awaiting a signal's `get_value()`, `read()`, `describe()` or `locate()` no longer lets other tasks run when the value is already available, as with soft and mock signals. This matches Python 3.12 and later. Code that relied on it, such as a test that checks `status.done` straight after awaiting a signal, should `await status` instead.
 
 ### Fixed
 

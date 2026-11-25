@@ -20,7 +20,11 @@ from ophyd_async.fastcs.panda import (
     PandaCaptureMode,
     PandaHdf5DatasetType,
 )
-from ophyd_async.testing import assert_configuration, assert_has_calls
+from ophyd_async.testing import (
+    assert_configuration,
+    assert_has_calls,
+    wait_for_pending_wakeups,
+)
 
 PANDA_DETECTOR_NAME = "mock_panda"
 
@@ -270,7 +274,8 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             },
         ),
     ]
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
     # Check that another kickoff without prepare is not allowed
     with pytest.raises(
         RuntimeError,
@@ -313,7 +318,8 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
             },
         ),
     ]
-    await status
+    await wait_for_pending_wakeups()
+    assert status.done
 
 
 async def test_get_indices_written(hdf_panda: HDFPanda):
