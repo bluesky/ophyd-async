@@ -971,7 +971,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Loc
 
 ````
 
-````{py:method} stop(success=False)
+````{py:method} stop(*, success: bool = False)
 :canonical: ophyd_async.core._movable.StandardMovable.stop
 :async:
 

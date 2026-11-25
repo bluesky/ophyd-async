@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing File Writing Detectors &#8212; ophyd-async 0.21.6.dev7+gade4a79a8 documentation</title>
+    <title>Implementing File Writing Detectors &#8212; ophyd-async 0.21.6.dev8+g79f686a7d documentation</title>
   
   
   
@@ -26,30 +26,30 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b91aab29"></script>
+    <script src="../_static/documentation_options.js?v=652f7068"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/implementing-detectors';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -112,7 +112,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev7+gade4a79a8 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev7+gade4a79a8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev8+g79f686a7d documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev8+g79f686a7d documentation - Home"/>
   
   
 </a></div>
@@ -209,14 +209,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -282,7 +282,7 @@
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -296,7 +296,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -360,14 +360,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -478,7 +478,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -522,29 +522,29 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 1     Time: 2026-11-25 17:13:05</span>
-<span class="go">Persistent Unique Scan ID: '347862cc-5934-4127-b56b-9874757db399'</span>
-<span class="go">start {'uid': '347862cc-5934-4127-b56b-9874757db399', 'time': 1795626785.8063323, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 1, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['pdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimPointDetector(name="pdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
+<span class="go">Transient Scan ID: 1     Time: 2026-11-25 17:25:37</span>
+<span class="go">Persistent Unique Scan ID: '9cb53305-7b73-4f1e-a1b3-9a09f70c1681'</span>
+<span class="go">start {'uid': '9cb53305-7b73-4f1e-a1b3-9a09f70c1681', 'time': 1795627537.1249971, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 1, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['pdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimPointDetector(name="pdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">descriptor {'configuration': {'pdet': {'data': {'pdet-channel-1-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-2-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-3-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;}, 'timestamps': {'pdet-channel-1-mode': 1795626785.7910094, 'pdet-channel-2-mode': 1795626785.7910624, 'pdet-channel-3-mode': 1795626785.7911081}, 'data_keys': {'pdet-channel-1-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-1-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-2-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-2-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-3-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-3-mode', 'choices': ['Low Energy', 'High Energy']}}}, 'stage-x': {'data': {'stage-x-velocity': 1000.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795626785.7968826, 'stage-x-acceleration_time': 1795626785.7902656}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1000.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795626785.797104, 'stage-y-acceleration_time': 1795626785.7904773}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}}, 'data_keys': {'pdet-channel-1-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-1-value', 'object_name': 'pdet'}, 'pdet-channel-2-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-2-value', 'object_name': 'pdet'}, 'pdet-channel-3-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-3-value', 'object_name': 'pdet'}, 'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}}, 'name': 'primary', 'object_keys': {'pdet': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value'], 'stage-x': ['stage-x'], 'stage-y': ['stage-y']}, 'run_start': '347862cc-5934-4127-b56b-9874757db399', 'time': 1795626785.9790163, 'uid': '672937af-ead5-44d2-afca-b0597bfa8066', 'object_classes': {}, 'hints': {'pdet': {'fields': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}, 'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}}}</span>
-<span class="go">|         1 | 17:13:06.0 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">event {'uid': '4e8a82db-f7f0-42ef-a288-484964ef3163', 'time': 1795626786.0463526, 'data': {'pdet-channel-1-value': 921, 'pdet-channel-2-value': 887, 'pdet-channel-3-value': 859, 'stage-x': 1.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795626785.9762707, 'pdet-channel-2-value': 1795626785.9763086, 'pdet-channel-3-value': 1795626785.9763188, 'stage-x': 1795626785.8549542, 'stage-y': 1795626785.8744094}, 'seq_num': 1, 'filled': {}, 'descriptor': '672937af-ead5-44d2-afca-b0597bfa8066'}</span>
-<span class="go">|         2 | 17:13:06.9 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">event {'uid': 'd57aa2a2-ccc5-46c7-8645-06641357e8c7', 'time': 1795626786.992678, 'data': {'pdet-channel-1-value': 937, 'pdet-channel-2-value': 903, 'pdet-channel-3-value': 875, 'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795626786.991122, 'pdet-channel-2-value': 1795626786.99116, 'pdet-channel-3-value': 1795626786.9911716, 'stage-x': 1795626785.8549542, 'stage-y': 1795626786.8896148}, 'seq_num': 2, 'filled': {}, 'descriptor': '672937af-ead5-44d2-afca-b0597bfa8066'}</span>
-<span class="go">|         3 | 17:13:07.8 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">event {'uid': '4cb362aa-cd0d-4c94-a349-ea991234a01f', 'time': 1795626787.881622, 'data': {'pdet-channel-1-value': 761, 'pdet-channel-2-value': 740, 'pdet-channel-3-value': 722, 'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795626787.8797925, 'pdet-channel-2-value': 1795626787.8798394, 'pdet-channel-3-value': 1795626787.8798535, 'stage-x': 1795626787.7782302, 'stage-y': 1795626787.7782984}, 'seq_num': 3, 'filled': {}, 'descriptor': '672937af-ead5-44d2-afca-b0597bfa8066'}</span>
-<span class="go">|         4 | 17:13:08.7 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
-<span class="go">event {'uid': '6e125291-546f-4790-a504-67f5897a4e28', 'time': 1795626788.7545013, 'data': {'pdet-channel-1-value': 487, 'pdet-channel-2-value': 467, 'pdet-channel-3-value': 448, 'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795626788.7527215, 'pdet-channel-2-value': 1795626788.7527604, 'pdet-channel-3-value': 1795626788.752773, 'stage-x': 1795626787.7782302, 'stage-y': 1795626788.6512127}, 'seq_num': 4, 'filled': {}, 'descriptor': '672937af-ead5-44d2-afca-b0597bfa8066'}</span>
+<span class="go">descriptor {'configuration': {'stage-x': {'data': {'stage-x-velocity': 1.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795627537.1131935, 'stage-x-acceleration_time': 1795627537.113205}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795627537.1133182, 'stage-y-acceleration_time': 1795627537.113328}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}, 'pdet': {'data': {'pdet-channel-1-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-2-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-3-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;}, 'timestamps': {'pdet-channel-1-mode': 1795627537.1137002, 'pdet-channel-2-mode': 1795627537.1137345, 'pdet-channel-3-mode': 1795627537.1137593}, 'data_keys': {'pdet-channel-1-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-1-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-2-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-2-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-3-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-3-mode', 'choices': ['Low Energy', 'High Energy']}}}}, 'data_keys': {'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}, 'pdet-channel-1-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-1-value', 'object_name': 'pdet'}, 'pdet-channel-2-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-2-value', 'object_name': 'pdet'}, 'pdet-channel-3-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-3-value', 'object_name': 'pdet'}}, 'name': 'primary', 'object_keys': {'stage-x': ['stage-x'], 'stage-y': ['stage-y'], 'pdet': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}, 'run_start': '9cb53305-7b73-4f1e-a1b3-9a09f70c1681', 'time': 1795627539.7314408, 'uid': '817cbc21-631a-41f9-8185-53a745656c0f', 'object_classes': {'stage-x': 'ophyd_async.sim._motor.SimMotor', 'stage-y': 'ophyd_async.sim._motor.SimMotor', 'pdet': 'ophyd_async.sim._point_detector.SimPointDetector'}, 'hints': {'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}, 'pdet': {'fields': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}}}</span>
+<span class="go">|         1 | 17:25:39.7 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">event {'uid': '8fcd7b13-b667-4906-86ae-ee3b6ac0c1b9', 'time': 1795627539.769675, 'data': {'stage-x': 1.0, 'stage-y': 2.0, 'pdet-channel-1-value': 921, 'pdet-channel-2-value': 887, 'pdet-channel-3-value': 859}, 'timestamps': {'stage-x': 1795627538.6275432, 'stage-y': 1795627539.62798, 'pdet-channel-1-value': 1795627539.7296214, 'pdet-channel-2-value': 1795627539.7296658, 'pdet-channel-3-value': 1795627539.7296758}, 'seq_num': 1, 'filled': {}, 'descriptor': '817cbc21-631a-41f9-8185-53a745656c0f'}</span>
+<span class="go">|         2 | 17:25:41.7 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">event {'uid': '1dca53a5-f64b-40e9-8f41-22aedad0b5c0', 'time': 1795627541.7809927, 'data': {'pdet-channel-1-value': 937, 'pdet-channel-2-value': 903, 'pdet-channel-3-value': 875, 'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795627541.7799385, 'pdet-channel-2-value': 1795627541.7799747, 'pdet-channel-3-value': 1795627541.7799845, 'stage-x': 1795627538.6275432, 'stage-y': 1795627541.6785333}, 'seq_num': 2, 'filled': {}, 'descriptor': '817cbc21-631a-41f9-8185-53a745656c0f'}</span>
+<span class="go">|         3 | 17:25:43.7 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">event {'uid': '18065b7d-b926-4d3c-a207-f7ec2b600e3b', 'time': 1795627543.7584338, 'data': {'pdet-channel-1-value': 761, 'pdet-channel-2-value': 740, 'pdet-channel-3-value': 722, 'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795627543.7574122, 'pdet-channel-2-value': 1795627543.7574508, 'pdet-channel-3-value': 1795627543.7574596, 'stage-x': 1795627543.6559908, 'stage-y': 1795627543.6560557}, 'seq_num': 3, 'filled': {}, 'descriptor': '817cbc21-631a-41f9-8185-53a745656c0f'}</span>
+<span class="go">|         4 | 17:25:45.7 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">event {'uid': '6d9df0a7-bd42-4aa6-909e-1f74bbeb331a', 'time': 1795627545.7271657, 'data': {'pdet-channel-1-value': 487, 'pdet-channel-2-value': 467, 'pdet-channel-3-value': 448, 'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795627545.726187, 'pdet-channel-2-value': 1795627545.7262216, 'pdet-channel-3-value': 1795627545.7262313, 'stage-x': 1795627543.6559908, 'stage-y': 1795627545.624828}, 'seq_num': 4, 'filled': {}, 'descriptor': '817cbc21-631a-41f9-8185-53a745656c0f'}</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan ['347862cc'] (scan num: 1)</span>
+<span class="go">generator grid_scan ['9cb53305'] (scan num: 1)</span>
 
 
 
-<span class="go">stop {'uid': '87e6f1b3-ad22-4a2c-9c06-b9c6ebd32ae5', 'time': 1795626789.4897752, 'run_start': '347862cc-5934-4127-b56b-9874757db399', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=('347862cc-5934-4127-b56b-9874757db399',), plan_result='347862cc-5934-4127-b56b-9874757db399', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': '69419211-d21b-49eb-a320-8d08f73b4869', 'time': 1795627546.0991836, 'run_start': '9cb53305-7b73-4f1e-a1b3-9a09f70c1681', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=('9cb53305-7b73-4f1e-a1b3-9a09f70c1681',), plan_result='9cb53305-7b73-4f1e-a1b3-9a09f70c1681', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 <p>We see a series of documents being emitted:</p>
@@ -562,39 +562,39 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 2     Time: 2026-11-25 17:13:09</span>
-<span class="go">Persistent Unique Scan ID: '1fb01a06-1c86-44ec-8d38-e6081a80be4f'</span>
-<span class="go">start {'uid': '1fb01a06-1c86-44ec-8d38-e6081a80be4f', 'time': 1795626789.6018457, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 2, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['bdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimBlobDetector(name="bdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
+<span class="go">Transient Scan ID: 2     Time: 2026-11-25 17:25:46</span>
+<span class="go">Persistent Unique Scan ID: '1e9b0029-7468-4898-aa90-9df679d05c5c'</span>
+<span class="go">start {'uid': '1e9b0029-7468-4898-aa90-9df679d05c5c', 'time': 1795627546.2089808, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 2, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['bdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimBlobDetector(name="bdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}, 'stage-x': {'data': {'stage-x-velocity': 1000.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795626785.7968826, 'stage-x-acceleration_time': 1795626785.7902656}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1000.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795626785.797104, 'stage-y-acceleration_time': 1795626785.7904773}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/db97fd8b-313f-403d-b130-ced90678d2f1.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/db97fd8b-313f-403d-b130-ced90678d2f1.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}, 'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum'], 'stage-x': ['stage-x'], 'stage-y': ['stage-y']}, 'run_start': '1fb01a06-1c86-44ec-8d38-e6081a80be4f', 'time': 1795626789.8593664, 'uid': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}, 'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}}}</span>
-<span class="go">stream_resource {'uid': '971df18b-5ff9-4d47-beab-25bb7675cf74', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/db97fd8b-313f-403d-b130-ced90678d2f1.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '1fb01a06-1c86-44ec-8d38-e6081a80be4f'}</span>
-<span class="go">stream_resource {'uid': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/db97fd8b-313f-403d-b130-ced90678d2f1.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '1fb01a06-1c86-44ec-8d38-e6081a80be4f'}</span>
-<span class="go">stream_datum {'stream_resource': '971df18b-5ff9-4d47-beab-25bb7675cf74', 'uid': '971df18b-5ff9-4d47-beab-25bb7675cf74/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d', 'uid': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">|         1 | 17:13:09.8 |      1.000 |      2.000 |</span>
-<span class="go">event {'uid': 'bd69ebe6-1d22-40be-9e07-94990671121a', 'time': 1795626789.8835924, 'data': {'stage-x': 1.0, 'stage-y': 2.0}, 'timestamps': {'stage-x': 1795626789.6504717, 'stage-y': 1795626789.650563}, 'seq_num': 1, 'filled': {}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '971df18b-5ff9-4d47-beab-25bb7675cf74', 'uid': '971df18b-5ff9-4d47-beab-25bb7675cf74/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d', 'uid': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">|         2 | 17:13:10.1 |      1.000 |      3.000 |</span>
-<span class="go">event {'uid': '45b4b61d-0c0d-4660-a480-3404a0967eaf', 'time': 1795626790.1352806, 'data': {'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'stage-x': 1795626789.6504717, 'stage-y': 1795626789.9301062}, 'seq_num': 2, 'filled': {}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '971df18b-5ff9-4d47-beab-25bb7675cf74', 'uid': '971df18b-5ff9-4d47-beab-25bb7675cf74/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d', 'uid': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">|         3 | 17:13:10.3 |      2.000 |      2.000 |</span>
-<span class="go">event {'uid': '6b664d7a-af75-4b6c-9300-fc33e7c063c9', 'time': 1795626790.3876224, 'data': {'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'stage-x': 1795626790.1822643, 'stage-y': 1795626790.182334}, 'seq_num': 3, 'filled': {}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '971df18b-5ff9-4d47-beab-25bb7675cf74', 'uid': '971df18b-5ff9-4d47-beab-25bb7675cf74/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">stream_datum {'stream_resource': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d', 'uid': '0f5a6f9b-7244-4290-b11b-917ce3e44f7d/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
-<span class="go">|         4 | 17:13:10.6 |      2.000 |      3.000 |</span>
-<span class="go">event {'uid': 'a385250e-c970-4895-89e5-17cc6c8a5b1e', 'time': 1795626790.6385639, 'data': {'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'stage-x': 1795626790.1822643, 'stage-y': 1795626790.434214}, 'seq_num': 4, 'filled': {}, 'descriptor': 'd763d3fd-564c-4fa3-9fdb-86fe48ea11a4'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}, 'stage-x': {'data': {'stage-x-velocity': 1.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795627537.1131935, 'stage-x-acceleration_time': 1795627537.113205}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795627537.1133182, 'stage-y-acceleration_time': 1795627537.113328}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/eb55f39f-0fab-4821-ba7a-b37ab67b8b45.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/eb55f39f-0fab-4821-ba7a-b37ab67b8b45.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}, 'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum'], 'stage-x': ['stage-x'], 'stage-y': ['stage-y']}, 'run_start': '1e9b0029-7468-4898-aa90-9df679d05c5c', 'time': 1795627547.9180362, 'uid': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector', 'stage-x': 'ophyd_async.sim._motor.SimMotor', 'stage-y': 'ophyd_async.sim._motor.SimMotor'}, 'hints': {'bdet': {'fields': ['bdet']}, 'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}}}</span>
+<span class="go">stream_resource {'uid': 'c055d64e-8719-4ba2-b596-9e9ad25ada80', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/eb55f39f-0fab-4821-ba7a-b37ab67b8b45.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '1e9b0029-7468-4898-aa90-9df679d05c5c'}</span>
+<span class="go">stream_resource {'uid': '15faba95-910c-4323-9024-4d2ac7d71e4a', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/eb55f39f-0fab-4821-ba7a-b37ab67b8b45.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '1e9b0029-7468-4898-aa90-9df679d05c5c'}</span>
+<span class="go">stream_datum {'stream_resource': 'c055d64e-8719-4ba2-b596-9e9ad25ada80', 'uid': 'c055d64e-8719-4ba2-b596-9e9ad25ada80/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': '15faba95-910c-4323-9024-4d2ac7d71e4a', 'uid': '15faba95-910c-4323-9024-4d2ac7d71e4a/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">|         1 | 17:25:47.9 |      1.000 |      2.000 |</span>
+<span class="go">event {'uid': '68283f59-e713-450d-a831-6192713541f7', 'time': 1795627547.9320242, 'data': {'stage-x': 1.0, 'stage-y': 2.0}, 'timestamps': {'stage-x': 1795627547.7113895, 'stage-y': 1795627547.711456}, 'seq_num': 1, 'filled': {}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': 'c055d64e-8719-4ba2-b596-9e9ad25ada80', 'uid': 'c055d64e-8719-4ba2-b596-9e9ad25ada80/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': '15faba95-910c-4323-9024-4d2ac7d71e4a', 'uid': '15faba95-910c-4323-9024-4d2ac7d71e4a/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">|         2 | 17:25:49.6 |      1.000 |      3.000 |</span>
+<span class="go">event {'uid': 'c1813a11-d28b-4c0a-8c8c-6753b6711618', 'time': 1795627549.6374688, 'data': {'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'stage-x': 1795627547.7113895, 'stage-y': 1795627549.433825}, 'seq_num': 2, 'filled': {}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': 'c055d64e-8719-4ba2-b596-9e9ad25ada80', 'uid': 'c055d64e-8719-4ba2-b596-9e9ad25ada80/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': '15faba95-910c-4323-9024-4d2ac7d71e4a', 'uid': '15faba95-910c-4323-9024-4d2ac7d71e4a/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">|         3 | 17:25:51.3 |      2.000 |      2.000 |</span>
+<span class="go">event {'uid': 'c0075c6d-fb99-45f5-93e6-578392b929a0', 'time': 1795627551.3430066, 'data': {'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'stage-x': 1795627551.139499, 'stage-y': 1795627551.1395702}, 'seq_num': 3, 'filled': {}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': 'c055d64e-8719-4ba2-b596-9e9ad25ada80', 'uid': 'c055d64e-8719-4ba2-b596-9e9ad25ada80/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">stream_datum {'stream_resource': '15faba95-910c-4323-9024-4d2ac7d71e4a', 'uid': '15faba95-910c-4323-9024-4d2ac7d71e4a/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
+<span class="go">|         4 | 17:25:53.0 |      2.000 |      3.000 |</span>
+<span class="go">event {'uid': '06dd4888-704f-49a9-a2ac-764f60775325', 'time': 1795627553.0484223, 'data': {'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'stage-x': 1795627551.139499, 'stage-y': 1795627552.8448975}, 'seq_num': 4, 'filled': {}, 'descriptor': '2c947b2f-26a5-45ef-9d63-0d0272f0c96e'}</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan ['1fb01a06'] (scan num: 2)</span>
+<span class="go">generator grid_scan ['1e9b0029'] (scan num: 2)</span>
 
 
 
-<span class="go">stop {'uid': 'ec7a5175-dcc3-40ba-9bdf-3e3d6a0cbb94', 'time': 1795626790.639019, 'run_start': '1fb01a06-1c86-44ec-8d38-e6081a80be4f', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=('1fb01a06-1c86-44ec-8d38-e6081a80be4f',), plan_result='1fb01a06-1c86-44ec-8d38-e6081a80be4f', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': 'c895060b-1a62-462f-8295-e914201dc2f1', 'time': 1795627553.0487497, 'run_start': '1e9b0029-7468-4898-aa90-9df679d05c5c', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=('1e9b0029-7468-4898-aa90-9df679d05c5c',), plan_result='1e9b0029-7468-4898-aa90-9df679d05c5c', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 <p>This time we see some different documents:</p>
@@ -614,39 +614,39 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">,</span> <span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 3     Time: 2026-11-25 17:13:10</span>
-<span class="go">Persistent Unique Scan ID: '2695420c-5df2-492f-9ec0-51e920e2a57a'</span>
-<span class="go">start {'uid': '2695420c-5df2-492f-9ec0-51e920e2a57a', 'time': 1795626790.7517338, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 3, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['bdet', 'pdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimBlobDetector(name="bdet")', 'SimPointDetector(name="pdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
+<span class="go">Transient Scan ID: 3     Time: 2026-11-25 17:25:53</span>
+<span class="go">Persistent Unique Scan ID: '000d3c89-42a4-4949-98a7-7d2a3b980b4d'</span>
+<span class="go">start {'uid': '000d3c89-42a4-4949-98a7-7d2a3b980b4d', 'time': 1795627553.157725, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 3, 'plan_type': 'generator', 'plan_name': 'grid_scan', 'detectors': ['bdet', 'pdet'], 'motors': ('stage-x', 'stage-y'), 'num_points': 4, 'num_intervals': 3, 'plan_args': {'detectors': ['SimBlobDetector(name="bdet")', 'SimPointDetector(name="pdet")'], 'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False], 'per_step': 'None'}, 'hints': {'gridding': 'rectilinear', 'dimensions': [(['stage-x'], 'primary'), (['stage-y'], 'primary')]}, 'shape': (2, 2), 'extents': ([1, 2], [2, 3]), 'snaking': (False, False), 'plan_pattern': 'outer_product', 'plan_pattern_args': {'args': ['SimMotor(name="stage-x")', 1, 2, 2, 'SimMotor(name="stage-y")', 2, 3, 2, False]}, 'plan_pattern_module': 'bluesky.plan_patterns'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}, 'pdet': {'data': {'pdet-channel-1-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-2-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-3-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;}, 'timestamps': {'pdet-channel-1-mode': 1795626785.7910094, 'pdet-channel-2-mode': 1795626785.7910624, 'pdet-channel-3-mode': 1795626785.7911081}, 'data_keys': {'pdet-channel-1-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-1-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-2-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-2-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-3-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-3-mode', 'choices': ['Low Energy', 'High Energy']}}}, 'stage-x': {'data': {'stage-x-velocity': 1000.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795626785.7968826, 'stage-x-acceleration_time': 1795626785.7902656}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1000.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795626785.797104, 'stage-y-acceleration_time': 1795626785.7904773}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/70dffd92-ff01-458e-8b2e-8dd834c0a24f.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/70dffd92-ff01-458e-8b2e-8dd834c0a24f.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}, 'pdet-channel-1-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-1-value', 'object_name': 'pdet'}, 'pdet-channel-2-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-2-value', 'object_name': 'pdet'}, 'pdet-channel-3-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-3-value', 'object_name': 'pdet'}, 'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum'], 'pdet': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value'], 'stage-x': ['stage-x'], 'stage-y': ['stage-y']}, 'run_start': '2695420c-5df2-492f-9ec0-51e920e2a57a', 'time': 1795626791.0099022, 'uid': '59b3beb3-2074-445f-a1c6-b2772ffd85d9', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}, 'pdet': {'fields': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}, 'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}}}</span>
-<span class="go">stream_resource {'uid': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/70dffd92-ff01-458e-8b2e-8dd834c0a24f.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '2695420c-5df2-492f-9ec0-51e920e2a57a'}</span>
-<span class="go">stream_resource {'uid': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/70dffd92-ff01-458e-8b2e-8dd834c0a24f.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '2695420c-5df2-492f-9ec0-51e920e2a57a'}</span>
-<span class="go">stream_datum {'stream_resource': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b', 'uid': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8', 'uid': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">|         1 | 17:13:11.0 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">event {'uid': '833e22aa-397c-4cbd-94da-2017a2aca253', 'time': 1795626791.0981896, 'data': {'pdet-channel-1-value': 921, 'pdet-channel-2-value': 887, 'pdet-channel-3-value': 859, 'stage-x': 1.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795626790.9038367, 'pdet-channel-2-value': 1795626790.903871, 'pdet-channel-3-value': 1795626790.9038823, 'stage-x': 1795626790.7989607, 'stage-y': 1795626790.7990232}, 'seq_num': 1, 'filled': {}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b', 'uid': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8', 'uid': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">|         2 | 17:13:12.4 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">event {'uid': 'a31e968c-c406-44e9-b5c0-2ac8105e9afd', 'time': 1795626792.406185, 'data': {'pdet-channel-1-value': 937, 'pdet-channel-2-value': 903, 'pdet-channel-3-value': 875, 'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795626792.301779, 'pdet-channel-2-value': 1795626792.301815, 'pdet-channel-3-value': 1795626792.301826, 'stage-x': 1795626790.7989607, 'stage-y': 1795626792.1995041}, 'seq_num': 2, 'filled': {}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b', 'uid': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8', 'uid': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">|         3 | 17:13:13.6 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">event {'uid': '68664b74-af95-4aac-b820-f62366eae6ab', 'time': 1795626793.622938, 'data': {'pdet-channel-1-value': 761, 'pdet-channel-2-value': 740, 'pdet-channel-3-value': 722, 'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795626793.5186694, 'pdet-channel-2-value': 1795626793.5187092, 'pdet-channel-3-value': 1795626793.5187209, 'stage-x': 1795626793.416152, 'stage-y': 1795626793.4162092}, 'seq_num': 3, 'filled': {}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b', 'uid': '079f4b21-ad4a-4ec5-aaad-f5eaac956f7b/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8', 'uid': 'fe6dcac2-eff6-42b7-b0e4-41a6ad23f4c8/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
-<span class="go">|         4 | 17:13:14.8 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
-<span class="go">event {'uid': '95161974-6316-4bf0-a798-5508b9f32786', 'time': 1795626794.8268704, 'data': {'pdet-channel-1-value': 487, 'pdet-channel-2-value': 467, 'pdet-channel-3-value': 448, 'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795626794.7231436, 'pdet-channel-2-value': 1795626794.7231808, 'pdet-channel-3-value': 1795626794.723192, 'stage-x': 1795626793.416152, 'stage-y': 1795626794.6210372}, 'seq_num': 4, 'filled': {}, 'descriptor': '59b3beb3-2074-445f-a1c6-b2772ffd85d9'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}, 'stage-x': {'data': {'stage-x-velocity': 1.0, 'stage-x-acceleration_time': 0.5}, 'timestamps': {'stage-x-velocity': 1795627537.1131935, 'stage-x-acceleration_time': 1795627537.113205}, 'data_keys': {'stage-x-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-velocity'}, 'stage-x-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x-acceleration_time'}}}, 'stage-y': {'data': {'stage-y-velocity': 1.0, 'stage-y-acceleration_time': 0.5}, 'timestamps': {'stage-y-velocity': 1795627537.1133182, 'stage-y-acceleration_time': 1795627537.113328}, 'data_keys': {'stage-y-velocity': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-velocity'}, 'stage-y-acceleration_time': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y-acceleration_time'}}}, 'pdet': {'data': {'pdet-channel-1-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-2-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;, 'pdet-channel-3-mode': &lt;EnergyMode.LOW: 'Low Energy'&gt;}, 'timestamps': {'pdet-channel-1-mode': 1795627537.1137002, 'pdet-channel-2-mode': 1795627537.1137345, 'pdet-channel-3-mode': 1795627537.1137593}, 'data_keys': {'pdet-channel-1-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-1-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-2-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-2-mode', 'choices': ['Low Energy', 'High Energy']}, 'pdet-channel-3-mode': {'dtype': 'string', 'shape': [], 'dtype_numpy': '|S40', 'source': 'soft://pdet-channel-3-mode', 'choices': ['Low Energy', 'High Energy']}}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/16766283-028d-419d-a74b-49c729d4e9ef.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/16766283-028d-419d-a74b-49c729d4e9ef.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}, 'stage-x': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-x', 'units': 'mm', 'object_name': 'stage-x'}, 'stage-y': {'dtype': 'number', 'shape': [], 'dtype_numpy': '&lt;f8', 'source': 'soft://stage-y', 'units': 'mm', 'object_name': 'stage-y'}, 'pdet-channel-1-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-1-value', 'object_name': 'pdet'}, 'pdet-channel-2-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-2-value', 'object_name': 'pdet'}, 'pdet-channel-3-value': {'dtype': 'integer', 'shape': [], 'dtype_numpy': '&lt;i8', 'source': 'soft://pdet-channel-3-value', 'object_name': 'pdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum'], 'stage-x': ['stage-x'], 'stage-y': ['stage-y'], 'pdet': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}, 'run_start': '000d3c89-42a4-4949-98a7-7d2a3b980b4d', 'time': 1795627554.867244, 'uid': '9975153d-d229-4e74-b573-9917cd1cceb8', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector', 'stage-x': 'ophyd_async.sim._motor.SimMotor', 'stage-y': 'ophyd_async.sim._motor.SimMotor', 'pdet': 'ophyd_async.sim._point_detector.SimPointDetector'}, 'hints': {'bdet': {'fields': ['bdet']}, 'stage-x': {'fields': ['stage-x']}, 'stage-y': {'fields': ['stage-y']}, 'pdet': {'fields': ['pdet-channel-1-value', 'pdet-channel-2-value', 'pdet-channel-3-value']}}}</span>
+<span class="go">stream_resource {'uid': 'da604ddb-10b7-4d61-820f-80bdc4edd61c', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/16766283-028d-419d-a74b-49c729d4e9ef.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '000d3c89-42a4-4949-98a7-7d2a3b980b4d'}</span>
+<span class="go">stream_resource {'uid': '5817d368-d703-4bcf-910b-395cc43e593b', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/16766283-028d-419d-a74b-49c729d4e9ef.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '000d3c89-42a4-4949-98a7-7d2a3b980b4d'}</span>
+<span class="go">stream_datum {'stream_resource': 'da604ddb-10b7-4d61-820f-80bdc4edd61c', 'uid': 'da604ddb-10b7-4d61-820f-80bdc4edd61c/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': '5817d368-d703-4bcf-910b-395cc43e593b', 'uid': '5817d368-d703-4bcf-910b-395cc43e593b/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">|         1 | 17:25:54.9 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">event {'uid': 'be0ae276-7bc8-4dd9-bce9-2c00d6f21460', 'time': 1795627554.9142838, 'data': {'stage-x': 1.0, 'stage-y': 2.0, 'pdet-channel-1-value': 921, 'pdet-channel-2-value': 887, 'pdet-channel-3-value': 859}, 'timestamps': {'stage-x': 1795627554.6599345, 'stage-y': 1795627554.6599994, 'pdet-channel-1-value': 1795627554.7639546, 'pdet-channel-2-value': 1795627554.7639902, 'pdet-channel-3-value': 1795627554.7640004}, 'seq_num': 1, 'filled': {}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': 'da604ddb-10b7-4d61-820f-80bdc4edd61c', 'uid': 'da604ddb-10b7-4d61-820f-80bdc4edd61c/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': '5817d368-d703-4bcf-910b-395cc43e593b', 'uid': '5817d368-d703-4bcf-910b-395cc43e593b/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">|         2 | 17:25:57.1 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">event {'uid': 'af47e428-3397-445c-ae32-b33e474fc46a', 'time': 1795627557.1508405, 'data': {'pdet-channel-1-value': 937, 'pdet-channel-2-value': 903, 'pdet-channel-3-value': 875, 'stage-x': 1.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795627557.0482063, 'pdet-channel-2-value': 1795627557.048249, 'pdet-channel-3-value': 1795627557.048259, 'stage-x': 1795627554.6599345, 'stage-y': 1795627556.9462113}, 'seq_num': 2, 'filled': {}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': 'da604ddb-10b7-4d61-820f-80bdc4edd61c', 'uid': 'da604ddb-10b7-4d61-820f-80bdc4edd61c/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': '5817d368-d703-4bcf-910b-395cc43e593b', 'uid': '5817d368-d703-4bcf-910b-395cc43e593b/2', 'seq_nums': {'start': 3, 'stop': 4}, 'indices': {'start': 2, 'stop': 3}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">|         3 | 17:25:59.3 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">event {'uid': '40cfcc0a-311a-4693-9b85-a5e6c705dbb3', 'time': 1795627559.3395653, 'data': {'pdet-channel-1-value': 761, 'pdet-channel-2-value': 740, 'pdet-channel-3-value': 722, 'stage-x': 2.0, 'stage-y': 2.0}, 'timestamps': {'pdet-channel-1-value': 1795627559.2369788, 'pdet-channel-2-value': 1795627559.2370117, 'pdet-channel-3-value': 1795627559.23702, 'stage-x': 1795627559.1352754, 'stage-y': 1795627559.135342}, 'seq_num': 3, 'filled': {}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': 'da604ddb-10b7-4d61-820f-80bdc4edd61c', 'uid': 'da604ddb-10b7-4d61-820f-80bdc4edd61c/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">stream_datum {'stream_resource': '5817d368-d703-4bcf-910b-395cc43e593b', 'uid': '5817d368-d703-4bcf-910b-395cc43e593b/3', 'seq_nums': {'start': 4, 'stop': 5}, 'indices': {'start': 3, 'stop': 4}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
+<span class="go">|         4 | 17:26:01.5 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">event {'uid': 'c7083250-daa4-4c60-aa8a-5743bd183ee7', 'time': 1795627561.5655289, 'data': {'pdet-channel-1-value': 487, 'pdet-channel-2-value': 467, 'pdet-channel-3-value': 448, 'stage-x': 2.0, 'stage-y': 3.0}, 'timestamps': {'pdet-channel-1-value': 1795627561.462971, 'pdet-channel-2-value': 1795627561.4630072, 'pdet-channel-3-value': 1795627561.4630163, 'stage-x': 1795627559.1352754, 'stage-y': 1795627561.3613915}, 'seq_num': 4, 'filled': {}, 'descriptor': '9975153d-d229-4e74-b573-9917cd1cceb8'}</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan ['2695420c'] (scan num: 3)</span>
+<span class="go">generator grid_scan ['000d3c89'] (scan num: 3)</span>
 
 
 
-<span class="go">stop {'uid': '55a92e1e-d0cd-40a0-ac0c-ce1660aecf79', 'time': 1795626795.7918143, 'run_start': '2695420c-5df2-492f-9ec0-51e920e2a57a', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
-<span class="gh">Out[3]: </span><span class="go">RunEngineResult(run_start_uids=('2695420c-5df2-492f-9ec0-51e920e2a57a',), plan_result='2695420c-5df2-492f-9ec0-51e920e2a57a', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': '5d7f8b4e-70d5-4797-9c8c-8b63f702542d', 'time': 1795627562.0420365, 'run_start': '000d3c89-42a4-4949-98a7-7d2a3b980b4d', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 4}}</span>
+<span class="gh">Out[3]: </span><span class="go">RunEngineResult(run_start_uids=('000d3c89-42a4-4949-98a7-7d2a3b980b4d',), plan_result='000d3c89-42a4-4949-98a7-7d2a3b980b4d', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 </section>
@@ -664,31 +664,31 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 4     Time: 2026-11-25 17:13:15</span>
-<span class="go">Persistent Unique Scan ID: '8d32b160-5d6a-42e7-909b-3f99e5fced7b'</span>
-<span class="go">start {'uid': '8d32b160-5d6a-42e7-909b-3f99e5fced7b', 'time': 1795626795.9089959, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 4, 'plan_type': 'generator', 'plan_name': 'my_count_plan'}</span>
+<span class="go">Transient Scan ID: 4     Time: 2026-11-25 17:26:02</span>
+<span class="go">Persistent Unique Scan ID: '00d96814-9a99-4fa2-a93f-356affb4de8c'</span>
+<span class="go">start {'uid': '00d96814-9a99-4fa2-a93f-356affb4de8c', 'time': 1795627562.152941, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 4, 'plan_type': 'generator', 'plan_name': 'my_count_plan'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+</span>
 <span class="go">|   seq_num |       time |</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/ff493a3a-1ff9-4cda-be1a-3bf492bc1c61.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/ff493a3a-1ff9-4cda-be1a-3bf492bc1c61.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '8d32b160-5d6a-42e7-909b-3f99e5fced7b', 'time': 1795626796.116257, 'uid': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
-<span class="go">stream_resource {'uid': '92e2517d-6ea7-41d2-b71e-3db757d4a125', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/ff493a3a-1ff9-4cda-be1a-3bf492bc1c61.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '8d32b160-5d6a-42e7-909b-3f99e5fced7b'}</span>
-<span class="go">stream_resource {'uid': 'fe12364b-b4cb-4f7b-a3c5-6413f3da50fe', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/ff493a3a-1ff9-4cda-be1a-3bf492bc1c61.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '8d32b160-5d6a-42e7-909b-3f99e5fced7b'}</span>
-<span class="go">stream_datum {'stream_resource': '92e2517d-6ea7-41d2-b71e-3db757d4a125', 'uid': '92e2517d-6ea7-41d2-b71e-3db757d4a125/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe12364b-b4cb-4f7b-a3c5-6413f3da50fe', 'uid': 'fe12364b-b4cb-4f7b-a3c5-6413f3da50fe/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
-<span class="go">|         1 | 17:13:16.1 |</span>
-<span class="go">event {'uid': 'd292d520-9184-4174-a6c2-f9a0337f43b3', 'time': 1795626796.1229072, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
-<span class="go">stream_datum {'stream_resource': '92e2517d-6ea7-41d2-b71e-3db757d4a125', 'uid': '92e2517d-6ea7-41d2-b71e-3db757d4a125/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
-<span class="go">stream_datum {'stream_resource': 'fe12364b-b4cb-4f7b-a3c5-6413f3da50fe', 'uid': 'fe12364b-b4cb-4f7b-a3c5-6413f3da50fe/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
-<span class="go">|         2 | 17:13:16.3 |</span>
-<span class="go">event {'uid': '66da76a2-a3ef-425c-96c3-e9ec80b5c256', 'time': 1795626796.3271732, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': '707cc910-5f56-4c59-8c3c-cb2ed1d0ded3'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/295f59d3-c484-4cfa-887b-4443ea0f59bc.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/295f59d3-c484-4cfa-887b-4443ea0f59bc.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '00d96814-9a99-4fa2-a93f-356affb4de8c', 'time': 1795627562.3578417, 'uid': '3ccb7384-5561-4496-9664-d8b57d2b990f', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector'}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
+<span class="go">stream_resource {'uid': '70f08dc7-cc4f-4336-b53d-edf37015c7bd', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/295f59d3-c484-4cfa-887b-4443ea0f59bc.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '00d96814-9a99-4fa2-a93f-356affb4de8c'}</span>
+<span class="go">stream_resource {'uid': 'd044fd4a-7f24-4403-a236-a5706c97f2d2', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/295f59d3-c484-4cfa-887b-4443ea0f59bc.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '00d96814-9a99-4fa2-a93f-356affb4de8c'}</span>
+<span class="go">stream_datum {'stream_resource': '70f08dc7-cc4f-4336-b53d-edf37015c7bd', 'uid': '70f08dc7-cc4f-4336-b53d-edf37015c7bd/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
+<span class="go">stream_datum {'stream_resource': 'd044fd4a-7f24-4403-a236-a5706c97f2d2', 'uid': 'd044fd4a-7f24-4403-a236-a5706c97f2d2/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
+<span class="go">|         1 | 17:26:02.3 |</span>
+<span class="go">event {'uid': 'c6f606ca-f8f6-4328-913f-aa850d95ec4f', 'time': 1795627562.3621125, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
+<span class="go">stream_datum {'stream_resource': '70f08dc7-cc4f-4336-b53d-edf37015c7bd', 'uid': '70f08dc7-cc4f-4336-b53d-edf37015c7bd/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
+<span class="go">stream_datum {'stream_resource': 'd044fd4a-7f24-4403-a236-a5706c97f2d2', 'uid': 'd044fd4a-7f24-4403-a236-a5706c97f2d2/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
+<span class="go">|         2 | 17:26:02.5 |</span>
+<span class="go">event {'uid': '072797b9-9dbb-4829-9b45-6fccf18cde23', 'time': 1795627562.5650291, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': '3ccb7384-5561-4496-9664-d8b57d2b990f'}</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">generator my_count_plan ['8d32b160'] (scan num: 4)</span>
+<span class="go">generator my_count_plan ['00d96814'] (scan num: 4)</span>
 
 
 
-<span class="go">stop {'uid': 'fa63bf84-8d4c-4441-b23e-3300c883da16', 'time': 1795626796.3278315, 'run_start': '8d32b160-5d6a-42e7-909b-3f99e5fced7b', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
-<span class="gh">Out[5]: </span><span class="go">RunEngineResult(run_start_uids=('8d32b160-5d6a-42e7-909b-3f99e5fced7b',), plan_result='8d32b160-5d6a-42e7-909b-3f99e5fced7b', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': 'b9220d40-ed21-40b0-9f1d-dc7502eefcdc', 'time': 1795627562.5653088, 'run_start': '00d96814-9a99-4fa2-a93f-356affb4de8c', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
+<span class="gh">Out[5]: </span><span class="go">RunEngineResult(run_start_uids=('00d96814-9a99-4fa2-a93f-356affb4de8c',), plan_result='00d96814-9a99-4fa2-a93f-356affb4de8c', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 <p>Here we see the same sort of documents as above, but with only detector information in it.</p>
@@ -707,31 +707,31 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan_with_prepare</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 5     Time: 2026-11-25 17:13:16</span>
-<span class="go">Persistent Unique Scan ID: '4899d800-b8b4-4f83-891c-2ab5ae9935c6'</span>
-<span class="go">start {'uid': '4899d800-b8b4-4f83-891c-2ab5ae9935c6', 'time': 1795626796.442185, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 5, 'plan_type': 'generator', 'plan_name': 'my_count_plan_with_prepare'}</span>
+<span class="go">Transient Scan ID: 5     Time: 2026-11-25 17:26:02</span>
+<span class="go">Persistent Unique Scan ID: 'dc76d031-d5fc-477d-93e4-836eab4e483d'</span>
+<span class="go">start {'uid': 'dc76d031-d5fc-477d-93e4-836eab4e483d', 'time': 1795627562.6753645, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 5, 'plan_type': 'generator', 'plan_name': 'my_count_plan_with_prepare'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+</span>
 <span class="go">|   seq_num |       time |</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/e6c0dda3-52a5-4035-b712-a967d9506a36.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/e6c0dda3-52a5-4035-b712-a967d9506a36.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '4899d800-b8b4-4f83-891c-2ab5ae9935c6', 'time': 1795626796.4498732, 'uid': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
-<span class="go">stream_resource {'uid': 'd80d0ae7-08bb-4e9f-ab5e-ecb7ded5000f', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/e6c0dda3-52a5-4035-b712-a967d9506a36.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '4899d800-b8b4-4f83-891c-2ab5ae9935c6'}</span>
-<span class="go">stream_resource {'uid': 'ff514d58-1573-469a-b414-550b12b3c339', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/e6c0dda3-52a5-4035-b712-a967d9506a36.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '4899d800-b8b4-4f83-891c-2ab5ae9935c6'}</span>
-<span class="go">stream_datum {'stream_resource': 'd80d0ae7-08bb-4e9f-ab5e-ecb7ded5000f', 'uid': 'd80d0ae7-08bb-4e9f-ab5e-ecb7ded5000f/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
-<span class="go">stream_datum {'stream_resource': 'ff514d58-1573-469a-b414-550b12b3c339', 'uid': 'ff514d58-1573-469a-b414-550b12b3c339/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
-<span class="go">|         1 | 17:13:16.4 |</span>
-<span class="go">event {'uid': 'eea2e62c-a1d5-4966-aeaa-ff863fd33d5c', 'time': 1795626796.4510741, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
-<span class="go">stream_datum {'stream_resource': 'd80d0ae7-08bb-4e9f-ab5e-ecb7ded5000f', 'uid': 'd80d0ae7-08bb-4e9f-ab5e-ecb7ded5000f/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
-<span class="go">stream_datum {'stream_resource': 'ff514d58-1573-469a-b414-550b12b3c339', 'uid': 'ff514d58-1573-469a-b414-550b12b3c339/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
-<span class="go">|         2 | 17:13:16.4 |</span>
-<span class="go">event {'uid': 'cf839363-4e04-47f5-80f6-4411f492953f', 'time': 1795626796.455129, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': 'bb79aa6d-5a36-40a6-a3c8-6e34315031d7'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/bc58a401-b7c6-4a92-b049-2611bc6cf676.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/bc58a401-b7c6-4a92-b049-2611bc6cf676.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': 'dc76d031-d5fc-477d-93e4-836eab4e483d', 'time': 1795627562.6818318, 'uid': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector'}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
+<span class="go">stream_resource {'uid': '33911b40-60b8-49a7-9246-8c4c61058cf4', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/bc58a401-b7c6-4a92-b049-2611bc6cf676.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': 'dc76d031-d5fc-477d-93e4-836eab4e483d'}</span>
+<span class="go">stream_resource {'uid': 'f1c054c7-1bc6-4e7f-9afd-99e2679bb058', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/bc58a401-b7c6-4a92-b049-2611bc6cf676.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': 'dc76d031-d5fc-477d-93e4-836eab4e483d'}</span>
+<span class="go">stream_datum {'stream_resource': '33911b40-60b8-49a7-9246-8c4c61058cf4', 'uid': '33911b40-60b8-49a7-9246-8c4c61058cf4/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
+<span class="go">stream_datum {'stream_resource': 'f1c054c7-1bc6-4e7f-9afd-99e2679bb058', 'uid': 'f1c054c7-1bc6-4e7f-9afd-99e2679bb058/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
+<span class="go">|         1 | 17:26:02.6 |</span>
+<span class="go">event {'uid': '2ad55c7b-aa9a-4877-b5fc-271551248424', 'time': 1795627562.6826053, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
+<span class="go">stream_datum {'stream_resource': '33911b40-60b8-49a7-9246-8c4c61058cf4', 'uid': '33911b40-60b8-49a7-9246-8c4c61058cf4/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
+<span class="go">stream_datum {'stream_resource': 'f1c054c7-1bc6-4e7f-9afd-99e2679bb058', 'uid': 'f1c054c7-1bc6-4e7f-9afd-99e2679bb058/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
+<span class="go">|         2 | 17:26:02.6 |</span>
+<span class="go">event {'uid': 'bbf52808-4ecd-428f-943a-ff526afe82de', 'time': 1795627562.685292, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': '4fb3aa8a-9605-46d7-bbfb-8695daf1d0e6'}</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">generator my_count_plan_with_prepare ['4899d800'] (scan num: 5)</span>
+<span class="go">generator my_count_plan_with_prepare ['dc76d031'] (scan num: 5)</span>
 
 
 
-<span class="go">stop {'uid': '87aa5057-7cc8-49a5-8e0c-f43e4a5cff93', 'time': 1795626796.4555602, 'run_start': '4899d800-b8b4-4f83-891c-2ab5ae9935c6', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
-<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=('4899d800-b8b4-4f83-891c-2ab5ae9935c6',), plan_result='4899d800-b8b4-4f83-891c-2ab5ae9935c6', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': '048f37f5-9e63-4e85-8fc1-492af005e4b3', 'time': 1795627562.6855273, 'run_start': 'dc76d031-d5fc-477d-93e4-836eab4e483d', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
+<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=('dc76d031-d5fc-477d-93e4-836eab4e483d',), plan_result='dc76d031-d5fc-477d-93e4-836eab4e483d', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a> contains all the parameters needed to set up the detector:</p>
@@ -762,31 +762,31 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan_with_prepare</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 6     Time: 2026-11-25 17:13:16</span>
-<span class="go">Persistent Unique Scan ID: '831e958b-8ab2-4301-9946-93687568eb2f'</span>
-<span class="go">start {'uid': '831e958b-8ab2-4301-9946-93687568eb2f', 'time': 1795626796.570746, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 6, 'plan_type': 'generator', 'plan_name': 'my_count_plan_with_prepare'}</span>
+<span class="go">Transient Scan ID: 6     Time: 2026-11-25 17:26:02</span>
+<span class="go">Persistent Unique Scan ID: 'ca15f71a-6f5b-4e48-affe-fe61fe982fef'</span>
+<span class="go">start {'uid': 'ca15f71a-6f5b-4e48-affe-fe61fe982fef', 'time': 1795627562.7953618, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 6, 'plan_type': 'generator', 'plan_name': 'my_count_plan_with_prepare'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+</span>
 <span class="go">|   seq_num |       time |</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/fc18d6be-cc58-4363-9e8d-db3cf3ea0c6d.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/fc18d6be-cc58-4363-9e8d-db3cf3ea0c6d.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '831e958b-8ab2-4301-9946-93687568eb2f', 'time': 1795626796.5744941, 'uid': '15743b7d-46dc-4d19-9f02-054f34bc356b', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
-<span class="go">stream_resource {'uid': '506bf8f3-2a1b-4b39-ad68-8a2a0377e1d5', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/fc18d6be-cc58-4363-9e8d-db3cf3ea0c6d.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '831e958b-8ab2-4301-9946-93687568eb2f'}</span>
-<span class="go">stream_resource {'uid': 'ef8d85bd-ff04-4eb9-9ae2-bd72e5c4a7df', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/fc18d6be-cc58-4363-9e8d-db3cf3ea0c6d.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '831e958b-8ab2-4301-9946-93687568eb2f'}</span>
-<span class="go">stream_datum {'stream_resource': '506bf8f3-2a1b-4b39-ad68-8a2a0377e1d5', 'uid': '506bf8f3-2a1b-4b39-ad68-8a2a0377e1d5/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
-<span class="go">stream_datum {'stream_resource': 'ef8d85bd-ff04-4eb9-9ae2-bd72e5c4a7df', 'uid': 'ef8d85bd-ff04-4eb9-9ae2-bd72e5c4a7df/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
-<span class="go">|         1 | 17:13:16.5 |</span>
-<span class="go">event {'uid': '232b4541-0d0a-4d89-b02f-d478f9d18280', 'time': 1795626796.5796647, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
-<span class="go">stream_datum {'stream_resource': '506bf8f3-2a1b-4b39-ad68-8a2a0377e1d5', 'uid': '506bf8f3-2a1b-4b39-ad68-8a2a0377e1d5/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
-<span class="go">stream_datum {'stream_resource': 'ef8d85bd-ff04-4eb9-9ae2-bd72e5c4a7df', 'uid': 'ef8d85bd-ff04-4eb9-9ae2-bd72e5c4a7df/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
-<span class="go">|         2 | 17:13:16.5 |</span>
-<span class="go">event {'uid': 'a0fb4a21-a1ef-45a1-bda5-677d90b34053', 'time': 1795626796.5833595, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': '15743b7d-46dc-4d19-9f02-054f34bc356b'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/2a0c7899-1cea-4fba-a92c-9a30ab419d22.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/2a0c7899-1cea-4fba-a92c-9a30ab419d22.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': 'ca15f71a-6f5b-4e48-affe-fe61fe982fef', 'time': 1795627562.7980285, 'uid': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector'}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
+<span class="go">stream_resource {'uid': 'ffe29803-2871-42e2-bdc8-2362a9b7e360', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/2a0c7899-1cea-4fba-a92c-9a30ab419d22.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': 'ca15f71a-6f5b-4e48-affe-fe61fe982fef'}</span>
+<span class="go">stream_resource {'uid': 'f9d3db74-b648-43f6-b8c4-f9aaaaa8e1a5', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/2a0c7899-1cea-4fba-a92c-9a30ab419d22.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': 'ca15f71a-6f5b-4e48-affe-fe61fe982fef'}</span>
+<span class="go">stream_datum {'stream_resource': 'ffe29803-2871-42e2-bdc8-2362a9b7e360', 'uid': 'ffe29803-2871-42e2-bdc8-2362a9b7e360/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
+<span class="go">stream_datum {'stream_resource': 'f9d3db74-b648-43f6-b8c4-f9aaaaa8e1a5', 'uid': 'f9d3db74-b648-43f6-b8c4-f9aaaaa8e1a5/0', 'seq_nums': {'start': 1, 'stop': 2}, 'indices': {'start': 0, 'stop': 1}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
+<span class="go">|         1 | 17:26:02.8 |</span>
+<span class="go">event {'uid': '1a3f0056-591a-421e-84bc-297f582f00d4', 'time': 1795627562.8015373, 'data': {}, 'timestamps': {}, 'seq_num': 1, 'filled': {}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
+<span class="go">stream_datum {'stream_resource': 'ffe29803-2871-42e2-bdc8-2362a9b7e360', 'uid': 'ffe29803-2871-42e2-bdc8-2362a9b7e360/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
+<span class="go">stream_datum {'stream_resource': 'f9d3db74-b648-43f6-b8c4-f9aaaaa8e1a5', 'uid': 'f9d3db74-b648-43f6-b8c4-f9aaaaa8e1a5/1', 'seq_nums': {'start': 2, 'stop': 3}, 'indices': {'start': 1, 'stop': 2}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
+<span class="go">|         2 | 17:26:02.8 |</span>
+<span class="go">event {'uid': '010854e1-7374-4807-9dfa-0be1eb3cfc1b', 'time': 1795627562.8041222, 'data': {}, 'timestamps': {}, 'seq_num': 2, 'filled': {}, 'descriptor': '4b7bf294-8c68-4f54-8762-aa2eac60cdfc'}</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">generator my_count_plan_with_prepare ['831e958b'] (scan num: 6)</span>
+<span class="go">generator my_count_plan_with_prepare ['ca15f71a'] (scan num: 6)</span>
 
 
 
-<span class="go">stop {'uid': '5d615a73-b40a-4b69-a067-6badcc5946b1', 'time': 1795626796.58374, 'run_start': '831e958b-8ab2-4301-9946-93687568eb2f', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
-<span class="gh">Out[11]: </span><span class="go">RunEngineResult(run_start_uids=('831e958b-8ab2-4301-9946-93687568eb2f',), plan_result='831e958b-8ab2-4301-9946-93687568eb2f', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': '2db871e5-e87a-4430-a96e-83c7b4ac89a7', 'time': 1795627562.8043494, 'run_start': 'ca15f71a-6f5b-4e48-affe-fe61fe982fef', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 2}}</span>
+<span class="gh">Out[11]: </span><span class="go">RunEngineResult(run_start_uids=('ca15f71a-6f5b-4e48-affe-fe61fe982fef',), plan_result='ca15f71a-6f5b-4e48-affe-fe61fe982fef', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 </section>
@@ -806,25 +806,25 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [13]: </span><span class="n">RE</span><span class="p">(</span><span class="n">fly_plan</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 7     Time: 2026-11-25 17:13:16</span>
-<span class="go">Persistent Unique Scan ID: '35e97634-7c85-4956-89ce-c72a01848047'</span>
-<span class="go">start {'uid': '35e97634-7c85-4956-89ce-c72a01848047', 'time': 1795626796.697259, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev7+gade4a79a8', 'bluesky': '1.15.1', 'event_model': '1.24.0'}, 'scan_id': 7, 'plan_type': 'generator', 'plan_name': 'fly_plan'}</span>
+<span class="go">Transient Scan ID: 7     Time: 2026-11-25 17:26:02</span>
+<span class="go">Persistent Unique Scan ID: '455dbd68-511b-447f-b47d-015d982e25aa'</span>
+<span class="go">start {'uid': '455dbd68-511b-447f-b47d-015d982e25aa', 'time': 1795627562.9245834, 'versions': {'ophyd': '1.11.2', 'ophyd_async': '0.21.6.dev8+g79f686a7d', 'bluesky': '1.16.0', 'event_model': '1.24.0'}, 'scan_id': 7, 'plan_type': 'generator', 'plan_name': 'fly_plan'}</span>
 <span class="go">New stream: 'primary'</span>
 <span class="go">+-----------+------------+</span>
 <span class="go">|   seq_num |       time |</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpylk9wyqw/dcf1bb17-d341-4caf-9db6-9624d8280b1c.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpylk9wyqw/dcf1bb17-d341-4caf-9db6-9624d8280b1c.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '35e97634-7c85-4956-89ce-c72a01848047', 'time': 1795626796.7012076, 'uid': 'b28193a3-46f8-4f61-a44a-5c1a2f4ef089', 'object_classes': {}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
-<span class="go">stream_resource {'uid': '2261ff6f-9521-4aa2-96d0-cf10fdee2dca', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/dcf1bb17-d341-4caf-9db6-9624d8280b1c.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '35e97634-7c85-4956-89ce-c72a01848047'}</span>
-<span class="go">stream_resource {'uid': '221d0f42-cadb-403b-9ca3-5149fb38dc37', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpylk9wyqw/dcf1bb17-d341-4caf-9db6-9624d8280b1c.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '35e97634-7c85-4956-89ce-c72a01848047'}</span>
-<span class="go">stream_datum {'stream_resource': '2261ff6f-9521-4aa2-96d0-cf10fdee2dca', 'uid': '2261ff6f-9521-4aa2-96d0-cf10fdee2dca/0', 'seq_nums': {'start': 1, 'stop': 8}, 'indices': {'start': 0, 'stop': 7}, 'descriptor': 'b28193a3-46f8-4f61-a44a-5c1a2f4ef089'}</span>
-<span class="go">stream_datum {'stream_resource': '221d0f42-cadb-403b-9ca3-5149fb38dc37', 'uid': '221d0f42-cadb-403b-9ca3-5149fb38dc37/0', 'seq_nums': {'start': 1, 'stop': 8}, 'indices': {'start': 0, 'stop': 7}, 'descriptor': 'b28193a3-46f8-4f61-a44a-5c1a2f4ef089'}</span>
+<span class="go">descriptor {'configuration': {'bdet': {'data': {}, 'timestamps': {}, 'data_keys': {}}}, 'data_keys': {'bdet': {'source': 'file://localhost/tmp/tmpnt6pwlkz/511ad476-a8ec-4fe5-bb7c-c99a1286dcf7.h5', 'shape': [1, 240, 320], 'dtype': 'array', 'dtype_numpy': '|u1', 'external': 'STREAM:', 'object_name': 'bdet'}, 'bdet-sum': {'source': 'file://localhost/tmp/tmpnt6pwlkz/511ad476-a8ec-4fe5-bb7c-c99a1286dcf7.h5', 'shape': [1], 'dtype': 'number', 'dtype_numpy': '&lt;i8', 'external': 'STREAM:', 'object_name': 'bdet'}}, 'name': 'primary', 'object_keys': {'bdet': ['bdet', 'bdet-sum']}, 'run_start': '455dbd68-511b-447f-b47d-015d982e25aa', 'time': 1795627562.927274, 'uid': '600a0cdc-6b2f-414f-98d4-00a7cffb5163', 'object_classes': {'bdet': 'ophyd_async.sim._blob_detector.SimBlobDetector'}, 'hints': {'bdet': {'fields': ['bdet']}}}</span>
+<span class="go">stream_resource {'uid': '34b17e91-cacb-41ac-840c-dba36ca93abc', 'data_key': 'bdet', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/511ad476-a8ec-4fe5-bb7c-c99a1286dcf7.h5', 'parameters': {'chunk_shape': (1, 240, 320), 'dataset': '/entry/data/data'}, 'run_start': '455dbd68-511b-447f-b47d-015d982e25aa'}</span>
+<span class="go">stream_resource {'uid': '876e2e9c-c1dd-4715-bc9b-56769125aec2', 'data_key': 'bdet-sum', 'mimetype': 'application/x-hdf5', 'uri': 'file://localhost/tmp/tmpnt6pwlkz/511ad476-a8ec-4fe5-bb7c-c99a1286dcf7.h5', 'parameters': {'chunk_shape': (1024,), 'dataset': '/entry/sum'}, 'run_start': '455dbd68-511b-447f-b47d-015d982e25aa'}</span>
+<span class="go">stream_datum {'stream_resource': '34b17e91-cacb-41ac-840c-dba36ca93abc', 'uid': '34b17e91-cacb-41ac-840c-dba36ca93abc/0', 'seq_nums': {'start': 1, 'stop': 8}, 'indices': {'start': 0, 'stop': 7}, 'descriptor': '600a0cdc-6b2f-414f-98d4-00a7cffb5163'}</span>
+<span class="go">stream_datum {'stream_resource': '876e2e9c-c1dd-4715-bc9b-56769125aec2', 'uid': '876e2e9c-c1dd-4715-bc9b-56769125aec2/0', 'seq_nums': {'start': 1, 'stop': 8}, 'indices': {'start': 0, 'stop': 7}, 'descriptor': '600a0cdc-6b2f-414f-98d4-00a7cffb5163'}</span>
 <span class="go">+-----------+------------+</span>
-<span class="go">generator fly_plan ['35e97634'] (scan num: 7)</span>
+<span class="go">generator fly_plan ['455dbd68'] (scan num: 7)</span>
 
 
 
-<span class="go">stop {'uid': 'a5c1baf9-bdec-4f4b-bf14-0f917b96858a', 'time': 1795626796.7130272, 'run_start': '35e97634-7c85-4956-89ce-c72a01848047', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 7}}</span>
-<span class="gh">Out[13]: </span><span class="go">RunEngineResult(run_start_uids=('35e97634-7c85-4956-89ce-c72a01848047',), plan_result='35e97634-7c85-4956-89ce-c72a01848047', exit_status='success', interrupted=False, reason='', exception=None)</span>
+<span class="go">stop {'uid': '9a8672f2-2c5a-4571-a2bd-c79c3a939989', 'time': 1795627562.936404, 'run_start': '455dbd68-511b-447f-b47d-015d982e25aa', 'exit_status': 'success', 'reason': '', 'num_events': {'primary': 7}}</span>
+<span class="gh">Out[13]: </span><span class="go">RunEngineResult(run_start_uids=('455dbd68-511b-447f-b47d-015d982e25aa',), plan_result='455dbd68-511b-447f-b47d-015d982e25aa', exit_status='success', interrupted=False, reason='', exception=None)</span>
 </pre></div>
 </div>
 <p>As before, we see the start, descriptor, and pair of stream resources, but this time we don’t see any event documents. Also, even though we asked for 7 frames from each of the 2 streams, we only got 2 stream datums for each stream.</p>
@@ -1097,7 +1097,7 @@ In [1]:
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1162,8 +1162,8 @@ In [1]:
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1175,7 +1175,7 @@ In [1]:
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>
