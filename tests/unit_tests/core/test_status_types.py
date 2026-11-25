@@ -8,7 +8,7 @@ in the `type-checking` tox env. `assert_type` itself is a no-op at runtime, so
 each test also exercises the behaviour it is describing.
 """
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from typing import assert_type
 
 from ophyd_async.core import (
@@ -51,7 +51,7 @@ async def test_watchable_async_status_reports_watch_type_not_result_type() -> No
     # return a value at all.
     class FloatDevice(Device):
         @WatchableAsyncStatus.wrap
-        async def set(self, value: float) -> AsyncIterator[WatcherUpdate[float]]:
+        async def set(self, value: float) -> AsyncGenerator[WatcherUpdate[float], None]:
             yield WatcherUpdate(initial=0.0, current=value, target=value)
 
     currents: list[float | None] = []

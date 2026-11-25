@@ -68,7 +68,7 @@ Most areaDetectors can use the standard [](#adcore.ADAcquireLogic) which handles
 
 ## Add a Detector that puts it all together
 
-Now you need to make an [](#adcore.AreaDetector) subclass that uses your IO and Trigger Logic with the standard Arm Logic and Writer classes that come with ADCore. The `__init__` method should:
+Now you need to make an [](#adcore.AreaDetector) subclass that uses your IO and Trigger Logic with the standard acquire logic and data logic that come with ADCore. The `__init__` method should:
 1. Create the driver IO instance
 2. Create instances of your logic classes
 3. Call `super().__init__()` passing the driver and logic instances to the baseclass
@@ -77,6 +77,7 @@ The constructor parameters should include:
 - `prefix`: The PV prefix for the driver and plugins
 - `*writer_factories`: Zero or more [](#adcore.ADWriterFactory) instances (e.g. `ADWriterFactory.hdf(path_provider)`); omit entirely to skip file writing
 - `driver_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
+- `proc_suffix`: An optional PV suffix for a process plugin, which the detector creates with [](#adcore.plugins_with_proc) and gives to its trigger logic
 - `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBaseIO)} for additional plugins
 - `config_sigs`: Additional signals to report in configuration (beyond the standard acquire_time and acquire_period)
 - `name`: An optional name for the device
@@ -90,7 +91,7 @@ For example, for ADAravis:
 
 The `AreaDetector` baseclass will:
 - Store the driver as `self.driver`
-- Call `add_detector_logics()` to register your trigger and arm logic
+- Call `add_detector_logics()` to register your trigger and acquire logic
 - Create and register a data logic for file writing for each factory in `writer_factories`
 - Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
 - Store any plugins as attributes on the detector
@@ -256,9 +257,9 @@ And test internal triggering:
 You have now made a detector, and can import and create it like this:
 
 ```python
-from ophyd_async.epics import adaravis
+from ophyd_async.epics import adaravis, adcore
 
-det = adaravis.AravisDetector("PREFIX:", path_provider)
+det = adaravis.AravisDetector("PREFIX:", adcore.ADWriterFactory.hdf(path_provider))
 ```
 
 The detector will now support:

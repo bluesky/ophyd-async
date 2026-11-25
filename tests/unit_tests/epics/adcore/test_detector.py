@@ -177,3 +177,11 @@ async def test_get_ndarray_resource_info_unsupported_color_mode(
         match=r"^Unsupported ColorMode Bayer! Only Mono and RGB1 are supported\.$",
     ):
         await det.prepare(TriggerInfo())
+
+
+@pytest.mark.parametrize("proc_suffix", [None, "PROC:"])
+def test_plugins_proc_is_reserved_for_proc_suffix(proc_suffix: str | None):
+    with pytest.raises(ValueError, match=r"Pass proc_suffix to add a process plugin"):
+        adcore.plugins_with_proc(
+            {"proc": adcore.NDProcessIO("PREFIX:PROC:")}, "PREFIX:", proc_suffix
+        )

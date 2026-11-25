@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from functools import cached_property
 from typing import Generic, cast
@@ -30,7 +30,7 @@ NO_ARG_VOID_SIGNATURE = inspect.Signature([], return_annotation=None)
 MockExecuteCallback = Callable[P, T] | Callable[P, Awaitable[T]]
 
 
-class CommandBackend(Generic[P, T]):
+class CommandBackend(ABC, Generic[P, T]):
     """A backend for a Command.
 
     :param signature: The Python signature of the command, or `None` if the
