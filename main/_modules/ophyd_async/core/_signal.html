@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.6.dev2+ge9ddd9879 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.21.6.dev3+g3491679bd documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=141356d5"></script>
+    <script src="../../../_static/documentation_options.js?v=985b55a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
   
   
 </a></div>
@@ -833,7 +833,6 @@ window.runMermaid = runMermaid;</script>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -1579,46 +1578,38 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
     <span class="c1"># Start monitoring before the set to avoid a race condition</span>
     <span class="n">checker</span> <span class="o">=</span> <span class="n">_ValueChecker</span><span class="p">(</span><span class="n">match_value</span><span class="p">)</span>
-    <span class="n">wait_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
+    <span class="c1"># The wait is cancelled when we exit, whether by error, cancel or success</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span>
         <span class="n">checker</span><span class="o">.</span><span class="n">wait_for_value</span><span class="p">(</span><span class="n">match_signal</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Put this in a try/except to ensure wait_task is cancelled when we exit</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Don't start the set until match_signal has given a value. wait_task's</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">wait_status</span><span class="p">:</span>
+        <span class="c1"># Don't start the set until match_signal has given a value. The wait's</span>
         <span class="c1"># timeout is the only deadline: if it finishes first, no value arrived</span>
         <span class="c1"># and awaiting it raises its error.</span>
         <span class="n">first_value</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">checker</span><span class="o">.</span><span class="n">got_first_value</span><span class="o">.</span><span class="n">wait</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">first_value</span><span class="p">,</span> <span class="n">wait_task</span><span class="p">],</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span>
+                <span class="p">[</span><span class="n">first_value</span><span class="p">,</span> <span class="n">wait_status</span><span class="o">.</span><span class="n">task</span><span class="p">],</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span>
             <span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">first_value</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">checker</span><span class="o">.</span><span class="n">got_first_value</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
-            <span class="c1"># wait_task finished with no first value, so it holds a TimeoutError.</span>
+            <span class="c1"># The wait finished with no first value, so it holds a TimeoutError.</span>
             <span class="c1"># Awaiting it raises that error here, so we never start the set or</span>
-            <span class="c1"># await wait_task a second time below</span>
-            <span class="k">await</span> <span class="n">wait_task</span>
+            <span class="c1"># await the wait a second time below</span>
+            <span class="k">await</span> <span class="n">wait_status</span>
 
         <span class="c1"># Now we can start the set</span>
         <span class="n">status</span> <span class="o">=</span> <span class="n">set_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">set_value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">set_timeout</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">wait_for_set_completion</span><span class="p">:</span>
             <span class="c1"># Just wait for the match_signal to be at value</span>
-            <span class="k">await</span> <span class="n">wait_task</span>
+            <span class="k">await</span> <span class="n">wait_status</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Wait for both to complete, so if the set raises an exception it</span>
             <span class="c1"># is surfaced early. Wait for the status task so if either errors</span>
             <span class="c1"># the other is cancelled</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">wait_task</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">status</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="c1"># Make sure the wait is not left dangling if there was an error</span>
-        <span class="n">wait_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
-            <span class="k">await</span> <span class="n">wait_task</span>
-        <span class="k">raise</span></div>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">wait_status</span><span class="o">.</span><span class="n">task</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
 
 
 

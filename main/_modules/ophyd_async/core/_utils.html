@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.21.6.dev2+ge9ddd9879 documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.21.6.dev3+g3491679bd documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=141356d5"></script>
+    <script src="../../../_static/documentation_options.js?v=985b55a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
   
   
 </a></div>
@@ -838,7 +838,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
     <span class="n">Awaitable</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Iterable</span><span class="p">,</span>
@@ -1200,8 +1200,11 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="get_unique">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_unique">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_unique</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">types</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_unique</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">types</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""If all values are the same, return that value, otherwise raise TypeError.</span>
+
+<span class="sd">    :param values: the values by label</span>
+<span class="sd">    :param types: what the values are, for the error message</span>
 
 <span class="sd">    ```python</span>
 <span class="sd">    &gt;&gt;&gt; get_unique({"a": 1, "b": 1}, "integers")</span>
@@ -1349,6 +1352,36 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="cancel_and_wait">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.cancel_and_wait">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cancel_and_wait</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Cancel `tasks`, wait for all of them to end, then raise the first error.</span>
+
+<span class="sd">    The first error is that of the first task, in the order given, that ended</span>
+<span class="sd">    with one. If the caller is cancelled while waiting, it keeps waiting until</span>
+<span class="sd">    every task has ended, then raises its own `CancelledError` instead.</span>
+
+<span class="sd">    :param tasks: The tasks to cancel.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+    <span class="n">caller_cancel</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span> <span class="k">as</span> <span class="n">cancel</span><span class="p">:</span>
+            <span class="n">caller_cancel</span> <span class="o">=</span> <span class="n">cancel</span>
+    <span class="c1"># Retrieve every error, even when re-raising a cancel, so asyncio never logs</span>
+    <span class="c1"># "Task exception was never retrieved"</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()]</span>
+    <span class="n">first_error</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">error</span> <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">errors</span> <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">caller_cancel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">caller_cancel</span>
+    <span class="k">if</span> <span class="n">first_error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">first_error</span></div>
+
+
+
 <div class="viewcode-block" id="abstract_cached_property">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.abstract_cached_property">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">abstract_cached_property</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">cached_property</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
@@ -1369,8 +1402,10 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Await `coro`, raising `TimeoutError(source)` if it takes over `timeout`."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">coro</span>
     <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
@@ -1382,7 +1417,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">acceleration_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Yield positions at 10Hz along a trapezoidal velocity profile.</span>
 
 <span class="sd">    :param old_position: Where the move starts.</span>

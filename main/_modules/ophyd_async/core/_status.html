@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._status &#8212; ophyd-async 0.21.6.dev2+ge9ddd9879 documentation</title>
+    <title>ophyd_async.core._status &#8212; ophyd-async 0.21.6.dev3+g3491679bd documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=141356d5"></script>
+    <script src="../../../_static/documentation_options.js?v=985b55a5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev2+ge9ddd9879 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev3+g3491679bd documentation - Home"/>
   
   
 </a></div>
@@ -835,11 +835,16 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">CancelledError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Coroutine</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">aclosing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span>
 
@@ -847,7 +852,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Watcher</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">WatcherUpdate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">cancel_and_wait</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncStatusBase</span><span class="p">(</span><span class="n">Status</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
@@ -963,11 +968,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aexit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-        <span class="c1"># Need to await the task to suppress teardown warnings, but</span>
-        <span class="c1"># we know it will raise CancelledError as we just cancelled it</span>
-        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">CancelledError</span><span class="p">):</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
+        <span class="k">await</span> <span class="n">cancel_and_wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
         <span class="c1"># Raise any errors from the block, but not cancellation errors from the status</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -1065,22 +1066,27 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Watcher</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">:</span> <span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_notify_watchers_from</span><span class="p">(</span><span class="n">iterator</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_notify_watchers_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]]):</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">update</span>
-                <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">time_elapsed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="k">else</span> <span class="n">replace</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">watcher</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_update_watcher</span><span class="p">(</span><span class="n">watcher</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_notify_watchers_from</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="c1"># A watcher that raises leaves the generator at its yield, so close it</span>
+        <span class="c1"># now rather than at garbage collection</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">aclosing</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">update</span>
+                    <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">time_elapsed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="n">replace</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">watcher</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_watcher</span><span class="p">(</span><span class="n">watcher</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_watcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">watcher</span><span class="p">:</span> <span class="n">Watcher</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">update</span><span class="p">:</span> <span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
         <span class="n">vals</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span>
@@ -1107,9 +1113,9 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">WatchableAsyncStatus</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
-        <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">V</span><span class="p">]]],</span>
+        <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="kc">None</span><span class="p">]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span><span class="p">[</span><span class="n">V</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""Wrap an AsyncIterator in a WatchableAsyncStatus.</span>
+<span class="w">        </span><span class="sd">"""Wrap an async generator function in a WatchableAsyncStatus.</span>
 
 <span class="sd">        For example:</span>
 <span class="sd">        ```python</span>
@@ -1142,7 +1148,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.forward_watcher_updates">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">forward_watcher_updates</span><span class="p">(</span>
     <span class="n">statuses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">WatchableAsyncStatus</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">combine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Forward watcher updates from several watchable moves.</span>
 
 <span class="sd">    If ``combine`` is True, yield the mean fractional progress (0 to 1) of all</span>
