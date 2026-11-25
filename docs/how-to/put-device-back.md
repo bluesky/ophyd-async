@@ -15,9 +15,8 @@ def my_plan():
     # Get the current settings from the device
     initial_settings = yield from get_current_settings(device)
     # Retrieve a previously saved settings from the provider
-    known_good_settings = yield from retrieve_settings(
-        provider, "yaml_file_name", device
-    )
+    known_good = yield from retrieve_snapshot(provider, "yaml_file_name", device)
+    known_good_settings = known_good.settings
     # Apply the settings that aren't at the right value to the device
     # using the stored initial_settings from above rather than querying
     # the device again

@@ -5,7 +5,6 @@ from collections.abc import Callable, Iterator, MutableMapping
 from typing import Any, Generic
 
 from ._device import Device, DeviceT
-from ._readable import ReadableFormats
 from ._signal import SignalRW
 from ._signal_backend import SignalDatatypeT
 
@@ -34,25 +33,11 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
     """
 
     def __init__(
-        self,
-        device: DeviceT,
-        settings: MutableMapping[SignalRW, Any] | None = None,
-        readable_formats: ReadableFormats | None = None,
+        self, device: DeviceT, settings: MutableMapping[SignalRW, Any] | None = None
     ):
         self.device = device
         self._settings = {}
         self.update(settings or {})
-        self.readable_formats: ReadableFormats | None = (
-            None
-            if readable_formats is None
-            else {owner: dict(entries) for owner, entries in readable_formats.items()}
-        )
-        """Changes to the readable formats of the Device tree.
-
-        Applied by [](#apply_settings), so a
-        dict (even an empty one) first resets the tree to its class defaults,
-        while `None` leaves formats alone.
-        """
 
     def __getitem__(self, key: SignalRW[SignalDatatypeT]) -> SignalDatatypeT:
         return self._settings[key]
@@ -85,37 +70,10 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
         return len(self._settings)
 
     def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings[DeviceT]:
-        """Create a new Settings that is the union of self overridden by other.
-
-        Readable formats merge per (owner, child), the same granularity that
-        values merge at, so `other` only replaces the children it mentions.
-
-        :raises ValueError:
-            If `other` is a `Settings` for a Device outside this one, or for a
-            Device below this one while carrying readable formats.
-        """
-        formats = self.readable_formats
-        if isinstance(other, Settings):
-            if other.device is not self.device:
-                if not self._is_in_device(other.device):
-                    msg = f"{other.device} is not a child of {self.device}"
-                    raise ValueError(msg)
-                if other.readable_formats is not None:
-                    # Re-rooting the owner paths is easy, but applying resets
-                    # the whole tree, so a sub-device's formats would reset
-                    # Devices it knows nothing about
-                    msg = (
-                        f"Cannot merge readable formats from {other.device}, whose "
-                        f"paths are relative to it rather than to {self.device}"
-                    )
-                    raise ValueError(msg)
-            if other.readable_formats is not None:
-                formats = {
-                    owner: dict(entries) for owner, entries in (formats or {}).items()
-                }
-                for owner, entries in other.readable_formats.items():
-                    formats.setdefault(owner, {}).update(entries)
-        return Settings(self.device, self._settings | dict(other), formats)
+        """Create a new Settings that is the union of self overridden by other."""
+        if isinstance(other, Settings) and not self._is_in_device(other.device):
+            raise ValueError(f"{other.device} is not a child of {self.device}")
+        return Settings(self.device, self._settings | dict(other))
 
     def partition(
         self, predicate: Callable[[SignalRW], bool]
@@ -130,17 +88,13 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
             The first contains the signals for which the predicate returned True,
             and the second contains the signals for which the predicate returned False.
 
-        Both halves carry the same `readable_formats`. Applying them twice is
-        harmless: it writes to no hardware and gives the same result.
-
         :example:
         ```python
         settings = Settings(device, {device.special: 1, device.sig: 2})
         specials, others = settings.partition(lambda sig: "special" in sig.name)
         ```
         """
-        where_true = Settings(self.device, readable_formats=self.readable_formats)
-        where_false = Settings(self.device, readable_formats=self.readable_formats)
+        where_true, where_false = Settings(self.device), Settings(self.device)
         for signal, value in self.items():
             dest = where_true if predicate(signal) else where_false
             dest[signal] = value

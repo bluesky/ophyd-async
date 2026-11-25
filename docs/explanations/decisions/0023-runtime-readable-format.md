@@ -60,29 +60,31 @@ A change part way through a run would make `describe()` disagree with the descri
 emitted at its start. This is documented rather than enforced, as a Device cannot see run
 boundaries.
 
-### Formats are stored with settings, under a reserved key
+### Formats are stored with the values, but are not Settings
 
-A technique change wants values and formats together, so they share one file and one
-`apply_settings`. Values stay flat, and one reserved key holds the format changes, keyed
-by owner then child:
+A technique change wants values and formats together, so they share one file. Values stay
+flat, and one reserved key holds the format changes as `owner:child`, where `owner` is the
+path of the `StandardReadable` that owns the child, and `child` is its path from the owner:
 
 ```yaml
 energy: 7.0
 <READABLE_FORMATS>:
-  <ROOT_DEVICE>:
-    energy: HINTED_SIGNAL
-    temperature: null
+  energy: HINTED_SIGNAL
+  temperature: null
+  mirror:pitch: CONFIG_SIGNAL
 ```
 
 - `<` cannot begin a Python identifier, so no attribute path collides with a reserved key,
-  and it needs no YAML quoting. `<ROOT_DEVICE>` avoids the `? '' :` form PyYAML emits for
-  an empty key.
-- Unknown reserved keys are warned about and dropped, so a file from a newer version still
-  loads. A file without the key leaves formats alone, so no version marker is needed.
+  and it needs no YAML quoting. A root-owned child has no `owner:` prefix, which avoids the
+  `? '' :` form PyYAML emits for an empty key.
+- A flat key keeps the section one level deep, like the values, and `:` cannot appear in
+  a dotted path.
 - Keying by owner allows one child registered on two owners with different formats, and
   reaches nested children such as `driver.acquire_time` and `DeviceVector` elements.
-- A config-only `store_settings` still stores formats, as they decide which signals are
+- A child outside its owner has no path from it, so it is warned about and not stored.
+- A config-only `store_snapshot` still stores formats, as they decide which signals are
   configuration.
+- A file without the key leaves formats alone, so no version marker is needed.
 
 ### Only changes are stored, and applying resets to the class defaults first
 
@@ -97,8 +99,24 @@ Rejected:
   leaves the plugin registered.
 
 Formats are applied after values, so a failed value write leaves them untouched.
-`Settings.partition` copies the formats to both halves, because plans such as
-`apply_panda_settings` apply only the halves.
+
+### A DeviceSnapshot holds typed values and formats, and Settings stays values only
+
+`Settings` stays a mapping of signals to values. Giving it formats made `|`, `partition`
+and `apply_settings_if_different` need rules for them: whether a sub-Device's formats may
+merge when applying resets the whole tree, and which half of a partition carries them.
+Formats are not values, so they are not in it.
+
+A `DeviceSnapshot` is a Device plus its values by path and its format changes by
+`(owner path, child path)`, so one file is one Device state. The `retrieve_snapshot` plan
+splits the stored layout into those before building it, so core knows nothing of the file
+format and a bad format string raises when retrieved. Construction resolves
+the paths against the Device, so a stale path raises one `NameError` before anything is
+written. `settings` and `readable_formats` return new, typed copies, so neither is a live
+view and neither can be given paths relative to the wrong root. There is no combined apply
+plan: callers use `apply_settings` and `apply_readable_formats`, where `None` formats leave
+them alone. `store_settings` and `retrieve_settings` are deprecated in favour of the
+snapshot plans, and delegate to them.
 
 ## Consequences
 

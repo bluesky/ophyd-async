@@ -55,7 +55,7 @@ class YamlSettingsProvider(SettingsProvider):
                 DeprecationWarning(
                     "Found old save file. Re-save your yaml settings file "
                     f"{self._file_path(name)} using "
-                    "ophyd_async.plan_stubs.store_settings"
+                    "ophyd_async.plan_stubs.store_snapshot"
                 ),
                 stacklevel=2,
             )

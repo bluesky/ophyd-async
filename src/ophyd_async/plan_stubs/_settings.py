@@ -10,8 +10,8 @@ import numpy as np
 from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
-    READABLE_FORMATS_KEY,
     Device,
+    DeviceSnapshot,
     ReadableFormats,
     Settings,
     SettingsProvider,
@@ -27,106 +27,57 @@ from ophyd_async.core import (
 from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable
 
-#: The key standing in for the root Device itself in a ReadableFormats, where
-#: every other key is a dotted attribute path.
-_ROOT_DEVICE_KEY = "<ROOT_DEVICE>"
+#: The reserved key under which readable formats are stored. It cannot collide
+#: with a dotted attribute path.
+_READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
+
+#: Separates the path of the owning `StandardReadable` from the path of the
+#: child in a stored readable format key.
+_OWNER_SEPARATOR = ":"
 
 
-def _paths_to_devices(device: Device) -> dict[str, Device]:
-    return {_ROOT_DEVICE_KEY: device, **walk_devices(device)}
+def _is_section(key: str) -> bool:
+    return key.startswith("<") and key.endswith(">")
 
 
-def _walk_readable_formats(device: Device) -> ReadableFormats | None:
-    """Retrieve how the readable formats in a Device tree differ from construction.
+def _format_key(owner_path: str, child_path: str) -> str:
+    return f"{owner_path}{_OWNER_SEPARATOR}{child_path}" if owner_path else child_path
 
-    A child dropped since construction has a format of `None`. A child outside
-    its owner has no path to store, so a change to it is warned about and
-    skipped. Returns `None` if there is no `StandardReadable` in the tree.
+
+def _parse_format_key(key: str) -> tuple[str, str]:
+    owner_path, _, child_path = key.rpartition(_OWNER_SEPARATOR)
+    return owner_path, child_path
+
+
+def _stored_readable_formats(device: Device) -> dict[str, str | None] | None:
+    """Describe how the readable formats in a Device tree differ from construction.
+
+    `None` if there is no `StandardReadable` in the tree. A change to a child that
+    is not within its owner is warned about and skipped.
     """
-    devices = _paths_to_devices(device)
-    readables = {
-        path: dev for path, dev in devices.items() if isinstance(dev, StandardReadable)
-    }
-    if not readables:
-        return None
-    formats: ReadableFormats = {}
-    for path, dev in readables.items():
-        # Child paths are stored relative to the owner, not the root, so walk
-        # from the owner
-        device_to_path = {child: p for p, child in walk_devices(dev).items()}
-        entries: dict[str, StandardReadableFormat | None] = {}
-        for child, format in dev.get_readable_format_changes():
-            child_path = device_to_path.get(child)
-            if child_path is None:
-                # Not below its owner, so it has no stable path to store it
-                # against. See https://github.com/bluesky/ophyd-async/issues/1402
-                warnings.warn(
-                    f"{dev.name or dev}: {child.name or child} is not within "
-                    f"{dev.name or dev}, so the change to its readable format "
-                    "will not be stored",
-                    stacklevel=2,
-                )
-            else:
-                entries[child_path] = format
-        if entries:
-            formats[path] = entries
-    return formats
-
-
-def _resolve_readable_formats(
-    device: Device, formats: ReadableFormats
-) -> list[tuple[StandardReadable, Device, StandardReadableFormat | None]]:
-    """Turn every owner and child path in `formats` into the Devices they name.
-
-    :raises NameError:
-        If any owner or child path does not name a Device in the tree, or any
-        owner is not a `StandardReadable`. All are listed in one error.
-    """
-    devices = _paths_to_devices(device)
-    resolved: list[tuple[StandardReadable, Device, StandardReadableFormat | None]] = []
-    unknown_paths: list[str] = []
-    not_readable: list[str] = []
-    for owner_path, entries in formats.items():
-        owner = devices.get(owner_path)
-        if owner is None:
-            unknown_paths.append(owner_path)
-        elif not isinstance(owner, StandardReadable):
-            not_readable.append(owner_path)
-        else:
-            children = walk_devices(owner)
-            for child_path, format in entries.items():
-                if child_path in children:
-                    resolved.append((owner, children[child_path], format))
+    paths: dict[Device, str] = {device: ""}
+    paths.update({dev: path for path, dev in walk_devices(device).items()})
+    readables = [dev for dev in paths if isinstance(dev, StandardReadable)]
+    stored: dict[str, str | None] | None = None
+    if readables:
+        stored = {}
+        for owner in readables:
+            child_paths = {child: path for path, child in walk_devices(owner).items()}
+            for child, format in owner.get_readable_format_changes():
+                child_path = child_paths.get(child)
+                if child_path is None:
+                    # Not below its owner, so it has no stable path to store it
+                    # against. See https://github.com/bluesky/ophyd-async/issues/1402
+                    warnings.warn(
+                        f"{owner.name or owner}: {child.name or child} is not within "
+                        f"{owner.name or owner}, so the change to its readable "
+                        "format will not be stored",
+                        stacklevel=2,
+                    )
                 else:
-                    unknown_paths.append(child_path)
-    problems = []
-    if unknown_paths:
-        problems.append(f"Unknown readable format paths {sorted(unknown_paths)}")
-    if not_readable:
-        problems.append(
-            f"Readable format owners that are not a StandardReadable "
-            f"{sorted(not_readable)}"
-        )
-    if problems:
-        raise NameError("; ".join(problems))
-    return resolved
-
-
-def _apply_readable_formats(device: Device, formats: ReadableFormats) -> None:
-    """Reset the readable formats in a Device tree, then apply the given changes.
-
-    Every `StandardReadable` in the tree is first put back to what it
-    registered during construction, then the changes in `formats` are applied
-    on top. So an empty `formats` restores the class defaults.
-    """
-    # Resolve everything before changing anything, so a bad path cannot leave
-    # the tree half applied
-    changes = _resolve_readable_formats(device, formats)
-    for dev in _paths_to_devices(device).values():
-        if isinstance(dev, StandardReadable):
-            dev.reset_readable_formats()
-    for owner, child, format in changes:
-        owner.set_readable_format(child, format)
+                    key = _format_key(paths[owner], child_path)
+                    stored[key] = None if format is None else format.value
+    return stored
 
 
 @plan
@@ -157,37 +108,103 @@ def get_current_settings(
 
 
 @plan
-def store_settings(
+def store_snapshot(
     provider: SettingsProvider, name: str, device: Device, only_config: bool = False
 ) -> MsgGenerator[None]:
     """Walk a Device for SignalRWs and store their values and readable formats.
 
-    If `only_config` is True, store only configuration settings on `Configurable`.
+    If the tree contains a `StandardReadable`, its readable format changes since
+    construction go under `<READABLE_FORMATS>`, even if there are none.
 
-    Values are keyed by dotted attribute path. If the tree contains a
-    `StandardReadable`, the changes to readable formats since construction go
-    under [](#READABLE_FORMATS_KEY), even if there are none.
-
-    :param provider: The provider to store the settings with.
-    :param name: The name to store the settings under.
+    :param provider: The provider to store the snapshot with.
+    :param name: The name to store the snapshot under.
     :param device: The Device to walk for SignalRWs.
-    :param only_config: If True, store only configuration signal values.
+    :param only_config:
+        If True, store only the values of configuration signals. Readable formats
+        are always stored.
     """
     if only_config:
         signals = yield from wait_for_awaitable(walk_config_signals(device))
     else:
         signals = walk_rw_signals(device)
     data: dict[str, Any] = yield from _get_values_of_signals(signals)
-    formats = _walk_readable_formats(device)
+    formats = _stored_readable_formats(device)
     if formats is not None:
-        data[READABLE_FORMATS_KEY] = {
-            owner: {
-                child: None if format is None else format.value
-                for child, format in entries.items()
-            }
-            for owner, entries in formats.items()
-        }
+        data[_READABLE_FORMATS_KEY] = formats
     yield from wait_for_awaitable(provider.store(name, data))
+
+
+@plan
+def retrieve_snapshot(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[DeviceSnapshot]:
+    """Retrieve the named snapshot from a provider, bound to a Device.
+
+    :param provider: The provider to retrieve the snapshot from.
+    :param name: The name of the snapshot to retrieve.
+    :param device: The Device the snapshot is for.
+    :raises ValueError: If a stored readable format is not a `StandardReadableFormat`.
+    :raises NameError: If a stored path does not name anything in the Device.
+    """
+    data = yield from wait_for_awaitable(provider.retrieve(name))
+    values = {k: v for k, v in data.items() if not _is_section(k)}
+    formats = None
+    if _READABLE_FORMATS_KEY in data:
+        # A hand written "<READABLE_FORMATS>:" is null, which still means reset
+        stored = data[_READABLE_FORMATS_KEY] or {}
+        # A null means "stop this child contributing", so is not coerced
+        formats = {
+            _parse_format_key(key): None
+            if value is None
+            else StandardReadableFormat(value)
+            for key, value in stored.items()
+        }
+    return DeviceSnapshot(device, values, formats)
+
+
+@plan
+def apply_readable_formats(
+    device: Device, formats: ReadableFormats | None
+) -> MsgGenerator[None]:
+    """Reset the readable formats in a Device tree, then apply the given changes.
+
+    Every `StandardReadable` in the tree is first put back to what it registered
+    during construction, so an empty `formats` restores the class defaults.
+
+    :param device: The root of the tree to reset.
+    :param formats:
+        The changes to apply, as `{StandardReadable: {child: format}}`. `None`
+        leaves the formats alone.
+    """
+    if formats is not None:
+        for dev in (device, *walk_devices(device).values()):
+            if isinstance(dev, StandardReadable):
+                dev.reset_readable_formats()
+        for owner, changes in formats.items():
+            for child, format in changes.items():
+                owner.set_readable_format(child, format)
+    yield from bps.null()
+
+
+@plan
+def store_settings(
+    provider: SettingsProvider, name: str, device: Device, only_config: bool = False
+) -> MsgGenerator[None]:
+    """Walk a Device for SignalRWs and store their values.
+
+    Deprecated: use [](#store_snapshot). This delegates to it, so it also stores
+    readable formats.
+
+    :param provider: The provider to store the settings with.
+    :param name: The name to store the settings under.
+    :param device: The Device to walk for SignalRWs.
+    :param only_config: If True, store only the values of configuration signals.
+    """
+    warnings.warn(
+        DeprecationWarning("store_settings is deprecated, use store_snapshot instead"),
+        stacklevel=3,
+    )
+    yield from store_snapshot(provider, name, device, only_config)
 
 
 @plan
@@ -196,84 +213,27 @@ def retrieve_settings(
 ) -> MsgGenerator[Settings]:
     """Retrieve named Settings for a Device from a provider.
 
-    If `only_config` is True, retrieve only configuration settings on `Configurable`.
-
-    A file with no [](#READABLE_FORMATS_KEY), such as one stored before
-    readable formats existed, gives Settings that leave formats alone. Any other
-    `<...>` key is warned about and dropped.
+    Deprecated: use `(yield from retrieve_snapshot(...)).settings`
+    ([](#retrieve_snapshot)). Sections such as `<READABLE_FORMATS>` are skipped.
 
     :param provider: The provider to retrieve the settings from.
     :param name: The name of the settings to retrieve.
     :param device: The Device to retrieve the settings for.
-    :param only_config: If True, retrieve only configuration settings.
+    :param only_config: Has no effect, and is kept for compatibility.
     """
-    # Copy, as the provider may hand back a dict it holds on to and the reserved
-    # keys are popped out of it below
-    data = dict((yield from wait_for_awaitable(provider.retrieve(name))))
-    # Reserved keys first, so what is left is signal paths.
-    # Present but null, as a hand written "<READABLE_FORMATS>:" would be, still
-    # means reset to the class defaults
-    stored_formats = (
-        data.pop(READABLE_FORMATS_KEY) or {} if READABLE_FORMATS_KEY in data else None
+    warnings.warn(
+        DeprecationWarning(
+            "retrieve_settings is deprecated, use "
+            "(yield from retrieve_snapshot(...)).settings instead"
+        ),
+        stacklevel=3,
     )
-    readable_formats: ReadableFormats | None = (
-        None
-        if stored_formats is None
-        else {
-            owner: {
-                # A null means "stop this child contributing", so is not coerced
-                child: None if format is None else StandardReadableFormat(format)
-                for child, format in entries.items()
-            }
-            for owner, entries in stored_formats.items()
-        }
-    )
-    unknown_reserved = sorted(k for k in data if k.startswith("<") and k.endswith(">"))
-    if unknown_reserved:
-        warnings.warn(
-            f"Ignoring unknown reserved keys {unknown_reserved} in settings {name!r}",
-            stacklevel=2,
-        )
-        for key in unknown_reserved:
-            del data[key]
-    if only_config:
-        signals = yield from wait_for_awaitable(walk_config_signals(device))
-    else:
-        signals = walk_rw_signals(device)
-    unknown_names = set(data) - set(signals)
-    if unknown_names:
-        raise NameError(f"Unknown signal names {sorted(unknown_names)}")
-    if readable_formats:
-        # Resolve the paths now, so a stale one fails before any value is written
-        _resolve_readable_formats(device, readable_formats)
-    signal_values = {signals[name]: value for name, value in data.items()}
-    return Settings(device, signal_values, readable_formats)
+    return (yield from retrieve_snapshot(provider, name, device)).settings
 
 
 @plan
 def apply_settings(settings: Settings) -> MsgGenerator[None]:
-    """Set every SignalRW to the given value in Settings. If value is None ignore it.
-
-    Then apply any readable formats the Settings carries. Every `StandardReadable`
-    in the tree is first put back to what it registered during construction, so
-    an empty `readable_formats` restores the class defaults, and a child added
-    since the formats were stored keeps the format its class gives it. To stop
-    a child contributing, give it a format of `None`, which in a stored file is
-    a null:
-
-    ```yaml
-    <READABLE_FORMATS>:
-      <ROOT_DEVICE>:
-        energy: HINTED_SIGNAL
-        temperature: null
-    ```
-
-    Formats go last, so a failed value write leaves them untouched.
-
-    :raises NameError:
-        If a readable format path does not name a Device in the tree, or its
-        owner is not a `StandardReadable`.
-    """
+    """Set every SignalRW to the given value in Settings. If value is None ignore it."""
     signal_values = {
         signal: value for signal, value in settings.items() if value is not None
     }
@@ -281,8 +241,6 @@ def apply_settings(settings: Settings) -> MsgGenerator[None]:
         for signal, value in signal_values.items():
             yield from bps.abs_set(signal, value, group="apply_settings")
         yield from bps.wait("apply_settings")
-    if settings.readable_formats is not None:
-        _apply_readable_formats(settings.device, settings.readable_formats)
 
 
 @plan

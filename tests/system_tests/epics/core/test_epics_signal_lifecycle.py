@@ -67,10 +67,11 @@ from ophyd_async.epics.testing import (
     start_ioc,
 )
 from ophyd_async.plan_stubs import (
+    apply_readable_formats,
     apply_settings,
     ensure_connected,
-    retrieve_settings,
-    store_settings,
+    retrieve_snapshot,
+    store_snapshot,
 )
 from ophyd_async.testing import MonitorQueue, approx_value, assert_describe_signal
 
@@ -580,7 +581,7 @@ async def test_retrieve_apply_store_settings(
     """Settings YAML round-trip, genericised onto the same widened device the
     rest of this file uses (this test itself is unchanged in substance from
     the old test_signals.py - the device it exercises was already exhaustive
-    there too; `retrieve`/`apply`/`store_settings` operate on the whole
+    there too; `retrieve`/`apply`/`store_snapshot` operate on the whole
     Device regardless of which fields a given test file's sweep happens to
     touch individually, so the golden YAML files needed no regeneration).
 
@@ -596,11 +597,12 @@ async def test_retrieve_apply_store_settings(
 
     def a_plan():
         yield from ensure_connected(device)
-        settings = yield from retrieve_settings(
+        snapshot = yield from retrieve_snapshot(
             expected_provider, f"test_yaml_save_{protocol}", device
         )
-        yield from apply_settings(settings)
-        yield from store_settings(tmp_provider, "test_file", device)
+        yield from apply_settings(snapshot.settings)
+        yield from apply_readable_formats(snapshot.device, snapshot.readable_formats)
+        yield from store_snapshot(tmp_provider, "test_file", device)
         with open(tmp_path / "test_file.yaml") as actual_file:
             with open(HERE / f"test_yaml_save_{protocol}.yaml") as expected_file:
                 # If this test fails because you added a signal, then you can regenerate

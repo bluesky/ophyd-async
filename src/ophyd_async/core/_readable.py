@@ -406,8 +406,8 @@ class StandardReadable(
         """Put the formats back to those registered by the end of construction.
 
         Undoes every later [](#StandardReadable.set_readable_format), including
-        formats loaded by [](#apply_settings). Resets this Device only; use
-        `apply_settings` with `Settings(device, readable_formats={})` for a whole tree.
+        formats loaded by [](#apply_readable_formats). Resets this Device only; use
+        [](#apply_readable_formats) with `{}` for a whole tree.
         """
         # Mutated rather than replaced, so the cached_property stays the same
         # object and nothing holding a reference sees a stale registry
@@ -467,15 +467,7 @@ class StandardReadable(
             self.set_readable_format(device, format)
 
 
-#: Reserved key under which [](#store_settings) writes readable formats. It
-#: cannot collide with a dotted attribute path.
-READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
-
-#: The changes to the readable formats of a Device tree since construction, in
-#: a form that can be stored and retrieved:
-#: `{path of the StandardReadable: {path of the child: format}}`, where a format
-#: of `None` means "stop this child contributing".
-#: The owner path is a dotted attribute path from the root Device, as produced
-#: by [](#walk_devices), with `<ROOT_DEVICE>` meaning the root Device
-#: itself. The child path is a dotted attribute path from the owner.
-ReadableFormats = dict[str, dict[str, StandardReadableFormat | None]]
+#: The changes to the readable formats of a Device tree since construction:
+#: `{StandardReadable: {child Device: format}}`, where a format of `None` means
+#: "stop this child contributing".
+ReadableFormats = dict[StandardReadable, dict[Device, StandardReadableFormat | None]]

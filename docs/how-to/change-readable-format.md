@@ -38,18 +38,17 @@ change while it is staged leaves the signal monitored after `unstage()`.
 ## Putting it back
 
 [](#StandardReadable.reset_readable_formats) undoes every runtime change on one Device,
-back to the formats its class declared. [](#apply_settings) of Settings with empty `readable_formats` does the same for
+back to the formats its class declared. [](#apply_readable_formats) with no changes does the same for
 a whole tree, from inside a plan:
 
 ```python
-from ophyd_async.core import Settings
-from ophyd_async.plan_stubs import apply_settings
+from ophyd_async.plan_stubs import apply_readable_formats
 
 mono.reset_readable_formats()  # this Device only
-yield from apply_settings(Settings(beamline, readable_formats={}))  # every Device in the tree
+yield from apply_readable_formats(beamline, {})  # every Device in the tree
 ```
 
-Both also discard formats loaded from a settings file.
+Both also discard formats loaded from a snapshot.
 
 ```{seealso}
 [](./store-and-retrieve.md) to save formats with signal values and load them back, and

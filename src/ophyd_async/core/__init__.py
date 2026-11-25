@@ -99,7 +99,6 @@ from ._protocol import (
     Watcher,
 )
 from ._readable import (
-    READABLE_FORMATS_KEY,
     ReadableEntry,
     ReadableFormats,
     StandardReadable,
@@ -134,6 +133,7 @@ from ._signal_backend import (
     SignalMetadata,
     make_datakey,
 )
+from ._snapshot import DeviceSnapshot
 from ._soft_signal_backend import SoftSignalBackend
 from ._standard_base import Logic, StoppedError, TransitionError
 from ._status import (
@@ -284,7 +284,6 @@ __all__ = [
     "StandardReadableFormat",
     "ReadableEntry",
     "ReadableFormats",
-    "READABLE_FORMATS_KEY",
     # Detector
     "DetectorTrigger",
     "TriggerInfo",
@@ -318,6 +317,7 @@ __all__ = [
     "Settings",
     "SettingsProvider",
     "YamlSettingsProvider",
+    "DeviceSnapshot",
     # Utils
     "config_ophyd_async_logging",
     "logger",

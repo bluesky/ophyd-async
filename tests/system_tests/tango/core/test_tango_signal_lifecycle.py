@@ -91,10 +91,11 @@ from ophyd_async.core import (
     YamlSettingsProvider,
 )
 from ophyd_async.plan_stubs import (
+    apply_readable_formats,
     apply_settings,
     ensure_connected,
-    retrieve_settings,
-    store_settings,
+    retrieve_snapshot,
+    store_snapshot,
 )
 from ophyd_async.tango.core import DevStateEnum, TangoDevice
 from ophyd_async.tango.testing import ExampleStrEnum, TangoTestDevice
@@ -438,7 +439,7 @@ async def test_retrieve_apply_store_settings(
     the device's current values back out, and assert the two files agree.
 
     Uses the curated `TangoTestDevice`, not the exhaustive procedural tier
-    above - `walk_rw_signals` (what `retrieve_settings`/`store_settings`
+    above - `walk_rw_signals` (what `retrieve_snapshot`/`store_snapshot`
     walk) only ever sees a device's *declared* signals, so settings
     save/apply is inherently about the declarative flavour, the same way
     mock-parity is (see this module's docstring) - there's no equivalent
@@ -465,11 +466,12 @@ async def test_retrieve_apply_store_settings(
 
     def a_plan():
         yield from ensure_connected(device)
-        settings = yield from retrieve_settings(
+        snapshot = yield from retrieve_snapshot(
             expected_provider, "test_yaml_save", device
         )
-        yield from apply_settings(settings)
-        yield from store_settings(tmp_provider, "test_file", device)
+        yield from apply_settings(snapshot.settings)
+        yield from apply_readable_formats(snapshot.device, snapshot.readable_formats)
+        yield from store_snapshot(tmp_provider, "test_file", device)
         with open(tmp_path / "test_file.yaml") as actual_file:
             with open(HERE / "test_yaml_save.yaml") as expected_file:
                 # If this test fails because you added/removed a field on
