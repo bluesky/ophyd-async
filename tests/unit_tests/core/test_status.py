@@ -413,3 +413,23 @@ async def test_forward_watcher_updates(moves: dict[str, list], combine: bool):
         # Updates from different children interleave, but each child's stay in order
         for name, values in moves.items():
             assert [u["current"] for u in updates if u["name"] == name] == values
+
+
+async def test_a_watcher_that_raises_fails_the_status_and_closes_the_iterator():
+    closed = False
+
+    async def updates():
+        nonlocal closed
+        try:
+            yield WatcherUpdate(current=0, initial=0, target=2, name="x")
+        finally:
+            closed = True
+
+    status = WatchableAsyncStatus(updates())
+    status.watch(Mock(side_effect=ValueError("bad watcher")))
+
+    with pytest.raises(ValueError, match="bad watcher"):
+        await status
+
+    assert not status.success
+    assert closed

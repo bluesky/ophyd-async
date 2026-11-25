@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import functools
 import inspect
 import time
@@ -685,46 +684,38 @@ async def set_and_wait_for_other_value(
     """
     # Start monitoring before the set to avoid a race condition
     checker = _ValueChecker(match_value)
-    wait_task = asyncio.create_task(
+    # The wait is cancelled when we exit, whether by error, cancel or success
+    async with AsyncStatus(
         checker.wait_for_value(match_signal, timeout=timeout)
-    )
-
-    # Put this in a try/except to ensure wait_task is cancelled when we exit
-    try:
-        # Don't start the set until match_signal has given a value. wait_task's
+    ) as wait_status:
+        # Don't start the set until match_signal has given a value. The wait's
         # timeout is the only deadline: if it finishes first, no value arrived
         # and awaiting it raises its error.
         first_value = asyncio.create_task(checker.got_first_value.wait())
         try:
             await asyncio.wait(
-                [first_value, wait_task], return_when=asyncio.FIRST_COMPLETED
+                [first_value, wait_status.task], return_when=asyncio.FIRST_COMPLETED
             )
         finally:
             first_value.cancel()
         if not checker.got_first_value.is_set():
-            # wait_task finished with no first value, so it holds a TimeoutError.
+            # The wait finished with no first value, so it holds a TimeoutError.
             # Awaiting it raises that error here, so we never start the set or
-            # await wait_task a second time below
-            await wait_task
+            # await the wait a second time below
+            await wait_status
 
         # Now we can start the set
         status = set_signal.set(set_value, timeout=set_timeout)
 
         if not wait_for_set_completion:
             # Just wait for the match_signal to be at value
-            await wait_task
+            await wait_status
         else:
             # Wait for both to complete, so if the set raises an exception it
             # is surfaced early. Wait for the status task so if either errors
             # the other is cancelled
-            await asyncio.gather(wait_task, status.task)
+            await asyncio.gather(wait_status.task, status.task)
         return status
-    except Exception:
-        # Make sure the wait is not left dangling if there was an error
-        wait_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await wait_task
-        raise
 
 
 async def set_and_wait_for_value(
