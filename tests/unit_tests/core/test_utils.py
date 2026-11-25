@@ -648,9 +648,9 @@ async def test_wait_for_shows_an_error_raised_while_being_cancelled():
 
 
 async def test_wait_for_expiry_and_an_outside_cancel_is_a_cancel():
-    outer = asyncio.create_task(_wait_for(asyncio.Event().wait(), 0.05, "source"))
-    # A real time interval: the cancel has to land about when the timeout expires
-    await asyncio.sleep(0.05)
+    outer = asyncio.create_task(_wait_for(asyncio.Event().wait(), 0, "source"))
+    # Let the timeout callback queue before the cancel
+    await asyncio.sleep(0)
     outer.cancel()
     with pytest.raises(asyncio.CancelledError):
         await outer

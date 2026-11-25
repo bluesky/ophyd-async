@@ -555,8 +555,13 @@ async def test_cancelled_unstage_still_cancels_the_fly():
 
 # Bug: an unstage() that failed or was cancelled while stopping left its ctx
 # behind as the next prepare's previous_ctx
-@pytest.mark.parametrize("stop", ["fail", "hang"])
-async def test_restage_after_an_interrupted_unstage_starts_afresh(stop: str):
+@pytest.mark.parametrize(
+    "stop, expected_error",
+    [("fail", ValueError), ("hang", asyncio.CancelledError)],
+)
+async def test_restage_after_an_interrupted_unstage_starts_afresh(
+    stop: str, expected_error: type[BaseException]
+):
     @dataclass
     class StopLogic(FlyableLogic[int, int]):
         stopping: str = ""
@@ -585,7 +590,7 @@ async def test_restage_after_an_interrupted_unstage_starts_afresh(stop: str):
     await wait_for_pending_wakeups()
     # RE.stop/abort/halt cancel a hanging unstage
     unstaging.task.cancel()
-    with pytest.raises(ValueError if stop == "fail" else asyncio.CancelledError):
+    with pytest.raises(expected_error):
         await unstaging
 
     logic.stopping = ""
