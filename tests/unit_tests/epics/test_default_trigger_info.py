@@ -142,6 +142,7 @@ async def test_trigger_uses_num_images_and_process_plugin(
     assert await num_signal.get_value() == expected_collections * expected_exposures
 
 
+@pytest.mark.parametrize("exposures_per_collection", [1, 4])
 @pytest.mark.parametrize(
     "acquire_period, expected_exposure_time",
     [
@@ -151,20 +152,32 @@ async def test_trigger_uses_num_images_and_process_plugin(
     ],
 )
 async def test_trigger_info_from_driver_timeouts(
-    acquire_period: float | None, expected_exposure_time: float
+    acquire_period: float | None,
+    expected_exposure_time: float,
+    exposures_per_collection: int,
 ):
+    async with init_devices(mock=True):
+        proc = adcore.NDProcessIO("PROC:")
+    set_mock_value(proc.enable_filter, True)
+    set_mock_value(proc.num_filter, exposures_per_collection)
+
     trigger_info = await adcore.trigger_info_from_driver(
-        soft_signal_rw(int, 3),
+        soft_signal_rw(int, 12),
         soft_signal_rw(float, 0.1),
         acquire_period_signal=(
             None if acquire_period is None else soft_signal_rw(float, acquire_period)
         ),
+        process_plugin=proc,
     )
 
     # livetime and deadtime of 0 leave the driver's exposure settings unchanged
     assert trigger_info.livetime == 0.0
     assert trigger_info.deadtime == 0.0
-    expected_timeout = expected_exposure_time + DEFAULT_TIMEOUT
-    assert trigger_info.exposure_timeout == pytest.approx(expected_timeout)
-    assert trigger_info.collection_timeout == pytest.approx(expected_timeout)
-    assert trigger_info.collections_per_event == 3
+    assert trigger_info.exposures_per_collection == exposures_per_collection
+    assert trigger_info.collections_per_event == 12 // exposures_per_collection
+    assert trigger_info.exposure_timeout == pytest.approx(
+        expected_exposure_time + DEFAULT_TIMEOUT
+    )
+    assert trigger_info.collection_timeout == pytest.approx(
+        expected_exposure_time * exposures_per_collection + DEFAULT_TIMEOUT
+    )
