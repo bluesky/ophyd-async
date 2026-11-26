@@ -242,7 +242,7 @@ class StandardMovable(
             ):
                 yield replace(update, name=self.name)
 
-    async def stop(self, success: bool = False) -> None:
+    async def stop(self, *, success: bool = False) -> None:
         """End any `set()` in progress, then run `ensure_stopped`.
 
         The `set()` raises `StoppedError`, or finishes if `success`, whether or not
