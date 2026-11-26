@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from ophyd_async.core import Array1D, Table
+from ophyd_async.testing import approx_value
 
 
 class MyTable(Table):
@@ -60,7 +61,7 @@ def test_table_coerces(kwargs):
     t = MyTable(**kwargs)
     for k, v in t:
         assert v == pytest.approx(kwargs[k])
-    assert t == pytest.approx(t)
+    assert t == approx_value(t)
 
 
 def test_validate_array_dtypes():

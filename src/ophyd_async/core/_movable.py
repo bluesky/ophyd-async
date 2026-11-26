@@ -4,7 +4,6 @@ from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from functools import cached_property
 from typing import Generic
 
 from bluesky.protocols import (
@@ -26,6 +25,7 @@ from ._utils import (
     CalculatableTimeout,
     Callback,
     WatcherUpdate,
+    abstract_cached_property,
 )
 
 
@@ -142,7 +142,7 @@ class StandardMovable(
     _stop_state: Enum = StopState.NONE
     _move_status: AsyncStatus | None = None
 
-    @cached_property
+    @abstract_cached_property
     @abstractmethod
     def movable_logic(self) -> MovableLogic:
         """The logic object that describes how this device moves.
@@ -212,7 +212,7 @@ class StandardMovable(
         if stop_state == StopState.USER_FAILURE:
             raise RuntimeError(f"Device {self.name} was stopped.")
 
-    async def stop(self, success=False):
+    async def stop(self, *, success: bool = False):
         """Request to stop moving and return immediately."""
         self._stop_state = StopState.USER_SUCCESS if success else StopState.USER_FAILURE
         await self.movable_logic.stop()

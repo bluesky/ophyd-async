@@ -25,6 +25,9 @@ class StandardReadableFormat(Enum):
       [](#bluesky.protocols.Configurable)
     - `stage()`, `unstage()` if it is [](#bluesky.protocols.Stageable)
     - `hints` if it [](#bluesky.protocols.HasHints)
+
+    For a bare `SignalR` this means a cached `read()`, `describe()`, `stage()` and
+    `unstage()`, but no `hints`: the non-hinted equivalent of `HINTED_SIGNAL`.
     """
 
     CONFIG_SIGNAL = "CONFIG_SIGNAL"
@@ -168,7 +171,6 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
 
         yield
 
-        # Set symmetric difference operator gives all newly added keys.
         new_dict = dict(self.children())
         for key, value in new_dict.items():
             # Check if key already exists in dict_copy and if the value has changed.
@@ -182,8 +184,8 @@ class StandardReadable(_StandardBase, AsyncReadable, AsyncConfigurable, HasHints
                 )
                 raise KeyError(error_msg)
 
-        new_keys = dict_copy.keys() ^ new_dict.keys()
-        new_values = [new_dict[key] for key in new_keys]
+        # Newly added children, in the order they were declared
+        new_values = [value for key, value in new_dict.items() if key not in dict_copy]
 
         flattened_values = []
         for value in new_values:

@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import functools
 import time
 from asyncio import CancelledError
-from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
+from collections.abc import (
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Coroutine,
+)
+from contextlib import aclosing
 from dataclasses import asdict, replace
 from typing import Any, Generic
 
@@ -15,7 +20,7 @@ from bluesky.protocols import Status
 
 from ._device import Device
 from ._protocol import Watcher
-from ._utils import Callback, P, T, V, WatcherUpdate
+from ._utils import Callback, P, T, V, WatcherUpdate, cancel_and_wait
 
 
 class AsyncStatusBase(Status, Awaitable[T]):
@@ -131,11 +136,7 @@ class AsyncStatusBase(Status, Awaitable[T]):
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        self.task.cancel()
-        # Need to await the task to suppress teardown warnings, but
-        # we know it will raise CancelledError as we just cancelled it
-        with contextlib.suppress(CancelledError):
-            await self.task
+        await cancel_and_wait(self.task)
         # Raise any errors from the block, but not cancellation errors from the status
         return False
 
@@ -225,22 +226,27 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
     """
 
     def __init__(
-        self, iterator: AsyncIterator[WatcherUpdate[T]], name: str | None = None
+        self, iterator: AsyncGenerator[WatcherUpdate[T], None], name: str | None = None
     ):
         self._watchers: list[Watcher[T]] = []
         self._start = time.monotonic()
         self._last_update: WatcherUpdate[T] | None = None
         super().__init__(self._notify_watchers_from(iterator), name)
 
-    async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
-        async for update in iterator:
-            self._last_update = (
-                update
-                if update.time_elapsed is not None
-                else replace(update, time_elapsed=time.monotonic() - self._start)
-            )
-            for watcher in self._watchers:
-                self._update_watcher(watcher, self._last_update)
+    async def _notify_watchers_from(
+        self, iterator: AsyncGenerator[WatcherUpdate[T], None]
+    ):
+        # A watcher that raises leaves the generator at its yield, so close it
+        # now rather than at garbage collection
+        async with aclosing(iterator):
+            async for update in iterator:
+                self._last_update = (
+                    update
+                    if update.time_elapsed is not None
+                    else replace(update, time_elapsed=time.monotonic() - self._start)
+                )
+                for watcher in self._watchers:
+                    self._update_watcher(watcher, self._last_update)
 
     def _update_watcher(self, watcher: Watcher[T], update: WatcherUpdate[T]):
         vals = asdict(
@@ -262,9 +268,9 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
     @classmethod
     def wrap(
         cls: type[WatchableAsyncStatus[Any]],
-        f: Callable[P, AsyncIterator[WatcherUpdate[V]]],
+        f: Callable[P, AsyncGenerator[WatcherUpdate[V], None]],
     ) -> Callable[P, WatchableAsyncStatus[V]]:
-        """Wrap an AsyncIterator in a WatchableAsyncStatus.
+        """Wrap an async generator function in a WatchableAsyncStatus.
 
         For example:
         ```python
@@ -293,7 +299,7 @@ class WatchableAsyncStatus(AsyncStatusBase[None], Generic[T]):
 
 async def forward_watcher_updates(
     statuses: list[WatchableAsyncStatus], name: str, combine: bool = True
-) -> AsyncIterator[WatcherUpdate]:
+) -> AsyncGenerator[WatcherUpdate, None]:
     """Forward watcher updates from several watchable moves.
 
     If ``combine`` is True, yield the mean fractional progress (0 to 1) of all

@@ -192,6 +192,15 @@ We specify to the Device baseclass that we would like a Signal of a given type (
 
 We can optionally [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.
 
+```{note}
+A Signal contributing to `read()` can be hinted (plotted) or not, and cached or not. Cached Signals are monitored while the Device is staged, so `read()` returns the latest monitored value. Uncached Signals do an explicit get on every `read()`. There is no separate cached non-hinted format, because [](#StandardReadableFormat.CHILD) (the default) already does this for a Signal:
+
+|            | Cached                                          | Uncached                                                  |
+|------------|-------------------------------------------------|-----------------------------------------------------------|
+| Not hinted | [](#StandardReadableFormat.CHILD)               | [](#StandardReadableFormat.UNCACHED_SIGNAL)               |
+| Hinted     | [](#StandardReadableFormat.HINTED_SIGNAL)       | [](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL)        |
+```
+
 ::::{tab-set}
 :sync-group: cs
 
