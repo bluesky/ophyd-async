@@ -73,7 +73,7 @@ class _BadAnnotationDevice(TangoDevice, StandardReadable):
     # strenum is really a StrictEnum-backed attribute (see TangoTestDevice) -
     # datatype of enum commands must be explicitly hinted, so annotating it
     # SignalRW[None] here is a genuine mismatch, not a missing hint.
-    strenum: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
+    strenum: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]  # pyright: ignore[reportInvalidTypeArguments]
 
 
 @pytest.mark.asyncio

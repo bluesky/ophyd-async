@@ -3,11 +3,16 @@ from collections.abc import Awaitable
 
 import pytest
 from bluesky import plan_stubs as bps
-from bluesky.run_engine import RunEngine, TransitionError
+from bluesky.run_engine import (
+    RunEngine,
+    # bluesky does not export TransitionError publicly
+    TransitionError,  # pyright: ignore[reportPrivateImportUsage]
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
+    DeviceMock,
     NotConnectedError,
     init_devices,
     print_connection_status,
@@ -18,7 +23,10 @@ from ophyd_async.epics import motor
 
 class FailingDevice(Device):
     async def connect(
-        self, mock: bool = False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+        self,
+        mock: bool | DeviceMock = False,
+        timeout=DEFAULT_TIMEOUT,
+        force_reconnect=False,
     ):
         raise AttributeError()
 
@@ -27,7 +35,10 @@ class WorkingDevice(Device):
     connected = False
 
     async def connect(
-        self, mock: bool = True, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+        self,
+        mock: bool | DeviceMock = True,
+        timeout=DEFAULT_TIMEOUT,
+        force_reconnect=False,
     ):
         self.connected = True
         return await super().connect(mock=True)
@@ -95,6 +106,7 @@ async def test_init_devices_print_connection_status(capsys):
 
 
 def test_sync_init_devices_no_run_engine_raises_error():
+    working_device: WorkingDevice | None = None
     with pytest.raises(NotConnectedError) as exc:
         with init_devices():
             working_device = WorkingDevice("somename")
@@ -103,6 +115,7 @@ def test_sync_init_devices_no_run_engine_raises_error():
         "https://blueskyproject.io/ophyd-async/main/"
         "user/explanations/event-loop-choice.html for more info."
     )
+    assert working_device is not None
     assert not working_device.connected
 
 
@@ -145,9 +158,9 @@ def test_async_init_devices_run_engine_same_event_loop():
     loop = asyncio.new_event_loop()
     checking_loop = asyncio.new_event_loop()
 
+    mock_motor = loop.run_until_complete(set_up_device())
+    RE = RunEngine(call_returns_result=True, loop=loop)
     try:
-        mock_motor = loop.run_until_complete(set_up_device())
-        RE = RunEngine(call_returns_result=True, loop=loop)
 
         def my_plan():
             yield from bps.mov(mock_motor, 3.14)

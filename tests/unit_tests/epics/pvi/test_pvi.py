@@ -81,11 +81,11 @@ async def test_fill_pvi_entries_mock_mode():
     assert isinstance(test_device.device_vector[1].device, Block1)
     assert (
         test_device.device_vector[1].device.signal_rw._connector.backend.datatype is int
-    )  # type: ignore
+    )
     assert (
         test_device.device_vector[1]
         .device.device_vector_signal_rw[1]
-        ._connector.backend.datatype  # type: ignore
+        ._connector.backend.datatype
         is float
     )
 
@@ -94,9 +94,9 @@ async def test_fill_pvi_entries_mock_mode():
     assert isinstance(test_device.device, Block2)
 
     # elements of top level blocks are typed recursively
-    assert test_device.device.signal_rw._connector.backend.datatype is int  # type: ignore
+    assert test_device.device.signal_rw._connector.backend.datatype is int
     assert isinstance(test_device.device.device, Block1)
-    assert test_device.device.device.signal_rw._connector.backend.datatype is int  # type: ignore
+    assert test_device.device.device.signal_rw._connector.backend.datatype is int
 
     assert test_device.signal_rw.parent == test_device
     assert test_device.device_vector.parent == test_device

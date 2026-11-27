@@ -697,7 +697,7 @@ def get_source_metadata(
             tr_dtype = get_python_type(config)
 
             if tr_dtype == CmdArgType.DevState:
-                _choices = list(DevState.names.keys())  # type: ignore
+                _choices = list(DevState.names.keys())
 
             _precision = parse_precision(config)
 

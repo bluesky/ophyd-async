@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import re
+import sys
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
@@ -78,17 +79,17 @@ async def test_set_mock_value_timestamp_and_alarm_severity():
     signal = soft_signal_rw(int)
     await signal.connect(mock=True)
     reading = (await signal.read())[signal.name]
-    assert reading["alarm_severity"] == 0
+    assert reading.get("alarm_severity") == 0
     set_mock_value(signal, 5, timestamp=123.0, alarm_severity=2)
     reading = (await signal.read())[signal.name]
     assert reading["value"] == 5
     assert reading["timestamp"] == 123.0
-    assert reading["alarm_severity"] == 2
+    assert reading.get("alarm_severity") == 2
     # Defaults mean now and ok
     set_mock_value(signal, 6)
     reading = (await signal.read())[signal.name]
     assert reading["timestamp"] > 123.0
-    assert reading["alarm_severity"] == 0
+    assert reading.get("alarm_severity") == 0
 
 
 async def test_set_mock_put_proceeds():
@@ -284,7 +285,9 @@ async def test_mock_put_handle_cancel(cancelled_by: str, expected_error):
         handle.cancel()
     elif cancelled_by == "other":
         (callback_task,) = (
-            t for t in asyncio.all_tasks() if t.get_coro().__name__ == "slow_put"
+            t
+            for t in asyncio.all_tasks()
+            if getattr(t.get_coro(), "__name__", None) == "slow_put"
         )
         callback_task.cancel()
     if expected_error:
@@ -302,7 +305,8 @@ async def test_callback_on_mock_put_fails_if_args_are_not_correct():
     def callback():
         pass
 
-    callback_on_mock_put(mock_signal, callback)
+    # deliberately wrong, tests the runtime check
+    callback_on_mock_put(mock_signal, callback)  # pyright: ignore[reportArgumentType]
     with pytest.raises(TypeError) as exc:
         await mock_signal.set(10.0)
     assert str(exc.value).endswith(
@@ -344,8 +348,10 @@ async def test_set_mock_values_exhausted_passes(mock_signals):
     assert calls == 6
 
 
-async def test_set_mock_values_exhausted_fails(mock_signals):
+async def test_set_mock_values_exhausted_fails(mock_signals, monkeypatch):
     signal1, _ = mock_signals
+    unraisable: list[sys.UnraisableHookArgs] = []
+    monkeypatch.setattr(sys, "unraisablehook", unraisable.append)
 
     for value_set in (
         iterator := set_mock_values(
@@ -355,11 +361,10 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
         assert await signal1.get_value() == value_set
         break
 
-    with pytest.raises(AssertionError):
-        iterator.__del__()
+    # Deleting the iterator before it is exhausted fails in __del__
+    del iterator
 
-    # Set so it doesn't raise the same error on teardown
-    iterator.require_all_consumed = False
+    assert [type(u.exc_value) for u in unraisable] == [AssertionError]
 
 
 async def test_reset_mock_put_calls(mock_signals):

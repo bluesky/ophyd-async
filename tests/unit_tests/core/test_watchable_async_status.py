@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from functools import partial
 
 import bluesky.plan_stubs as bps
@@ -24,15 +24,15 @@ class SetFailedError(Exception):
 def watcher_test(
     storage: list[WatcherUpdate],
     *,
-    name: str | None,
-    current: int | None,
-    initial: int | None,
-    target: int | None,
-    unit: str | None,
-    precision: float | None,
-    fraction: float | None,
-    time_elapsed: float | None,
-    time_remaining: float | None,
+    name: str | None = None,
+    current: int | None = None,
+    initial: int | None = None,
+    target: int | None = None,
+    unit: str | None = None,
+    precision: float | None = None,
+    fraction: float | None = None,
+    time_elapsed: float | None = None,
+    time_remaining: float | None = None,
 ):
     storage.append(
         WatcherUpdate(
@@ -55,15 +55,15 @@ class TWatcher:
     def __call__(
         self,
         *,
-        name: str | None,
-        current: int | None,
-        initial: int | None,
-        target: int | None,
-        unit: str | None,
-        precision: float | None,
-        fraction: float | None,
-        time_elapsed: float | None,
-        time_remaining: float | None,
+        name: str | None = None,
+        current: int | None = None,
+        initial: int | None = None,
+        target: int | None = None,
+        unit: str | None = None,
+        precision: float | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
     ) -> None:
         self.updates.append(current or -1)
 
@@ -85,7 +85,7 @@ class ASTestDeviceSingleSet(ASTestDevice):
     async def set(self, val):
         assert self._staged
         await asyncio.sleep(0.01)
-        self._sig_setter(val)  # type: ignore
+        self._sig_setter(val)
 
 
 class ASTestDeviceTimeoutSet(ASTestDevice):
@@ -105,7 +105,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
         super().__init__(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, val) -> AsyncIterator:
+    async def set(self, val) -> AsyncGenerator:
         assert self._staged
         self._initial = await self.sig.get_value()
         for point in self.values:
@@ -122,7 +122,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 fraction=0,
             )
         if self.complete_set:
-            self._sig_setter(val)  # type: ignore
+            self._sig_setter(val)
             yield WatcherUpdate(
                 name=self.name,
                 current=val,
@@ -204,7 +204,7 @@ async def test_watchableasyncstatus_times_out(RE):
 async def test_device_name_in_failure_message_watchableasyncstatus_wrap(RE):
     class FailingWatchableMovable(Movable, Device):
         @WatchableAsyncStatus.wrap
-        async def set(self, value) -> AsyncIterator:
+        async def set(self, value) -> AsyncGenerator:
             yield WatcherUpdate(0, 0, value)
             raise ValueError("This doesn't work")
 

@@ -66,7 +66,7 @@ class VerticalMirror(Device, Movable[TwoJackDerived]):
         super().__init__(name=name)
 
     @AsyncStatus.wrap
-    async def set(self, derived: TwoJackDerived) -> None:  # type: ignore until bluesky 1.13.2
+    async def set(self, derived: TwoJackDerived) -> None:
         transform = await self._factory.transform()
         raw = transform.derived_to_raw(**derived)
         await asyncio.gather(

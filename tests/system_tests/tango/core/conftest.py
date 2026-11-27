@@ -139,7 +139,8 @@ class AttributeData(Generic[T]):
         serves.
         """
         for value in self.random_put_values:
-            if not np.array_equal(value, self.initial):
+            # numpy stubs: array_equal takes any object at runtime
+            if not np.array_equal(value, self.initial):  # pyright: ignore[reportArgumentType]
                 return value
         raise ValueError(f"No put value for {self.name} differs from its initial")
 
@@ -235,11 +236,7 @@ def build_everything_signal_info() -> dict[str, AttributeData]:
         name="strenum",
         py_type=ExampleStrEnum,
         initial=ExampleStrEnum.B,
-        random_put_values=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
+        random_put_values=tuple(ExampleStrEnum),
         cmd_name=None,
     )
     add_ads(
@@ -278,7 +275,7 @@ def build_everything_signal_info() -> dict[str, AttributeData]:
         "my_state",
         DevStateEnum,
         DevStateEnum.INIT,
-        random_put_values=[e.name for e in DevStateEnum],
+        random_put_values=tuple(DevStateEnum),
         cmd_name=None,
     )
 

@@ -88,6 +88,7 @@ from ophyd_async.core import (
     NotConnectedError,
     SignalRW,
     StandardReadable,
+    TriggerableCommand,
     YamlSettingsProvider,
 )
 from ophyd_async.plan_stubs import (
@@ -111,6 +112,10 @@ LIFECYCLE_FIELDS = [
     "int32_spectrum",
     "float64_image",
 ]
+
+
+class _Resetter(TangoDevice):
+    reset_values: TriggerableCommand
 
 
 # Set the first time `reset_everything_device` actually does its (slow)
@@ -148,7 +153,7 @@ async def reset_everything_device(everything_device_trl: str) -> None:
     global _reset_everything_device_done
     if _reset_everything_device_done:
         return
-    resetter = TangoDevice(everything_device_trl, name="resetter")
+    resetter = _Resetter(everything_device_trl, name="resetter")
     await resetter.connect()
     await resetter.reset_values.trigger()
     await asyncio.sleep(1)
@@ -380,11 +385,13 @@ async def test_signal_error_paths(everything_device_trl: str):
 
     # Wrong Python type for a StrictEnum signal
     with pytest.raises(TypeError):
-        await device.strenum.set(0)
+        # deliberately wrong, tests the runtime check
+        await device.strenum.set(0)  # pyright: ignore[reportArgumentType]
 
     # Right type, not a valid choice
     with pytest.raises(ValueError):
-        await device.strenum.set("NOT_A_REAL_CHOICE")
+        # deliberately wrong, tests the runtime check
+        await device.strenum.set("NOT_A_REAL_CHOICE")  # pyright: ignore[reportArgumentType]
 
     # A well-formed TRL (real host:port, so PyTango accepts the syntax) but
     # for a device name nothing is serving
@@ -413,9 +420,11 @@ async def test_enum_set_accepts_name_value_and_member(
     device = TangoTestDevice(everything_device_trl, name="enum_converter")
     await device.connect()
     try:
-        await device.strenum.set("AAA")
+        # runtime coerces enum names and values, not part of the typed API
+        await device.strenum.set("AAA")  # pyright: ignore[reportArgumentType]
         await device.strenum.set(ExampleStrEnum.B)
-        await device.strenum.set(ExampleStrEnum.C.value)
+        # runtime coerces enum names and values, not part of the typed API
+        await device.strenum.set(ExampleStrEnum.C.value)  # pyright: ignore[reportArgumentType]
         await device.my_state.set(DevStateEnum.EXTRACT)
     finally:
         # Leave the server as documented-default for the next test/module.

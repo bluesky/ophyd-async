@@ -1,6 +1,7 @@
 import asyncio
 import os
 from collections import defaultdict
+from typing import cast
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -44,9 +45,9 @@ async def test_sim_blob_detector_count(
     # Check data looks right
     assert path == (tmp_path / "file.h5").as_posix()
     h5file = h5py.File(path)
-    assert list(h5file["/entry"]) == ["data", "sum"]
-    assert list(h5file["/entry/sum"]) == [det_sum, det_sum]
-    assert np.sum(h5file["/entry/data/data"][0]) == det_sum
+    assert list(cast(h5py.Group, h5file["/entry"])) == ["data", "sum"]
+    assert list(cast(h5py.Dataset, h5file["/entry/sum"])) == [det_sum, det_sum]
+    assert np.sum(cast(h5py.Dataset, h5file["/entry/data/data"])[0]) == det_sum
     # Check descriptor looks right
     assert docs["descriptor"][0]["data_keys"] == {
         "det": {
@@ -121,7 +122,7 @@ async def test_sim_blob_detector_fly(RE: RunEngine, blob_detector: SimBlobDetect
     if os.name == "nt":
         path = path.lstrip("/")
     h5file = h5py.File(path)
-    assert list(h5file["/entry/sum"]) == [
+    assert list(cast(h5py.Dataset, h5file["/entry/sum"])) == [
         506344,
         527596,
         542140,

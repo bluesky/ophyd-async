@@ -30,7 +30,7 @@ tox -p                  # all envs in parallel (CI equivalent)
 ```
 
 - `ruff` runs on save in VS Code; `pytest` also runs doctests in `docs/` and `src/`.
-- **pyright ad hoc** (not via tox): always `pyright src --pythonpath "$(which python)"`. A bare `pyright src` reports ~115 false positives here (stale numpy-stub resolution) — never trust its count.
+- **pyright ad hoc** (not via tox): always `pyright src tests --pythonpath "$(which python)"`. A bare `pyright src tests` reports ~115 false positives here (stale numpy-stub resolution) — never trust its count.
 - System tests need a live backend; scope runs to `tests/system_tests/epics` or `.../tango` and run 2–3× to catch flakiness.
 - `tests/container_tests` must be a **separate** `pytest` invocation from `tests/system_tests` — never one session. They reach their IOC via the ca-gateway, which needs `EPICS_CA_NAME_SERVERS`, and EPICS reads that once at libca init; `epics/core` imports pyepics, which initialises libca during *collection*, so a shared session silently breaks them. Needs `EXAMPLE_SERVICES_PATH` (a host path).
 

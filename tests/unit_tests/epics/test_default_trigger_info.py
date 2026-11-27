@@ -82,7 +82,9 @@ async def _trigger_with_preserved_state(
     await det.stage()
     await det.trigger()
     description = await det.describe()
-    return description["det"]["shape"][0]
+    events_per_collection = description["det"]["shape"][0]
+    assert events_per_collection is not None
+    return events_per_collection
 
 
 @pytest.fixture(autouse=True)

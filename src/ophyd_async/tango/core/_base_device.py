@@ -150,7 +150,7 @@ class TangoDeviceConnector(DeviceConnector):
         self.proxy = proxy
         children = sorted(
             set().union(proxy.get_attribute_list()).union(proxy.get_command_list())
-        )  # type: ignore
+        )
 
         children = [
             child for child in children if child not in self.filler.ignored_signals
@@ -181,7 +181,7 @@ class TangoDeviceConnector(DeviceConnector):
 
                         # # Pyright still thinks backend could be a
                         # # TangoSignalBackend somehow
-                        backend.signature = sig  # type: ignore
+                        backend.signature = sig
                 elif isinstance(backend, TangoSignalBackend):
                     if backend.datatype is None:
                         _, out_type = await infer_python_type(full_trl, proxy)

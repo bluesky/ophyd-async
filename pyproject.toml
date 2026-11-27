@@ -95,6 +95,7 @@ version_file = "src/ophyd_async/_version.py"
 [tool.pyright]
 typeCheckingMode = "standard"
 reportMissingImports = false  # Ignore missing stubs in imported modules
+reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
@@ -166,9 +167,7 @@ commands = [
     [
         "pyright",
         "src",
-        # Its `assert_type` guards only bite if pyright checks them; `tests` as a
-        # whole is not clean enough to check, so this is listed by name
-        "tests/unit_tests/core/test_status_types.py",
+        "tests",
         "--pythonpath",
         "{env:VIRTUAL_ENV}/bin/python",
         { replace = "posargs", default = [

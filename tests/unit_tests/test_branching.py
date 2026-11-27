@@ -8,7 +8,7 @@
 # import pytest
 from autodoc2.config import Config
 from autodoc2.db import InMemoryDb
-from bluesky.protocols import Locatable
+from bluesky.protocols import Locatable, Location, Status
 
 # _docs_parser is Sphinx autodoc2 build tooling, not runtime code at all -
 # already excluded from the layers contract as such
@@ -47,8 +47,8 @@ def test_format_annotation_without_annotation():
 
 def test_get_locatable_type():
     class DummyLocatable(Locatable[int]):
-        def set(self, _): ...
-        def locate(self): ...
+        def set(self, value: int) -> Status: ...
+        def locate(self) -> Location[int]: ...
 
     class NonLocatable: ...
 

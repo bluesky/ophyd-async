@@ -97,12 +97,12 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
                 "INENC1.VAL",
                 mock_panda.inenc[1].val_scale,
                 mock_panda.inenc[1].val_offset,
-            ),  # type: ignore
+            ),
             sim_y_motor: PosOutScaleOffset(
                 "INENC2.VAL",
                 mock_panda.inenc[2].val_scale,
                 mock_panda.inenc[2].val_offset,
-            ),  # type: ignore
+            ),
         },
     )
     await trigger_logic.on_prepare(info)

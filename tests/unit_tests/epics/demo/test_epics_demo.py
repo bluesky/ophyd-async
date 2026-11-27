@@ -222,7 +222,7 @@ async def test_read_point_detector(mock_point_detector: demo.DemoPointDetector):
         "mock_point_detector-channel-1-mode"
     ]
     assert desc["dtype"] == "string"
-    assert desc["choices"] == ["Low Energy", "High Energy"]
+    assert desc.get("choices") == ["Low Energy", "High Energy"]
     set_mock_value(channel.mode, demo.EnergyMode.HIGH)
     assert (await channel.read_configuration())["mock_point_detector-channel-1-mode"][
         "value"
