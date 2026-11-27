@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.21.6.dev10+g8ca2d8144 documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.21.6.dev11+gc114c3cf3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=41151d6f"></script>
+    <script src="../_static/documentation_options.js?v=b89b0bbf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev10+g8ca2d8144 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev10+g8ca2d8144 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev11+gc114c3cf3 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev11+gc114c3cf3 documentation - Home"/>
   
   
 </a></div>
@@ -575,9 +575,12 @@
 
     <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">delay_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">pulses</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">step_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">width_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <p>For a traditional EPICS IOC there is no such introspection mechanism, so we require a PV Suffix to be supplied via an <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.15"><span class="xref myst">annotation</span></a>. For example, in <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo.DemoPointDetectorChannel</span></code> we describe the PV Suffix and whether the signal appears in <code class="docutils literal notranslate"><span class="pre">read()</span></code> or <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> using <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.15"><code class="iref myst docutils literal notranslate"><span class="pre">typing.Annotated</span></code></a>:</p>

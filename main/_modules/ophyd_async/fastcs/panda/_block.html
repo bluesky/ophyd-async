@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.21.6.dev10+g8ca2d8144 documentation</title>
+    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.21.6.dev11+gc114c3cf3 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../../_static/documentation_options.js?v=41151d6f"></script>
+    <script src="../../../../_static/documentation_options.js?v=b89b0bbf"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,8 +491,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev10+g8ca2d8144 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev10+g8ca2d8144 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.21.6.dev11+gc114c3cf3 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.21.6.dev11+gc114c3cf3 documentation - Home"/>
   
   
 </a></div>
@@ -906,6 +906,18 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="PandaTimeUnits">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaTimeUnits">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PandaTimeUnits</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Options for units of time in the PandA."""</span>
+
+    <span class="n">MIN</span> <span class="o">=</span> <span class="s2">"min"</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="s2">"s"</span>
+    <span class="n">MS</span> <span class="o">=</span> <span class="s2">"ms"</span>
+    <span class="n">US</span> <span class="o">=</span> <span class="s2">"us"</span></div>
+
+
+
 <div class="viewcode-block" id="PulseBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PulseBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PulseBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
@@ -917,9 +929,12 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">delay_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">pulses</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
+    <span class="n">step_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">width_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></div>
 
 
 
@@ -939,18 +954,6 @@ window.runMermaid = runMermaid;</script>
     <span class="n">start</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="PandaTimeUnits">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaTimeUnits">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaTimeUnits</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Options for units of time in the PandA."""</span>
-
-    <span class="n">MIN</span> <span class="o">=</span> <span class="s2">"min"</span>
-    <span class="n">S</span> <span class="o">=</span> <span class="s2">"s"</span>
-    <span class="n">MS</span> <span class="o">=</span> <span class="s2">"ms"</span>
-    <span class="n">US</span> <span class="o">=</span> <span class="s2">"us"</span></div>
 
 
 
