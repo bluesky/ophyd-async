@@ -91,15 +91,22 @@ class DerivedSignalFactory(Generic[TransformT]):
                     raise TypeError(msg)
 
                 for k in set(expected.keys()):
-                    if isinstance(expected[k], type):
-                        if not issubclass(received[k], expected[k]):
-                            raise TypeError(msg)
-                    elif isinstance(expected[k], TypeVar):
+                    if isinstance(expected[k], TypeVar):
                         bound = expected[k].__bound__
                         if isinstance(bound, type) and not issubclass(
                             received[k], bound
                         ):
                             raise TypeError(msg)
+                    if isinstance(received[k], TypeVar):
+                        bound = received[k].__bound__
+                        if isinstance(bound, type) and not issubclass(
+                            expected[k], bound
+                        ):
+                            raise TypeError(msg)
+                    if isinstance(received[k], type) and isinstance(expected[k], type):
+                        if not issubclass(received[k], expected[k]):
+                            raise TypeError(msg)
+
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
