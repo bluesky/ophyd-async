@@ -130,7 +130,10 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
 
     async def default_trigger_info(self):
         return await trigger_info_from_driver(
-            self.driver.num_images, self.process_plugin
+            self.driver.num_images,
+            self.driver.acquire_time,
+            acquire_period_signal=self.driver.acquire_period,
+            process_plugin=self.process_plugin,
         )
 
 
