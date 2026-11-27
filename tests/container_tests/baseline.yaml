@@ -19,7 +19,7 @@ hdf.file_write_mode: Stream
 hdf.flush_now: false
 hdf.lazy_open: true
 hdf.nd_array_address: 0
-hdf.nd_array_port: DET.PROC
+hdf.nd_array_port: DET.ROISTAT
 hdf.nd_attributes_file: ""
 hdf.num_capture: 0
 hdf.num_extra_dims: 0
