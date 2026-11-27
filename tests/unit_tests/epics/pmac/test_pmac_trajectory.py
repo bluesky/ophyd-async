@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock, call, patch
 
 import numpy as np
@@ -5,9 +6,12 @@ import pytest
 from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     callback_on_mock_execute,
+    callback_on_mock_put,
     get_mock,
     get_mock_execute,
+    mock_puts_blocked,
     set_and_wait_for_value,
     set_callback_filter,
     set_mock_value,
@@ -400,6 +404,120 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
     # Method called as there is now a running trajectory
     await pmac_trajectory.stop()
     execute_mock.assert_awaited_once_with()
+
+
+async def test_unstage_during_move_to_start_aborts(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, sim_x_motor, _ = sim_motors
+    coord = pmac_io.coord[1]
+    value = PmacScanInfo(
+        spec=Fly(2.0 @ Line(sim_x_motor, 1, 5, 2)), ramp_time=None, turnaround_time=None
+    )
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    events: list[str] = []
+    moves_released = asyncio.Event()
+
+    def on_defer_moves(held: bool) -> None:
+        events.append(f"defer_moves {held}")
+        if not held:
+            moves_released.set()
+
+    callback_on_mock_put(coord.defer_moves, on_defer_moves)
+    # The CS moves the motor, and stays moving until it is aborted
+    callback_on_mock_put(
+        coord.cs_axis_setpoint[7],
+        lambda _: set_mock_value(sim_x_motor.motor_done_move, 0),
+    )
+
+    def abort() -> None:
+        events.append("abort")
+        set_mock_value(sim_x_motor.motor_done_move, 1)
+
+    callback_on_mock_execute(coord.abort, abort)
+
+    with mock_puts_blocked(coord.cs_axis_setpoint[7]):
+        prepare_status = flyer.prepare(value)
+        # Prepare has released the held moves, so the motor is moving and the
+        # setpoint put that started it is still blocked
+        await asyncio.wait_for(moves_released.wait(), DEFAULT_TIMEOUT)
+        assert not prepare_status.done
+        await flyer.unstage()
+
+    await prepare_status
+    assert events == ["defer_moves True", "defer_moves False", "abort"]
+    assert await sim_x_motor.motor_done_move.get_value() == 1
+
+
+@pytest.mark.parametrize(
+    "defer_moves, motors_moving, expected_events",
+    [
+        (False, False, []),
+        (False, True, ["abort"]),
+        (True, False, ["defer_moves False", "abort"]),
+        (True, True, ["defer_moves False", "abort"]),
+    ],
+)
+async def test_stop_aborts_cs_only_if_moving_or_held(
+    defer_moves: bool,
+    motors_moving: bool,
+    expected_events: list[str],
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, sim_x_motor, sim_y_motor = sim_motors
+    coord = pmac_io.coord[1]
+    logic = PmacTrajectoryFlyableLogic(pmac_io)
+    spec = Fly(2.0 @ (Line(sim_x_motor, 1, 5, 2) * Line(sim_y_motor, 1, 5, 2)))
+    await logic.with_device().prepare(
+        PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
+    )
+    set_mock_value(coord.defer_moves, defer_moves)
+    set_mock_value(sim_y_motor.motor_done_move, 0 if motors_moving else 1)
+    events: list[str] = []
+    callback_on_mock_put(coord.defer_moves, lambda v: events.append(f"defer_moves {v}"))
+
+    def abort() -> None:
+        events.append("abort")
+        set_mock_value(sim_y_motor.motor_done_move, 1)
+
+    callback_on_mock_execute(coord.abort, abort)
+
+    await logic.stop()
+
+    assert events == expected_events
+
+
+async def test_stop_executing_profile_aborts_profile_and_moving_motors(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, sim_x_motor, _ = sim_motors
+    coord = pmac_io.coord[1]
+    flyer = PmacTrajectoryFlyableLogic(pmac_io).with_device()
+    await flyer.prepare(
+        PmacScanInfo(
+            spec=Fly(2.0 @ Line(sim_x_motor, 1, 5, 2)),
+            ramp_time=None,
+            turnaround_time=None,
+        )
+    )
+    set_mock_value(pmac_io.trajectory.execute_state, PmacExecuteState.EXECUTING)
+    set_mock_value(sim_x_motor.motor_done_move, 0)
+    callback_on_mock_execute(
+        coord.abort, lambda: set_mock_value(sim_x_motor.motor_done_move, 1)
+    )
+
+    await flyer.unstage()
+
+    get_mock_execute(pmac_io.trajectory.abort_profile).assert_awaited_once_with()
+    get_mock_execute(coord.abort).assert_awaited_once_with()
+
+
+async def test_stop_before_any_prepare_does_not_touch_cs(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, _, _ = sim_motors
+    await PmacTrajectoryFlyableLogic(pmac_io).stop()
+    assert get_mock(pmac_io.coord[1]).mock_calls == []
 
 
 async def test_trajectory_raises_if_profile_status_not_in_good_state(

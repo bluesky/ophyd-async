@@ -18,7 +18,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 
-from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO, PmacStatus
+from ._pmac_io import CS_INDEX, PmacCoordIO, PmacExecuteState, PmacIO, PmacStatus
 from ._pmac_trajectory_generation import (
     PVT,
     Trajectory,
@@ -72,6 +72,10 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
         self._next_pvt: PVT | None = None
         self._loaded = 0
         self._turnaround_time: float | None = None
+        # The CS and motors of the last prepare, so stop() can halt them. Set
+        # before any motion starts as the device only keeps ctx once prepare ends.
+        self._cs_number: int | None = None
+        self._motors: list[Motor] = []
 
     async def on_prepare(self, value: PmacScanInfo) -> PmacFlyCtx:
         spec = value.spec
@@ -83,6 +87,8 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
         path_length = len(path)
         motors = slice.axes()
         motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
+        self._cs_number = motor_info.cs_number
+        self._motors = list(motor_info.motor_cs_index)
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
             slice, motor_info, True, value.ramp_time
         )
@@ -124,6 +130,28 @@ class PmacTrajectoryFlyableLogic(FlyableLogic[PmacScanInfo, PmacFlyCtx]):
             == PmacExecuteState.EXECUTING
         ):
             await self.pmac.trajectory.abort_profile.trigger()
+
+        if self._cs_number is not None:
+            await self._stop_motors(self.pmac.coord[self._cs_number])
+
+    async def _stop_motors(self, coord: PmacCoordIO) -> None:
+        # Release held moves first: Abort does not clear them, so a later
+        # release would launch them
+        moves_were_held = await coord.defer_moves.get_value()
+        if moves_were_held:
+            await coord.defer_moves.set(False)
+        done_moves = await gather_dict(
+            {motor: motor.motor_done_move.get_value() for motor in self._motors}
+        )
+        any_moving = not all(done_moves.values())
+        if moves_were_held or any_moving:
+            await coord.abort.trigger()
+            await asyncio.gather(
+                *(
+                    wait_for_value(motor.motor_done_move, 1, DEFAULT_TIMEOUT)
+                    for motor in self._motors
+                )
+            )
 
     async def on_stage(self) -> None:
         # unstage()/on_unstage default to stop(), but stage additionally resets

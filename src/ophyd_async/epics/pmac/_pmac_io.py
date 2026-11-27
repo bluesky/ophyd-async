@@ -79,7 +79,6 @@ class PmacTrajectoryIO(StandardReadable):
         )
         self.execute_message = epics_signal_r(str, prefix + "ProfileExecuteMessage_RBV")
         self.abort_profile = epics_triggerable_command(prefix + "ProfileAbort")
-        self.abort_profile = epics_triggerable_command(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
 
@@ -110,6 +109,8 @@ class PmacCoordIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.defer_moves = epics_signal_rw(bool, f"{prefix}DeferMoves")
         self.cs_port = epics_signal_r(str, f"{prefix}Port")
+        # Aborts all motion in the CS. It does not clear deferred moves.
+        self.abort = epics_triggerable_command(f"{prefix}Abort")
         self.cs_axis_setpoint = DeviceVector(
             {
                 i: epics_signal_rw(float, f"{prefix}M{i}:DirectDemand")
