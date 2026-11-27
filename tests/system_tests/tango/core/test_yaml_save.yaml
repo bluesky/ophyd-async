@@ -1,3 +1,4 @@
+<READABLE_FORMATS>: {}
 a_bool: true
 a_str: test_string
 float64: 1.234

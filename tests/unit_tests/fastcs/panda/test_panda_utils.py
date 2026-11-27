@@ -12,7 +12,7 @@ from ophyd_async.fastcs.panda import (
     SeqTable,
     apply_panda_settings,
 )
-from ophyd_async.plan_stubs import retrieve_settings, store_settings
+from ophyd_async.plan_stubs import retrieve_snapshot, store_snapshot
 
 
 async def get_mock_panda():
@@ -32,7 +32,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     mock_panda1 = await get_mock_panda()
     await mock_panda1.seq[1].table.set(SeqTable.row(repeats=1))
     provider = YamlSettingsProvider(tmp_path)
-    RE(store_settings(provider, "panda", mock_panda1))
+    RE(store_snapshot(provider, "panda", mock_panda1))
 
     def check_equal_with_seq_tables(actual, expected):
         assert actual.model_fields_set == expected.model_fields_set
@@ -47,8 +47,8 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     )
 
     def load_panda():
-        settings = yield from retrieve_settings(provider, "panda", mock_panda2)
-        yield from apply_panda_settings(settings)
+        snapshot = yield from retrieve_snapshot(provider, "panda", mock_panda2)
+        yield from apply_panda_settings(snapshot.settings)
 
     RE(load_panda())
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from collections.abc import Callable, Mapping
 from typing import Any
 
@@ -10,16 +11,73 @@ from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
     Device,
+    DeviceSnapshot,
+    ReadableFormats,
     Settings,
     SettingsProvider,
     SignalRW,
+    StandardReadable,
+    StandardReadableFormat,
     Table,
     walk_config_signals,
+    walk_devices,
     walk_rw_signals,
 )
 
 from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable
+
+#: The reserved key under which readable formats are stored. It cannot collide
+#: with a dotted attribute path.
+_READABLE_FORMATS_KEY = "<READABLE_FORMATS>"
+
+#: Separates the path of the owning `StandardReadable` from the path of the
+#: child in a stored readable format key.
+_OWNER_SEPARATOR = ":"
+
+
+def _is_section(key: str) -> bool:
+    return key.startswith("<") and key.endswith(">")
+
+
+def _format_key(owner_path: str, child_path: str) -> str:
+    return f"{owner_path}{_OWNER_SEPARATOR}{child_path}" if owner_path else child_path
+
+
+def _parse_format_key(key: str) -> tuple[str, str]:
+    owner_path, _, child_path = key.rpartition(_OWNER_SEPARATOR)
+    return owner_path, child_path
+
+
+def _stored_readable_formats(device: Device) -> dict[str, str | None] | None:
+    """Describe how the readable formats in a Device tree differ from construction.
+
+    `None` if there is no `StandardReadable` in the tree. A change to a child that
+    is not within its owner is warned about and skipped.
+    """
+    paths: dict[Device, str] = {device: ""}
+    paths.update({dev: path for path, dev in walk_devices(device).items()})
+    readables = [dev for dev in paths if isinstance(dev, StandardReadable)]
+    stored: dict[str, str | None] | None = None
+    if readables:
+        stored = {}
+        for owner in readables:
+            child_paths = {child: path for path, child in walk_devices(owner).items()}
+            for child, format in owner.get_readable_format_changes():
+                child_path = child_paths.get(child)
+                if child_path is None:
+                    # Not below its owner, so it has no stable path to store it
+                    # against. See https://github.com/bluesky/ophyd-async/issues/1402
+                    warnings.warn(
+                        f"{owner.name or owner}: {child.name or child} is not within "
+                        f"{owner.name or owner}, so the change to its readable "
+                        "format will not be stored",
+                        stacklevel=2,
+                    )
+                else:
+                    key = _format_key(paths[owner], child_path)
+                    stored[key] = None if format is None else format.value
+    return stored
 
 
 @plan
@@ -50,24 +108,103 @@ def get_current_settings(
 
 
 @plan
-def store_settings(
+def store_snapshot(
     provider: SettingsProvider, name: str, device: Device, only_config: bool = False
 ) -> MsgGenerator[None]:
-    """Walk a Device for SignalRWs and store their values.
+    """Walk a Device for SignalRWs and store their values and readable formats.
 
-    If `only_config` is True, store only configuration settings on `Configurable`.
+    If the tree contains a `StandardReadable`, its readable format changes since
+    construction go under `<READABLE_FORMATS>`, even if there are none.
 
-    :param provider: The provider to store the settings with.
-    :param name: The name to store the settings under.
+    :param provider: The provider to store the snapshot with.
+    :param name: The name to store the snapshot under.
     :param device: The Device to walk for SignalRWs.
-    :param only_config: If True, store only configuration settings.
+    :param only_config:
+        If True, store only the values of configuration signals. Readable formats
+        are always stored.
     """
     if only_config:
         signals = yield from wait_for_awaitable(walk_config_signals(device))
     else:
         signals = walk_rw_signals(device)
-    named_values = yield from _get_values_of_signals(signals)
-    yield from wait_for_awaitable(provider.store(name, named_values))
+    data: dict[str, Any] = yield from _get_values_of_signals(signals)
+    formats = _stored_readable_formats(device)
+    if formats is not None:
+        data[_READABLE_FORMATS_KEY] = formats
+    yield from wait_for_awaitable(provider.store(name, data))
+
+
+@plan
+def retrieve_snapshot(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[DeviceSnapshot]:
+    """Retrieve the named snapshot from a provider, bound to a Device.
+
+    :param provider: The provider to retrieve the snapshot from.
+    :param name: The name of the snapshot to retrieve.
+    :param device: The Device the snapshot is for.
+    :raises ValueError: If a stored readable format is not a `StandardReadableFormat`.
+    :raises NameError: If a stored path does not name anything in the Device.
+    """
+    data = yield from wait_for_awaitable(provider.retrieve(name))
+    values = {k: v for k, v in data.items() if not _is_section(k)}
+    formats = None
+    if _READABLE_FORMATS_KEY in data:
+        # A hand written "<READABLE_FORMATS>:" is null, which still means reset
+        stored = data[_READABLE_FORMATS_KEY] or {}
+        # A null means "stop this child contributing", so is not coerced
+        formats = {
+            _parse_format_key(key): None
+            if value is None
+            else StandardReadableFormat(value)
+            for key, value in stored.items()
+        }
+    return DeviceSnapshot(device, values, formats)
+
+
+@plan
+def apply_readable_formats(
+    device: Device, formats: ReadableFormats | None
+) -> MsgGenerator[None]:
+    """Reset the readable formats in a Device tree, then apply the given changes.
+
+    Every `StandardReadable` in the tree is first put back to what it registered
+    during construction, so an empty `formats` restores the class defaults.
+
+    :param device: The root of the tree to reset.
+    :param formats:
+        The changes to apply, as `{StandardReadable: {child: format}}`. `None`
+        leaves the formats alone.
+    """
+    if formats is not None:
+        for dev in (device, *walk_devices(device).values()):
+            if isinstance(dev, StandardReadable):
+                dev.reset_readable_formats()
+        for owner, changes in formats.items():
+            for child, format in changes.items():
+                owner.set_readable_format(child, format)
+    yield from bps.null()
+
+
+@plan
+def store_settings(
+    provider: SettingsProvider, name: str, device: Device, only_config: bool = False
+) -> MsgGenerator[None]:
+    """Walk a Device for SignalRWs and store their values.
+
+    Deprecated: use [](#store_snapshot). This delegates to it, so it also stores
+    readable formats.
+
+    :param provider: The provider to store the settings with.
+    :param name: The name to store the settings under.
+    :param device: The Device to walk for SignalRWs.
+    :param only_config: If True, store only the values of configuration signals.
+    """
+    warnings.warn(
+        DeprecationWarning("store_settings is deprecated, use store_snapshot instead"),
+        stacklevel=3,
+    )
+    yield from store_snapshot(provider, name, device, only_config)
 
 
 @plan
@@ -76,23 +213,22 @@ def retrieve_settings(
 ) -> MsgGenerator[Settings]:
     """Retrieve named Settings for a Device from a provider.
 
-    If `only_config` is True, retrieve only configuration settings on `Configurable`.
+    Deprecated: use `(yield from retrieve_snapshot(...)).settings`
+    ([](#retrieve_snapshot)). Sections such as `<READABLE_FORMATS>` are skipped.
 
     :param provider: The provider to retrieve the settings from.
     :param name: The name of the settings to retrieve.
     :param device: The Device to retrieve the settings for.
-    :param only_config: If True, retrieve only configuration settings.
+    :param only_config: Has no effect, and is kept for compatibility.
     """
-    named_values = yield from wait_for_awaitable(provider.retrieve(name))
-    if only_config:
-        signals = yield from wait_for_awaitable(walk_config_signals(device))
-    else:
-        signals = walk_rw_signals(device)
-    unknown_names = set(named_values) - set(signals)
-    if unknown_names:
-        raise NameError(f"Unknown signal names {sorted(unknown_names)}")
-    signal_values = {signals[name]: value for name, value in named_values.items()}
-    return Settings(device, signal_values)
+    warnings.warn(
+        DeprecationWarning(
+            "retrieve_settings is deprecated, use "
+            "(yield from retrieve_snapshot(...)).settings instead"
+        ),
+        stacklevel=3,
+    )
+    return (yield from retrieve_snapshot(provider, name, device)).settings
 
 
 @plan

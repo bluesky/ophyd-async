@@ -62,7 +62,7 @@ from ophyd_async.plan_stubs import (
     apply_settings,
     apply_settings_if_different,
     get_current_settings,
-    retrieve_settings,
+    retrieve_snapshot,
 )
 
 TIMEOUT = 60.0  # allow extra time for docker compose
@@ -129,13 +129,13 @@ def reset_adsim_to_baseline(RE: RunEngine, adsim: SimDetector) -> None:
 def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
     current_settings = yield from get_current_settings(adsim)
     provider = YamlSettingsProvider(Path(__file__).parent)
-    baseline_settings = yield from retrieve_settings(
+    baseline = yield from retrieve_snapshot(
         provider,
         "baseline",
         adsim,
     )
     yield from apply_settings_if_different(
-        baseline_settings,
+        baseline.settings,
         apply_plan=apply_settings,
         current_settings=current_settings,
     )

@@ -17,6 +17,8 @@
 - Renamed `MotorFlyCtx` to `MotorPrepareCtx`, `PmacFlyCtx` and `PmacPrepareContext` to `PmacPrepareCtx`, and `SimMotorMoveLogic` to `SimMotorLogic`.
 - `Motor` writes `.STOP` and waits for `.DMOV` on every `unstage()`, even when it looks stopped.
 - Needs `typing-extensions>=4.14`.
+- `StandardReadable` keeps one format per child, so registering a child again replaces its format. A subclass that added to the private `_describe_config_funcs`, `_read_config_funcs` or `_has_hints` adds a hook to `_describe_configuration_funcs`, `_read_configuration_funcs` or `_hints_funcs` instead.
+- The deprecated `ConfigSignal` and `HintedSignal` are removed: use `StandardReadableFormat.CONFIG_SIGNAL` or `HINTED_SIGNAL`.
 
 ### Added
 
@@ -24,6 +26,11 @@
 - `watch_readback()` reports the progress of a move from a `FlyableLogic` hook. `SimMotor.prepare()` and `complete()` now report progress, as `Motor` does.
 - `cancel_and_wait()` cancels tasks and waits for all of them to end, even through a cancel of its caller, then raises the error of the first task, in the order given, that ended with one. If its caller was cancelled, it raises `CancelledError` instead.
 - `plugins_with_proc()` adds the process plugin made from a `proc_suffix` to a detector's `plugins`, and raises `ValueError` if `plugins` already has a `"proc"`. Every areaDetector vendor detector and `ContAcqDetector` uses it, so `"proc"` is reserved: pass `proc_suffix` instead.
+- `StandardReadable.set_readable_format()` changes what a child contributes to `read()`, `read_configuration()` and `hints` at runtime, like `Kind` in ophyd v1, and replaces the now deprecated `add_readables()`. `store_snapshot()` and `retrieve_snapshot()` save and restore these changes, with the signal values, as a `DeviceSnapshot`, which resolves its paths against the Device when it is made. Apply one with `apply_settings(snapshot.settings)` then `apply_readable_formats(snapshot.device, snapshot.readable_formats)`.
+
+### Deprecated
+
+- `store_settings()` and `retrieve_settings()`: use `store_snapshot()`, and `(yield from retrieve_snapshot(...)).settings`. They now delegate to the snapshot plans, so `store_settings()` also writes `<READABLE_FORMATS>` when the tree has a `StandardReadable`, and files it writes cannot be read by older releases' `retrieve_settings()`. `retrieve_settings()` skips `<...>` sections such as `<READABLE_FORMATS>` and ignores `only_config`. dodal's `save_panda.py` and `load_panda_yaml.py` still use them.
 
 ### Changed
 
