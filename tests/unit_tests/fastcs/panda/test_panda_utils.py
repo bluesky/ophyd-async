@@ -2,7 +2,12 @@ import numpy as np
 import yaml
 from bluesky import RunEngine
 
-from ophyd_async.core import YamlSettingsProvider, init_devices
+from ophyd_async.core import (
+    Settings,
+    YamlSettingsProvider,
+    callback_on_mock_put,
+    init_devices,
+)
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
@@ -89,13 +94,19 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         "pcomp.2.step": 0,
         "pcomp.2.width": 0,
         "pulse.1.delay": 0.0,
+        "pulse.1.delay_units": PandaTimeUnits("min"),
         "pulse.1.width": 0.0,
+        "pulse.1.width_units": PandaTimeUnits("min"),
         "pulse.1.step": 0.0,
+        "pulse.1.step_units": PandaTimeUnits("min"),
         "pulse.1.pulses": 0,
         "pulse.1.enable": "ZERO",
         "pulse.2.delay": 0.0,
+        "pulse.2.delay_units": PandaTimeUnits("min"),
         "pulse.2.width": 0.0,
+        "pulse.2.width_units": PandaTimeUnits("min"),
         "pulse.2.step": 0.0,
+        "pulse.2.step_units": PandaTimeUnits("min"),
         "pulse.2.pulses": 0,
         "pulse.2.enable": "ZERO",
         "seq.1.table": {
@@ -145,3 +156,22 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         "seq.2.prescale": 0.0,
         "seq.2.enable": "ZERO",
     }
+
+
+async def test_apply_panda_settings_sets_pulse_units_before_times(RE: RunEngine):
+    panda = await get_mock_panda()
+    pulse = panda.pulse[1]
+    assert pulse.delay_units is not None
+    puts = []
+    settings = Settings(
+        panda,
+        {pulse.delay: 1.5, pulse.delay_units: PandaTimeUnits.S},
+    )
+    with (
+        callback_on_mock_put(
+            pulse.delay_units, lambda value: puts.append(("delay_units", value))
+        ),
+        callback_on_mock_put(pulse.delay, lambda value: puts.append(("delay", value))),
+    ):
+        RE(apply_panda_settings(settings))
+    assert puts == [("delay_units", PandaTimeUnits.S), ("delay", 1.5)]

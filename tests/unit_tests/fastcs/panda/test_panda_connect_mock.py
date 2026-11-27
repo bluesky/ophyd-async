@@ -2,6 +2,7 @@
 
 import copy
 from typing import Any
+from unittest.mock import AsyncMock
 
 import numpy as np
 import pytest
@@ -11,7 +12,9 @@ from ophyd_async.core import (
     DeviceVector,
     NotConnectedError,
     init_devices,
+    walk_rw_signals,
 )
+from ophyd_async.epics.core import PviDeviceConnector, PviTree, SignalDetails
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     PcapBlock,
@@ -116,6 +119,44 @@ async def test_panda_children_connected(mock_panda):
 
     assert readback_pulse == 20.0
     assert readback_seq == table
+
+
+@pytest.mark.parametrize(
+    "unit_fields",
+    [
+        ("delay_units", "step_units", "width_units"),
+        ("step_units", "width_units"),
+        ("delay_units", "width_units"),
+        ("delay_units", "step_units"),
+        (),
+    ],
+    ids=["all-present", "no-delay-units", "no-step-units", "no-width-units", "none"],
+)
+async def test_pulse_connects_with_optional_time_units(unit_fields, monkeypatch):
+    prefix = "PANDAQSRV:Pulse:1:"
+    connector = PviDeviceConnector(prefix)
+    pulse = PulseBlock(name="pulse", connector=connector)
+    connector.pvi_tree = PviTree(
+        signals={
+            field: SignalDetails.from_entry({"rw": prefix + field})
+            for field in ("enable", "delay", "pulses", "step", "width", *unit_fields)
+        }
+    )
+    monkeypatch.setattr(
+        "ophyd_async.epics.core._signal.PvaSignalBackend.connect", AsyncMock()
+    )
+
+    await pulse.connect()
+
+    signals = walk_rw_signals(pulse)
+    for field in ("delay_units", "step_units", "width_units"):
+        units = getattr(pulse, field)
+        if field in unit_fields:
+            assert units is not None
+            assert field in signals
+        else:
+            assert units is None
+            assert field not in signals
 
 
 async def test_panda_unable_to_connect_to_pvi(panda_t):
