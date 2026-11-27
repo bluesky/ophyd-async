@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
 from functools import partial
 
 import bluesky.plan_stubs as bps
@@ -15,6 +15,7 @@ from ophyd_async.core import (
     WatcherUpdate,
     soft_signal_r_and_setter,
 )
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 class SetFailedError(Exception):
@@ -216,3 +217,189 @@ async def test_device_name_in_failure_message_watchableasyncstatus_wrap(RE):
     # undecorated methods will not print the device name
     status: AsyncStatus = ctx.value.args[0]
     assert f"device: {device_name}" in repr(status)
+
+
+class StopError(Exception):
+    pass
+
+
+class Ticks:
+    """Yields an update then waits forever, or until `finish` is resolved."""
+
+    def __init__(self, finish: asyncio.Future | None = None):
+        self.finish = finish
+        self.started = False
+
+    async def run(self) -> AsyncGenerator[WatcherUpdate[int], None]:
+        self.started = True
+        yield WatcherUpdate(current=1, initial=0, target=2)
+        await (self.finish or asyncio.Future())
+
+
+@pytest.mark.parametrize("error", [None, StopError("stopped")])
+@pytest.mark.parametrize("before_start", [True, False])
+async def test_stop_future_ends_a_watchable_status(error, before_start):
+    ticks = Ticks()
+    stop = asyncio.get_running_loop().create_future()
+    updates: list[dict] = []
+    if before_start:
+        stop.set_result(error)
+    status = WatchableAsyncStatus(ticks.run(), stop=stop)
+    status.watch(lambda **kw: updates.append(kw))
+    if not before_start:
+        await wait_for_pending_wakeups()
+        assert not status.done
+        stop.set_result(error)
+    if error is None:
+        await status
+        assert status.success
+    else:
+        with pytest.raises(StopError):
+            await status
+    # Stopped before it started, so the iterator body never ran
+    assert ticks.started is not before_start
+    assert len(updates) == (0 if before_start else 1)
+
+
+async def test_no_stop_future_adds_nothing():
+    tasks = asyncio.all_tasks()
+    finish = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(Ticks(finish).run())
+    await wait_for_pending_wakeups()
+    assert asyncio.all_tasks() - tasks == {status.task}
+    finish.set_result(None)
+    await status
+
+
+@pytest.mark.parametrize("stop_first", [True, False])
+async def test_outside_cancel_with_stop_in_the_same_iteration_cancels(stop_first):
+    stop = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(Ticks().run(), stop=stop)
+    await wait_for_pending_wakeups()
+    if stop_first:
+        stop.set_result(None)
+        status.task.cancel()
+    else:
+        status.task.cancel()
+        stop.set_result(None)
+    with pytest.raises(asyncio.CancelledError):
+        await status
+    assert status.task.cancelled()
+
+
+@pytest.mark.parametrize("yields", range(5))
+async def test_outside_cancel_while_the_iterator_is_finishing_is_not_lost(yields):
+    loop = asyncio.get_running_loop()
+    finish, stop = loop.create_future(), loop.create_future()
+    ticks = Ticks(finish)
+    status = WatchableAsyncStatus(ticks.run(), stop=stop)
+    await wait_for_pending_wakeups()
+    finish.set_result(None)
+    for _ in range(yields):
+        await asyncio.sleep(0)
+    if status.task.cancel():
+        with pytest.raises(asyncio.CancelledError):
+            await status
+        assert status.task.cancelled()
+    else:
+        await status
+
+
+async def test_timeout_inside_a_stoppable_watchable_status_raises_timeout_error():
+    async def iterator():
+        async with asyncio.timeout(0):
+            yield WatcherUpdate(current=1, initial=0, target=2)
+            await asyncio.Future()
+
+    stop = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(iterator(), stop=stop)
+    with pytest.raises(TimeoutError):
+        await status
+
+
+async def test_stop_future_decides_even_if_the_iterator_absorbs_the_cancel():
+    async def iterator():
+        yield WatcherUpdate(current=1, initial=0, target=2)
+        try:
+            await asyncio.Future()
+        except asyncio.CancelledError:
+            pass
+
+    stop = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(iterator(), stop=stop)
+    await wait_for_pending_wakeups()
+    stop.set_result(StopError("stopped"))
+    with pytest.raises(StopError):
+        await status
+
+
+class MoveError(Exception):
+    pass
+
+
+@pytest.mark.parametrize("error", [None, MoveError("failed")])
+async def test_an_iterator_ending_in_the_same_iteration_as_the_stop_wins(error):
+    loop = asyncio.get_running_loop()
+    finish, stop = loop.create_future(), loop.create_future()
+
+    async def iterator():
+        yield WatcherUpdate(current=1, initial=0, target=2)
+        await finish
+        if error:
+            raise error
+
+    status = WatchableAsyncStatus(iterator(), stop=stop)
+    await wait_for_pending_wakeups()
+    finish.set_result(None)
+    # The iterator resumes before the stop resolves, so both are done by the
+    # time the race looks
+    stop.set_result(StopError("stopped"))
+    if error:
+        with pytest.raises(MoveError):
+            await status
+    else:
+        await status
+
+
+async def test_an_error_raised_while_stopping_shows_through():
+    async def iterator():
+        yield WatcherUpdate(current=1, initial=0, target=2)
+        try:
+            await asyncio.Future()
+        except asyncio.CancelledError as e:
+            raise MoveError("failed to stop") from e
+
+    stop = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(iterator(), stop=stop)
+    await wait_for_pending_wakeups()
+    stop.set_result(StopError("stopped"))
+    with pytest.raises(MoveError):
+        await status
+
+
+async def test_a_second_outside_cancel_waits_for_the_iterator_cleanup():
+    release = asyncio.Event()
+    cleaned_up = False
+
+    async def iterator():
+        nonlocal cleaned_up
+        try:
+            yield WatcherUpdate(current=1, initial=0, target=2)
+            await asyncio.Future()
+        finally:
+            # Slow cleanup, which a second cancel must not abandon
+            await release.wait()
+            cleaned_up = True
+
+    stop = asyncio.get_running_loop().create_future()
+    status = WatchableAsyncStatus(iterator(), stop=stop)
+    await wait_for_pending_wakeups()
+    status.task.cancel()
+    await wait_for_pending_wakeups()
+    status.task.cancel()
+    await wait_for_pending_wakeups()
+    assert not status.done
+    release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await status
+    assert cleaned_up

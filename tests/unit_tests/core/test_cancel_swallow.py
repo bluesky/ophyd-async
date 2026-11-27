@@ -10,40 +10,47 @@ from ophyd_async.core import AsyncStatus, callback_on_mock_put, soft_signal_rw
 # The waits these cleanups cancel are internal, with no public way to slow them down
 from ophyd_async.core import _signal as signal_module  # noqa: PLC2701
 from ophyd_async.sim._blob_acquire_logic import BlobAcquireLogic  # noqa: PLC2701
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
-def _slow_to_cancel(cancelling: asyncio.Event):
-    """A coroutine that takes a moment to finish cancelling, like async cleanup."""
+class SlowToCancel:
+    """Coroutines that finish cancelling only once `release` is set, like slow async
+    cleanup."""
 
-    async def coro():
-        try:
-            await asyncio.sleep(10)
-        except asyncio.CancelledError:
-            cancelling.set()
-            await asyncio.sleep(0.2)
-            raise
+    def __init__(self):
+        self.cancelling = asyncio.Event()
+        self.release = asyncio.Event()
 
-    return coro()
+    def coro(self):
+        async def coro():
+            try:
+                await asyncio.Future()
+            except asyncio.CancelledError:
+                self.cancelling.set()
+                await self.release.wait()
+                raise
+
+        return coro()
 
 
-async def _status_aexit(cancelling: asyncio.Event, _: pytest.MonkeyPatch):
-    async with AsyncStatus(_slow_to_cancel(cancelling)):
-        await asyncio.sleep(0)  # let the status task start
+async def _status_aexit(slow: SlowToCancel, _: pytest.MonkeyPatch):
+    async with AsyncStatus(slow.coro()):
+        await wait_for_pending_wakeups()  # let the status task start
 
 
-async def _blob_ensure_stopped(cancelling: asyncio.Event, _: pytest.MonkeyPatch):
+async def _blob_ensure_stopped(slow: SlowToCancel, _: pytest.MonkeyPatch):
     pattern_generator = Mock()
-    pattern_generator.write_images_to_file = lambda: _slow_to_cancel(cancelling)
+    pattern_generator.write_images_to_file = slow.coro
     logic = BlobAcquireLogic(pattern_generator)
     await logic.start_acquiring()
-    await asyncio.sleep(0)  # let the task start
+    await wait_for_pending_wakeups()  # let the task start
     await logic.ensure_stopped()
 
 
-async def _set_and_wait(cancelling: asyncio.Event, monkeypatch: pytest.MonkeyPatch):
+async def _set_and_wait(slow: SlowToCancel, monkeypatch: pytest.MonkeyPatch):
     async def wait_for_value(self, signal, timeout):
         self.got_first_value.set()
-        await _slow_to_cancel(cancelling)
+        await slow.coro()
 
     def fail_put(value):
         raise ValueError("put failed")
@@ -61,14 +68,17 @@ async def _set_and_wait(cancelling: asyncio.Event, monkeypatch: pytest.MonkeyPat
     "cleanup", [_status_aexit, _blob_ensure_stopped, _set_and_wait]
 )
 async def test_cancelling_caller_during_cleanup_waits_for_it_then_raises(
-    cleanup: Callable[[asyncio.Event, pytest.MonkeyPatch], Coroutine[Any, Any, None]],
+    cleanup: Callable[[SlowToCancel, pytest.MonkeyPatch], Coroutine[Any, Any, None]],
     monkeypatch: pytest.MonkeyPatch,
 ):
-    cancelling = asyncio.Event()
-    outer = asyncio.create_task(cleanup(cancelling, monkeypatch))
+    slow = SlowToCancel()
+    outer = asyncio.create_task(cleanup(slow, monkeypatch))
     # Cancel the caller while the cleanup is waiting for the inner task to finish
-    await cancelling.wait()
+    await slow.cancelling.wait()
     outer.cancel()
+    await wait_for_pending_wakeups()
+    assert not outer.done()
+    slow.release.set()
     await asyncio.wait([outer])
     assert outer.cancelled()
     # The caller ended only once the slow cleanup had finished

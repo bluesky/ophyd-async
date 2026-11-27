@@ -1342,7 +1342,7 @@ async def test_set_and_wait_for_other_value_cancelled_before_first_value():
     await match_signal.connect(mock=True)
 
     async def never_yields(signal):
-        await asyncio.sleep(1000)
+        await asyncio.Future()
         yield  # pragma: no cover - unreachable, just makes this a generator
 
     with patch("ophyd_async.core._signal.observe_value", never_yields):
@@ -1355,3 +1355,14 @@ async def test_set_and_wait_for_other_value_cancelled_before_first_value():
             await task
     # The match wait it started must not outlive it
     assert asyncio.all_tasks() == {asyncio.current_task()}
+
+
+async def test_wait_for_value_unsubscribes_before_it_returns():
+    signal = soft_signal_rw(int, initial_value=1)
+    await signal.connect()
+    with patch.object(
+        SignalR, "clear_sub", autospec=True, side_effect=SignalR.clear_sub
+    ) as clear_sub:
+        await wait_for_value(signal, 1, timeout=1)
+        # Not left for the abandoned generators to do when they are finalised
+        clear_sub.assert_called_once()

@@ -3,7 +3,13 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
-from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+)
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
 from typing import Any, Generic, TypeVar

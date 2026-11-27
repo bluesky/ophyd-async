@@ -1,20 +1,25 @@
 import asyncio
 import sys
+import threading
 from unittest.mock import Mock, call, patch
 
+import bluesky.plan_stubs as bps
+import bluesky.preprocessors as bpp
 import pytest
 from bluesky.plans import spiral_square
 from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
+from bluesky.utils import FailedStatus, RunEngineInterrupted
 
 from ophyd_async.core import (
     Device,
     FlyMotorInfo,
+    StoppedError,
     WatchableAsyncStatus,
     forward_watcher_updates,
+    wait_for_value,
 )
 from ophyd_async.sim import SimMotor
-from ophyd_async.testing import StatusWatcher
 
 
 class TwoMotorStage(Device):
@@ -96,19 +101,82 @@ async def test_short_move_is_exactly_move_time(m2: SimMotor):
 
 
 @pytest.mark.timeout(3)
-async def test_stop(m2: SimMotor):
+@pytest.mark.parametrize("moving", [False, True], ids=["before_motion", "moving"])
+@pytest.mark.parametrize("success", [False, True])
+async def test_stop(m2: SimMotor, success: bool, moving: bool):
     # this move should take 10 seconds but we will stop it partway through.
-    # The sim motor updates its readback at 10Hz, so 0.2s is two update ticks
-    # in - enough for the readback to have moved off 0 without waiting longer.
     move_status = m2.set(10)
-    await asyncio.sleep(0.2)
-    await m2.stop(success=False)
+    if moving:
+        await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
+    await m2.stop(success=success)
     new_pos = await m2.user_readback.get_value()
-    assert 0 < new_pos < 10
+    assert (0 < new_pos < 10) if moving else new_pos == 0
 
-    assert not move_status.success
-    with pytest.raises(RuntimeError, match=f"Device {m2.name} was stopped"):
+    if success:
         await move_status
+    else:
+        assert not move_status.success
+        with pytest.raises(StoppedError, match=f"Device {m2.name} was stopped"):
+            await move_status
+    # Nothing is left moving
+    await asyncio.sleep(0.3)
+    assert await m2.user_readback.get_value() == new_pos
+
+
+@pytest.mark.timeout(3)
+async def test_second_set_supersedes_the_first(m2: SimMotor):
+    first = m2.set(10)
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
+    second = m2.set(0.5)
+
+    with pytest.raises(StoppedError, match=r"M2: superseded by a new set\(\)"):
+        await first
+    await second
+    # Only the second move is left moving the motor, and it has finished
+    assert await m2.user_readback.get_value() == 0.5
+    await asyncio.sleep(0.3)
+    assert await m2.user_readback.get_value() == 0.5
+
+
+@pytest.mark.timeout(3)
+async def test_unstage_stops_a_fly_and_waits_for_it(m2: SimMotor):
+    await asyncio.gather(m2.velocity.set(10), m2.acceleration_time.set(0.05))
+    await m2.stage()
+    await m2.prepare(FlyMotorInfo(start_position=0, end_position=5, time_for_move=1))
+    await m2.kickoff()
+    status = m2.complete()
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
+
+    await m2.unstage()
+
+    # Already stopped when unstage returns, not stopping soon after
+    with pytest.raises(asyncio.CancelledError):
+        await status
+    stopped_at = await m2.user_readback.get_value()
+    assert 0 < stopped_at < 5
+    assert await m2.user_setpoint.get_value() == stopped_at
+    await asyncio.sleep(0.3)
+    assert await m2.user_readback.get_value() == stopped_at
+
+
+@pytest.mark.timeout(5)
+async def test_stop_during_a_fly_halts_the_motor_and_ends_complete(m2: SimMotor):
+    await asyncio.gather(m2.velocity.set(10), m2.acceleration_time.set(0.05))
+    await m2.stage()
+    await m2.prepare(FlyMotorInfo(start_position=0, end_position=2, time_for_move=1))
+    await m2.kickoff()
+    status = m2.complete()
+    await wait_for_value(m2.user_readback, lambda v: v > 0, timeout=1)
+
+    await m2.stop()
+
+    # As for a real motor, the fly ends early where the motor stopped
+    await status
+    stopped_at = await m2.user_readback.get_value()
+    assert 0 < stopped_at < 2
+    await asyncio.sleep(0.3)
+    assert await m2.user_readback.get_value() == stopped_at
+    await m2.unstage()
 
 
 @pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
@@ -116,24 +184,41 @@ async def test_fly(m1: SimMotor):
     await m1.acceleration_time.set(0.1)
     info = FlyMotorInfo(start_position=0, end_position=1, time_for_move=0.2)
     fly_start, fly_end, velocity = -0.25, 1.25, 5
+    await m1.stage()
     await m1.prepare(info)
     assert await m1.user_readback.get_value() == fly_start
     assert await m1.velocity.get_value() == velocity
     await m1.kickoff()
     status = m1.complete()
-    watcher = StatusWatcher(status)
-    for i, v in enumerate([-0.25, 0, 0.5, 1.0, 1.25]):
-        await watcher.wait_for_call(
-            current=pytest.approx(v),
-            initial=fly_start,
-            name="M1",
-            target=fly_end,
-            time_elapsed=pytest.approx(i * 0.1, abs=0.1),
-            unit="mm",
-        )
+    watcher = Mock()
+    status.watch(watcher)
     await status
-    watcher.mock.assert_not_called()
+    # Progress is reported from where the motor is when complete is called
+    # (it has been running up for the acceleration time) to the end
+    updates = [c.kwargs for c in watcher.call_args_list]
+    currents = [u["current"] for u in updates]
+    assert currents == sorted(currents)
+    assert currents[-1] == pytest.approx(fly_end)
+    assert {(u["initial"], u["target"], u["name"], u["unit"]) for u in updates} == {
+        (fly_start, fly_end, "M1", "mm")
+    }
     assert await m1.user_readback.get_value() == fly_end
+
+
+@pytest.mark.timeout(3)
+async def test_unstage_during_kickoff_run_up_leaves_no_move_running(m2: SimMotor):
+    await m2.acceleration_time.set(0.5)
+    await m2.stage()
+    await m2.prepare(FlyMotorInfo(start_position=0, end_position=5, time_for_move=1))
+    kickoff_status = m2.kickoff()
+    await wait_for_value(m2.user_readback, lambda v: v != 0, timeout=1)
+    await m2.unstage()
+    with pytest.raises(asyncio.CancelledError):
+        await kickoff_status
+    # The readback updates at 10Hz, so a move still running would change it
+    stopped_at = await m2.user_readback.get_value()
+    await asyncio.sleep(0.3)
+    assert await m2.user_readback.get_value() == stopped_at
 
 
 async def test_sim_motor_can_be_set_to_its_current_position(m1: SimMotor):
@@ -221,3 +306,79 @@ async def test_sim_motor_move_mode(instant: bool):
             previous <= current
             for previous, current in zip(readbacks, readbacks[1:], strict=False)
         )
+
+
+FLY_INFO = FlyMotorInfo(start_position=0, end_position=1, time_for_move=0.3)
+FLY_END = FLY_INFO.ramp_down_end_pos(0.05)
+
+
+async def make_fast_motor() -> SimMotor:
+    motor = SimMotor("M", instant=False)
+    await asyncio.gather(motor.velocity.set(20), motor.acceleration_time.set(0.05))
+    return motor
+
+
+def move_and_fly_plan(
+    motor: SimMotor, move_to: float, hang: str | None = None, fail: bool = False
+):
+    """Move then fly the motor in a run, hanging in `hang` ("move" or "fly") if given.
+
+    The hang ends in a failure if `fail`, otherwise it waits to be interrupted.
+    """
+
+    def hang_then_fail():
+        yield from bps.sleep(0.3)
+        if fail:
+            raise ValueError("plan failed")
+        yield from bps.sleep(5)
+
+    @bpp.run_decorator()
+    @bpp.stage_decorator([motor])
+    def plan():
+        if hang == "move":
+            yield from bps.abs_set(motor, 1000, group="move")
+            yield from hang_then_fail()
+        yield from bps.mv(motor, move_to)
+        yield from bps.prepare(motor, FLY_INFO, wait=True)
+        yield from bps.kickoff(motor, wait=True)
+        if hang == "fly":
+            yield from bps.complete(motor, group="fly")
+            yield from hang_then_fail()
+        yield from bps.complete(motor, wait=True)
+
+    return plan()
+
+
+async def test_staged_plans_back_to_back_move_and_fly_the_same_motor():
+    RE = RunEngine()
+    motor = await make_fast_motor()
+    for move_to in (3, -2):
+        RE(move_and_fly_plan(motor, move_to))
+        assert await motor.user_readback.get_value() == pytest.approx(FLY_END)
+        assert await motor.user_setpoint.get_value() == pytest.approx(FLY_END)
+
+
+@pytest.mark.timeout(20)
+@pytest.mark.parametrize("hang", ["move", "fly"])
+@pytest.mark.parametrize("interrupt", ["fail", "pause_then_abort"])
+async def test_a_plan_interrupted_mid_move_or_fly_leaves_the_motor_ready_for_the_next(
+    hang: str, interrupt: str
+):
+    RE = RunEngine()
+    motor = await make_fast_motor()
+    if interrupt == "fail":
+        # unstage ends the move or fly, which bluesky reports as a FailedStatus
+        with pytest.raises((ValueError, FailedStatus)):
+            RE(move_and_fly_plan(motor, 3, hang=hang, fail=True))
+    else:
+        threading.Timer(0.5, RE.request_pause).start()
+        with pytest.raises(RunEngineInterrupted):
+            RE(move_and_fly_plan(motor, 3, hang=hang))
+        RE.abort()
+    # Nothing is left moving the motor
+    stopped_at = await motor.user_readback.get_value()
+    await asyncio.sleep(0.3)
+    assert await motor.user_readback.get_value() == stopped_at
+
+    RE(move_and_fly_plan(motor, 3))
+    assert await motor.user_readback.get_value() == pytest.approx(FLY_END)

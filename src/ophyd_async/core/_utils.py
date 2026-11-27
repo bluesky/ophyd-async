@@ -365,9 +365,20 @@ async def merge_gathered_dicts(
     combined_read = await merge_gathered_dicts(s.read() for s in signals)
     ```
     """
+    return merge_dicts(await asyncio.gather(*coros))
+
+
+def merge_dicts(dicts: Iterable[Mapping[str, T]]) -> dict[str, T]:
+    """Merge dictionaries, raising if any key appears in more than one.
+
+    :example:
+    ```python
+    merged = merge_dicts([{"a": 1}, {"b": 2}])
+    ```
+    """
     ret: dict[str, T] = {}
     duplicates: list[str] = []
-    for result in await asyncio.gather(*coros):
+    for result in dicts:
         for key in result:
             if key in ret:
                 duplicates.append(key)
@@ -463,6 +474,22 @@ def non_zero(value):
     return int(value) != 0
 
 
+def abstract_cached_property(func: Callable[[Any], T]) -> cached_property[T]:
+    """A `cached_property` that `ABCMeta` treats as abstract.
+
+    Stack it on `@abstractmethod`. pyright reads the `@abstractmethod`, but
+    `functools.cached_property` does not forward its `__isabstractmethod__`, so at
+    runtime the class would stay instantiable. Setting the flag on the descriptor
+    makes the metaclass collect it, so a subclass that does not implement it
+    raises `TypeError` at instantiation.
+
+    :param func: The abstract property body.
+    """
+    prop = cached_property(func)
+    prop.__isabstractmethod__ = True  # type: ignore[attr-defined]
+    return prop
+
+
 async def cancel_and_wait(*tasks: asyncio.Task[Any]) -> None:
     """Cancel `tasks`, wait for all of them to end, then raise the first error.
 
@@ -490,20 +517,18 @@ async def cancel_and_wait(*tasks: asyncio.Task[Any]) -> None:
         raise first_error
 
 
-def abstract_cached_property(func: Callable[[Any], T]) -> cached_property[T]:
-    """A `cached_property` that `ABCMeta` treats as abstract.
+async def _gather_or_cancel_all(waits: Sequence[Awaitable[Any]]) -> list[Any]:
+    """Await `waits` in parallel.
 
-    Stack it on `@abstractmethod`. pyright reads the `@abstractmethod`, but
-    `functools.cached_property` does not forward its `__isabstractmethod__`, so at
-    runtime the class would stay instantiable. Setting the flag on the descriptor
-    makes the metaclass collect it, so a subclass that does not implement it
-    raises `TypeError` at instantiation.
-
-    :param func: The abstract property body.
+    If one raises, or this is cancelled, the rest are cancelled and waited for
+    before the error propagates, so no wait outlives the call.
     """
-    prop = cached_property(func)
-    prop.__isabstractmethod__ = True  # type: ignore[attr-defined]
-    return prop
+    tasks = [asyncio.ensure_future(wait) for wait in waits]
+    try:
+        values = await asyncio.gather(*tasks)
+    finally:
+        await cancel_and_wait(*tasks)
+    return values
 
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
