@@ -196,6 +196,8 @@ class NDStatsIO(NDPluginBaseIO):
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
+    centroid_x: A[SignalR[float], PvSuffix("CentroidX_RBV")]
+    centroid_y: A[SignalR[float], PvSuffix("CentroidY_RBV")]
     # X and Y Profiles
     compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
     profile_size_x: A[SignalR[int], PvSuffix("ProfileSizeX_RBV")]
