@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from bluesky.protocols import Reading
@@ -58,35 +58,39 @@ async def velo_and_accl_respecting_motor():
 
 
 async def test_motor_moving_well(motor: Motor) -> None:
-    set_mock_put_proceeds(motor.user_setpoint, False)
-    s = motor.set(0.55)
-    watcher = StatusWatcher(s)
-    await watcher.wait_for_call(
-        name="motor",
-        current=0.0,
-        initial=0.0,
-        target=0.55,
-        unit="mm",
-        precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.2),
-    )
-    await wait_for_pending_wakeups()
-    assert 0.55 == await motor.user_setpoint.get_value()
-    assert not s.done
-    await asyncio.sleep(0.2)
-    set_mock_value(motor.user_readback, 0.1)
-    await watcher.wait_for_call(
-        name="motor",
-        current=0.1,
-        initial=0.0,
-        target=0.55,
-        unit="mm",
-        precision=3,
-        time_elapsed=pytest.approx(0.2, abs=0.2),
-    )
-    set_mock_put_proceeds(motor.user_setpoint, True)
-    await wait_for_pending_wakeups()
-    assert s.done
+    # Patch the status module's own `time`, not `time.monotonic` globally,
+    # because the event loop uses that too
+    with patch("ophyd_async.core._status.time") as mock_time:
+        mock_time.monotonic.return_value = 0.0
+        set_mock_put_proceeds(motor.user_setpoint, False)
+        s = motor.set(0.55)
+        watcher = StatusWatcher(s)
+        await watcher.wait_for_call(
+            name="motor",
+            current=0.0,
+            initial=0.0,
+            target=0.55,
+            unit="mm",
+            precision=3,
+            time_elapsed=0.0,
+        )
+        await wait_for_pending_wakeups()
+        assert 0.55 == await motor.user_setpoint.get_value()
+        assert not s.done
+        mock_time.monotonic.return_value = 0.2
+        set_mock_value(motor.user_readback, 0.1)
+        await watcher.wait_for_call(
+            name="motor",
+            current=0.1,
+            initial=0.0,
+            target=0.55,
+            unit="mm",
+            precision=3,
+            time_elapsed=0.2,
+        )
+        set_mock_put_proceeds(motor.user_setpoint, True)
+        await wait_for_pending_wakeups()
+        assert s.done
 
 
 @pytest.mark.parametrize(
@@ -118,20 +122,22 @@ async def test_motor_move_timeout(motor: Motor):
         raise MyError()
 
     callback_on_mock_put(motor.user_setpoint, do_timeout)
-    s = motor.set(0.3)
-    watcher = Mock()
-    s.watch(watcher)
-    with pytest.raises(MyError):
-        await s
-    watcher.assert_called_once_with(
-        name="motor",
-        current=0.0,
-        initial=0.0,
-        target=0.3,
-        unit="mm",
-        precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.2),
-    )
+    with patch("ophyd_async.core._status.time") as mock_time:
+        mock_time.monotonic.return_value = 0.0
+        s = motor.set(0.3)
+        watcher = Mock()
+        s.watch(watcher)
+        with pytest.raises(MyError):
+            await s
+        watcher.assert_called_once_with(
+            name="motor",
+            current=0.0,
+            initial=0.0,
+            target=0.3,
+            unit="mm",
+            precision=3,
+            time_elapsed=0.0,
+        )
 
 
 async def test_motor_moving_stopped(motor: Motor):
@@ -595,21 +601,37 @@ async def test_velo_and_accl_respecting_motor_mock_behavior(
     await velo_and_accl_respecting_motor.velocity.set(50.0)
     await velo_and_accl_respecting_motor.acceleration_time.set(0.05)
 
-    # Expected: abs(10 - 0) / 50 + 0.05 = 0.25s
-    start = asyncio.get_event_loop().time()
-    status = velo_and_accl_respecting_motor.set(10.0)
-    await status
-    assert status.success
-    assert await velo_and_accl_respecting_motor.user_readback.get_value() == 10.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.25, abs=0.1)
+    # simulate_move sleeps along the motion profile; run it on a fake clock
+    # that each sleep moves forward, so slow CI runners can't add time
+    now = 0.0
+    real_sleep = asyncio.sleep
 
-    # Expected: abs(-5 - 10) / 50 + 0.05 = 0.35s
-    start = asyncio.get_event_loop().time()
-    status = velo_and_accl_respecting_motor.set(-5.0)
-    await status
-    assert status.success
-    assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
-    assert asyncio.get_event_loop().time() - start == pytest.approx(0.35, abs=0.1)
+    async def fake_sleep(delay: float) -> None:
+        nonlocal now
+        now += max(delay, 0.0)
+        await real_sleep(0)
+
+    with (
+        patch("asyncio.sleep", fake_sleep),
+        patch("ophyd_async.core._utils.time") as mock_time,
+    ):
+        mock_time.monotonic.side_effect = lambda: now
+
+        # Expected: abs(10 - 0) / 50 + 0.05 = 0.25s
+        start = now
+        status = velo_and_accl_respecting_motor.set(10.0)
+        await status
+        assert status.success
+        assert await velo_and_accl_respecting_motor.user_readback.get_value() == 10.0
+        assert now - start == pytest.approx(0.25)
+
+        # Expected: abs(-5 - 10) / 50 + 0.05 = 0.35s
+        start = now
+        status = velo_and_accl_respecting_motor.set(-5.0)
+        await status
+        assert status.success
+        assert await velo_and_accl_respecting_motor.user_readback.get_value() == -5.0
+        assert now - start == pytest.approx(0.35)
 
 
 @pytest.mark.parametrize(

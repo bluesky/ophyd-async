@@ -1,7 +1,7 @@
 import asyncio
 import os
 from collections import defaultdict
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock, call, patch
 
 import numpy as np
 import pytest
@@ -72,48 +72,43 @@ async def test_motor_stopped(mock_motor: demo.DemoMotor):
 
 
 async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
-    # Start it moving
-    s = mock_motor.set(0.55)
-    # Watch for updates, and make sure the first update is the current position
-    watcher = StatusWatcher(s)
-    await watcher.wait_for_call(
-        name="mock_motor",
-        current=0.0,
-        initial=0.0,
-        target=0.55,
-        unit="mm",
-        precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.18),
-    )
-    await wait_for_pending_wakeups()
-    await assert_value(mock_motor.setpoint, 0.55)
-    assert not s.done
-    # Wait a bit and give it an update, checking that the watcher is called with it
-    await asyncio.sleep(0.2)
-    set_mock_value(mock_motor.readback, 0.1)
-    await watcher.wait_for_call(
-        name="mock_motor",
-        current=0.1,
-        initial=0.0,
-        target=0.55,
-        unit="mm",
-        precision=3,
-        # windows-latest CI runners intermittently overshoot asyncio.sleep(0.2)
-        # by well over the (already generous) 0.18s tolerance - observed
-        # time_elapsed values of 0.394, 0.408 and 0.424 across independent
-        # windows-latest/3.13 runs (PRs #1337, #1341, #1342, all within the
-        # same ~15 minutes). Local runs are rock solid at ~0.202s (50/50
-        # passes), so the extra latency is Windows scheduler/CI-load jitter,
-        # not a code regression. Widen only on Windows, matching the existing
-        # os.name == "nt" precedent in
-        # test_device.py::test_many_individual_device_connects_not_slow.
-        time_elapsed=pytest.approx(0.2, abs=0.4 if os.name == "nt" else 0.18),
-    )
-    # Make it almost get there and check that it completes
-    set_mock_value(mock_motor.readback, 0.5499999)
-    await wait_for_pending_wakeups()
-    assert s.done
-    assert s.success
+    # Patch the status module's own `time`, not `time.monotonic` globally,
+    # because the event loop uses that too
+    with patch("ophyd_async.core._status.time") as mock_time:
+        mock_time.monotonic.return_value = 0.0
+        # Start it moving
+        s = mock_motor.set(0.55)
+        # Watch for updates, and make sure the first update is the current position
+        watcher = StatusWatcher(s)
+        await watcher.wait_for_call(
+            name="mock_motor",
+            current=0.0,
+            initial=0.0,
+            target=0.55,
+            unit="mm",
+            precision=3,
+            time_elapsed=0.0,
+        )
+        await wait_for_pending_wakeups()
+        await assert_value(mock_motor.setpoint, 0.55)
+        assert not s.done
+        # Move the clock on and give it an update, checking the watcher sees it
+        mock_time.monotonic.return_value = 0.2
+        set_mock_value(mock_motor.readback, 0.1)
+        await watcher.wait_for_call(
+            name="mock_motor",
+            current=0.1,
+            initial=0.0,
+            target=0.55,
+            unit="mm",
+            precision=3,
+            time_elapsed=0.2,
+        )
+        # Make it almost get there and check that it completes
+        set_mock_value(mock_motor.readback, 0.5499999)
+        await wait_for_pending_wakeups()
+        assert s.done
+        assert s.success
 
 
 async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):

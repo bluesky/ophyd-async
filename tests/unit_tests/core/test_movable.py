@@ -97,18 +97,20 @@ async def test_movable_move_timeout(movable: StandardMovableImpl):
         raise MyError()
 
     callback_on_mock_put(movable.setpoint, do_timeout)
-    s = movable.set(0.3)
-    watcher = Mock()
-    s.watch(watcher)
-    with pytest.raises(MyError):
-        await s
-    watcher.assert_called_once_with(
-        name="movable",
-        current=0.0,
-        initial=0.0,
-        target=0.3,
-        time_elapsed=pytest.approx(0.0, abs=0.2),
-    )
+    with patch("ophyd_async.core._status.time") as mock_time:
+        mock_time.monotonic.return_value = 0.0
+        s = movable.set(0.3)
+        watcher = Mock()
+        s.watch(watcher)
+        with pytest.raises(MyError):
+            await s
+        watcher.assert_called_once_with(
+            name="movable",
+            current=0.0,
+            initial=0.0,
+            target=0.3,
+            time_elapsed=0.0,
+        )
 
 
 async def test_movable_moving_stopped(movable: StandardMovableImpl):
